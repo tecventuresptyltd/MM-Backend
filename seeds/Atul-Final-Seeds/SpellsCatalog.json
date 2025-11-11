@@ -1,0 +1,491 @@
+{
+  "version": "v3-normalized",
+  "spells": {
+    "spell_2382r2jk": {
+      "displayName": "Ice Lock",
+      "type": "TargetLock",
+      "description": "Freezes the target car and makes them slide",
+      "requiredLevel": 0,
+      "displayOrder": 1,
+      "isUnlocked": true,
+      "attributes": [
+        {
+          "name": "Targets",
+          "unit": "",
+          "values": [
+            1,
+            1,
+            1,
+            2,
+            2
+          ]
+        },
+        {
+          "name": "Range",
+          "unit": "m",
+          "values": [
+            60,
+            70,
+            80,
+            80,
+            90
+          ]
+        },
+        {
+          "name": "Duration",
+          "unit": "seconds",
+          "values": [
+            1,
+            1,
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "spellId": "spell_2382r2jk"
+    },
+    "spell_hg6ddry4": {
+      "displayName": "Meteor Wrath",
+      "type": "TargetLock",
+      "description": "Meteors hit the target car causing a demolition on the 3rd hit",
+      "requiredLevel": 0,
+      "displayOrder": 2,
+      "isUnlocked": true,
+      "attributes": [
+        {
+          "name": "Range",
+          "unit": "m",
+          "values": [
+            80,
+            90,
+            100,
+            110,
+            120
+          ]
+        }
+      ],
+      "spellId": "spell_hg6ddry4"
+    },
+    "spell_kdh7hy7r": {
+      "displayName": "Phantom Veil",
+      "type": "Powerup",
+      "description": "The car is able to pass through other cars and is invisible and cannot be targeted by spells",
+      "requiredLevel": 0,
+      "displayOrder": 3,
+      "isUnlocked": true,
+      "attributes": [
+        {
+          "name": "Duration",
+          "unit": "seconds",
+          "values": [
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        }
+      ],
+      "spellId": "spell_kdh7hy7r"
+    },
+    "spell_1h69nt0e": {
+      "displayName": "Storm Aura",
+      "type": "AreaEffect",
+      "description": "The car starts zapping other cars around it, slowing them down for a few seconds",
+      "requiredLevel": 0,
+      "displayOrder": 4,
+      "isUnlocked": true,
+      "attributes": [
+        {
+          "name": "Max Targets",
+          "unit": "",
+          "values": [
+            2,
+            2,
+            3,
+            3,
+            3
+          ]
+        },
+        {
+          "name": "Range",
+          "unit": "m",
+          "values": [
+            20,
+            25,
+            30,
+            30,
+            35
+          ]
+        },
+        {
+          "name": "Duration",
+          "unit": "seconds",
+          "values": [
+            3,
+            3.5,
+            4,
+            4.5,
+            5
+          ]
+        }
+      ],
+      "spellId": "spell_1h69nt0e"
+    },
+    "spell_cez3dcf4": {
+      "displayName": "Void Blades",
+      "type": "Melee",
+      "description": "Surrounds the car with floating plasma blades which circle the player that uses the spells car for 6 seconds. Any car that enters melee range is instantly demo'd.",
+      "requiredLevel": 0,
+      "displayOrder": 5,
+      "isUnlocked": true,
+      "attributes": [
+        {
+          "name": "Blades",
+          "unit": "",
+          "values": [
+            2,
+            3,
+            4,
+            5,
+            5
+          ]
+        },
+        {
+          "name": "Duration",
+          "unit": "seconds",
+          "values": [
+            5,
+            6,
+            7,
+            8,
+            10
+          ]
+        }
+      ],
+      "spellId": "spell_cez3dcf4"
+    },
+    "spell_11pe1m2e": {
+      "displayName": "Crimson Crush",
+      "type": "AreaEffect",
+      "description": "Channels powerful red telekinesis to lift all nearby enemy cars into the air. For 3 seconds, they float helplessly around the caster, before being slammed to the ground in a devastating magical explosion (a demolition)",
+      "requiredLevel": 0,
+      "isUnlocked": false,
+      "attributes": [
+        {
+          "name": "Max Targets",
+          "unit": "",
+          "values": [
+            2,
+            2,
+            3,
+            3,
+            3
+          ]
+        },
+        {
+          "name": "Range",
+          "unit": "m",
+          "values": [
+            20,
+            30,
+            40,
+            50,
+            60
+          ]
+        },
+        {
+          "name": "Duration",
+          "unit": "seconds",
+          "values": [
+            5,
+            5.5,
+            6,
+            6.5,
+            7
+          ]
+        }
+      ],
+      "spellId": "spell_11pe1m2e"
+    },
+    "spell_cd3res63": {
+      "displayName": "Fireball",
+      "type": "TargetLock",
+      "description": "Shoots a fireball at the target",
+      "requiredLevel": 20,
+      "isUnlocked": false,
+      "attributes": [
+        {
+          "name": "Targets",
+          "unit": "",
+          "values": [
+            1,
+            1,
+            1,
+            2,
+            2
+          ]
+        },
+        {
+          "name": "Range",
+          "unit": "m",
+          "values": [
+            60,
+            70,
+            80,
+            80,
+            90
+          ]
+        }
+      ],
+      "spellId": "spell_cd3res63"
+    },
+    "spell_th5ek2kw": {
+      "displayName": "God Hammer",
+      "type": "Directional",
+      "description": "Summons a magical war hammer that autonomously flies around the track at high speed, seeking out enemy cars and zapping them with lightning as it passes.",
+      "requiredLevel": 0,
+      "isUnlocked": false,
+      "attributes": [
+        {
+          "name": "Duration",
+          "unit": "seconds",
+          "values": [
+            4,
+            4,
+            4,
+            4,
+            4
+          ]
+        },
+        {
+          "name": "Impact",
+          "unit": "seconds",
+          "values": [
+            1,
+            1,
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "name": "Targets",
+          "unit": "",
+          "values": [
+            3,
+            3,
+            3,
+            3,
+            3
+          ]
+        }
+      ],
+      "spellId": "spell_th5ek2kw"
+    },
+    "spell_vcqct6hp": {
+      "displayName": "Overdrive",
+      "type": "Powerup",
+      "description": "The car is able to have unlimited nitros for a period of time",
+      "requiredLevel": 5,
+      "isUnlocked": false,
+      "attributes": [
+        {
+          "name": "Duration",
+          "unit": "seconds",
+          "values": [
+            4,
+            5,
+            6,
+            7,
+            8
+          ]
+        }
+      ],
+      "spellId": "spell_vcqct6hp"
+    },
+    "spell_f74x59gz": {
+      "displayName": "Phantom Mirage",
+      "type": "Powerup",
+      "description": "Summons 5 illusionary clones of the user (slightly invisible) car that follow their movement. They block targeting from single target spells and explode if they touch other players causing them to demo. They can pick up spells, boosts, coins and shields. If the clones touch the wall or barrier they also explode.",
+      "requiredLevel": 0,
+      "isUnlocked": false,
+      "attributes": [
+        {
+          "name": "Duration",
+          "unit": "seconds",
+          "values": [
+            3,
+            3.5,
+            4,
+            4.5,
+            5
+          ]
+        }
+      ],
+      "spellId": "spell_f74x59gz"
+    },
+    "spell_2dg5get6": {
+      "displayName": "Phase Shift",
+      "type": "Powerup",
+      "description": "Exchanges players car position with the targeted opponoents car position (targets the player in front).",
+      "requiredLevel": 30,
+      "isUnlocked": false,
+      "attributes": [
+        {
+          "name": "Range",
+          "unit": "m",
+          "values": [
+            80,
+            90,
+            100,
+            110,
+            120
+          ]
+        }
+      ],
+      "spellId": "spell_2dg5get6"
+    },
+    "spell_0tk74qn8": {
+      "displayName": "Power Out",
+      "type": "TargetLock",
+      "description": "Emits a screech that disables boosts and spells of everyone in the map for a period of time.",
+      "requiredLevel": 25,
+      "isUnlocked": false,
+      "attributes": [
+        {
+          "name": "Targets",
+          "unit": "",
+          "values": [
+            3,
+            3,
+            3,
+            3,
+            3
+          ]
+        },
+        {
+          "name": "Duration",
+          "unit": "seconds",
+          "values": [
+            3,
+            3.5,
+            4,
+            4.5,
+            5
+          ]
+        }
+      ],
+      "spellId": "spell_0tk74qn8"
+    },
+    "spell_mmt7v0j0": {
+      "displayName": "Shockwave",
+      "type": "AreaEffect",
+      "description": "The car produces a supersonic blast around it and demolishes other cars around it",
+      "requiredLevel": 15,
+      "isUnlocked": false,
+      "attributes": [
+        {
+          "name": "Range",
+          "unit": "m",
+          "values": [
+            20,
+            30,
+            40,
+            50,
+            60
+          ]
+        }
+      ],
+      "spellId": "spell_mmt7v0j0"
+    },
+    "spell_zdgrp9zk": {
+      "displayName": "Sky Reaper",
+      "type": "TargetLock",
+      "description": "Lazer beam blasts player one, stunning them for a period of time",
+      "requiredLevel": 35,
+      "isUnlocked": false,
+      "attributes": [
+        {
+          "name": "Impact",
+          "unit": "seconds",
+          "values": [
+            1,
+            1.5,
+            2,
+            2.5,
+            3
+          ]
+        }
+      ],
+      "spellId": "spell_zdgrp9zk"
+    },
+    "spell_3tgjmyqv": {
+      "displayName": "Supersonic",
+      "type": "Powerup",
+      "description": "Turns the car into a jet for some time",
+      "requiredLevel": 3,
+      "isUnlocked": false,
+      "attributes": [
+        {
+          "name": "Speed",
+          "unit": "km/hr",
+          "values": [
+            200,
+            250,
+            300,
+            350,
+            400
+          ]
+        },
+        {
+          "name": "Duration",
+          "unit": "seconds",
+          "values": [
+            4,
+            4,
+            4,
+            4,
+            4
+          ]
+        }
+      ],
+      "spellId": "spell_3tgjmyqv"
+    },
+    "spell_pbvvrhw7": {
+      "displayName": "Tiny Terror",
+      "type": "Powerup",
+      "description": "Shrinks down the car and the car is able to demo other cars",
+      "requiredLevel": 10,
+      "isUnlocked": false,
+      "attributes": [
+        {
+          "name": "Duration",
+          "unit": "seconds",
+          "values": [
+            3,
+            4,
+            5,
+            5,
+            6
+          ]
+        },
+        {
+          "name": "Top Speed",
+          "unit": "%",
+          "values": [
+            10,
+            10,
+            15,
+            20,
+            20
+          ]
+        }
+      ],
+      "spellId": "spell_pbvvrhw7"
+    }
+  },
+  "createdAt": 1761228851445,
+  "updatedAt": 1762442516078
+}

@@ -1,0 +1,840 @@
+{
+  "version": "v3-normalized",
+  "defaults": {
+    "starterCrateId": "crt_pwpygxpp",
+    "starterCrateSkuId": "sku_2xw1r4bah7",
+    "starterKeySkuId": "sku_rjwe5tdtc4"
+  },
+  "crates": {
+    "crt_pwpygxpp": {
+      "crateId": "crt_pwpygxpp",
+      "crateSkuId": "sku_2xw1r4bah7",
+      "skuId": "sku_2xw1r4bah7",
+      "displayName": "Common Starter Crate",
+      "rarity": "common",
+      "keySkuId": "sku_rjwe5tdtc4",
+      "tags": [
+        "starter"
+      ],
+      "loot": {
+        "0": {
+          "skuId": "sku_pzfvrnnyhc",
+          "quantity": 1,
+          "weight": 1
+        }
+      }
+    },
+    "crt_ayvncyt0": {
+      "displayName": "Common Crate",
+      "rarity": "common",
+      "lootTable": {
+        "common": 80,
+        "rare": 15,
+        "exotic": 4,
+        "legendary": 0.9,
+        "mythical": 0.1
+      },
+      "crateId": "crt_ayvncyt0",
+      "loot": {
+        "0": {
+          "skuId": "sku_pzfvrnnyhc",
+          "quantity": 1,
+          "weight": 67
+        },
+        "1": {
+          "skuId": "sku_0bm71j9r7n",
+          "quantity": 1,
+          "weight": 67
+        },
+        "2": {
+          "skuId": "sku_6ecskp386c",
+          "quantity": 1,
+          "weight": 67
+        },
+        "3": {
+          "skuId": "sku_6x131xte94",
+          "quantity": 1,
+          "weight": 67
+        },
+        "4": {
+          "skuId": "sku_k56ccnthpy",
+          "quantity": 1,
+          "weight": 67
+        },
+        "5": {
+          "skuId": "sku_kchw74qc48",
+          "quantity": 1,
+          "weight": 67
+        },
+        "6": {
+          "skuId": "sku_554kz44fkb",
+          "quantity": 1,
+          "weight": 67
+        },
+        "7": {
+          "skuId": "sku_6czpp8jvz8",
+          "quantity": 1,
+          "weight": 67
+        },
+        "8": {
+          "skuId": "sku_88x4j516bv",
+          "quantity": 1,
+          "weight": 66
+        },
+        "9": {
+          "skuId": "sku_gkrrppkrmq",
+          "quantity": 1,
+          "weight": 66
+        },
+        "10": {
+          "skuId": "sku_tva5r70btb",
+          "quantity": 1,
+          "weight": 66
+        },
+        "11": {
+          "skuId": "sku_0n1efmcwgs",
+          "quantity": 1,
+          "weight": 66
+        },
+        "12": {
+          "skuId": "sku_0h91z05ne6",
+          "quantity": 1,
+          "weight": 13
+        },
+        "13": {
+          "skuId": "sku_54s4ptna2n",
+          "quantity": 1,
+          "weight": 13
+        },
+        "14": {
+          "skuId": "sku_7wtfzeejmg",
+          "quantity": 1,
+          "weight": 13
+        },
+        "15": {
+          "skuId": "sku_a4j88h4e2b",
+          "quantity": 1,
+          "weight": 13
+        },
+        "16": {
+          "skuId": "sku_amna260hte",
+          "quantity": 1,
+          "weight": 13
+        },
+        "17": {
+          "skuId": "sku_ankjk8rqk7",
+          "quantity": 1,
+          "weight": 13
+        },
+        "18": {
+          "skuId": "sku_b4t1yq7qm2",
+          "quantity": 1,
+          "weight": 12
+        },
+        "19": {
+          "skuId": "sku_f2b68v3z95",
+          "quantity": 1,
+          "weight": 12
+        },
+        "20": {
+          "skuId": "sku_07zs4znc4z",
+          "quantity": 1,
+          "weight": 12
+        },
+        "21": {
+          "skuId": "sku_0v99rgxzqg",
+          "quantity": 1,
+          "weight": 12
+        },
+        "22": {
+          "skuId": "sku_29qam8vjzb",
+          "quantity": 1,
+          "weight": 12
+        },
+        "23": {
+          "skuId": "sku_4ev3t0t6tk",
+          "quantity": 1,
+          "weight": 12
+        },
+        "24": {
+          "skuId": "sku_44dpg07x8d",
+          "quantity": 1,
+          "weight": 4
+        },
+        "25": {
+          "skuId": "sku_b2ccqv11bq",
+          "quantity": 1,
+          "weight": 4
+        },
+        "26": {
+          "skuId": "sku_b3p3xqy6ew",
+          "quantity": 1,
+          "weight": 4
+        },
+        "27": {
+          "skuId": "sku_hvyhr54ar0",
+          "quantity": 1,
+          "weight": 4
+        },
+        "28": {
+          "skuId": "sku_jhww87f3c8",
+          "quantity": 1,
+          "weight": 3
+        },
+        "29": {
+          "skuId": "sku_qwxpd6hbjz",
+          "quantity": 1,
+          "weight": 3
+        },
+        "30": {
+          "skuId": "sku_trsfcwzhs8",
+          "quantity": 1,
+          "weight": 3
+        },
+        "31": {
+          "skuId": "sku_x8rj6mdpyz",
+          "quantity": 1,
+          "weight": 3
+        },
+        "32": {
+          "skuId": "sku_8x8kwarq57",
+          "quantity": 1,
+          "weight": 3
+        },
+        "33": {
+          "skuId": "sku_ba8ypdv745",
+          "quantity": 1,
+          "weight": 3
+        },
+        "34": {
+          "skuId": "sku_bhq08vsvw2",
+          "quantity": 1,
+          "weight": 3
+        },
+        "35": {
+          "skuId": "sku_f2adnmrzgg",
+          "quantity": 1,
+          "weight": 3
+        },
+        "36": {
+          "skuId": "sku_0rs6qbhwme",
+          "quantity": 1,
+          "weight": 1
+        },
+        "37": {
+          "skuId": "sku_64fkjaay18",
+          "quantity": 1,
+          "weight": 1
+        },
+        "38": {
+          "skuId": "sku_9rkr8tzae1",
+          "quantity": 1,
+          "weight": 1
+        },
+        "39": {
+          "skuId": "sku_dadzzcnmes",
+          "quantity": 1,
+          "weight": 1
+        },
+        "40": {
+          "skuId": "sku_fsadz6sjtj",
+          "quantity": 1,
+          "weight": 1
+        },
+        "41": {
+          "skuId": "sku_m3vc15v34w",
+          "quantity": 1,
+          "weight": 1
+        },
+        "42": {
+          "skuId": "sku_qjheh5j5tq",
+          "quantity": 1,
+          "weight": 1
+        },
+        "43": {
+          "skuId": "sku_xecaajm3qm",
+          "quantity": 1,
+          "weight": 1
+        },
+        "44": {
+          "skuId": "sku_09ecytjp2d",
+          "quantity": 1,
+          "weight": 1
+        },
+        "45": {
+          "skuId": "sku_0je8g39w46",
+          "quantity": 1,
+          "weight": 1
+        }
+      },
+      "skuId": "sku_zz3twgp0wx",
+      "keySkuId": "sku_rjwe5tdtc4",
+      "crateSkuId": "sku_zz3twgp0wx"
+    },
+    "crt_vzqgtd2s": {
+      "displayName": "Rare Crate",
+      "rarity": "rare",
+      "lootTable": {
+        "common": 0,
+        "rare": 80,
+        "exotic": 18,
+        "legendary": 1.8,
+        "mythical": 0.2
+      },
+      "crateId": "crt_vzqgtd2s",
+      "loot": {
+        "0": {
+          "skuId": "sku_0h91z05ne6",
+          "quantity": 1,
+          "weight": 67
+        },
+        "1": {
+          "skuId": "sku_54s4ptna2n",
+          "quantity": 1,
+          "weight": 67
+        },
+        "2": {
+          "skuId": "sku_7wtfzeejmg",
+          "quantity": 1,
+          "weight": 67
+        },
+        "3": {
+          "skuId": "sku_a4j88h4e2b",
+          "quantity": 1,
+          "weight": 67
+        },
+        "4": {
+          "skuId": "sku_amna260hte",
+          "quantity": 1,
+          "weight": 67
+        },
+        "5": {
+          "skuId": "sku_ankjk8rqk7",
+          "quantity": 1,
+          "weight": 67
+        },
+        "6": {
+          "skuId": "sku_b4t1yq7qm2",
+          "quantity": 1,
+          "weight": 67
+        },
+        "7": {
+          "skuId": "sku_f2b68v3z95",
+          "quantity": 1,
+          "weight": 67
+        },
+        "8": {
+          "skuId": "sku_07zs4znc4z",
+          "quantity": 1,
+          "weight": 66
+        },
+        "9": {
+          "skuId": "sku_0v99rgxzqg",
+          "quantity": 1,
+          "weight": 66
+        },
+        "10": {
+          "skuId": "sku_29qam8vjzb",
+          "quantity": 1,
+          "weight": 66
+        },
+        "11": {
+          "skuId": "sku_4ev3t0t6tk",
+          "quantity": 1,
+          "weight": 66
+        },
+        "12": {
+          "skuId": "sku_44dpg07x8d",
+          "quantity": 1,
+          "weight": 15
+        },
+        "13": {
+          "skuId": "sku_b2ccqv11bq",
+          "quantity": 1,
+          "weight": 15
+        },
+        "14": {
+          "skuId": "sku_b3p3xqy6ew",
+          "quantity": 1,
+          "weight": 15
+        },
+        "15": {
+          "skuId": "sku_hvyhr54ar0",
+          "quantity": 1,
+          "weight": 15
+        },
+        "16": {
+          "skuId": "sku_jhww87f3c8",
+          "quantity": 1,
+          "weight": 15
+        },
+        "17": {
+          "skuId": "sku_qwxpd6hbjz",
+          "quantity": 1,
+          "weight": 15
+        },
+        "18": {
+          "skuId": "sku_trsfcwzhs8",
+          "quantity": 1,
+          "weight": 15
+        },
+        "19": {
+          "skuId": "sku_x8rj6mdpyz",
+          "quantity": 1,
+          "weight": 15
+        },
+        "20": {
+          "skuId": "sku_8x8kwarq57",
+          "quantity": 1,
+          "weight": 15
+        },
+        "21": {
+          "skuId": "sku_ba8ypdv745",
+          "quantity": 1,
+          "weight": 15
+        },
+        "22": {
+          "skuId": "sku_bhq08vsvw2",
+          "quantity": 1,
+          "weight": 15
+        },
+        "23": {
+          "skuId": "sku_f2adnmrzgg",
+          "quantity": 1,
+          "weight": 15
+        },
+        "24": {
+          "skuId": "sku_0rs6qbhwme",
+          "quantity": 1,
+          "weight": 2
+        },
+        "25": {
+          "skuId": "sku_64fkjaay18",
+          "quantity": 1,
+          "weight": 2
+        },
+        "26": {
+          "skuId": "sku_9rkr8tzae1",
+          "quantity": 1,
+          "weight": 2
+        },
+        "27": {
+          "skuId": "sku_dadzzcnmes",
+          "quantity": 1,
+          "weight": 2
+        },
+        "28": {
+          "skuId": "sku_fsadz6sjtj",
+          "quantity": 1,
+          "weight": 2
+        },
+        "29": {
+          "skuId": "sku_m3vc15v34w",
+          "quantity": 1,
+          "weight": 2
+        },
+        "30": {
+          "skuId": "sku_qjheh5j5tq",
+          "quantity": 1,
+          "weight": 1
+        },
+        "31": {
+          "skuId": "sku_xecaajm3qm",
+          "quantity": 1,
+          "weight": 1
+        },
+        "32": {
+          "skuId": "sku_09ecytjp2d",
+          "quantity": 1,
+          "weight": 1
+        },
+        "33": {
+          "skuId": "sku_1fsb8m4vfg",
+          "quantity": 1,
+          "weight": 1
+        },
+        "34": {
+          "skuId": "sku_94zw30htz4",
+          "quantity": 1,
+          "weight": 1
+        },
+        "35": {
+          "skuId": "sku_jgq23f8v1q",
+          "quantity": 1,
+          "weight": 1
+        },
+        "36": {
+          "skuId": "sku_0je8g39w46",
+          "quantity": 1,
+          "weight": 1
+        },
+        "37": {
+          "skuId": "sku_153jrkpt6b",
+          "quantity": 1,
+          "weight": 1
+        }
+      },
+      "skuId": "sku_72wnqwtfmx",
+      "keySkuId": "sku_p3yxnyhkpx",
+      "crateSkuId": "sku_72wnqwtfmx"
+    },
+    "crt_7y8a6hca": {
+      "displayName": "Exotic Crate",
+      "rarity": "exotic",
+      "lootTable": {
+        "common": 0,
+        "rare": 0,
+        "exotic": 80,
+        "legendary": 19,
+        "mythical": 1
+      },
+      "crateId": "crt_7y8a6hca",
+      "loot": {
+        "0": {
+          "skuId": "sku_44dpg07x8d",
+          "quantity": 1,
+          "weight": 7
+        },
+        "1": {
+          "skuId": "sku_b2ccqv11bq",
+          "quantity": 1,
+          "weight": 7
+        },
+        "2": {
+          "skuId": "sku_b3p3xqy6ew",
+          "quantity": 1,
+          "weight": 7
+        },
+        "3": {
+          "skuId": "sku_hvyhr54ar0",
+          "quantity": 1,
+          "weight": 7
+        },
+        "4": {
+          "skuId": "sku_jhww87f3c8",
+          "quantity": 1,
+          "weight": 7
+        },
+        "5": {
+          "skuId": "sku_qwxpd6hbjz",
+          "quantity": 1,
+          "weight": 7
+        },
+        "6": {
+          "skuId": "sku_trsfcwzhs8",
+          "quantity": 1,
+          "weight": 7
+        },
+        "7": {
+          "skuId": "sku_x8rj6mdpyz",
+          "quantity": 1,
+          "weight": 7
+        },
+        "8": {
+          "skuId": "sku_8x8kwarq57",
+          "quantity": 1,
+          "weight": 6
+        },
+        "9": {
+          "skuId": "sku_ba8ypdv745",
+          "quantity": 1,
+          "weight": 6
+        },
+        "10": {
+          "skuId": "sku_bhq08vsvw2",
+          "quantity": 1,
+          "weight": 6
+        },
+        "11": {
+          "skuId": "sku_f2adnmrzgg",
+          "quantity": 1,
+          "weight": 6
+        },
+        "12": {
+          "skuId": "sku_0rs6qbhwme",
+          "quantity": 1,
+          "weight": 2
+        },
+        "13": {
+          "skuId": "sku_64fkjaay18",
+          "quantity": 1,
+          "weight": 2
+        },
+        "14": {
+          "skuId": "sku_9rkr8tzae1",
+          "quantity": 1,
+          "weight": 2
+        },
+        "15": {
+          "skuId": "sku_dadzzcnmes",
+          "quantity": 1,
+          "weight": 2
+        },
+        "16": {
+          "skuId": "sku_fsadz6sjtj",
+          "quantity": 1,
+          "weight": 2
+        },
+        "17": {
+          "skuId": "sku_m3vc15v34w",
+          "quantity": 1,
+          "weight": 2
+        },
+        "18": {
+          "skuId": "sku_qjheh5j5tq",
+          "quantity": 1,
+          "weight": 2
+        },
+        "19": {
+          "skuId": "sku_xecaajm3qm",
+          "quantity": 1,
+          "weight": 1
+        },
+        "20": {
+          "skuId": "sku_09ecytjp2d",
+          "quantity": 1,
+          "weight": 1
+        },
+        "21": {
+          "skuId": "sku_1fsb8m4vfg",
+          "quantity": 1,
+          "weight": 1
+        },
+        "22": {
+          "skuId": "sku_94zw30htz4",
+          "quantity": 1,
+          "weight": 1
+        },
+        "23": {
+          "skuId": "sku_jgq23f8v1q",
+          "quantity": 1,
+          "weight": 1
+        },
+        "24": {
+          "skuId": "sku_0je8g39w46",
+          "quantity": 1,
+          "weight": 1
+        }
+      },
+      "skuId": "sku_e8e7jeba7v",
+      "keySkuId": "sku_zqqmqz7mwb",
+      "crateSkuId": "sku_e8e7jeba7v"
+    },
+    "crt_76ar1k2x": {
+      "displayName": "Legendary Crate",
+      "rarity": "legendary",
+      "lootTable": {
+        "common": 0,
+        "rare": 0,
+        "exotic": 0,
+        "legendary": 88,
+        "mythical": 12
+      },
+      "crateId": "crt_76ar1k2x",
+      "loot": {
+        "0": {
+          "skuId": "sku_0rs6qbhwme",
+          "quantity": 1,
+          "weight": 8
+        },
+        "1": {
+          "skuId": "sku_64fkjaay18",
+          "quantity": 1,
+          "weight": 8
+        },
+        "2": {
+          "skuId": "sku_9rkr8tzae1",
+          "quantity": 1,
+          "weight": 8
+        },
+        "3": {
+          "skuId": "sku_dadzzcnmes",
+          "quantity": 1,
+          "weight": 8
+        },
+        "4": {
+          "skuId": "sku_fsadz6sjtj",
+          "quantity": 1,
+          "weight": 7
+        },
+        "5": {
+          "skuId": "sku_m3vc15v34w",
+          "quantity": 1,
+          "weight": 7
+        },
+        "6": {
+          "skuId": "sku_qjheh5j5tq",
+          "quantity": 1,
+          "weight": 7
+        },
+        "7": {
+          "skuId": "sku_xecaajm3qm",
+          "quantity": 1,
+          "weight": 7
+        },
+        "8": {
+          "skuId": "sku_09ecytjp2d",
+          "quantity": 1,
+          "weight": 7
+        },
+        "9": {
+          "skuId": "sku_1fsb8m4vfg",
+          "quantity": 1,
+          "weight": 7
+        },
+        "10": {
+          "skuId": "sku_94zw30htz4",
+          "quantity": 1,
+          "weight": 7
+        },
+        "11": {
+          "skuId": "sku_jgq23f8v1q",
+          "quantity": 1,
+          "weight": 7
+        },
+        "12": {
+          "skuId": "sku_0je8g39w46",
+          "quantity": 1,
+          "weight": 1
+        },
+        "13": {
+          "skuId": "sku_153jrkpt6b",
+          "quantity": 1,
+          "weight": 1
+        },
+        "14": {
+          "skuId": "sku_7kja01p7hr",
+          "quantity": 1,
+          "weight": 1
+        },
+        "15": {
+          "skuId": "sku_bwqgm6pv5v",
+          "quantity": 1,
+          "weight": 1
+        },
+        "16": {
+          "skuId": "sku_et2t81r7f8",
+          "quantity": 1,
+          "weight": 1
+        },
+        "17": {
+          "skuId": "sku_kpfecge5kr",
+          "quantity": 1,
+          "weight": 1
+        },
+        "18": {
+          "skuId": "sku_qzdefa0n78",
+          "quantity": 1,
+          "weight": 1
+        },
+        "19": {
+          "skuId": "sku_znr3m4ccfm",
+          "quantity": 1,
+          "weight": 1
+        },
+        "20": {
+          "skuId": "sku_0pe1e6b19g",
+          "quantity": 1,
+          "weight": 1
+        },
+        "21": {
+          "skuId": "sku_23fz9c9jxf",
+          "quantity": 1,
+          "weight": 1
+        },
+        "22": {
+          "skuId": "sku_3hxw1eakee",
+          "quantity": 1,
+          "weight": 1
+        },
+        "23": {
+          "skuId": "sku_4csn9bze70",
+          "quantity": 1,
+          "weight": 1
+        }
+      },
+      "skuId": "sku_n9hsc0wxxk",
+      "keySkuId": "sku_acxbr542j1",
+      "crateSkuId": "sku_n9hsc0wxxk"
+    },
+    "crt_y8fywbrs": {
+      "displayName": "Mythical Crate",
+      "rarity": "mythical",
+      "lootTable": {
+        "common": 0,
+        "rare": 0,
+        "exotic": 0,
+        "legendary": 0,
+        "mythical": 100
+      },
+      "crateId": "crt_y8fywbrs",
+      "loot": {
+        "0": {
+          "skuId": "sku_0je8g39w46",
+          "quantity": 1,
+          "weight": 9
+        },
+        "1": {
+          "skuId": "sku_153jrkpt6b",
+          "quantity": 1,
+          "weight": 9
+        },
+        "2": {
+          "skuId": "sku_7kja01p7hr",
+          "quantity": 1,
+          "weight": 9
+        },
+        "3": {
+          "skuId": "sku_bwqgm6pv5v",
+          "quantity": 1,
+          "weight": 9
+        },
+        "4": {
+          "skuId": "sku_et2t81r7f8",
+          "quantity": 1,
+          "weight": 8
+        },
+        "5": {
+          "skuId": "sku_kpfecge5kr",
+          "quantity": 1,
+          "weight": 8
+        },
+        "6": {
+          "skuId": "sku_qzdefa0n78",
+          "quantity": 1,
+          "weight": 8
+        },
+        "7": {
+          "skuId": "sku_znr3m4ccfm",
+          "quantity": 1,
+          "weight": 8
+        },
+        "8": {
+          "skuId": "sku_0pe1e6b19g",
+          "quantity": 1,
+          "weight": 8
+        },
+        "9": {
+          "skuId": "sku_23fz9c9jxf",
+          "quantity": 1,
+          "weight": 8
+        },
+        "10": {
+          "skuId": "sku_3hxw1eakee",
+          "quantity": 1,
+          "weight": 8
+        },
+        "11": {
+          "skuId": "sku_4csn9bze70",
+          "quantity": 1,
+          "weight": 8
+        }
+      },
+      "skuId": "sku_kgkjadrd79",
+      "keySkuId": "sku_hq5ywspmr5",
+      "crateSkuId": "sku_kgkjadrd79"
+    }
+  },
+  "createdAt": 1761228851445,
+  "updatedAt": 1762566860531
+}

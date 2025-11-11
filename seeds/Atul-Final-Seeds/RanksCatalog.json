@@ -1,0 +1,78 @@
+{
+  "version": "v3-bootstrap",
+  "updatedAt": 1762566860531,
+  "ranks": [
+    {
+      "rankId": "rank_bronze_1",
+      "displayName": "Bronze I",
+      "i18n": {
+        "en": "Bronze I"
+      },
+      "minMmr": 0,
+      "rewards": {
+        "coins": 100,
+        "gems": 0
+      }
+    },
+    {
+      "rankId": "rank_bronze_2",
+      "displayName": "Bronze II",
+      "i18n": {
+        "en": "Bronze II"
+      },
+      "minMmr": 500,
+      "rewards": {
+        "coins": 150,
+        "gems": 0
+      }
+    },
+    {
+      "rankId": "rank_silver_1",
+      "displayName": "Silver I",
+      "i18n": {
+        "en": "Silver I"
+      },
+      "minMmr": 1000,
+      "rewards": {
+        "coins": 200,
+        "gems": 5
+      }
+    },
+    {
+      "rankId": "rank_gold_1",
+      "displayName": "Gold I",
+      "i18n": {
+        "en": "Gold I"
+      },
+      "minMmr": 1500,
+      "rewards": {
+        "coins": 250,
+        "gems": 10
+      }
+    },
+    {
+      "rankId": "rank_platinum_1",
+      "displayName": "Platinum I",
+      "i18n": {
+        "en": "Platinum I"
+      },
+      "minMmr": 2000,
+      "rewards": {
+        "coins": 300,
+        "gems": 15
+      }
+    },
+    {
+      "rankId": "rank_diamond_1",
+      "displayName": "Diamond I",
+      "i18n": {
+        "en": "Diamond I"
+      },
+      "minMmr": 2500,
+      "rewards": {
+        "coins": 400,
+        "gems": 20
+      }
+    }
+  ]
+}

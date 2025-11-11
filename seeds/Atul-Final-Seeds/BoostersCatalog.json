@@ -1,0 +1,94 @@
+{
+  "version": "v3-bootstrap",
+  "updatedAt": 1762566860531,
+  "boosters": {
+    "sku_amf7txny": {
+      "skuId": "sku_amf7txny",
+      "itemId": "bst_kcemzpr4",
+      "displayName": "Coin Booster (1h)",
+      "category": "booster",
+      "type": "booster",
+      "rarity": "special",
+      "stackable": true,
+      "variant": null,
+      "subType": "coin"
+    },
+    "sku_eqzbetwm": {
+      "skuId": "sku_eqzbetwm",
+      "itemId": "bst_kcemzpr4",
+      "displayName": "Coin Booster (6h)",
+      "category": "booster",
+      "type": "booster",
+      "rarity": "special",
+      "stackable": true,
+      "variant": null,
+      "subType": "coin"
+    },
+    "sku_wkm0amtg": {
+      "skuId": "sku_wkm0amtg",
+      "itemId": "bst_kcemzpr4",
+      "displayName": "Coin Booster (12h)",
+      "category": "booster",
+      "type": "booster",
+      "rarity": "special",
+      "stackable": true,
+      "variant": null,
+      "subType": "coin"
+    },
+    "sku_tpt3379j8p": {
+      "skuId": "sku_tpt3379j8p",
+      "itemId": "bst_kcemzpr4",
+      "displayName": "Coin Booster (24h)",
+      "category": "booster",
+      "type": "booster",
+      "rarity": "special",
+      "stackable": true,
+      "variant": null,
+      "subType": "coin"
+    },
+    "sku_07hw4ry3": {
+      "skuId": "sku_07hw4ry3",
+      "itemId": "bst_hhhb8w5q",
+      "displayName": "EXP Booster (1h)",
+      "category": "booster",
+      "type": "booster",
+      "rarity": "special",
+      "stackable": true,
+      "variant": null,
+      "subType": "exp"
+    },
+    "sku_60fdgqkm": {
+      "skuId": "sku_60fdgqkm",
+      "itemId": "bst_hhhb8w5q",
+      "displayName": "EXP Booster (6h)",
+      "category": "booster",
+      "type": "booster",
+      "rarity": "special",
+      "stackable": true,
+      "variant": null,
+      "subType": "exp"
+    },
+    "sku_nhh7jtda": {
+      "skuId": "sku_nhh7jtda",
+      "itemId": "bst_hhhb8w5q",
+      "displayName": "EXP Booster (12h)",
+      "category": "booster",
+      "type": "booster",
+      "rarity": "special",
+      "stackable": true,
+      "variant": null,
+      "subType": "exp"
+    },
+    "sku_9pnmmjpscv": {
+      "skuId": "sku_9pnmmjpscv",
+      "itemId": "bst_hhhb8w5q",
+      "displayName": "EXP Booster (24h)",
+      "category": "booster",
+      "type": "booster",
+      "rarity": "special",
+      "stackable": true,
+      "variant": null,
+      "subType": "exp"
+    }
+  }
+}

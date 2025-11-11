@@ -1,0 +1,739 @@
+{
+  "version": "v3-normalized",
+  "offers": {
+    "offer_3jaky2p2": {
+      "displayName": "Starter Offer",
+      "offerType": 0,
+      "productId": "com.tecventures.mysticmotors.starteroffer",
+      "entitlements": [
+        {
+          "type": "gems",
+          "id": "gems",
+          "quantity": 300
+        },
+        {
+          "type": "crate",
+          "id": "sku_n9hsc0wxxk",
+          "quantity": 1
+        },
+        {
+          "type": "key",
+          "id": "sku_acxbr542j1",
+          "quantity": 1
+        },
+        {
+          "type": "crate",
+          "id": "sku_72wnqwtfmx",
+          "quantity": 1
+        },
+        {
+          "type": "key",
+          "id": "sku_p3yxnyhkpx",
+          "quantity": 1
+        }
+      ],
+      "price": 0.99,
+      "originalPrice": 11,
+      "currency": "USD",
+      "startAt": 1761228851445,
+      "endAt": 1755472800000,
+      "validityHours": 48,
+      "offerId": "offer_3jaky2p2"
+    },
+    "offer_kn1k91mn": {
+      "displayName": "Daily Offer I",
+      "offerType": 1,
+      "productId": "com.tecventures.mysticmotors.dailyoffer1",
+      "entitlements": [
+        {
+          "type": "gems",
+          "id": "gems",
+          "quantity": 300
+        },
+        {
+          "type": "crate",
+          "id": "sku_72wnqwtfmx",
+          "quantity": 1
+        },
+        {
+          "type": "key",
+          "id": "sku_p3yxnyhkpx",
+          "quantity": 1
+        },
+        {
+          "type": "crate",
+          "id": "sku_e8e7jeba7v",
+          "quantity": 1
+        },
+        {
+          "type": "key",
+          "id": "sku_zqqmqz7mwb",
+          "quantity": 1
+        },
+        {
+          "type": "booster",
+          "id": "sku_tpt3379j8p",
+          "quantity": 1
+        },
+        {
+          "type": "booster",
+          "id": "sku_9pnmmjpscv",
+          "quantity": 1
+        }
+      ],
+      "price": 0.99,
+      "originalPrice": 10,
+      "currency": "USD",
+      "startAt": 1761228851445,
+      "endAt": 1755386400000,
+      "validityHours": 24,
+      "offerId": "offer_kn1k91mn"
+    },
+    "offer_bfnnjavw": {
+      "displayName": "Daily Offer II",
+      "offerType": 2,
+      "productId": "com.tecventures.mysticmotors.dailyoffer2",
+      "entitlements": [
+        {
+          "type": "gems",
+          "id": "gems",
+          "quantity": 250
+        },
+        {
+          "type": "crate",
+          "id": "sku_n9hsc0wxxk",
+          "quantity": 1
+        },
+        {
+          "type": "key",
+          "id": "sku_acxbr542j1",
+          "quantity": 1
+        },
+        {
+          "type": "crate",
+          "id": "sku_72wnqwtfmx",
+          "quantity": 1
+        },
+        {
+          "type": "key",
+          "id": "sku_p3yxnyhkpx",
+          "quantity": 1
+        },
+        {
+          "type": "crate",
+          "id": "sku_e8e7jeba7v",
+          "quantity": 1
+        },
+        {
+          "type": "key",
+          "id": "sku_zqqmqz7mwb",
+          "quantity": 1
+        },
+        {
+          "type": "booster",
+          "id": "sku_tpt3379j8p",
+          "quantity": 1
+        },
+        {
+          "type": "booster",
+          "id": "sku_9pnmmjpscv",
+          "quantity": 1
+        }
+      ],
+      "price": 1.99,
+      "originalPrice": 16,
+      "currency": "USD",
+      "startAt": 1761228851445,
+      "endAt": 1755386400000,
+      "validityHours": 24,
+      "offerId": "offer_bfnnjavw"
+    },
+    "offer_g3dxevzg": {
+      "displayName": "Daily Offer III",
+      "offerType": 3,
+      "productId": "com.tecventures.mysticmotors.dailyoffer3",
+      "entitlements": [
+        {
+          "type": "gems",
+          "id": "gems",
+          "quantity": 350
+        },
+        {
+          "type": "crate",
+          "id": "sku_kgkjadrd79",
+          "quantity": 1
+        },
+        {
+          "type": "key",
+          "id": "sku_hq5ywspmr5",
+          "quantity": 1
+        },
+        {
+          "type": "crate",
+          "id": "sku_72wnqwtfmx",
+          "quantity": 1
+        },
+        {
+          "type": "key",
+          "id": "sku_p3yxnyhkpx",
+          "quantity": 1
+        },
+        {
+          "type": "crate",
+          "id": "sku_e8e7jeba7v",
+          "quantity": 1
+        },
+        {
+          "type": "key",
+          "id": "sku_zqqmqz7mwb",
+          "quantity": 1
+        },
+        {
+          "type": "booster",
+          "id": "sku_tpt3379j8p",
+          "quantity": 1
+        },
+        {
+          "type": "booster",
+          "id": "sku_9pnmmjpscv",
+          "quantity": 1
+        }
+      ],
+      "price": 2.99,
+      "originalPrice": 21,
+      "currency": "USD",
+      "startAt": 1761228851445,
+      "endAt": 1755386400000,
+      "validityHours": 24,
+      "offerId": "offer_g3dxevzg"
+    },
+    "offer_edcayzxw": {
+      "displayName": "Daily Offer IV",
+      "offerType": 4,
+      "productId": "com.tecventures.mysticmotors.dailyoffer4",
+      "entitlements": [
+        {
+          "type": "crate",
+          "id": "sku_kgkjadrd79",
+          "quantity": 1
+        },
+        {
+          "type": "key",
+          "id": "sku_hq5ywspmr5",
+          "quantity": 1
+        },
+        {
+          "type": "crate",
+          "id": "sku_72wnqwtfmx",
+          "quantity": 1
+        },
+        {
+          "type": "key",
+          "id": "sku_p3yxnyhkpx",
+          "quantity": 1
+        },
+        {
+          "type": "crate",
+          "id": "sku_e8e7jeba7v",
+          "quantity": 1
+        },
+        {
+          "type": "key",
+          "id": "sku_zqqmqz7mwb",
+          "quantity": 1
+        },
+        {
+          "type": "crate",
+          "id": "sku_n9hsc0wxxk",
+          "quantity": 1
+        },
+        {
+          "type": "key",
+          "id": "sku_acxbr542j1",
+          "quantity": 1
+        },
+        {
+          "type": "booster",
+          "id": "sku_tpt3379j8p",
+          "quantity": 1
+        },
+        {
+          "type": "booster",
+          "id": "sku_9pnmmjpscv",
+          "quantity": 1
+        }
+      ],
+      "price": 1.49,
+      "originalPrice": 21,
+      "currency": "USD",
+      "startAt": 1761228851445,
+      "endAt": 1755386400000,
+      "validityHours": 24,
+      "offerId": "offer_edcayzxw"
+    },
+    "offer_bwebp6s4": {
+      "displayName": "Gold Surge",
+      "offerType": 5,
+      "productId": "com.tecventures.mysticmotors.goldsurge",
+      "entitlements": [
+        {
+          "type": "gems",
+          "id": "gems",
+          "quantity": 2250
+        },
+        {
+          "type": "crate",
+          "id": "sku_72wnqwtfmx",
+          "quantity": 1
+        },
+        {
+          "type": "key",
+          "id": "sku_p3yxnyhkpx",
+          "quantity": 1
+        },
+        {
+          "type": "crate",
+          "id": "sku_e8e7jeba7v",
+          "quantity": 1
+        },
+        {
+          "type": "key",
+          "id": "sku_zqqmqz7mwb",
+          "quantity": 1
+        },
+        {
+          "type": "crate",
+          "id": "sku_n9hsc0wxxk",
+          "quantity": 1
+        },
+        {
+          "type": "key",
+          "id": "sku_acxbr542j1",
+          "quantity": 1
+        },
+        {
+          "type": "booster",
+          "id": "sku_tpt3379j8p",
+          "quantity": 1
+        },
+        {
+          "type": "booster",
+          "id": "sku_9pnmmjpscv",
+          "quantity": 1
+        }
+      ],
+      "price": 4.99,
+      "originalPrice": 35,
+      "currency": "USD",
+      "startAt": 1761228851445,
+      "endAt": 1755386400000,
+      "validityHours": 24,
+      "offerId": "offer_bwebp6s4"
+    },
+    "offer_z5k1130z": {
+      "displayName": "Gemstreem",
+      "offerType": 6,
+      "productId": "com.tecventures.mysticmotors.gemstreem",
+      "entitlements": [
+        {
+          "type": "gems",
+          "id": "gems",
+          "quantity": 2650
+        },
+        {
+          "type": "crate",
+          "id": "sku_kgkjadrd79",
+          "quantity": 1
+        },
+        {
+          "type": "key",
+          "id": "sku_hq5ywspmr5",
+          "quantity": 1
+        },
+        {
+          "type": "crate",
+          "id": "sku_72wnqwtfmx",
+          "quantity": 1
+        },
+        {
+          "type": "key",
+          "id": "sku_p3yxnyhkpx",
+          "quantity": 1
+        },
+        {
+          "type": "crate",
+          "id": "sku_e8e7jeba7v",
+          "quantity": 1
+        },
+        {
+          "type": "key",
+          "id": "sku_zqqmqz7mwb",
+          "quantity": 1
+        },
+        {
+          "type": "crate",
+          "id": "sku_n9hsc0wxxk",
+          "quantity": 1
+        },
+        {
+          "type": "key",
+          "id": "sku_acxbr542j1",
+          "quantity": 1
+        },
+        {
+          "type": "booster",
+          "id": "sku_tpt3379j8p",
+          "quantity": 1
+        },
+        {
+          "type": "booster",
+          "id": "sku_9pnmmjpscv",
+          "quantity": 1
+        }
+      ],
+      "price": 9.99,
+      "originalPrice": 50,
+      "currency": "USD",
+      "startAt": 1761228851445,
+      "endAt": 1755386400000,
+      "validityHours": 24,
+      "offerId": "offer_z5k1130z"
+    },
+    "offer_nymn2fmt": {
+      "displayName": "Fortune",
+      "offerType": 7,
+      "productId": "com.tecventures.mysticmotors.fortune",
+      "entitlements": [
+        {
+          "type": "gems",
+          "id": "gems",
+          "quantity": 3300
+        },
+        {
+          "type": "crate",
+          "id": "sku_kgkjadrd79",
+          "quantity": 2
+        },
+        {
+          "type": "key",
+          "id": "sku_hq5ywspmr5",
+          "quantity": 2
+        },
+        {
+          "type": "crate",
+          "id": "sku_72wnqwtfmx",
+          "quantity": 2
+        },
+        {
+          "type": "key",
+          "id": "sku_p3yxnyhkpx",
+          "quantity": 2
+        },
+        {
+          "type": "crate",
+          "id": "sku_e8e7jeba7v",
+          "quantity": 2
+        },
+        {
+          "type": "key",
+          "id": "sku_zqqmqz7mwb",
+          "quantity": 2
+        },
+        {
+          "type": "crate",
+          "id": "sku_n9hsc0wxxk",
+          "quantity": 2
+        },
+        {
+          "type": "key",
+          "id": "sku_acxbr542j1",
+          "quantity": 2
+        },
+        {
+          "type": "booster",
+          "id": "sku_tpt3379j8p",
+          "quantity": 2
+        },
+        {
+          "type": "booster",
+          "id": "sku_9pnmmjpscv",
+          "quantity": 2
+        }
+      ],
+      "price": 19.99,
+      "originalPrice": 80,
+      "currency": "USD",
+      "startAt": 1761228851445,
+      "endAt": 1755386400000,
+      "validityHours": 24,
+      "offerId": "offer_nymn2fmt"
+    },
+    "offer_wwgzr06v": {
+      "displayName": "Treasure",
+      "offerType": 8,
+      "productId": "com.tecventures.mysticmotors.treasure",
+      "entitlements": [
+        {
+          "type": "gems",
+          "id": "gems",
+          "quantity": 8250
+        },
+        {
+          "type": "crate",
+          "id": "sku_kgkjadrd79",
+          "quantity": 5
+        },
+        {
+          "type": "key",
+          "id": "sku_hq5ywspmr5",
+          "quantity": 5
+        },
+        {
+          "type": "crate",
+          "id": "sku_n9hsc0wxxk",
+          "quantity": 5
+        },
+        {
+          "type": "key",
+          "id": "sku_acxbr542j1",
+          "quantity": 5
+        },
+        {
+          "type": "crate",
+          "id": "sku_e8e7jeba7v",
+          "quantity": 5
+        },
+        {
+          "type": "key",
+          "id": "sku_zqqmqz7mwb",
+          "quantity": 5
+        },
+        {
+          "type": "crate",
+          "id": "sku_72wnqwtfmx",
+          "quantity": 5
+        },
+        {
+          "type": "key",
+          "id": "sku_p3yxnyhkpx",
+          "quantity": 5
+        },
+        {
+          "type": "booster",
+          "id": "sku_tpt3379j8p",
+          "quantity": 5
+        },
+        {
+          "type": "booster",
+          "id": "sku_9pnmmjpscv",
+          "quantity": 5
+        }
+      ],
+      "price": 49.99,
+      "originalPrice": 80,
+      "currency": "USD",
+      "startAt": 1761228851445,
+      "endAt": 1755386400000,
+      "validityHours": 24,
+      "offerId": "offer_wwgzr06v"
+    },
+    "offer_3vv3me0e": {
+      "displayName": "LVL 5",
+      "offerType": 9,
+      "productId": "com.tecventures.mysticmotors.lvl5",
+      "entitlements": [
+        {
+          "type": "gems",
+          "id": "gems",
+          "quantity": 2250
+        },
+        {
+          "type": "crate",
+          "id": "sku_kgkjadrd79",
+          "quantity": 1
+        },
+        {
+          "type": "key",
+          "id": "sku_hq5ywspmr5",
+          "quantity": 1
+        },
+        {
+          "type": "crate",
+          "id": "sku_n9hsc0wxxk",
+          "quantity": 1
+        },
+        {
+          "type": "key",
+          "id": "sku_acxbr542j1",
+          "quantity": 1
+        },
+        {
+          "type": "crate",
+          "id": "sku_e8e7jeba7v",
+          "quantity": 1
+        },
+        {
+          "type": "key",
+          "id": "sku_zqqmqz7mwb",
+          "quantity": 1
+        },
+        {
+          "type": "crate",
+          "id": "sku_72wnqwtfmx",
+          "quantity": 1
+        },
+        {
+          "type": "key",
+          "id": "sku_p3yxnyhkpx",
+          "quantity": 1
+        },
+        {
+          "type": "booster",
+          "id": "sku_tpt3379j8p",
+          "quantity": 1
+        },
+        {
+          "type": "booster",
+          "id": "sku_9pnmmjpscv",
+          "quantity": 1
+        }
+      ],
+      "price": 2.99,
+      "originalPrice": 45,
+      "currency": "USD",
+      "startAt": 1761228851445,
+      "endAt": 1755386400000,
+      "validityHours": 24,
+      "offerId": "offer_3vv3me0e"
+    },
+    "offer_jw7ms0ny": {
+      "displayName": "LVL 10",
+      "offerType": 10,
+      "productId": "com.tecventures.mysticmotors.lvl10",
+      "entitlements": [
+        {
+          "type": "gems",
+          "id": "gems",
+          "quantity": 2450
+        },
+        {
+          "type": "crate",
+          "id": "sku_kgkjadrd79",
+          "quantity": 2
+        },
+        {
+          "type": "key",
+          "id": "sku_hq5ywspmr5",
+          "quantity": 2
+        },
+        {
+          "type": "crate",
+          "id": "sku_n9hsc0wxxk",
+          "quantity": 1
+        },
+        {
+          "type": "key",
+          "id": "sku_acxbr542j1",
+          "quantity": 1
+        },
+        {
+          "type": "crate",
+          "id": "sku_e8e7jeba7v",
+          "quantity": 1
+        },
+        {
+          "type": "key",
+          "id": "sku_zqqmqz7mwb",
+          "quantity": 1
+        },
+        {
+          "type": "crate",
+          "id": "sku_72wnqwtfmx",
+          "quantity": 1
+        },
+        {
+          "type": "key",
+          "id": "sku_p3yxnyhkpx",
+          "quantity": 1
+        },
+        {
+          "type": "booster",
+          "id": "sku_tpt3379j8p",
+          "quantity": 1
+        },
+        {
+          "type": "booster",
+          "id": "sku_9pnmmjpscv",
+          "quantity": 1
+        }
+      ],
+      "price": 4.99,
+      "originalPrice": 60,
+      "currency": "USD",
+      "startAt": 1761228851445,
+      "endAt": 1755386400000,
+      "validityHours": 24,
+      "offerId": "offer_jw7ms0ny"
+    },
+    "offer_zqcpwsbz": {
+      "displayName": "Flash Sale I",
+      "offerType": 11,
+      "productId": "com.tecventures.mysticmotors.flashsale1",
+      "entitlements": [
+        {
+          "type": "gems",
+          "id": "gems",
+          "quantity": 1000
+        },
+        {
+          "type": "booster",
+          "id": "sku_tpt3379j8p",
+          "quantity": 1
+        },
+        {
+          "type": "key",
+          "id": "sku_hq5ywspmr5",
+          "quantity": 1
+        }
+      ],
+      "price": 0.99,
+      "originalPrice": 15,
+      "currency": "USD",
+      "startAt": 1761228851445,
+      "endAt": 1755312900000,
+      "validityHours": 0.25,
+      "offerId": "offer_zqcpwsbz"
+    },
+    "offer_1aka0xdg": {
+      "displayName": "Flash Sale II",
+      "offerType": 12,
+      "productId": "com.tecventures.mysticmotors.flashsale2",
+      "entitlements": [
+        {
+          "type": "gems",
+          "id": "gems",
+          "quantity": 1000
+        },
+        {
+          "type": "booster",
+          "id": "sku_tpt3379j8p",
+          "quantity": 1
+        },
+        {
+          "type": "crate",
+          "id": "sku_kgkjadrd79",
+          "quantity": 1
+        }
+      ],
+      "price": 0.99,
+      "originalPrice": 15,
+      "currency": "USD",
+      "startAt": 1761228851445,
+      "endAt": 1755312900000,
+      "validityHours": 0.25,
+      "offerId": "offer_1aka0xdg"
+    }
+  },
+  "createdAt": 1761228851445,
+  "updatedAt": 1762566874422
+}

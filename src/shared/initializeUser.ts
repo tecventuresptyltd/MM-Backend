@@ -103,20 +103,19 @@ const DEFAULT_GARAGE = (now: admin.firestore.FieldValue) => ({
   updatedAt: now,
 });
 
+const DEFAULT_LOADOUT_COSMETICS = {
+  wheelsSkuId: "sku_7d5rvqx6",
+  decalSkuId: "sku_7ad7grzz",
+  spoilerSkuId: "sku_agyhv8pk",
+  boostSkuId: "sku_rwt6nbsq",
+  underglowSkuId: null,
+};
+
 const DEFAULT_LOADOUT = (now: admin.firestore.FieldValue) => ({
   carId: "car_h4ayzwf31g",
   activeSpellDeck: 1,
   cosmetics: {
-    wheelsItemId: null,
-    decalItemId: null,
-    spoilerItemId: null,
-    underglowItemId: null,
-    boostItemId: null,
-    wheelsSkuId: null,
-    decalSkuId: null,
-    spoilerSkuId: null,
-    underglowSkuId: null,
-    boostSkuId: null,
+    ...DEFAULT_LOADOUT_COSMETICS,
   },
   updatedAt: now,
 });

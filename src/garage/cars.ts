@@ -53,15 +53,16 @@ export const purchaseCar = onCall({ region: REGION }, async (request) => {
       "purchaseCar",
       async (transaction) => {
         const playerStatsRef = db.doc(`/Players/${uid}/Economy/Stats`);
-        const playerCarRef = db.doc(`/Players/${uid}/Garage/${carId}`);
+        const playerCarsRef = db.doc(`/Players/${uid}/Garage/Cars`);
 
         const playerStatsDoc = await transaction.get(playerStatsRef);
-        const playerCarDoc = await transaction.get(playerCarRef);
+        const playerCarsDoc = await transaction.get(playerCarsRef);
 
         if (!playerStatsDoc.exists) {
           throw new HttpsError("not-found", "Player stats not found.");
         }
-        if (playerCarDoc.exists) {
+        const carsMap = playerCarsDoc.exists ? playerCarsDoc.data()?.cars || {} : {};
+        if (carsMap[carId]) {
           throw new HttpsError("already-exists", "Player already owns this car.");
         }
 
@@ -74,17 +75,15 @@ export const purchaseCar = onCall({ region: REGION }, async (request) => {
           coins: admin.firestore.FieldValue.increment(-price),
         });
 
-        transaction.set(
-          playerCarRef,
-          {
+        transaction.update(playerCarsRef, {
+          [`cars.${carId}`]: {
             carId,
             upgradeLevel: 0,
             tuning: {},
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
           },
-          { merge: true },
-        );
+        });
 
         return {
           success: true,
@@ -145,20 +144,21 @@ export const upgradeCar = onCall({ region: REGION }, async (request) => {
       "upgradeCar",
       async (transaction) => {
         const playerStatsRef = db.doc(`/Players/${uid}/Economy/Stats`);
-        const playerCarRef = db.doc(`/Players/${uid}/Garage/${carId}`);
+        const playerCarsRef = db.doc(`/Players/${uid}/Garage/Cars`);
 
         const playerStatsDoc = await transaction.get(playerStatsRef);
-        const playerCarDoc = await transaction.get(playerCarRef);
+        const playerCarsDoc = await transaction.get(playerCarsRef);
 
         if (!playerStatsDoc.exists) {
           throw new HttpsError("not-found", "Player stats not found.");
         }
-        if (!playerCarDoc.exists) {
+        const carsMap = playerCarsDoc.data()?.cars;
+        if (!playerCarsDoc.exists || !carsMap || !carsMap[carId]) {
           throw new HttpsError("not-found", "Player does not own this car.");
         }
 
         const playerStats = playerStatsDoc.data()!;
-        const playerCar = playerCarDoc.data()!;
+        const playerCar = carsMap[carId];
         const currentLevel = playerCar.upgradeLevel || 0;
         const nextLevel = currentLevel + 1;
         const upgradeCost = carData.levels?.[String(nextLevel)]?.priceCoins;
@@ -174,9 +174,9 @@ export const upgradeCar = onCall({ region: REGION }, async (request) => {
           coins: admin.firestore.FieldValue.increment(-upgradeCost),
         });
 
-        transaction.update(playerCarRef, {
-          upgradeLevel: nextLevel,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        transaction.update(playerCarsRef, {
+          [`cars.${carId}.upgradeLevel`]: nextLevel,
+          [`cars.${carId}.updatedAt`]: admin.firestore.FieldValue.serverTimestamp(),
         });
 
         return {

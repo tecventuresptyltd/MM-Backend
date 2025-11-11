@@ -6,7 +6,7 @@ import * as admin from 'firebase-admin';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const serviceAccount = require('./mystic-motors-sandbox-2831a79c5ae0.json');
+const serviceAccount = require('../mystic-motors-sandbox-2831a79c5ae0.json');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -18,7 +18,7 @@ const db = admin.firestore();
 async function seedCatalogs() {
   console.log('🌱 Starting catalog seeding...\n');
 
-  const seedFile = path.join(__dirname, 'seeds', 'Atul-Final-Seeds', 'gameDataCatalogs.v3.normalized.json');
+  const seedFile = path.join(__dirname, '..', 'seeds', 'Atul-Final-Seeds', 'gameDataCatalogs.v3.normalized.json');
   
   if (!fs.existsSync(seedFile)) {
     console.error('❌ Seed file not found:', seedFile);

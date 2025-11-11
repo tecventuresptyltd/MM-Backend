@@ -1,0 +1,120 @@
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "functions": [
+    {
+      "source": ".",
+      "codebase": "mm-sandbox",
+      "runtime": "nodejs20",
+      "region": "us-central1",
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" install",
+        "npm --prefix \"$RESOURCE_DIR\" run build"
+      ]
+    }
+  ],
+  "hosting": {
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/ping",
+        "function": "ping"
+      },
+      {
+        "source": "/adjustCoins",
+        "function": "adjustCoins"
+      },
+      {
+        "source": "/adjustGems",
+        "function": "adjustGems"
+      },
+      {
+        "source": "/grantXP",
+        "function": "grantXP"
+      },
+      {
+        "source": "/startRace",
+        "function": "startRace"
+      },
+      {
+        "source": "/recordRaceResult",
+        "function": "recordRaceResult"
+      },
+      {
+        "source": "/purchaseCar",
+        "function": "purchaseCar"
+      },
+      {
+        "source": "/upgradeCar",
+        "function": "upgradeCar"
+      },
+      {
+        "source": "/equipCosmetic",
+        "function": "equipCosmetic"
+      },
+      {
+        "source": "/grantItem",
+        "function": "grantItem"
+      },
+      {
+        "source": "/openCrate",
+        "function": "openCrate"
+      },
+      {
+        "source": "/createClan",
+        "function": "createClan"
+      },
+      {
+        "source": "/updateClanSettings",
+        "function": "updateClanSettings"
+      },
+      {
+        "source": "/joinClan",
+        "function": "joinClan"
+      },
+      {
+        "source": "/leaveClan",
+        "function": "leaveClan"
+      },
+      {
+        "source": "/updateMemberTrophies",
+        "function": "updateMemberTrophies"
+      },
+      {
+        "source": "/inviteToClan",
+        "function": "inviteToClan"
+      },
+      {
+        "source": "/requestToJoinClan",
+        "function": "requestToJoinClan"
+      },
+      {
+        "source": "/generateBotLoadout",
+        "function": "generateBotLoadout"
+      },
+      {
+        "source": "/getLeaderboard",
+        "function": "getLeaderboard"
+      },
+      {
+        "source": "/getMaintenanceStatus",
+        "function": "getMaintenanceStatus"
+      },
+      {
+        "source": "/claimMaintenanceReward",
+        "function": "claimMaintenanceReward"
+      }
+    ]
+  },
+  "emulators": {
+    "firestore": { "port": 8180 },
+    "auth": { "port": 9199 }
+  }
+}

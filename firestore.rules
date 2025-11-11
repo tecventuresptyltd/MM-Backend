@@ -1,0 +1,117 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() { return request.auth != null; }
+    function isSelf(uid) { return isSignedIn() && request.auth.uid == uid; }
+
+    // Public master data (read-only for clients)
+    match /GameData/{version}/catalogs/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /GameData/{version}/config/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /GameConfig/{docId}/{subCollection}/{subDocId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Accounts are internal and should not be accessible by clients
+    match /Accounts/{document=**} {
+      allow read, write: if false;
+    }
+
+    // Players collection and all sub-collections are server-authoritative.
+    // Clients can read their own data but cannot write directly.
+    match /Players/{uid} {
+      allow read: if isSelf(uid);
+      allow write: if false; // Disallow client writes to the root player object.
+
+      // Profile is read-only for clients, written by server functions.
+      match /Profile/{docId} {
+        allow read: if isSelf(uid);
+        allow write: if false;
+      }
+
+      // Explicit guard: even if profile writes are opened in the future,
+      // referral metadata remains immutable from the client.
+      match /Profile/Profile {
+        allow read: if isSelf(uid);
+        allow update: if false;
+        allow create, delete: if false;
+      }
+
+      // Economy is server-authoritative.
+      match /Economy/{docId=**} {
+        allow read: if isSelf(uid);
+        allow write: if false;
+      }
+
+      // SpellDecks are managed by server functions.
+      match /SpellDecks/{docId=**} {
+        allow read: if isSelf(uid);
+        allow write: if false;
+      }
+
+      // Loadouts are managed by server functions.
+      match /Loadouts/{docId=**} {
+        allow read: if isSelf(uid);
+        allow write: if false;
+      }
+
+      // Inventory is managed by server functions (e.g., opening crates).
+      match /Inventory/{docId=**} {
+        allow read: if isSelf(uid);
+        allow write: if false;
+      }
+      
+      // Other subcollections are readable by the user but not writable.
+      match /{path=**} {
+        allow read: if isSelf(uid);
+        allow write: if false;
+      }
+    }
+
+    // Global referral code registry is server-only.
+    match /ReferralCodes/{referralCode} {
+      allow read: if false;
+      allow write: if false;
+    }
+
+    // Usernames are reserved via a cloud function to ensure case-insensitivity.
+    match /Usernames/{usernameLower} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Clans - public read, writes via CFs
+    match /Clans/{clanId} {
+      allow read: if true;
+      allow write: if false;
+      match /{sub=**} {
+        allow read: if true;
+        allow write: if false;
+      }
+    }
+
+    // Rooms (global chat)
+    match /Rooms/{roomId}/Messages/{messageId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if false;
+    }
+
+    // Races - read-only to clients
+    match /Races/{raceId}/{document=**} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
+    // Audit/AdminOps - server-only
+    match /Audit/{day}/Entries/{id} { allow read, write: if false; }
+    match /AdminOps/{opId}         { allow read, write: if false; }
+  }
+}

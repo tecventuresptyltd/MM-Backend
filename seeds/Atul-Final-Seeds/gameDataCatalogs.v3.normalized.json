@@ -11646,7 +11646,7 @@
           "displayName": "Crimson Crush",
           "type": "AreaEffect",
           "description": "Channels powerful red telekinesis to lift all nearby enemy cars into the air. For 3 seconds, they float helplessly around the caster, before being slammed to the ground in a devastating magical explosion (a demolition)",
-          "requiredLevel": 0,
+          "requiredLevel": -1,
           "isUnlocked": false,
           "attributes": [
             {
@@ -11721,7 +11721,7 @@
           "displayName": "God Hammer",
           "type": "Directional",
           "description": "Summons a magical war hammer that autonomously flies around the track at high speed, seeking out enemy cars and zapping them with lightning as it passes.",
-          "requiredLevel": 0,
+          "requiredLevel": -1,
           "isUnlocked": false,
           "attributes": [
             {
@@ -11785,7 +11785,7 @@
           "displayName": "Phantom Mirage",
           "type": "Powerup",
           "description": "Summons 5 illusionary clones of the user (slightly invisible) car that follow their movement. They block targeting from single target spells and explode if they touch other players causing them to demo. They can pick up spells, boosts, coins and shields. If the clones touch the wall or barrier they also explode.",
-          "requiredLevel": 0,
+          "requiredLevel": -1,
           "isUnlocked": false,
           "attributes": [
             {

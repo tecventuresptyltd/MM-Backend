@@ -44,4 +44,15 @@ export {
   referralClaimReferralCode,
   referralDebugLookup,
 } from "./referral";
-export { getGlobalLeaderboard, searchPlayer } from "./Socials";
+export {
+  getGlobalLeaderboard,
+  searchPlayer,
+  searchPlayers,
+  sendFriendRequest,
+  acceptFriendRequest,
+  rejectFriendRequest,
+  cancelFriendRequest,
+  viewPlayerProfile,
+  leaderboardsRefreshAll as socialLeaderboardsRefreshAll,
+  presenceMirrorLastSeen as socialPresenceMirrorLastSeen,
+} from "./Socials";

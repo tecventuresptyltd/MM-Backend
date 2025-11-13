@@ -1,138 +1,187 @@
-import * as admin from "firebase-admin";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
-import { REGION } from "../shared/region";
+import { callableOptions } from "../shared/callableOptions.js";
+import { hashOperationInputs } from "../core/hash.js";
+import { leaderboardDocRef, playerProfileRef } from "./refs.js";
+import {
+  LEADERBOARD_METRICS,
+  LeaderboardMetric,
+  LeaderboardDocument,
+} from "./types.js";
+import { buildPlayerSummary, fetchClanSummary } from "./summary.js";
 
-const db = admin.firestore();
+const PAGE_MIN = 1;
+const PAGE_MAX = 100;
+const PAGE_DEFAULT = 50;
 
-interface GetGlobalLeaderboardRequest {
-  type: 1 | 2 | 3; // 1 = trophy, 2 = coin, 3 = race
-  limit: number;
-}
-
-interface LeaderboardPlayer {
+interface LegacyPlayerResponse {
   uid: string;
   displayName: string;
   avatarId: number;
   level: number;
-  trophies: number;
   rank: number;
-  value: number; // The value being ranked by (trophies, careerCoins, or totalWins)
+  stat: number;
 }
 
-export const getGlobalLeaderboard = onCall({ region: REGION }, async (request) => {
-  const { type, limit } = request.data as GetGlobalLeaderboardRequest;
-  const callerUid = request.auth?.uid;
-
-  // Validate input parameters
-  if (typeof type !== "number" || ![1, 2, 3].includes(type)) {
-    throw new HttpsError("invalid-argument", "Type must be 1 (trophy), 2 (coin), or 3 (race).");
+const legacyTypeToMetric = (type?: unknown): LeaderboardMetric | null => {
+  if (typeof type !== "number") {
+    return null;
   }
+  return (
+    (Object.entries(LEADERBOARD_METRICS).find(
+      ([, config]) => config.legacyType === type,
+    )?.[0] as LeaderboardMetric | undefined) ?? null
+  );
+};
 
-  if (typeof limit !== "number" || limit <= 0 || limit > 200) {
-    throw new HttpsError("invalid-argument", "Limit must be a number between 1 and 200.");
+const resolveMetric = (rawMetric?: unknown, rawType?: unknown): LeaderboardMetric => {
+  if (typeof rawMetric === "string" && rawMetric in LEADERBOARD_METRICS) {
+    return rawMetric as LeaderboardMetric;
   }
+  const legacyMetric = legacyTypeToMetric(Number(rawType));
+  if (legacyMetric) {
+    return legacyMetric;
+  }
+  if (!rawMetric && !rawType) {
+    return "trophies";
+  }
+  throw new HttpsError(
+    "invalid-argument",
+    "metric must be one of trophies, careerCoins, or totalWins.",
+  );
+};
 
+const resolvePageSize = (raw?: unknown): number => {
+  if (raw === undefined || raw === null) {
+    return PAGE_DEFAULT;
+  }
+  const value = Number(raw);
+  if (!Number.isFinite(value) || value < PAGE_MIN || value > PAGE_MAX) {
+    throw new HttpsError(
+      "invalid-argument",
+      `pageSize must be between ${PAGE_MIN} and ${PAGE_MAX}.`,
+    );
+  }
+  return Math.floor(value);
+};
+
+const encodePageToken = (metric: LeaderboardMetric, offset: number): string =>
+  Buffer.from(JSON.stringify({ metric, offset }), "utf8").toString("base64url");
+
+const decodePageToken = (
+  expectedMetric: LeaderboardMetric,
+  token?: unknown,
+): number => {
+  if (!token) {
+    return 0;
+  }
+  if (typeof token !== "string") {
+    throw new HttpsError("invalid-argument", "pageToken must be a string.");
+  }
   try {
-    // Determine which field to order by based on type
-    let orderByField: string;
-    let fieldName: string;
+    const payload = JSON.parse(
+      Buffer.from(token, "base64url").toString("utf8"),
+    ) as { metric?: string; offset?: number };
+    if (payload.metric !== expectedMetric) {
+      throw new Error("metric mismatch");
+    }
+    if (!Number.isFinite(payload.offset) || payload.offset! < 0) {
+      throw new Error("invalid offset");
+    }
+    return payload.offset ?? 0;
+  } catch {
+    throw new HttpsError("invalid-argument", "Invalid pageToken.");
+  }
+};
 
-    switch (type) {
-      case 1: // Trophy leaderboard
-        orderByField = "trophies";
-        fieldName = "trophies";
-        break;
-      case 2: // Coin leaderboard  
-        orderByField = "careerCoins";
-        fieldName = "careerCoins";
-        break;
-      case 3: // Race wins leaderboard
-        orderByField = "totalWins";
-        fieldName = "totalWins";
-        break;
-      default:
-        throw new HttpsError("invalid-argument", "Invalid leaderboard type.");
+const sanitizeMetricValue = (value: unknown): number => {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+export const getGlobalLeaderboard = onCall(
+  callableOptions(),
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "Authentication required.");
     }
 
-    // Get all players first, then sort in memory
-    const playersCollection = await db.collection("Players").get();
-    const playerProfiles: any[] = [];
-    let callerProfile: any = null;
+    const metric = resolveMetric(request.data?.metric, request.data?.type);
+    const pageSize = resolvePageSize(
+      request.data?.pageSize ?? request.data?.limit,
+    );
+    const offset = decodePageToken(metric, request.data?.pageToken);
 
-    // Fetch profile data for each player
-    for (const playerDoc of playersCollection.docs) {
-      try {
-        const profileDoc = await db.doc(`Players/${playerDoc.id}/Profile/Profile`).get();
-        if (profileDoc.exists) {
-          const profileData = profileDoc.data();
-          if (profileData && typeof profileData[fieldName] === "number") {
-            const fullProfile = {
-              uid: playerDoc.id,
-              ...profileData,
-            };
-            playerProfiles.push(fullProfile);
-            if (callerUid && playerDoc.id === callerUid) {
-              callerProfile = fullProfile;
+    const snapshot = await leaderboardDocRef(metric).get();
+    if (!snapshot.exists) {
+      throw new HttpsError(
+        "failed-precondition",
+        "Leaderboard is still warming up. Please retry later.",
+      );
+    }
+
+    const payload = snapshot.data() as LeaderboardDocument;
+    const entries = Array.isArray(payload.top100) ? payload.top100 : [];
+    const slice = entries.slice(offset, offset + pageSize);
+    const nextOffset = offset + pageSize;
+    const pageToken =
+      nextOffset < entries.length ? encodePageToken(metric, nextOffset) : null;
+
+    const legacyPlayers: LegacyPlayerResponse[] = slice.map((entry) => ({
+      uid: entry.uid,
+      displayName: entry.snapshot.displayName,
+      avatarId: entry.snapshot.avatarId,
+      level: entry.snapshot.level,
+      rank: entry.rank,
+      stat: entry.value,
+    }));
+
+    const youCache = payload.youCache ?? {};
+    const playerProfileSnap = await playerProfileRef(uid).get();
+    const profileData = playerProfileSnap.exists ? playerProfileSnap.data() ?? {} : {};
+    const clanId =
+      typeof profileData?.clanId === "string" && profileData.clanId.trim().length > 0
+        ? profileData.clanId.trim()
+        : null;
+    const clanSummary = clanId ? await fetchClanSummary(clanId) : null;
+    const youSummary = buildPlayerSummary(uid, profileData, clanSummary);
+    const youValue = sanitizeMetricValue(profileData[LEADERBOARD_METRICS[metric].field]);
+    const youRank = youCache[uid]?.rank ?? null;
+
+    const response = {
+      ok: true,
+      data: {
+        metric,
+        updatedAt: payload.updatedAt ?? null,
+        entries: slice.map((entry) => ({
+          rank: entry.rank,
+          value: entry.value,
+          player: entry.snapshot,
+        })),
+        pageToken,
+        you: youSummary
+          ? {
+              rank: youRank,
+              value: youValue,
+              player: youSummary,
             }
-          }
-        }
-      } catch (error) {
-        // Skip this player if there's an error reading their profile
-        console.warn(`Skipping player ${playerDoc.id}:`, error);
-      }
-    }
-
-    // Sort by the specified field and take the top results
-    playerProfiles.sort((a, b) => (b[fieldName] || 0) - (a[fieldName] || 0));
-    const topPlayers = playerProfiles.slice(0, limit);
-
-    const players: Array<{ uid: string; displayName: string; avatarId: number; level: number; rank: number; stat: number }> = [];
-    let rank = 1;
-    let callerRank: number | null = null;
-
-    for (const profileData of topPlayers) {
-      // Ensure we have all required fields
-      if (
-        typeof profileData.displayName === "string" &&
-        typeof profileData.avatarId === "number" &&
-        typeof profileData.level === "number" &&
-        typeof profileData[fieldName] === "number"
-      ) {
-        players.push({
-          uid: profileData.uid,
-          displayName: profileData.displayName,
-          avatarId: profileData.avatarId,
-          level: profileData.level,
-          rank,
-          stat: profileData[fieldName],
-        });
-        if (callerUid && profileData.uid === callerUid) {
-          callerRank = rank;
-        }
-        rank++;
-      }
-    }
-
-    // If caller is not in topPlayers, find their rank in the full sorted list
-    if (callerUid && callerRank == null && callerProfile) {
-      for (let i = 0; i < playerProfiles.length; i++) {
-        if (playerProfiles[i].uid === callerUid) {
-          callerRank = i + 1;
-          break;
-        }
-      }
-    }
-
-    return {
+          : null,
+        watermark: hashOperationInputs({
+          metric,
+          updatedAt: payload.updatedAt ?? null,
+          version: "v1",
+        }),
+      },
+      leaderboardType: LEADERBOARD_METRICS[metric].legacyType,
+      totalPlayers: legacyPlayers.length,
+      players: legacyPlayers,
+      callerRank: youRank,
       success: true,
-      leaderboardType: type,
-      totalPlayers: players.length,
-      players,
-      callerRank: callerRank ?? null,
     };
 
-  } catch (error) {
-    console.error("Error fetching global leaderboard:", error);
-    throw new HttpsError("internal", "Failed to fetch leaderboard data.");
-  }
-});
+    return response;
+  },
+);

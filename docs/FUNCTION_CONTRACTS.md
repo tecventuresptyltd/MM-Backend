@@ -1014,92 +1014,210 @@ When the SKU is coin-priced the response mirrors this shape with `currency: "coi
 
 ### `getGlobalLeaderboard`
 
-**Purpose:** Retrieves the global leaderboard for trophies, career coins, or total wins.
+**Purpose:** Returns the cached leaderboard snapshot (trophies, careerCoins, or totalWins) in a single read, including the caller's personal rank/value even if they are outside the top 100.
 
 **Input:**
 ```json
 {
-  "type": 1,      // 1 = trophies, 2 = careerCoins, 3 = totalWins
-  "limit": 50     // Number of top players to return (1-200)
+  "metric": "trophies",           // Optional; defaults to "trophies"
+  "type": 1,                      // Legacy alias: 1=trophies, 2=careerCoins, 3=totalWins
+  "pageSize": 50,                 // Optional; 1-100 (default 50)
+  "pageToken": "base64cursor"     // Optional pagination cursor issued by a previous call
 }
 ```
 
 **Output:**
-* **Success:** 
 ```json
 {
+  "ok": true,
+  "data": {
+    "metric": "trophies",
+    "updatedAt": 1731532800000,
+    "entries": [
+      { "rank": 1, "value": 4200, "player": { "uid": "uid_alice", "displayName": "ALICE", "avatarId": 2, "level": 15, "trophies": 4200, "clan": { "clanId": "clan_123", "name": "Night Riders", "tag": "NR" } } }
+    ],
+    "pageToken": "base64cursor-or-null",
+    "you": {
+      "rank": 86,
+      "value": 1234,
+      "player": { "uid": "caller", "displayName": "CALLER", "avatarId": 4, "level": 12, "trophies": 1234 }
+    },
+    "watermark": "sha256 digest for caching"
+  },
+  // Backward-compatible fields for legacy clients:
   "success": true,
   "leaderboardType": 1,
   "totalPlayers": 50,
-  "players": [
-    {
-      "uid": "player_uid",
-      "displayName": "ALEXA455",
-      "avatarId": 1,
-      "level": 77,
-      "rank": 1,
-      "stat": 8000
-    }
-    // ...more players
-  ],
-  "callerRank": 86 // The rank of the calling user in the full leaderboard
+  "players": [{ "uid": "uid_alice", "displayName": "ALICE", "avatarId": 2, "level": 15, "rank": 1, "stat": 4200 }],
+  "callerRank": 86
 }
 ```
 
-**Errors:** `INVALID_ARGUMENT`
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `FAILED_PRECONDITION` (leaderboard still warming up)
+
+**Notes:** Data is sourced from `/Leaderboards_v1/{metric}` which is refreshed by the scheduled `socialLeaderboardsRefreshAll` job. The callable never fans out across players directly, keeping reads constant regardless of player count.
 
 ---
 
-### `searchPlayer`
+### `searchPlayers` *(aka `searchPlayer` for backward compatibility)*
 
-**Purpose:** Searches for players by display name or prefix.
+**Purpose:** Performs case-insensitive prefix search over the sharded Firestore index (`/SearchIndex/Players/{shard}`). Results are capped at 10 entries per call.
 
 **Input:**
 ```json
 {
-  "name": "CHRIS" // Full name for exact search, or 1-2 characters for prefix search
+  "query": "char",             // Min 2 characters after trimming
+  "pageSize": 5,               // Optional (1-10; default 10)
+  "pageToken": "base64cursor"  // Optional pagination cursor from a prior call
 }
 ```
 
 **Output:**
-* **Success (exact match):**
 ```json
 {
-  "success": true,
-  "player": {
-    "uid": "player_uid",
-    "displayName": "CHRIS",
-    "avatarId": 2,
-    "level": 10,
-    "trophies": 1200
-  }
-}
-```
-* **Success (prefix search):**
-```json
-{
+  "ok": true,
+  "data": {
+    "query": "char",
+    "results": [
+      { "uid": "uid_charlie", "displayName": "CHARLIE", "avatarId": 3, "level": 9, "trophies": 1800, "clan": null }
+    ],
+    "pageToken": "base64cursor-or-null"
+  },
+  // Legacy fields kept for older clients:
   "success": true,
   "results": [
-    {
-      "uid": "player_uid",
-      "displayName": "CHARLIE",
-      "avatarId": 3,
-      "level": 5,
-      "trophies": 800
-    }
-    // ...up to 10 results
-  ]
-}
-```
-* **No user found:**
-```json
-{
-  "success": false,
-  "message": "user not found"
+    { "uid": "uid_charlie", "displayName": "CHARLIE", "avatarId": 3, "level": 9, "trophies": 1800 }
+  ],
+  "player": { ... } // only when the fallback exact-match resolver is used
 }
 ```
 
-**Errors:** `INVALID_ARGUMENT`
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`
+
+**Notes:** If a shard has zero hits, the callable falls back to `/Usernames/{displayNameLower}` for exact matches (legacy behaviour). Pagination uses opaque base64 cursors (`displayNameLower` + document id). Clients never write to the search index.
+
+---
+
+### `sendFriendRequest`
+
+**Purpose:** Sends a friend request from the caller to `targetUid`, ensuring idempotency via `opId`. Duplicate requests, self-targeting, or blocked relationships are rejected.
+
+**Input:**
+```json
+{
+  "opId": "friend-request-123",
+  "targetUid": "otherUid",
+  "message": "Optional note (<=140 chars)"
+}
+```
+
+**Output:**
+```json
+{
+  "ok": true,
+  "data": { "requestId": "01HF...", "status": "pending" }
+}
+```
+
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `NOT_FOUND` (target missing), `FAILED_PRECONDITION` (already friends, blocked, duplicate), `RESOURCE_EXHAUSTED` (friend/request cap)
+
+**Side-effects:**
+* Appends to `/Players/{caller}/Social/Requests.outgoing` and `/Players/{target}/Social/Requests.incoming` inside a single transaction.
+* Sets `/Players/{target}/Social/Profile.hasFriendRequests = true`.
+* Writes receipt `/Players/{caller}/Receipts/{opId}` with `kind: "friend-request"` so retries return the cached payload.
+
+---
+
+### `acceptFriendRequest`
+
+**Purpose:** Accepts a pending request and establishes a mutual friendship.
+
+**Input:**
+```json
+{
+  "opId": "friend-accept-123",
+  "requestId": "01HF..."
+}
+```
+
+**Output:**
+```json
+{
+  "ok": true,
+  "data": {
+    "friend": { "uid": "otherUid", "displayName": "OTHER", "avatarId": 5, "level": 20, "trophies": 3100 },
+    "since": 1731529200000
+  }
+}
+```
+
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `NOT_FOUND` (request missing), `FAILED_PRECONDITION` (blocked or already friends), `RESOURCE_EXHAUSTED`
+
+**Side-effects:** Removes the request from both players, writes friendship entries under `/Social/Friends`, increments `friendsCount` for both profiles, and clears the `hasFriendRequests` badge when no other requests remain. Receipt: `/Receipts/{opId}` with `kind: "friend-accept"`.
+
+---
+
+### `rejectFriendRequest`
+
+**Purpose:** Declines a pending incoming request without creating a friendship. Useful for spam controls and "ignore" behaviour.
+
+**Input:** `{ "opId": "friend-reject-123", "requestId": "01HF...", "reason": "optional string" }`
+
+**Output:** `{ "ok": true }`
+
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `NOT_FOUND`
+
+**Notes:** Removes the request from both `/Social/Requests` documents and flips `hasFriendRequests` when appropriate. Receipt `kind: "friend-reject"`.
+
+---
+
+### `cancelFriendRequest`
+
+**Purpose:** Lets the original sender withdraw a pending outgoing request.
+
+**Input:** `{ "opId": "friend-cancel-123", "requestId": "01HF..." }`
+
+**Output:** `{ "ok": true }`
+
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `NOT_FOUND`
+
+**Notes:** Mirrors the reject flow but initiated by the sender. Receipt `kind: "friend-cancel"`.
+
+---
+
+### `viewPlayerProfile`
+
+**Purpose:** Returns the public-facing profile card (summary, stats, social metadata) for `uid`. Supports viewing other players or the caller themselves.
+
+**Input:** `{ "uid": "targetUid" }` (optional; defaults to the caller)
+
+**Output:**
+```json
+{
+  "ok": true,
+  "data": {
+    "player": { "uid": "targetUid", "displayName": "TARGET", "avatarId": 4, "level": 12, "trophies": 2500, "clan": { ... } },
+    "stats": {
+      "trophies": 2500,
+      "highestTrophies": 3200,
+      "level": 12,
+      "careerCoins": 7200,
+      "totalWins": 18,
+      "totalRaces": 44
+    },
+    "social": {
+      "friendsCount": 7,
+      "hasFriendRequests": false,
+      "referralCode": "AB12CD34",
+      "lastActiveAt": 1731529200000
+    }
+  }
+}
+```
+
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `NOT_FOUND`
+
+**Notes:** Reads `/Players/{uid}/Profile/Profile`, `/Players/{uid}/Economy/Stats`, and `/Players/{uid}/Social/Profile` once each. No mutating side-effects.
 
 ---
 
@@ -1237,5 +1355,4 @@ When the SKU is coin-priced the response mirrors this shape with `currency: "coi
 
 - Status: Not exported/deployed. User initialization is handled by the HTTPS callables (`ensureGuestSession`, `signupEmailPassword`, `signupGoogle`) which call `initializeUserIfNeeded`, and by the safety‑net callable `initUser`.
  - If accounts are created outside these callables, call `initUser` once after sign-in to initialize player documents.
-
 

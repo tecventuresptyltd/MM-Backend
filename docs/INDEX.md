@@ -4,6 +4,7 @@ This document is the central hub for all technical and architectural documentati
 *   **2025-10-19:** Deployed the new device-anchored guest account and binding flows to the sandbox environment.
 
 ### Recent Changes
+*   **2025-11-13:** Shipped the Social v3 stack (friends/requests/search/leaderboards/presence). See the new sections in [**Firestore Schema**](./FIRESTORE_SCHEMA.md#playersuid-socialprofile-singleton) and [**Function Contracts**](./FUNCTION_CONTRACTS.md#social--leaderboards).
 *   **2025-11-12:** Completed the SKU-first migration for legacy runtime suites. `garage.test.ts`, `profile.test.ts`, `purchaseCrateItem.legacy.test.ts`, `spells.test.ts`, `auth.ensureGuestSession.test.ts`, and the v3 runtime flow tests now consume the consolidated v3 catalogs via shared helpers (`pickCosmeticSkus`, `findPurchasableCrate`, `withDeterministicRng`). All inline mini catalogs were removed; determinism and receipt assertions cover every mutating callable.
 *   **2025-11-10:** SKU-first runtime enabled by default (`USE_UNIFIED_SKUS=true`). Inventory, shop, offers, and crates now operate on variant-level `skuId`s with additive v3 catalog artifacts and receipts. New tooling: `npm run tools:validate-v3-skus`, `npm run tools:migrate-crates-to-sku`, `npm run tools:migrate-offers-to-sku`, plus the v3 runtime test suite (`functions/test/v3/runtime.v3.test.ts`).
 *   **2025-11-05:** Introduced opaque `itemId` catalogs and aggregated v2 GameData seed (`backend-sandbox/seeds/gameDataCatalogs.v2.json`). Run `npm run tools:build-v2:write` then `npm run seed:gameDataV2` to publish the side-by-side docs.
@@ -130,6 +131,13 @@ To regenerate the fixed catalogs after conversion scripts:
 npm run fix:catalogs
 ```
 ```
+
+## Social Runbook
+
+* **Schema:** `/Players/{uid}/Social/*`, `/Leaderboards_v1/{metric}`, `/SearchIndex/Players/{shard}/{docId}`, plus the RTDB presence paths documented in [**FIRESTORE_SCHEMA.md**](./FIRESTORE_SCHEMA.md#playersuid-socialprofile-singleton).
+* **Contracts:** See [**FUNCTION_CONTRACTS.md**](./FUNCTION_CONTRACTS.md#social--leaderboards) for callable payloads/idempotency and [**FUNCTION_DISCOVERY.md**](./FUNCTION_DISCOVERY.md#11-social--leaderboards) for the quick index.
+* **Jobs:** `socialLeaderboardsRefreshAll` recomputes the leaderboard snapshots; `socialPresenceMirrorLastSeen` mirrors `/presence/lastSeen` into `/Players/{uid}/Social/Profile`.
+* **Verification:** `USE_UNIFIED_SKUS=true USE_ITEMID_V2=false npm test -- socials.v3.test.ts` exercises leaderboard/search/friends/profile flows against the emulators.
 
 ## Data Migration & Seeding
 

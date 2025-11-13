@@ -58,10 +58,14 @@ The schema is designed with the following principles to ensure performance, scal
   /Receipts/{opId}
   /Referrals/Progress (singleton)
   /Referrals/Events/{eventId}
+/Leaderboards_v1/{metric}
+/SearchIndex/Players/{shard}/{docId}
 /Races/{raceId}
   /Participants/{uid}
 /Rooms/{roomId}
   /Messages/{messageId}
+/presence/online/{uid}        (Realtime Database)
+/presence/lastSeen/{uid}      (Realtime Database mirror source)
 ```
 
 ---
@@ -637,7 +641,64 @@ The document is mutated exclusively by Cloud Functions during referral claims. C
 
 Append-only event log for auditability and analytics. Each event captures the action (`claim`, `reward-sent`, `reward-received`), tying together both parties for dispute resolution.
 
-* **Document ID:** `{eventId}` – UUID or ULID generated server-side.
+* **Document ID:** `{eventId}` — UUID or ULID generated server-side.
+
+#### `/Players/{uid}/Social/Profile` (Singleton)
+
+Extends the player's public card with social metadata that powers the Friends/Requests/Profile screens.
+
+* **Document ID:** `Profile`
+* **Fields**
+  * `friendsCount` *(number)* — authoritative counter incremented/decremented alongside `/Social/Friends`.
+  * `hasFriendRequests` *(boolean)* — badge boolean that the UI can poll in a single read.
+  * `referralCode` *(string|null)* — immutable referral code mirror so social/profile views do not need to read the root profile.
+  * `lastActiveAt` *(number|null)* — ms epoch copied from RTDB presence by the scheduled mirror job.
+  * `updatedAt` *(timestamp)* — server timestamp written by every social mutation.
+
+```json
+{
+  "friendsCount": 12,
+  "hasFriendRequests": true,
+  "referralCode": "AB12CD34",
+  "lastActiveAt": 1731529200000,
+  "updatedAt": { ".sv": "timestamp" }
+}
+```
+
+#### `/Players/{uid}/Social/Friends` (Singleton Map)
+
+Compact map keyed by friend `uid`. Each entry carries the `since` timestamp plus an optional `lastInteractedAt`. Keeping the entire friend graph in one document keeps the Friends tab at a single read; if the map approaches the 128 KB soft limit, shard deterministically (e.g., `/Social/FriendsA-M`, `/Social/FriendsN-Z`).
+
+```json
+{
+  "friends": {
+    "friendUid": { "since": 1731529200000, "lastInteractedAt": 1733600000000 }
+  },
+  "updatedAt": { ".sv": "timestamp" }
+}
+```
+
+#### `/Players/{uid}/Social/Requests` (Singleton)
+
+Holds outstanding friend requests in two bounded arrays. Mutations always occur inside the same transaction that updates `/Social/Profile` so badges remain accurate.
+
+```json
+{
+  "incoming": [
+    { "requestId": "01H...", "fromUid": "friendUid", "sentAt": 1731529200000, "message": "GG" }
+  ],
+  "outgoing": [
+    { "requestId": "01H...", "toUid": "friendUid", "sentAt": 1731529200000 }
+  ],
+  "updatedAt": { ".sv": "timestamp" }
+}
+```
+
+Arrays are truncated server-side (≤100 entries) to avoid oversized docs; pagination for UI views happens via callable reads.
+
+#### `/Players/{uid}/Social/Blocks` (Singleton)
+
+Optional sparse map `{ [blockedUid]: true }` used to prevent unsolicited requests or spam. Missing documents are treated as empty maps by the Cloud Functions. Writes remain server-only per the social guardrails.
 * **Fields:**
   * `type` – one of `claim`, `reward-sent`, `reward-received`.
   * `opId` – idempotent operation ID associated with the event.
@@ -762,6 +823,67 @@ Maps opaque device anchor tokens to the owning `uid` for guest recovery flows. A
 *   [ ] All five decks consolidated in `/Players/{uid}/SpellDecks/Decks` (singleton).
 *   [ ] Garage cars consolidated in `/Players/{uid}/Garage/Cars` (singleton).
 *   [ ] Active loadout in `/Players/{uid}/Loadouts/Active`.
+
+### `/Leaderboards_v1/{metric}` (Leaderboard Snapshots)
+
+Immutable snapshots for the top 100 players of each leaderboard metric. The scheduled Cloud Function `socialLeaderboardsRefreshAll` recomputes these docs every 10–15 minutes to keep client reads to a single fetch.
+
+* **Collection:** `Leaderboards_v1`
+* **Document ID:** `{metric}` where `metric ∈ { trophies, careerCoins, totalWins }`
+* **Fields:**
+  * `metric` *(string)* — echoed metric id.
+  * `updatedAt` *(number)* — ms epoch when the job last wrote the doc.
+  * `top100` *(array)* — ordered list of `{ uid, value, rank, snapshot }`. `snapshot` is a frozen `playerSummary` (displayName, avatarId, level, trophies, clan blurb) so clients do not need to fan-out extra reads.
+  * `youCache` *(map)* — tiny `{ [uid]: { rank, value } }` LRU so `getGlobalLeaderboard` can answer “what’s my rank?” even when the caller is outside the top 100.
+
+**Example:** `/Leaderboards_v1/trophies`
+```json
+{
+  "metric": "trophies",
+  "updatedAt": 1731532800000,
+  "top100": [
+    {
+      "uid": "uid_alice",
+      "value": 4200,
+      "rank": 1,
+      "snapshot": {
+        "uid": "uid_alice",
+        "displayName": "ALICE",
+        "avatarId": 2,
+        "level": 15,
+        "trophies": 4200,
+        "clan": { "clanId": "clan_123", "name": "Night Riders", "tag": "NR" }
+      }
+    }
+  ],
+  "youCache": {
+    "uid_alice": { "rank": 1, "value": 4200 }
+  }
+}
+```
+
+### `/SearchIndex/Players/{shard}/{docId}` (Player Search Shards)
+
+Firehose-friendly search index sharded by the first letter of the lowercase display name. The callable `searchPlayers` (and its backward-compatible alias `searchPlayer`) reads a single shard to service prefix search with at most two reads.
+
+* **Root:** `/SearchIndex/Players`
+* **Shard Collection ID:** single lowercase character (`a`-`z`) or `#` for non-alphabetic prefixes.
+* **Document ID:** `{uid}` (or another deterministic token pointing to the player).
+* **Fields:**
+  * `uid` *(string)* — canonical player UID.
+  * `displayNameLower` *(string)* — cached lowercase display name for range queries.
+  * `trophies`, `level`, `clanSummary`, `avatarId` — denormalized fields so the UI can show context without additional reads.
+
+Shards remain small (<10K docs) so a single composite index `(displayNameLower, __name__)` can power `startAt/endAt` prefix queries. The callable enforces a `pageSize` ≤ 10 and falls back to the legacy `/Usernames/{nameLower}` lookup if the shard is empty.
+
+### Realtime Database Presence
+
+Realtime presence is stored outside Firestore to avoid write amplification:
+
+* `/presence/online/{uid}` *(boolean)* — toggled by the client connect/disconnect hooks. Values are `true` while connected, removed (or set `false`) on disconnect.
+* `/presence/lastSeen/{uid}` *(number)* — ms epoch maintained by the client via `onDisconnect`. This is the source of truth for “last online”.
+
+A scheduled Cloud Function (`socialPresenceMirrorLastSeen`) runs every ~10 minutes, reads `/presence/lastSeen`, and patches `/Players/{uid}/Social/Profile.lastActiveAt` for the small set of players that changed recently. This keeps Firestore as the durable store for profile views while leveraging RTDB for millisecond-accurate presence and typing indicators.
 *   [ ] Profile/Profile includes HUD fields: `displayName, avatarId, exp, level, trophies, highestTrophies, careerCoins, totalWins, totalRaces, dailyStreak, dailyCooldownUntil`.
 *   [ ] Economy/Stats keeps balances: `coins, gems, spellTokens` (no `level`/`trophies` here).
 *   [ ] Inventory per-SKU + optional `_summary` rollup noted.

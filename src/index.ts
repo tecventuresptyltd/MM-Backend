@@ -44,3 +44,4 @@ export {
   referralClaimReferralCode,
   referralDebugLookup,
 } from "./referral";
+export { getGlobalLeaderboard } from "./Socials";

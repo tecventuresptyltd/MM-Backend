@@ -1,0 +1,1 @@
+export { getGlobalLeaderboard } from "./leaderboards";

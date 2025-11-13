@@ -33,13 +33,8 @@ interface DropRollMetadata {
   roll: number;
   variantRoll?: number;
   sourceItemId?: string | null;
-}
-
-interface NormalisedDropEntry {
-  skuId?: string;
-  itemId?: string;
-  weight: number;
-  quantity: number;
+  rarity?: string;
+  poolSize?: number;
 }
 
 interface PickedReward {
@@ -66,15 +61,115 @@ interface OpenCrateResult {
   counts: Record<string, number>;
 }
 
-const isPlainObject = (value: unknown): value is Record<string, unknown> =>
-  typeof value === "object" && value !== null && !Array.isArray(value);
-
-const normaliseQuantityValue = (value: unknown, fallback: number): number => {
+const normaliseWeightValue = (value: unknown): number => {
   const parsed = Number(value);
   if (!Number.isFinite(parsed) || parsed <= 0) {
-    return fallback;
+    return 0;
   }
-  return Math.floor(parsed);
+  return parsed;
+};
+
+const normaliseSkuList = (value: unknown): string[] => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  const ids: string[] = [];
+  for (const entry of value) {
+    if (typeof entry === "string" && entry.trim().length > 0) {
+      ids.push(entry.trim());
+    }
+  }
+  return ids;
+};
+
+interface RarityPoolEntry {
+  rarity: string;
+  weight: number;
+  pool: string[];
+}
+
+const extractRarityPoolEntries = (crate: CrateDefinition): RarityPoolEntry[] => {
+  const weights = crate.rarityWeights ?? {};
+  const pools = crate.poolsByRarity ?? {};
+  if (!weights || !pools) {
+    return [];
+  }
+  const entries: RarityPoolEntry[] = [];
+  for (const [rarity, weightValue] of Object.entries(weights)) {
+    const weight = normaliseWeightValue(weightValue);
+    if (weight <= 0) {
+      continue;
+    }
+    const pool = normaliseSkuList(pools[rarity as keyof typeof pools]);
+    if (pool.length === 0) {
+      continue;
+    }
+    entries.push({
+      rarity,
+      weight,
+      pool,
+    });
+  }
+  return entries;
+};
+
+const pickFromRarityPools = async (
+  crate: CrateDefinition,
+  seed: Buffer,
+  entries: RarityPoolEntry[],
+): Promise<PickedReward> => {
+  if (entries.length === 0) {
+    throw new HttpsError(
+      "failed-precondition",
+      `Crate ${crate.crateId} has no rarity pools configured.`,
+    );
+  }
+
+  const totalWeight = entries.reduce((sum, entry) => sum + entry.weight, 0);
+  if (totalWeight <= 0) {
+    throw new HttpsError(
+      "failed-precondition",
+      `Crate ${crate.crateId} has invalid rarity weights.`,
+    );
+  }
+
+  const baseRoll = seed.readUInt32BE(0);
+  const roll = (baseRoll / 0x100000000) * totalWeight;
+
+  let selected = entries[entries.length - 1];
+  let cursor = 0;
+  for (const entry of entries) {
+    cursor += entry.weight;
+    if (roll < cursor) {
+      selected = entry;
+      break;
+    }
+  }
+
+  const poolSeed = createHash("sha256")
+    .update(seed)
+    .update(`:${crate.crateId}:${selected.rarity}`)
+    .digest();
+  const poolRoll = poolSeed.readUInt32BE(0);
+  const selectedIndex = poolRoll % selected.pool.length;
+  const selectedSkuId = selected.pool[selectedIndex];
+  const sku = await resolveSkuOrThrow(selectedSkuId);
+  const sourceItemId = sku.itemId ?? null;
+
+  return {
+    sku,
+    quantity: 1,
+    sourceItemId,
+    metadata: {
+      weight: selected.weight,
+      totalWeight,
+      roll,
+      variantRoll: poolRoll,
+      sourceItemId,
+      rarity: selected.rarity,
+      poolSize: selected.pool.length,
+    },
+  };
 };
 
 const readRequest = (data: OpenCrateRequest): { opId: string; crateId: string } => {
@@ -101,6 +196,14 @@ const ensureCrate = (
 const resolveCrateSkuId = async (
   crate: CrateDefinition,
 ): Promise<string> => {
+  const candidateCrateSku =
+    typeof crate.crateSkuId === "string" && crate.crateSkuId.trim().length > 0
+      ? crate.crateSkuId.trim()
+      : null;
+  if (candidateCrateSku) {
+    await resolveSkuOrThrow(candidateCrateSku);
+    return candidateCrateSku;
+  }
   const candidate = typeof crate.skuId === "string" && crate.skuId.trim().length > 0
     ? crate.skuId.trim()
     : null;
@@ -149,163 +252,18 @@ const resolveKeySkuId = async (
   return skus[0].skuId;
 };
 
-const buildDropEntries = (crate: CrateDefinition): NormalisedDropEntry[] => {
-  const entries: NormalisedDropEntry[] = [];
-  const pushEntry = (entry: NormalisedDropEntry) => {
-    if ((!entry.skuId && !entry.itemId) || entry.weight <= 0) {
-      return;
-    }
-    entries.push({
-      skuId: entry.skuId,
-      itemId: entry.itemId,
-      weight: entry.weight,
-      quantity: Math.max(1, entry.quantity),
-    });
-  };
-
-  const rawDropTable = (crate as unknown as { dropTable?: unknown }).dropTable;
-  const dropTable = Array.isArray(rawDropTable) ? rawDropTable : [];
-  for (const raw of dropTable as Array<Record<string, unknown>>) {
-    const weight = normaliseQuantityValue(raw?.weight, 0);
-    if (weight <= 0) {
-      continue;
-    }
-    const skuId =
-      typeof raw?.skuId === "string" && raw.skuId.trim().length > 0
-        ? raw.skuId.trim()
-        : undefined;
-    const itemId =
-      typeof raw?.itemId === "string" && raw.itemId.trim().length > 0
-        ? raw.itemId.trim()
-        : undefined;
-    const quantity = normaliseQuantityValue(raw?.quantity, 1);
-    pushEntry({ skuId, itemId, weight, quantity });
-  }
-
-  const loot = (crate as unknown as { loot?: unknown }).loot;
-  const ingestLootValue = (value: unknown, context: string) => {
-    if (typeof value === "string" && value.trim().length > 0) {
-      pushEntry({ skuId: value.trim(), weight: 1, quantity: 1 });
-      return;
-    }
-    if (isPlainObject(value)) {
-      const skuId =
-        typeof value.skuId === "string" && value.skuId.trim().length > 0
-          ? value.skuId.trim()
-          : undefined;
-      const itemId =
-        typeof value.itemId === "string" && value.itemId.trim().length > 0
-          ? value.itemId.trim()
-          : undefined;
-      const weight = normaliseQuantityValue(value.weight, 1);
-      const quantity = normaliseQuantityValue(value.quantity, 1);
-      pushEntry({ skuId, itemId, weight, quantity });
-    }
-  };
-
-  if (Array.isArray(loot)) {
-    loot.forEach((entry, index) => ingestLootValue(entry, `loot[${index}]`));
-  } else if (isPlainObject(loot)) {
-    for (const [key, value] of Object.entries(loot)) {
-      if (key === "itemSkus" && Array.isArray(value)) {
-        value.forEach((entry, index) => ingestLootValue(entry, `loot.itemSkus[${index}]`));
-        continue;
-      }
-      ingestLootValue(value, `loot.${key}`);
-    }
-  }
-
-  return entries;
-};
-
 const pickFromCrate = async (
   crate: CrateDefinition,
   seed: Buffer,
 ): Promise<PickedReward> => {
-  const entries = buildDropEntries(crate);
-  if (entries.length === 0) {
+  const rarityEntries = extractRarityPoolEntries(crate);
+  if (rarityEntries.length === 0) {
     throw new HttpsError(
       "failed-precondition",
-      `Crate ${crate.crateId} has no loot entries.`,
+      `Crate ${crate.crateId} has no rarity-weighted pools configured.`,
     );
   }
-
-  const totalWeight = entries.reduce((sum, entry) => sum + entry.weight, 0);
-  const random = seed.readUInt32BE(0);
-  const roll = totalWeight > 0 ? random % totalWeight : 0;
-
-  let selected: NormalisedDropEntry | null = null;
-  let cursor = 0;
-  for (const entry of entries) {
-    cursor += entry.weight;
-    if (roll < cursor) {
-      selected = entry;
-      break;
-    }
-  }
-  if (!selected) {
-    selected = entries[entries.length - 1];
-  }
-
-  const { sku, sourceItemId, variantRoll } = await resolveEntrySku(
-    selected,
-    seed,
-  );
-
-  return {
-    sku,
-    quantity: selected.quantity,
-    sourceItemId,
-    metadata: {
-      weight: selected.weight,
-      totalWeight,
-      roll,
-      variantRoll,
-      sourceItemId,
-    },
-  };
-};
-
-const resolveEntrySku = async (
-  entry: NormalisedDropEntry,
-  seed: Buffer,
-): Promise<{ sku: ItemSku; sourceItemId: string | null; variantRoll?: number }> => {
-  if (entry.skuId) {
-    const sku = await resolveSkuOrThrow(entry.skuId);
-    const sourceItemId =
-      entry.itemId && entry.itemId.length > 0 ? entry.itemId : sku.itemId;
-    return { sku, sourceItemId };
-  }
-
-  if (!entry.itemId) {
-    throw new HttpsError(
-      "failed-precondition",
-      "Crate drop entry is missing skuId and itemId.",
-    );
-  }
-
-  const skus = await listSkusForItem(entry.itemId);
-  if (skus.length === 0) {
-    throw new HttpsError(
-      "failed-precondition",
-      `Crate references unknown item ${entry.itemId}.`,
-    );
-  }
-  if (skus.length === 1) {
-    return { sku: skus[0], sourceItemId: entry.itemId };
-  }
-
-  const variantSeed = createHash("sha256")
-    .update(seed)
-    .update(`:${entry.itemId}`)
-    .digest();
-  const variantRoll = variantSeed.readUInt32BE(0);
-  const selectedIndex = variantRoll % skus.length;
-  return {
-    sku: skus[selectedIndex],
-    sourceItemId: entry.itemId,
-    variantRoll,
-  };
+  return pickFromRarityPools(crate, seed, rarityEntries);
 };
 
 const applyDelta = (

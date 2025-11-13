@@ -54,5 +54,5 @@ export {
   getFriendRequests,
   cancelFriendRequest,
   viewPlayerProfile,
-  presenceMirrorLastSeen as socialPresenceMirrorLastSeen,
+  // presenceMirrorLastSeen as socialPresenceMirrorLastSeen,
 } from "./Socials";

@@ -10,4 +10,4 @@ export {
 } from "./friends";
 export { viewPlayerProfile } from "./viewProfile";
 export { getFriends, getFriendRequests } from "./lists";
-export const presenceMirrorLastSeen = presence.mirrorLastSeen;
+//export const presenceMirrorLastSeen = presence.mirrorLastSeen;  for later use

@@ -667,12 +667,23 @@ Extends the player's public card with social metadata that powers the Friends/Re
 
 #### `/Players/{uid}/Social/Friends` (Singleton Map)
 
-Compact map keyed by friend `uid`. Each entry carries the `since` timestamp plus an optional `lastInteractedAt`. Keeping the entire friend graph in one document keeps the Friends tab at a single read; if the map approaches the 128 KB soft limit, shard deterministically (e.g., `/Social/FriendsA-M`, `/Social/FriendsN-Z`).
+Compact map keyed by friend `uid`. Each entry carries the `since` timestamp, optional `lastInteractedAt`, and a cached `player` summary (displayName, avatarId, level, trophies, clan). Keeping the entire friend graph in one document keeps the Friends tab at a single read; if the map approaches the 128 KB soft limit, shard deterministically (e.g., `/Social/FriendsA-M`, `/Social/FriendsN-Z`). The callable `getFriends` hydrates fresh summaries when responding, so this cached blob is used only as a fallback.
 
 ```json
 {
   "friends": {
-    "friendUid": { "since": 1731529200000, "lastInteractedAt": 1733600000000 }
+    "friendUid": {
+      "since": 1731529200000,
+      "lastInteractedAt": 1733600000000,
+      "player": {
+        "uid": "friendUid",
+        "displayName": "NIGHTFOX",
+        "avatarId": 4,
+        "level": 19,
+        "trophies": 3120,
+        "clan": { "clanId": "clan_123", "name": "Night Riders", "tag": "NR" }
+      }
+    }
   },
   "updatedAt": { ".sv": "timestamp" }
 }
@@ -680,15 +691,26 @@ Compact map keyed by friend `uid`. Each entry carries the `since` timestamp plus
 
 #### `/Players/{uid}/Social/Requests` (Singleton)
 
-Holds outstanding friend requests in two bounded arrays. Mutations always occur inside the same transaction that updates `/Social/Profile` so badges remain accurate.
+Holds outstanding friend requests in two bounded arrays. Incoming entries embed a lightweight `player` summary so the target can render the sender immediately; outgoing entries store only `{ requestId, toUid, sentAt, message? }` because the sender already knows who they targeted. Mutations always occur inside the same transaction that updates `/Social/Profile` so badges remain accurate. The callable `getFriendRequests` refreshes the summaries from `/Players/{uid}/Profile/Profile` on each read, so even if the cached snapshot is stale the API response returns up-to-date names/avatars/trophies.
 
 ```json
 {
   "incoming": [
-    { "requestId": "01H...", "fromUid": "friendUid", "sentAt": 1731529200000, "message": "GG" }
+    {
+      "requestId": "01H...",
+      "fromUid": "friendUid",
+      "sentAt": 1731529200000,
+      "message": "GG",
+      "player": { "uid": "friendUid", "displayName": "NIGHTFOX", "avatarId": 4, "level": 19, "trophies": 3120 }
+    }
   ],
   "outgoing": [
-    { "requestId": "01H...", "toUid": "friendUid", "sentAt": 1731529200000 }
+    {
+      "requestId": "01H...",
+      "toUid": "friendUid",
+      "sentAt": 1731529200000,
+      "message": "GG"
+    }
   ],
   "updatedAt": { ".sv": "timestamp" }
 }

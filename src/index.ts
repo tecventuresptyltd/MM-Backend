@@ -47,10 +47,11 @@ export {
 export {
   getGlobalLeaderboard,
   searchPlayer,
-  searchPlayers,
   sendFriendRequest,
   acceptFriendRequest,
   rejectFriendRequest,
+  getFriends,
+  getFriendRequests,
   cancelFriendRequest,
   viewPlayerProfile,
   leaderboardsRefreshAll as socialLeaderboardsRefreshAll,

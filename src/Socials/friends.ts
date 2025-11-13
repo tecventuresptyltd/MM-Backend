@@ -6,6 +6,7 @@ import { generateRequestId } from "./id.js";
 import { playerProfileRef } from "./refs.js";
 import { readSocialSnapshot, writeFriendsDoc, writeRequestsDoc, updateSocialProfile } from "./socialStore.js";
 import { buildPlayerSummary } from "./summary.js";
+import type { PlayerSummary } from "./types.js";
 
 const FRIENDS_SOFT_LIMIT = 400;
 const REQUESTS_SOFT_LIMIT = 100;
@@ -93,6 +94,20 @@ const clampRequests = <T>(requests: T[]): T[] => {
   return requests.slice(0, REQUESTS_SOFT_LIMIT);
 };
 
+const fallbackSummary = (uid: string): PlayerSummary => ({
+  uid,
+  displayName: "RACER",
+  avatarId: 1,
+  level: 1,
+  trophies: 0,
+  clan: null,
+});
+
+const resolveSummary = (
+  uid: string,
+  profileData: FirebaseFirestore.DocumentData | undefined,
+): PlayerSummary => buildPlayerSummary(uid, profileData, null) ?? fallbackSummary(uid);
+
 export const sendFriendRequest = onCall(
   callableOptions(),
   async (request) => {
@@ -129,6 +144,11 @@ export const sendFriendRequest = onCall(
           throw new HttpsError("failed-precondition", "Caller profile missing.");
         }
 
+        const callerProfile = callerProfileSnap.data() ?? {};
+        const targetProfile = targetProfileSnap.data() ?? {};
+        const callerSummary = resolveSummary(uid, callerProfile);
+        const targetSummary = resolveSummary(targetUid, targetProfile);
+
         const callerSocial = await readSocialSnapshot(uid, tx);
         const targetSocial = await readSocialSnapshot(targetUid, tx);
 
@@ -157,6 +177,7 @@ export const sendFriendRequest = onCall(
             fromUid: uid,
             sentAt: now,
             message,
+            player: callerSummary,
           },
           ...targetSocial.requests.incoming,
         ]);
@@ -167,7 +188,7 @@ export const sendFriendRequest = onCall(
 
         return {
           ok: true,
-          data: { requestId, status: "pending" },
+          data: { requestId, status: "pending", player: targetSummary },
         };
       },
       { kind: "friend-request" },
@@ -223,8 +244,16 @@ export const acceptFriendRequest = onCall(
         ensureFriendCapacity(requesterSocial.friends);
 
         const now = Date.now();
-        const callerFriends = { ...callerSocial.friends, [requesterUid]: { since: now } };
-        const requesterFriends = { ...requesterSocial.friends, [uid]: { since: now } };
+        const requesterSummary = resolveSummary(requesterUid, requesterProfileSnap.data() ?? {});
+        const callerSummary = resolveSummary(uid, callerProfileSnap.data() ?? {});
+        const callerFriends = {
+          ...callerSocial.friends,
+          [requesterUid]: { since: now, player: requesterSummary },
+        };
+        const requesterFriends = {
+          ...requesterSocial.friends,
+          [uid]: { since: now, player: callerSummary },
+        };
 
         const nextIncoming = incoming.filter((req) => req.requestId !== requestId);
         const nextTargetIncoming = requesterSocial.requests.incoming;
@@ -248,11 +277,7 @@ export const acceptFriendRequest = onCall(
           friendsCount: Object.keys(requesterFriends).length,
         });
 
-        const friendSummary = buildPlayerSummary(
-          requesterUid,
-          requesterProfileSnap.data() ?? {},
-          null,
-        );
+        const friendSummary = requesterSummary;
         return {
           ok: true,
           data: {

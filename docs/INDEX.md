@@ -137,6 +137,7 @@ npm run fix:catalogs
 * **Schema:** `/Players/{uid}/Social/*`, `/Leaderboards_v1/{metric}`, `/SearchIndex/Players/{shard}/{docId}`, plus the RTDB presence paths documented in [**FIRESTORE_SCHEMA.md**](./FIRESTORE_SCHEMA.md#playersuid-socialprofile-singleton).
 * **Contracts:** See [**FUNCTION_CONTRACTS.md**](./FUNCTION_CONTRACTS.md#social--leaderboards) for callable payloads/idempotency and [**FUNCTION_DISCOVERY.md**](./FUNCTION_DISCOVERY.md#11-social--leaderboards) for the quick index.
 * **Jobs:** `socialLeaderboardsRefreshAll` recomputes the leaderboard snapshots; `socialPresenceMirrorLastSeen` mirrors `/presence/lastSeen` into `/Players/{uid}/Social/Profile`.
+* **APIs:** Use `getFriendRequests`/`getFriends` for list views (they hydrate live summaries) and `viewPlayerProfile` when drilling into a player card.
 * **Verification:** `USE_UNIFIED_SKUS=true USE_ITEMID_V2=false npm test -- socials.v3.test.ts` exercises leaderboard/search/friends/profile flows against the emulators.
 
 ## Data Migration & Seeding

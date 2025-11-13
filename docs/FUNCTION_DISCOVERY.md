@@ -166,6 +166,8 @@ The functions below load master data from the canonical catalog documents under 
 | `acceptFriendRequest` | Converts a pending request into mutual `/Social/Friends` entries and bumps counts. | HTTPS `onCall` |
 | `rejectFriendRequest` | Removes an incoming request without creating a friendship. | HTTPS `onCall` |
 | `cancelFriendRequest` | Lets the sender withdraw their pending outgoing request. | HTTPS `onCall` |
+| `getFriendRequests` | Returns incoming/outgoing requests with live player summaries. | HTTPS `onCall` |
+| `getFriends` | Returns the caller's confirmed friends with live player summaries. | HTTPS `onCall` |
 | `viewPlayerProfile` | Returns the public summary + stats + social metadata for any `uid`. | HTTPS `onCall` |
 | `socialLeaderboardsRefreshAll` | Scheduled job that recomputes `/Leaderboards_v1/*`. | Cloud Scheduler |
 | `socialPresenceMirrorLastSeen` | Scheduled job mirroring RTDB `/presence/lastSeen` into `/Players/{uid}/Social/Profile`. | Cloud Scheduler |

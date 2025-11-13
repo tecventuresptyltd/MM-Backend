@@ -70,6 +70,7 @@ export interface SocialProfileDoc {
 export interface FriendEntry {
   since: number;
   lastInteractedAt?: number | null;
+  player?: PlayerSummary | null;
 }
 
 export interface FriendsDoc {
@@ -82,6 +83,7 @@ export interface FriendRequestIncoming {
   fromUid: string;
   sentAt: number;
   message?: string;
+  player?: PlayerSummary | null;
 }
 
 export interface FriendRequestOutgoing {
@@ -89,6 +91,7 @@ export interface FriendRequestOutgoing {
   toUid: string;
   sentAt: number;
   message?: string;
+  player?: PlayerSummary | null;
 }
 
 export interface RequestsDoc {

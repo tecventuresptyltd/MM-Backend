@@ -8,6 +8,8 @@ import {
   rejectFriendRequest,
   cancelFriendRequest,
   viewPlayerProfile,
+  getFriends,
+  getFriendRequests,
   refreshLeaderboards,
 } from "../src/Socials";
 import { wipeFirestore, wipeAuth, seedMinimalPlayer } from "./helpers/cleanup";
@@ -183,6 +185,11 @@ describe("social functions", () => {
       });
       expect(first.data.status).toEqual("pending");
 
+       const bobRequestsDoc = await admin.firestore().doc(`Players/${bob}/Social/Requests`).get();
+       const bobIncoming = (bobRequestsDoc.data()?.incoming ?? []) as Array<{ player?: any }>;
+       expect(bobIncoming[0]?.player?.uid).toEqual(alice);
+       expect(bobIncoming[0]?.player?.displayName).toEqual("Alice");
+
       const replay = await sendWrapped({
         data: { opId: "op-send", targetUid: bob },
         ...authFor(alice),
@@ -196,7 +203,7 @@ describe("social functions", () => {
       expect(accept.data.friend.uid).toEqual(alice);
 
       const friendsDoc = await admin.firestore().doc(`Players/${alice}/Social/Friends`).get();
-      expect(friendsDoc.data()?.friends?.[bob]).toBeTruthy();
+      expect(friendsDoc.data()?.friends?.[bob]?.player?.uid).toEqual(bob);
     });
 
     it("rejects and cancels requests", async () => {
@@ -208,6 +215,8 @@ describe("social functions", () => {
         data: { opId: "op-reject", targetUid: bob },
         ...authFor(alice),
       });
+      const targetDoc = await admin.firestore().doc(`Players/${bob}/Social/Requests`).get();
+      expect(targetDoc.data()?.incoming?.[0]?.player?.uid).toEqual(alice);
       await rejectWrapped({
         data: { opId: "op-reject-run", requestId: request.data.requestId },
         ...authFor(bob),
@@ -219,12 +228,64 @@ describe("social functions", () => {
         data: { opId: "op-cancel", targetUid: carol },
         ...authFor(alice),
       });
+      const carolReqDoc = await admin.firestore().doc(`Players/${carol}/Social/Requests`).get();
+      expect(carolReqDoc.data()?.incoming?.[0]?.player?.uid).toEqual(alice);
       await cancelWrapped({
         data: { opId: "op-cancel-run", requestId: second.data.requestId },
         ...authFor(alice),
       });
       const carolRequests = await admin.firestore().doc(`Players/${carol}/Social/Requests`).get();
       expect((carolRequests.data()?.incoming ?? []).length).toEqual(0);
+    });
+  });
+
+  describe("friends & request listings", () => {
+    it("returns live player data for pending requests", async () => {
+      const sendWrapped = wrapCallable(sendFriendRequest);
+      const requestsWrapped = wrapCallable(getFriendRequests);
+
+      const request = await sendWrapped({
+        data: { opId: "op-live-req", targetUid: bob },
+        ...authFor(alice),
+      });
+      expect(request.data.requestId).toBeTruthy();
+
+      await seedProfile(alice, { displayName: "AliceNew", trophies: 9999 });
+
+      const response = await requestsWrapped({
+        data: {},
+        ...authFor(bob),
+      });
+      expect(response.ok).toBe(true);
+      expect(response.data.incoming[0].player.displayName).toEqual("AliceNew");
+      expect(response.data.incoming[0].player.trophies).toEqual(9999);
+    });
+
+    it("returns live player data for accepted friends", async () => {
+      const sendWrapped = wrapCallable(sendFriendRequest);
+      const acceptWrapped = wrapCallable(acceptFriendRequest);
+      const friendsWrapped = wrapCallable(getFriends);
+
+      const request = await sendWrapped({
+        data: { opId: "op-live-friend", targetUid: bob },
+        ...authFor(alice),
+      });
+      await acceptWrapped({
+        data: { opId: "op-live-friend-accept", requestId: request.data.requestId },
+        ...authFor(bob),
+      });
+
+      await seedProfile(bob, { displayName: "BobNew", trophies: 7777 });
+
+      const response = await friendsWrapped({
+        data: {},
+        ...authFor(alice),
+      });
+      expect(response.ok).toBe(true);
+      const friend = response.data.friends.find((entry: any) => entry.player.uid === bob);
+      expect(friend).toBeTruthy();
+      expect(friend.player.displayName).toEqual("BobNew");
+      expect(friend.player.trophies).toEqual(7777);
     });
   });
 

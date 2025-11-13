@@ -10,6 +10,7 @@ export {
   cancelFriendRequest,
 } from "./friends";
 export { viewPlayerProfile } from "./viewProfile";
+export { getFriends, getFriendRequests } from "./lists";
 export const leaderboardsRefreshAll = leaderboards.refreshAll;
 export const presenceMirrorLastSeen = presence.mirrorLastSeen;
 export { refreshLeaderboards };

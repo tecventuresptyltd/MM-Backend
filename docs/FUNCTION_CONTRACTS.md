@@ -1185,6 +1185,86 @@ When the SKU is coin-priced the response mirrors this shape with `currency: "coi
 
 ---
 
+### `getFriendRequests`
+
+**Purpose:** Returns all pending requests (incoming/outgoing) with fresh player summaries, so the UI can immediately render names/avatars/trophies without extra reads.
+
+**Input:** `{}`
+
+**Output:**
+```json
+{
+  "ok": true,
+  "data": {
+    "incoming": [
+      {
+        "requestId": "01HF...",
+        "fromUid": "otherUid",
+        "sentAt": 1731529200000,
+        "message": "GG",
+        "player": {
+          "uid": "otherUid",
+          "displayName": "OTHER",
+          "avatarId": 5,
+          "level": 20,
+          "trophies": 3100,
+          "clan": { "clanId": "clan_123", "name": "Night Riders", "tag": "NR" }
+        }
+      }
+    ],
+    "outgoing": [
+      {
+        "requestId": "01HF...",
+        "toUid": "friendUid",
+        "sentAt": 1731529200000,
+        "player": { "uid": "friendUid", "displayName": "FRIEND", "avatarId": 2, "level": 12, "trophies": 2500 }
+      }
+    ]
+  }
+}
+```
+
+**Errors:** `UNAUTHENTICATED`
+
+**Notes:** Each call rehydrates summaries from `/Players/{uid}/Profile/Profile`, so the response reflects any name/avatar/trophy changes made after the request was created.
+
+---
+
+### `getFriends`
+
+**Purpose:** Returns all confirmed friends with timestamps and live `player` summaries (displayName, avatarId, level, trophies, clan).
+
+**Input:** `{}`
+
+**Output:**
+```json
+{
+  "ok": true,
+  "data": {
+    "friends": [
+      {
+        "since": 1731532800000,
+        "lastInteractedAt": 1733600000000,
+        "player": {
+          "uid": "friendUid",
+          "displayName": "FRIEND",
+          "avatarId": 4,
+          "level": 18,
+          "trophies": 4200,
+          "clan": { "clanId": "clan_123", "name": "Night Riders", "tag": "NR" }
+        }
+      }
+    ]
+  }
+}
+```
+
+**Errors:** `UNAUTHENTICATED`
+
+**Notes:** Live summaries ensure the Friends tab always shows the latest profile data. The cached snapshot stored in `/Social/Friends` is only used as a fallback if the profile document is missing.
+
+---
+
 ### `viewPlayerProfile`
 
 **Purpose:** Returns the public-facing profile card (summary, stats, social metadata) for `uid`. Supports viewing other players or the caller themselves.
@@ -1355,4 +1435,3 @@ When the SKU is coin-priced the response mirrors this shape with `currency: "coi
 
 - Status: Not exported/deployed. User initialization is handled by the HTTPS callables (`ensureGuestSession`, `signupEmailPassword`, `signupGoogle`) which call `initializeUserIfNeeded`, and by the safety‑net callable `initUser`.
  - If accounts are created outside these callables, call `initUser` once after sign-in to initialize player documents.
-

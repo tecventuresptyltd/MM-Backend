@@ -67,6 +67,31 @@ export const fetchClanSummary = async (
   }
 };
 
+const fetchClanSummaryMap = async (
+  clanIds: string[],
+): Promise<Map<string, PlayerClanSummary>> => {
+  if (clanIds.length === 0) {
+    return new Map();
+  }
+  const refs = clanIds.map((id) => db.collection("Clans").doc(id));
+  const snapshots = await db.getAll(...refs);
+  const result = new Map<string, PlayerClanSummary>();
+  snapshots.forEach((snapshot, idx) => {
+    if (!snapshot.exists) {
+      return;
+    }
+    const data = snapshot.data() ?? {};
+    const clanId = refs[idx].id;
+    result.set(clanId, {
+      clanId,
+      name: normalizeString(data.name ?? data.displayName ?? clanId, "Clan"),
+      tag: normalizeString(data.tag ?? data.clanTag ?? "", "") || undefined,
+      badge: normalizeString(data.badge ?? data.badgeId ?? "", "") || null,
+    });
+  });
+  return result;
+};
+
 export const getPlayerSummary = async (
   uid: string,
   transaction?: admin.firestore.Transaction,
@@ -81,4 +106,49 @@ export const getPlayerSummary = async (
   const clanId = extractClanId(profileData?.clanId);
   const clanSummary = clanId ? await fetchClanSummary(clanId, transaction) : null;
   return buildPlayerSummary(uid, profileData, clanSummary);
+};
+
+export const getPlayerSummaries = async (
+  uids: string[],
+): Promise<Map<string, PlayerSummary>> => {
+  const unique = Array.from(
+    new Set(
+      uids.filter(
+        (uid): uid is string => typeof uid === "string" && uid.trim().length > 0,
+      ),
+    ),
+  );
+  if (unique.length === 0) {
+    return new Map();
+  }
+  const refs = unique.map((uid) => playerProfileRef(uid));
+  const snapshots = await db.getAll(...refs);
+  const clanIds = new Set<string>();
+  const profileMap = new Map<string, FirebaseFirestore.DocumentData>();
+
+  snapshots.forEach((snapshot, idx) => {
+    if (!snapshot.exists) {
+      return;
+    }
+    const data = snapshot.data() ?? {};
+    profileMap.set(unique[idx], data);
+    const clanId = extractClanId(data?.clanId);
+    if (clanId) {
+      clanIds.add(clanId);
+    }
+  });
+
+  const clanMap = await fetchClanSummaryMap(Array.from(clanIds));
+  const summaries = new Map<string, PlayerSummary>();
+
+  profileMap.forEach((profileData, uid) => {
+    const clanId = extractClanId(profileData?.clanId);
+    const clan = clanId ? clanMap.get(clanId) ?? null : null;
+    const summary = buildPlayerSummary(uid, profileData as PlayerProfileSeed, clan);
+    if (summary) {
+      summaries.set(uid, summary);
+    }
+  });
+
+  return summaries;
 };

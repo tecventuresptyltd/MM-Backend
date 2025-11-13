@@ -2,25 +2,10 @@
   "version": "v3-normalized",
   "updatedAt": 1762442516078,
   "defaults": {
-    "starterCrateSkuId": "sku_2xw1r4bah7",
-    "starterKeySkuId": "sku_rjwe5tdtc4"
+    "starterKeySkuId": "sku_rjwe5tdtc4",
+    "starterCrateSkuId": "sku_zz3twgp0wx"
   },
   "skus": {
-    "sku_2xw1r4bah7": {
-      "skuId": "sku_2xw1r4bah7",
-      "itemId": "crt_pwpygxpp",
-      "displayName": "Common Starter Crate",
-      "category": "crate",
-      "type": "crate",
-      "rarity": "common",
-      "stackable": true,
-      "variant": "default",
-      "subType": null,
-      "purchasable": null,
-      "metadata": null,
-      "gemPrice": null,
-      "durationSeconds": null
-    },
     "sku_rjwe5tdtc4": {
       "skuId": "sku_rjwe5tdtc4",
       "itemId": "key_fj2b8xtm",

@@ -2,9 +2,6 @@
   "version": "v3-normalized",
   "updatedAt": 1762442516078,
   "index": {
-    "family_crt_pwpygxpp": [
-      "sku_2xw1r4bah7"
-    ],
     "family_key_fj2b8xtm": [
       "sku_rjwe5tdtc4"
     ],
@@ -485,6 +482,21 @@
       "sku_60fdgqkm",
       "sku_nhh7jtda",
       "sku_9pnmmjpscv"
+    ],
+    "family_crt_ayvncyt0": [
+      "sku_zz3twgp0wx"
+    ],
+    "family_crt_vzqgtd2s": [
+      "sku_72wnqwtfmx"
+    ],
+    "family_crt_7y8a6hca": [
+      "sku_e8e7jeba7v"
+    ],
+    "family_crt_76ar1k2x": [
+      "sku_n9hsc0wxxk"
+    ],
+    "family_crt_y8fywbrs": [
+      "sku_kgkjadrd79"
     ]
   }
 }

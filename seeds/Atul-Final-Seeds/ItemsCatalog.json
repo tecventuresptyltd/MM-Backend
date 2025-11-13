@@ -2,25 +2,6 @@
   "version": "v3-normalized",
   "updatedAt": 1762566860531,
   "items": {
-    "crt_pwpygxpp": {
-      "itemId": "crt_pwpygxpp",
-      "displayName": "Common Starter Crate",
-      "category": "crate",
-      "type": "crate",
-      "rarity": "common",
-      "stackable": true,
-      "variants": [
-        {
-          "skuId": "sku_2xw1r4bah7",
-          "displayName": "Common Starter Crate",
-          "stackable": true,
-          "rarity": "common",
-          "variant": {
-            "color": "default"
-          }
-        }
-      ]
-    },
     "key_fj2b8xtm": {
       "itemId": "key_fj2b8xtm",
       "displayName": "Common Key",
@@ -4570,9 +4551,6 @@
     }
   },
   "index": {
-    "family_crt_pwpygxpp": [
-      "sku_2xw1r4bah7"
-    ],
     "family_key_fj2b8xtm": [
       "sku_rjwe5tdtc4"
     ],

@@ -21,3 +21,9 @@ export const socialBlocksRef = (uid: string) =>
 
 export const leaderboardDocRef = (metric: LeaderboardMetric) =>
   db.collection("Leaderboards_v1").doc(metric);
+
+export const playerLoadoutRef = (uid: string) =>
+  db.collection("Players").doc(uid).collection("Loadouts").doc("Active");
+
+export const playerSpellDecksRef = (uid: string) =>
+  db.collection("Players").doc(uid).collection("SpellDecks").doc("Decks");

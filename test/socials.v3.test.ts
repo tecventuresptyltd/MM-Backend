@@ -261,16 +261,16 @@ describe("social functions", () => {
   });
 
   describe("view profile", () => {
-    it("returns public profile fields and social stats", async () => {
+    it("returns profile, loadout, and active spell deck", async () => {
       const wrapped = wrapCallable(viewPlayerProfile);
       const response = await wrapped({
         data: { uid: alice },
         ...authFor(bob),
       });
       expect(response.ok).toBe(true);
-      expect(response.data.player.uid).toEqual(alice);
-      expect(response.data.stats.trophies).toBeGreaterThan(0);
-      expect(response.data.social.friendsCount).toBeGreaterThanOrEqual(0);
+      expect(response.data.profile.displayName).toEqual("Alice");
+      expect(response.data.loadout.carId).toBeTruthy();
+      expect(response.data.activeSpellDeck?.deckId).toBeTruthy();
     });
   });
 });

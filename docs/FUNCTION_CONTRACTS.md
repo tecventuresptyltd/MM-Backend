@@ -1255,7 +1255,7 @@ When the SKU is coin-priced the response mirrors this shape with `currency: "coi
 
 ### `viewPlayerProfile`
 
-**Purpose:** Returns the public-facing profile card (summary, stats, social metadata) for `uid`. Supports viewing other players or the caller themselves.
+**Purpose:** Returns the full profile document plus loadout + active spell deck for `uid`. Supports viewing other players or the caller themselves.
 
 **Input:** `{ "uid": "targetUid" }` (optional; defaults to the caller)
 
@@ -1264,28 +1264,16 @@ When the SKU is coin-priced the response mirrors this shape with `currency: "coi
 {
   "ok": true,
   "data": {
-    "player": { "uid": "targetUid", "displayName": "TARGET", "avatarId": 4, "level": 12, "trophies": 2500, "clan": { ... } },
-    "stats": {
-      "trophies": 2500,
-      "highestTrophies": 3200,
-      "level": 12,
-      "careerCoins": 7200,
-      "totalWins": 18,
-      "totalRaces": 44
-    },
-    "social": {
-      "friendsCount": 7,
-      "hasFriendRequests": false,
-      "referralCode": "AB12CD34",
-      "lastActiveAt": 1731529200000
-    }
+    "profile": { "...": "full Profile/Profile document" },
+    "loadout": { "carId": "car_h4ayzwf31g", "activeSpellDeck": 2, "cosmetics": { ... } },
+    "activeSpellDeck": { "deckId": "2", "deck": { "name": "My Deck", "spells": ["spell_1", ...] } }
   }
 }
 ```
 
 **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `NOT_FOUND`
 
-**Notes:** Reads `/Players/{uid}/Profile/Profile`, `/Players/{uid}/Economy/Stats`, and `/Players/{uid}/Social/Profile` once each. No mutating side-effects.
+**Notes:** Reads `/Players/{uid}/Profile/Profile`, `/Players/{uid}/Loadouts/Active`, and `/Players/{uid}/SpellDecks/Decks`. No mutating side-effects.
 
 ---
 

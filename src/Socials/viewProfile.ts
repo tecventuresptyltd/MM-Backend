@@ -1,13 +1,48 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { callableOptions } from "../shared/callableOptions.js";
-import { playerProfileRef, socialProfileRef, playerEconomyRef } from "./refs.js";
-import { getPlayerSummary } from "./summary.js";
+import {
+  playerProfileRef,
+  playerLoadoutRef,
+  playerSpellDecksRef,
+} from "./refs.js";
 
 const sanitizeUid = (value: unknown): string => {
   if (typeof value !== "string" || value.trim().length === 0) {
     throw new HttpsError("invalid-argument", "uid must be provided.");
   }
   return value.trim();
+};
+
+const resolveActiveDeck = (
+  loadout: Record<string, unknown> | null,
+  spellDecks: Record<string, unknown> | null,
+) => {
+  const decksMap =
+    spellDecks && typeof spellDecks.decks === "object"
+      ? (spellDecks.decks as Record<string, unknown>)
+      : null;
+  if (!decksMap) {
+    return null;
+  }
+  const loadoutDeck = loadout?.activeSpellDeck;
+  const deckKeyRaw =
+    typeof loadoutDeck === "number" || typeof loadoutDeck === "string"
+      ? loadoutDeck
+      : spellDecks?.active;
+  const deckKey =
+    typeof deckKeyRaw === "number"
+      ? String(deckKeyRaw)
+      : typeof deckKeyRaw === "string"
+      ? deckKeyRaw
+      : null;
+  if (!deckKey || !(deckKey in decksMap)) {
+    return null;
+  }
+  const deck = decksMap[deckKey];
+  if (!deck || typeof deck !== "object") {
+    return null;
+  }
+  return { deckId: deckKey, deck };
 };
 
 export const viewPlayerProfile = onCall(
@@ -19,44 +54,28 @@ export const viewPlayerProfile = onCall(
     }
 
     const targetUid = sanitizeUid(request.data?.uid ?? request.data?.targetUid ?? callerUid);
-    const [profileSnap, socialSnap, economySnap] = await Promise.all([
+    const [profileSnap, loadoutSnap, spellDecksSnap] = await Promise.all([
       playerProfileRef(targetUid).get(),
-      socialProfileRef(targetUid).get(),
-      playerEconomyRef(targetUid).get(),
+      playerLoadoutRef(targetUid).get(),
+      playerSpellDecksRef(targetUid).get(),
     ]);
 
     if (!profileSnap.exists) {
       throw new HttpsError("not-found", "Player profile not found.");
     }
 
-    const summary = await getPlayerSummary(targetUid);
-    if (!summary) {
-      throw new HttpsError("not-found", "Player summary not available.");
-    }
-
-    const socialData = socialSnap.exists ? socialSnap.data() ?? {} : {};
     const profileData = profileSnap.data() ?? {};
-    const economyData = economySnap.exists ? economySnap.data() ?? {} : {};
+    const loadoutData = loadoutSnap.exists ? loadoutSnap.data() ?? {} : null;
+    const spellDecksData = spellDecksSnap.exists ? spellDecksSnap.data() ?? {} : null;
+    const activeSpellDeck = resolveActiveDeck(loadoutData, spellDecksData);
 
     return {
       ok: true,
       success: true,
       data: {
-        player: summary,
-        stats: {
-          level: profileData.level ?? 1,
-          trophies: profileData.trophies ?? 0,
-          highestTrophies: profileData.highestTrophies ?? 0,
-          careerCoins: profileData.careerCoins ?? economyData.careerCoins ?? 0,
-          totalWins: profileData.totalWins ?? 0,
-          totalRaces: profileData.totalRaces ?? 0,
-        },
-        social: {
-          friendsCount: socialData.friendsCount ?? 0,
-          hasFriendRequests: socialData.hasFriendRequests ?? false,
-          referralCode: socialData.referralCode ?? profileData.referralCode ?? null,
-          lastActiveAt: socialData.lastActiveAt ?? null,
-        },
+        profile: profileData,
+        loadout: loadoutData,
+        activeSpellDeck,
       },
     };
   },

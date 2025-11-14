@@ -83,8 +83,12 @@ describe("social functions", () => {
 
       expect(firstPage.ok).toBe(true);
       expect(firstPage.data.entries).toHaveLength(2);
-      expect(firstPage.data.you.player.uid).toEqual(alice);
       expect(firstPage.players).toHaveLength(2);
+      expect(firstPage.players[0].uid).toBeTruthy();
+      expect(firstPage.myRank).toEqual(1);
+      expect(firstPage.data.entries[0].player.uid).toBeTruthy();
+      expect(firstPage.data.entries[0].player).toHaveProperty("clan");
+      expect(firstPage.data).not.toHaveProperty("you");
 
       const token = firstPage.data.pageToken;
       expect(typeof token === "string" || token === null).toBe(true);
@@ -96,6 +100,30 @@ describe("social functions", () => {
         });
         expect(secondPage.data.entries.length).toBeGreaterThanOrEqual(1);
       }
+    });
+
+    it("maps stat values to the requested metric", async () => {
+      const wrapped = wrapCallable(getGlobalLeaderboard);
+      const coins = await wrapped({
+        data: { metric: "careerCoins", pageSize: 3 },
+        ...authFor(alice),
+      });
+      expect(coins.leaderboardType).toEqual(2);
+      expect(coins.players[0].displayName).toEqual("Alice");
+      expect(coins.players[0].stat).toEqual(9000);
+      expect(coins.data.entries[0].stat).toEqual(9000);
+      expect(coins.data.entries[0].player.displayName).toEqual("Alice");
+      expect(coins.myRank).toEqual(1);
+
+      const wins = await wrapped({
+        data: { type: 3, pageSize: 3 },
+        ...authFor(alice),
+      });
+      expect(wins.leaderboardType).toEqual(3);
+      expect(wins.players[0].stat).toEqual(30);
+      expect(wins.data.entries[0].stat).toEqual(30);
+      expect(wins.data.entries[0].player.displayName).toEqual("Alice");
+      expect(wins.myRank).toEqual(1);
     });
 
     it("rejects invalid metric inputs", async () => {

@@ -1082,7 +1082,7 @@ When the SKU is coin-priced the response mirrors this shape with `currency: "coi
 {
   "metric": "trophies",           // Optional; defaults to "trophies"
   "type": 1,                      // Legacy alias: 1=trophies, 2=careerCoins, 3=totalWins
-  "pageSize": 50,                 // Optional; 1-100 (default 50)
+  "limit": 50,                 // Optional; 1-100 (default 50)
   "pageToken": "base64cursor"     // Optional pagination cursor issued by a previous call
 }
 ```
@@ -1090,33 +1090,38 @@ When the SKU is coin-priced the response mirrors this shape with `currency: "coi
 **Output:**
 ```json
 {
-  "ok": true,
-  "data": {
-    "metric": "trophies",
-    "updatedAt": 1731532800000,
-    "entries": [
-      { "rank": 1, "value": 4200, "player": { "uid": "uid_alice", "displayName": "ALICE", "avatarId": 2, "level": 15, "trophies": 4200, "clan": { "clanId": "clan_123", "name": "Night Riders", "tag": "NR" } } }
-    ],
-    "pageToken": "base64cursor-or-null",
-    "you": {
-      "rank": 86,
-      "value": 1234,
-      "player": { "uid": "caller", "displayName": "CALLER", "avatarId": 4, "level": 12, "trophies": 1234 }
-    },
-    "watermark": "sha256 digest for caching"
-  },
-  // Backward-compatible fields for legacy clients:
-  "success": true,
+  "myRank": 3,
   "leaderboardType": 1,
-  "totalPlayers": 50,
-  "players": [{ "uid": "uid_alice", "displayName": "ALICE", "avatarId": 2, "level": 15, "rank": 1, "stat": 4200 }],
-  "callerRank": 86
+  "players": [
+    {
+      "avatarId": 10,
+      "displayName": "mystic",
+      "level": 25,
+      "rank": 1,
+      "stat": 5,
+      "uid": "gAWy13PNRtRMrWEL06nSnqvYPS3w1",
+      "clan": {
+        "clanId": "clan_abc123",
+        "clanName": "Mystic Racers",
+        "clanTag": "MR"
+      }
+    },
+    {
+      "avatarId": 4,
+      "displayName": "Kraken",
+      "level": 1,
+      "rank": 2,
+      "stat": 0,
+      "uid": "096IZ0NijQ0u60RTNw6AiyVbhwy2",
+      "clan": null
+    }
+  ]
 }
 ```
 
 **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `FAILED_PRECONDITION` (leaderboard still warming up)
 
-**Notes:** This callable currently reads every `/Players/{uid}/Profile/Profile` document on demand, sorts all players by the requested metric, and slices the result in memory before returning it. That means each request scales with your player count—great for development/debugging, but expensive at scale. When you’re ready for production you should reintroduce a scheduled snapshot (or another caching strategy) to avoid scanning millions of documents per call.
+**Notes:** The response now follows a simplified format with `callerRank` (the authenticated user's position), `leaderboardType` (legacy metric type), and `players[]` array. Each player entry includes their stats, rank, and clan information. Clan information includes `clanId`, `clanName`, and `clanTag` when the player belongs to a clan, or `null` if they don't. This callable currently reads every `/Players/{uid}/Profile/Profile` document on demand, sorts all players by the requested metric, and slices the result in memory before returning it. That means each request scales with your player count—great for development/debugging, but expensive at scale. When you're ready for production you should reintroduce a scheduled snapshot (or another caching strategy) to avoid scanning millions of documents per call.
 
 ---
 

@@ -2,10 +2,11 @@ import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { callableOptions } from "../shared/callableOptions.js";
 import { hashOperationInputs } from "../core/hash.js";
 import { db } from "../shared/firestore.js";
-import { playerProfileRef } from "./refs.js";
 import {
   LEADERBOARD_METRICS,
   LeaderboardMetric,
+  PlayerProfileSeed,
+  PlayerSummary,
 } from "./types.js";
 import { buildPlayerSummary, fetchClanSummary } from "./summary.js";
 
@@ -13,13 +14,24 @@ const PAGE_MIN = 1;
 const PAGE_MAX = 100;
 const PAGE_DEFAULT = 50;
 
-interface LegacyPlayerResponse {
-  uid: string;
-  displayName: string;
+interface LeaderboardPlayer {
   avatarId: number;
+  displayName: string;
   level: number;
   rank: number;
   stat: number;
+  uid: string;
+  clan?: {
+    clanId: string;
+    clanName: string;
+    clanTag: string;
+  } | null;
+}
+
+interface LeaderboardResponseEntry {
+  rank: number;
+  stat: number;
+  player: PlayerSummary;
 }
 
 const legacyTypeToMetric = (type?: unknown): LeaderboardMetric | null => {
@@ -101,7 +113,7 @@ const sanitizeMetricValue = (value: unknown): number => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
-const fallbackSummary = (uid: string) => ({
+const fallbackSummary = (uid: string): PlayerSummary => ({
   uid,
   displayName: "Racer",
   avatarId: 1,
@@ -109,6 +121,14 @@ const fallbackSummary = (uid: string) => ({
   trophies: 0,
   clan: null,
 });
+
+const extractClanId = (value: unknown): string | null => {
+  if (typeof value !== "string") {
+    return null;
+  }
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+};
 
 interface ProfileEntry {
   uid: string;
@@ -182,71 +202,61 @@ export const getGlobalLeaderboard = onCall(
     const pageToken =
       nextOffset < totalEntries ? encodePageToken(metric, nextOffset) : null;
 
-    const entries = slice.map((entry, idx) => ({
-      rank: offset + idx + 1,
-      value: entry.value,
-      player: entry.summary ?? fallbackSummary(entry.uid),
-    }));
+    const clanIds = new Set<string>();
+    slice.forEach((entry) => {
+      const clanId = extractClanId(entry.profile?.clanId);
+      if (clanId) {
+        clanIds.add(clanId);
+      }
+    });
 
-    const legacyPlayers: LegacyPlayerResponse[] = entries.map((entry) => ({
-      uid: entry.player.uid,
-      displayName: entry.player.displayName,
+    const clanMap = new Map<string, PlayerSummary["clan"]>();
+    await Promise.all(
+      Array.from(clanIds).map(async (clanId) => {
+        const summary = await fetchClanSummary(clanId);
+        clanMap.set(clanId, summary);
+      }),
+    );
+
+    const entries: LeaderboardResponseEntry[] = slice.map((entry, idx) => {
+      const statValue = entry.value;
+      const clanId = extractClanId(entry.profile?.clanId);
+      const clanSummary = clanId ? clanMap.get(clanId) ?? null : null;
+      const playerSummary =
+        buildPlayerSummary(entry.uid, entry.profile as PlayerProfileSeed, clanSummary) ??
+        entry.summary ??
+        fallbackSummary(entry.uid);
+      return {
+        rank: offset + idx + 1,
+        stat: statValue,
+        player: playerSummary,
+      };
+    });
+
+    const players: LeaderboardPlayer[] = entries.map((entry) => ({
       avatarId: entry.player.avatarId,
+      displayName: entry.player.displayName,
       level: entry.player.level,
       rank: entry.rank,
-      stat: entry.value,
+      stat: entry.stat,
+      uid: entry.player.uid,
+      clan: entry.player.clan ? {
+        clanId: entry.player.clan.clanId,
+        clanName: entry.player.clan.name,
+        clanTag: entry.player.clan.tag || "",
+      } : null,
     }));
 
     const youIndex = sorted.findIndex((entry) => entry.uid === uid);
-    let youRank: number | null = null;
-    let youValue = 0;
+    let myRank: number | null = null;
     if (youIndex >= 0) {
-      youRank = youIndex + 1;
-      youValue = sorted[youIndex].value;
+      myRank = youIndex + 1;
     }
-
-    let youSummary = youIndex >= 0 ? sorted[youIndex].summary : null;
-    if (!youSummary) {
-      const fallbackProfileSnap = await playerProfileRef(uid).get();
-      if (fallbackProfileSnap.exists) {
-        const fallbackData = fallbackProfileSnap.data() ?? {};
-        const clanId =
-          typeof fallbackData?.clanId === "string" && fallbackData.clanId.trim().length > 0
-            ? fallbackData.clanId.trim()
-            : null;
-        const clanSummary = clanId ? await fetchClanSummary(clanId) : null;
-        youSummary = buildPlayerSummary(uid, fallbackData, clanSummary);
-        youValue = sanitizeMetricValue(fallbackData[metricField]);
-      }
-    }
-
-    const updatedAt = Date.now();
 
     const response = {
-      ok: true,
-      data: {
-        metric,
-        updatedAt,
-        entries,
-        pageToken,
-        you: youSummary
-          ? {
-              rank: youRank,
-              value: youValue,
-              player: youSummary,
-            }
-          : null,
-        watermark: hashOperationInputs({
-          metric,
-          updatedAt,
-          version: "inline",
-        }),
-      },
+      myRank,
       leaderboardType: LEADERBOARD_METRICS[metric].legacyType,
-      totalPlayers: totalEntries,
-      players: legacyPlayers,
-      callerRank: youRank,
-      success: true,
+      players,
     };
 
     return response;

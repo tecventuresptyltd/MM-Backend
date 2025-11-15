@@ -560,205 +560,7 @@ Notes:
 
 **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `FAILED_PRECONDITION`, `NOT_FOUND`
 
-## Clans
 
-### `createClan`
-
-**Purpose:** Creates a new clan.
-
-**Input:**
-```json
-{
-  "clanName": "string",
-  "clanTag": "string"
-}
-```
-
-**Output:**
-*   **Success:** `{ "success": true, "clanId": "string" }`
-
-**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `FAILED_PRECONDITION`
-
----
-
-### `joinClan`
-
-**Purpose:** Joins an "open" clan.
-
-**Input:**
-```json
-{
-  "clanId": "string"
-}
-```
-
-**Output:**
-*   **Success:** `{ "success": true, "clanId": "string" }`
-
-**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `FAILED_PRECONDITION`, `NOT_FOUND`
-
----
-
-### `leaveClan`
-
-**Purpose:** Leaves the current clan, handling leader succession.
-
-**Input:** `{}`
-
-**Output:**
-*   **Success:** `{ "success": true }`
-
-**Errors:** `UNAUTHENTICATED`, `FAILED_PRECONDITION`
-
----
-
-### `inviteToClan`
-
-**Purpose:** Invites a player to a clan.
-
-**Input:**
-```json
-{
-  "inviteeId": "string"
-}
-```
-
-**Output:**
-*   **Success:** `{ "success": true }`
-
-**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `FAILED_PRECONDITION`, `PERMISSION_DENIED`
-
----
-
-### `requestToJoinClan`
-
-**Purpose:** Requests to join a closed/invite-only clan.
-
-**Input:**
-```json
-{
-  "clanId": "string"
-}
-```
-
-**Output:**
-*   **Success:** `{ "success": true }`
-
-**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `FAILED_PRECONDITION`
-
----
-
-### `acceptJoinRequest`
-
-**Purpose:** Manages join requests.
-
-**Input:**
-```json
-{
-  "clanId": "string",
-  "requesteeId": "string"
-}
-```
-
-**Output:**
-*   **Success:** `{ "success": true }`
-
-**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `PERMISSION_DENIED`, `NOT_FOUND`
-
----
-
-### `declineJoinRequest`
-
-**Purpose:** Manages join requests.
-
-**Input:**
-```json
-{
-  "clanId": "string",
-  "requesteeId": "string"
-}
-```
-
-**Output:**
-*   **Success:** `{ "success": true }`
-
-**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `PERMISSION_DENIED`
-
----
-
-### `promoteClanMember`
-
-**Purpose:** Manages member roles.
-
-**Input:**
-```json
-{
-  "clanId": "string",
-  "memberId": "string"
-}
-```
-
-**Output:**
-*   **Success:** `{ "success": true }`
-
-**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `NOT_FOUND`, `PERMISSION_DENIED`
-
----
-
-### `demoteClanMember`
-
-**Purpose:** Manages member roles.
-
-**Input:**
-```json
-{
-  "clanId": "string",
-  "memberId": "string"
-}
-```
-
-**Output:**
-*   **Success:** `{ "success": true }`
-
-**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `NOT_FOUND`, `PERMISSION_DENIED`, `FAILED_PRECONDITION`
-
----
-
-### `kickClanMember`
-
-**Purpose:** Removes a member from the clan.
-
-**Input:**
-```json
-{
-  "clanId": "string",
-  "memberId": "string"
-}
-```
-
-**Output:**
-*   **Success:** `{ "success": true }`
-
-**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `NOT_FOUND`, `PERMISSION_DENIED`
-
----
-
-### `updateClanSettings`
-
-**Purpose:** Updates a clan's public information.
-
-**Input:**
-```json
-{
-  "clanId": "string",
-  "newSettings": {}
-}
-```
-
-**Output:**
-*   **Success:** `{ "success": true }`
-
-**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `PERMISSION_DENIED`
 
 ## Economy & Offers
 
@@ -1477,3 +1279,419 @@ When the SKU is coin-priced the response mirrors this shape with `currency: "coi
 
 - Status: Not exported/deployed. User initialization is handled by the HTTPS callables (`ensureGuestSession`, `signupEmailPassword`, `signupGoogle`) which call `initializeUserIfNeeded`, and by the safety‑net callable `initUser`.
  - If accounts are created outside these callables, call `initUser` once after sign-in to initialize player documents.
+
+
+# Clans & Chat
+
+This section documents all clan and chat-related Cloud Functions, with input, output, and error contracts.
+
+---
+
+### `createClan`
+**Purpose:** Creates a new clan, reserves tag, adds creator as leader.
+**Input:**
+```json
+{
+  "opId": "string",
+  "name": "string",
+  "tag": "string",
+  "description": "string (optional)",
+  "type": "open|invite|closed (optional)",
+  "location": "string (optional)",
+  "language": "string (optional)",
+  "badge": "object (optional)",
+  "minimumTrophies": "number (optional)",
+  "memberLimit": "number (optional)"
+}
+```
+**Output:** `{ "clanId": "string", "name": "string", "tag": "string" }`
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `FAILED_PRECONDITION`, `ALREADY_EXISTS`
+
+---
+
+### `updateClanSettings`
+**Purpose:** Officers only; updates clan info, search mirror, timestamp.
+**Input:**
+```json
+{
+  "opId": "string",
+  "clanId": "string",
+  "name": "string (optional)",
+  "description": "string (optional)",
+  "type": "open|invite|closed (optional)",
+  "location": "string (optional)",
+  "language": "string (optional)",
+  "badge": "object (optional)",
+  "minimumTrophies": "number (optional)",
+  "memberLimit": "number (optional)"
+}
+```
+**Output:** `{ "clanId": "string", "updated": ["field1", ...] }`
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `PERMISSION_DENIED`, `FAILED_PRECONDITION`
+
+---
+
+### `deleteClan`
+**Purpose:** Leader-only; clan must be empty except leader. Recursively deletes clan tree.
+**Input:**
+```json
+{
+  "opId": "string",
+  "clanId": "string"
+}
+```
+**Output:** `{ "clanId": "string", "deleted": true }`
+**Errors:** `UNAUTHENTICATED`, `PERMISSION_DENIED`, `FAILED_PRECONDITION`, `NOT_FOUND`
+
+---
+
+### `joinClan`
+**Purpose:** Join open clan; checks trophies, capacity, clears requests/invites.
+**Input:**
+```json
+{
+  "opId": "string",
+  "clanId": "string"
+}
+```
+**Output:** `{ "clanId": "string" }`
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `FAILED_PRECONDITION`, `NOT_FOUND`
+
+---
+
+### `requestToJoinClan`
+**Purpose:** Request to join invite-only clan; prevents duplicates, enforces capacity/trophies.
+**Input:**
+```json
+{
+  "opId": "string",
+  "clanId": "string",
+  "message": "string (optional)"
+}
+```
+**Output:** `{ "clanId": "string" }`
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `FAILED_PRECONDITION`, `NOT_FOUND`
+
+---
+
+### `cancelJoinRequest`
+**Purpose:** Deletes pending join request atomically.
+**Input:**
+```json
+{
+  "opId": "string",
+  "clanId": "string"
+}
+```
+**Output:** `{ "clanId": "string" }`
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `FAILED_PRECONDITION`, `NOT_FOUND`
+
+---
+
+### `leaveClan`
+**Purpose:** Removes membership, decrements stats, handles leader succession.
+**Input:**
+```json
+{
+  "opId": "string"
+}
+```
+**Output:** `{ "clanId": "string" }`
+**Errors:** `UNAUTHENTICATED`, `FAILED_PRECONDITION`, `NOT_FOUND`
+
+---
+
+### `acceptJoinRequest`
+**Purpose:** Officer+; moves request into membership, updates social docs, posts system message.
+**Input:**
+```json
+{
+  "opId": "string",
+  "clanId": "string",
+  "targetUid": "string"
+}
+```
+**Output:** `{ "clanId": "string" }`
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `PERMISSION_DENIED`, `NOT_FOUND`
+
+---
+
+### `declineJoinRequest`
+**Purpose:** Officer+; deletes join request.
+**Input:**
+```json
+{
+  "opId": "string",
+  "clanId": "string",
+  "targetUid": "string"
+}
+```
+**Output:** `{ "clanId": "string" }`
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `PERMISSION_DENIED`, `NOT_FOUND`
+
+---
+
+### `promoteClanMember`
+**Purpose:** Officer+ with higher priority than target; optional explicit role, otherwise +1 rank (never to leader).
+**Input:**
+```json
+{
+  "opId": "string",
+  "clanId": "string",
+  "targetUid": "string",
+  "role": "string (optional)"
+}
+```
+**Output:** `{ "clanId": "string" }`
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `PERMISSION_DENIED`, `NOT_FOUND`, `FAILED_PRECONDITION`
+
+---
+
+### `demoteClanMember`
+**Purpose:** Officer+; ensures lowered rank and target not leader.
+**Input:**
+```json
+{
+  "opId": "string",
+  "clanId": "string",
+  "targetUid": "string",
+  "role": "string (optional)"
+}
+```
+**Output:** `{ "clanId": "string" }`
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `PERMISSION_DENIED`, `NOT_FOUND`, `FAILED_PRECONDITION`
+
+---
+
+### `transferClanLeadership`
+**Purpose:** Leader only; promotes target to leader, demotes self to coLeader, posts system message.
+**Input:**
+```json
+{
+  "opId": "string",
+  "clanId": "string",
+  "targetUid": "string"
+}
+```
+**Output:** `{ "clanId": "string" }`
+**Errors:** `UNAUTHENTICATED`, `PERMISSION_DENIED`, `FAILED_PRECONDITION`, `NOT_FOUND`
+
+---
+
+### `kickClanMember`
+**Purpose:** Officer+; cannot kick leader, clears member's social docs and invite.
+**Input:**
+```json
+{
+  "opId": "string",
+  "clanId": "string",
+  "targetUid": "string"
+}
+```
+**Output:** `{ "clanId": "string" }`
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `PERMISSION_DENIED`, `NOT_FOUND`, `FAILED_PRECONDITION`
+
+---
+
+### `updateMemberTrophies`
+**Purpose:** Internal helper called by race results; increments clan + member trophies when player currently in a clan.
+**Input:**
+```json
+{
+  "opId": "string",
+  "trophyDelta": "number"
+}
+```
+**Output:** `{ "opId": "string", "updated": true }`
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `FAILED_PRECONDITION`, `NOT_FOUND`
+
+---
+
+### `inviteToClan`
+**Purpose:** Officer+; writes invite blob under target's `/Social/ClanInvites`.
+**Input:**
+```json
+{
+  "opId": "string",
+  "clanId": "string",
+  "targetUid": "string",
+  "message": "string (optional)"
+}
+```
+**Output:** `{ "clanId": "string" }`
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `PERMISSION_DENIED`, `NOT_FOUND`, `FAILED_PRECONDITION`
+
+---
+
+### `acceptClanInvite`
+**Purpose:** Converts invite to membership after validating capacity/trophies.
+**Input:**
+```json
+{
+  "opId": "string",
+  "clanId": "string"
+}
+```
+**Output:** `{ "clanId": "string" }`
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `FAILED_PRECONDITION`, `NOT_FOUND`
+
+---
+
+### `declineClanInvite`
+**Purpose:** Removes stored invite.
+**Input:**
+```json
+{
+  "opId": "string",
+  "clanId": "string"
+}
+```
+**Output:** `{ "clanId": "string" }`
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `NOT_FOUND`
+
+---
+
+### `bookmarkClan`
+**Purpose:** Stores snapshot in `/Social/ClanBookmarks` + array helper for quick UI rendering.
+**Input:**
+```json
+{
+  "opId": "string",
+  "clanId": "string"
+}
+```
+**Output:** `{ "clanId": "string" }`
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `NOT_FOUND`, `FAILED_PRECONDITION`
+
+---
+
+### `unbookmarkClan`
+**Purpose:** Removes bookmark snapshot + ID.
+**Input:**
+```json
+{
+  "opId": "string",
+  "clanId": "string"
+}
+```
+**Output:** `{ "clanId": "string" }`
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `NOT_FOUND`, `FAILED_PRECONDITION`
+
+---
+
+### `getBookmarkedClans`
+**Purpose:** Hydrates live data when available, otherwise falls back to cached bookmark metadata.
+**Input:** `{}`
+**Output:** `{ "clans": [ClanSummary, ...] }`
+**Errors:** `UNAUTHENTICATED`
+
+---
+
+### `getClanDetails`
+**Purpose:** Returns roster sorted by `rolePriority` + trophies, includes pending requests when caller is officer+.
+**Input:**
+```json
+{
+  "clanId": "string"
+}
+```
+**Output:** `{ "clan": { ... }, "members": [ ... ], "membership": { ... }, "requests": [ ... ] }`
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `NOT_FOUND`, `PERMISSION_DENIED`
+
+---
+
+### `searchClans`
+**Purpose:** Supports `#TAG` lookup, name substring filtering, capacity checks.
+**Input:**
+```json
+{
+  "query": "string (optional)",
+  "location": "string (optional)",
+  "language": "string (optional)",
+  "type": "string (optional)",
+  "limit": "number (optional)",
+  "minMembers": "number (optional)",
+  "maxMembers": "number (optional)",
+  "minTrophies": "number (optional)",
+  "requireOpenSpots": "boolean (optional)"
+}
+```
+**Output:** `{ "clans": [ClanSummary, ...] }`
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `FAILED_PRECONDITION`
+
+---
+
+### `getClanLeaderboard`
+**Purpose:** Ordered by `stats.trophies`, supports location filter.
+**Input:**
+```json
+{
+  "limit": "number (optional)",
+  "location": "string (optional)"
+}
+```
+**Output:** `{ "clans": [ClanSummary, ...] }`
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `FAILED_PRECONDITION`
+
+---
+
+### `sendGlobalChatMessage`
+**Purpose:** Enforces room slow mode, trims history, stamps profile + clan snapshot on every message.
+**Input:**
+```json
+{
+  "opId": "string",
+  "roomId": "string",
+  "text": "string",
+  "clientCreatedAt": "string (optional ISO8601)"
+}
+```
+**Output:** `{ "roomId": "string", "messageId": "string" }`
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `RESOURCE_EXHAUSTED`, `FAILED_PRECONDITION`, `NOT_FOUND`
+
+Each stored message contains `{ roomId, authorUid, authorDisplayName, authorAvatarId, authorTrophies, authorClanName?, authorClanTag?, authorClanBadge?, type, text, clientCreatedAt?, createdAt, deleted, deletedReason }`.
+
+---
+
+### `getGlobalChatMessages`
+**Purpose:** Returns the most recent global messages (server capped at 25).
+**Input:**
+```json
+{
+  "roomId": "string",
+  "limit": 25
+}
+```
+**Output:** `{ "roomId": "string", "messages": [ { ...Message } ] }`
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `NOT_FOUND`
+
+---
+
+### `sendClanChatMessage`
+**Purpose:** Requires current membership, enforces clan slow mode, logs latest profile/clan snapshot.
+**Input:**
+```json
+{
+  "opId": "string",
+  "clanId": "string (optional)",
+  "text": "string",
+  "clientCreatedAt": "string (optional ISO8601)"
+}
+```
+**Output:** `{ "clanId": "string", "messageId": "string" }`
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `RESOURCE_EXHAUSTED`, `FAILED_PRECONDITION`, `NOT_FOUND`
+
+---
+
+### `getClanChatMessages`
+**Purpose:** Returns up to 25 of the latest clan messages for the caller’s clan.
+**Input:**
+```json
+{
+  "limit": 25
+}
+```
+**Output:** `{ "clanId": "string", "messages": [ { ...Message } ] }`
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `FAILED_PRECONDITION`
+
+---

@@ -1,4 +1,4 @@
-# Firestore Schema Documentation (Read-Cost Optimized)
+﻿# Firestore Schema Documentation (Read-Cost Optimized)
 
 This document provides a detailed breakdown of the Firestore database structure for Mystic Motors, optimized for minimizing read costs and aligning with server-authoritative Cloud Functions v2.
 
@@ -8,7 +8,7 @@ This document provides a detailed breakdown of the Firestore database structure 
 
 The schema is designed with the following principles to ensure performance, scalability, and security:
 
-1.  **Minimize Read Counts:** Consolidate frequently accessed, related data into singleton documents. The goal is to achieve 1–3 reads for common gameplay flows like application boot, HUD updates, and garage/deck management.
+1.  **Minimize Read Counts:** Consolidate frequently accessed, related data into singleton documents. The goal is to achieve 1â€“3 reads for common gameplay flows like application boot, HUD updates, and garage/deck management.
 2.  **Server-Authoritative Writes:** All economy, progression, and clan-related writes are executed exclusively by Cloud Functions v2 (in `us-central1`). Clients never directly modify sensitive data like currency balances, trophies, or levels. This is enforced via Firestore Security Rules.
 3.  **Opaque & Consistent IDs:** All document IDs are lowercase and use the format `{prefix}_{crockford-base32}` (no i/l/o/u) to prevent collisions and ambiguity. Player references use their Firebase Auth UID. Catalog objects follow strict prefixes: cosmetic items retain `item_*`, crates use `crt_*`, keys use `key_*`, boosters use `bst_*`, and every purchasable variant uses `sku_*`.
 4.  **Master vs. Player Data:**
@@ -66,6 +66,47 @@ The schema is designed with the following principles to ensure performance, scal
 /presence/lastSeen/{uid}      (Realtime Database mirror source)
 ```
 
+### `/Clans` domain
+
+#### `/Clans/{clanId}`
+
+Main clan document keyed by a generated `clan_*` ID. Fields:
+
+* `clanId` *(string)* â€” mirror of the document ID for convenience.
+* `name` *(string)* â€” 3â€“24 characters, trimmed.
+* `tag` *(string)* â€” 2â€“5 uppercase characters. Index is enforced via `/ClanTags/{tag}` reservation.
+* `description` *(string)* â€” optional, â‰¤ 140 characters.
+* `type` *(string)* â€” `"open"`, `"invite"`, or `"closed"`.
+* `location` *(string)* â€” ISO country (uppercase) or `"GLOBAL"`.
+* `language` *(string)* â€” lowercase ISO language (e.g. `en`).
+* `badge` *(map)* â€” `{ frameId, backgroundId, emblemId }` referencing cosmetics.
+* `minimumTrophies` *(number)* â€” required trophies to join/request.
+* `memberLimit` *(number)* â€” soft cap (50 default).
+* `leaderUid` *(string)* â€” current leaderâ€™s UID for quick lookups.
+* `stats` *(map)* â€” `{ members, trophies, totalWins? }`, updated transactionally alongside member docs.
+* `status` *(string)* â€” `"active"` now but reserved for moderation.
+* `search` *(map)* â€” `{ nameLower, tagUpper, location, language }` to power Firestore queries.
+* `createdAt` / `updatedAt` *(timestamp)* â€” server timestamps.
+
+##### Subcollections
+
+* `/Members/{uid}` – `{ uid, role, rolePriority, trophies, joinedAt, displayName, lastPromotedAt }`.
+* `/Requests/{uid}` – `{ uid, displayName, trophies, message?, requestedAt }`.
+* `/Chat/{messageId}` – `{ clanId, authorUid?, authorDisplayName, authorAvatarId?, authorTrophies?, authorClanName?, authorClanTag?, authorClanBadge?, type ("text" or system), text?, payload?, clientCreatedAt?, createdAt, deleted?, deletedReason? }`.
+
+#### Player-side clan metadata
+
+Under `/Players/{uid}/Social`:
+
+* `Clan` *(doc)* – `{ clanId, role, joinedAt, lastVisitedClanChatAt, lastVisitedGlobalChatAt, bookmarkedClanIds? }`.
+* `ClanInvites` *(doc)* – `{ invites: { [clanId]: { clanId, clanName, clanTag, fromUid, fromRole, message?, createdAt } }, updatedAt }`.
+* `ClanBookmarks` *(doc)* – `{ bookmarks: { [clanId]: { clanId, clanName, clanTag, addedAt } }, bookmarkedClanIds, updatedAt }`.
+* `ChatRate` *(doc)* – `{ rooms: { [roomIdOrClanKey]: { lastSentAt } }, updatedAt }` used by slow mode.
+
+#### Global Chat
+
+* `/Rooms/{roomId}` – `roomId`, `type` (`"global"` or `"system"`), `language`, `location?`, `slowModeSeconds`, `maxMessages`, timestamps.
+* `/Rooms/{roomId}/Messages/{messageId}` – `roomId`, `authorUid`, `authorDisplayName`, `authorAvatarId`, `authorTrophies`, `authorClanName?`, `authorClanTag?`, `authorClanBadge?`, `type`, `text`, `clientCreatedAt`, `createdAt`, `deleted`, `deletedReason`.
 ---
 
 ## Core Collections
@@ -85,7 +126,7 @@ Contains all master game data, versioned for easy updates. This data is consider
 Defines how display slider values map to real physics stats for cars. Holds separate ranges for players and bots.
 
 *   **Document ID:** `CarTuningConfig`
-*   **Value Scale:** Continuous 1.00 → 16.00 (step 0.25), stored as a number.
+*   **Value Scale:** Continuous 1.00 â†' 16.00 (step 0.25), stored as a number.
 *   **Mapping:** `real = min + ((value - 1) / (16 - 1)) * (max - min)`, clamped to `[min, max]`.
 
 Example: `/GameData/v1/config/CarTuningConfig`
@@ -120,13 +161,13 @@ Authoritative settings for the referral program. This document is read by Cloud 
 
 Key fields:
 
-* `codeLength` – integer between 6 and 10; determines referral code length.
-* `alphabet` – uppercase Crockford Base32 string (no I/L/O/U); used when generating codes.
-* `maxClaimPerInvitee` – positive integer, typically 1.
-* `maxClaimsPerInviter` – positive integer soft cap; business logic can enforce downstream.
-* `inviteeRewards` – array of `{ skuId, qty }` entries granted to the player who claims a code.
-* `inviterRewards` – array of `{ threshold, rewards: [{ skuId, qty }] }` awarded when an inviter reaches `threshold` successful claims.
-* `blockSelfReferral` / `blockCircularReferral` – booleans toggling extra guardrails.
+* `codeLength` â€“ integer between 6 and 10; determines referral code length.
+* `alphabet` â€“ uppercase Crockford Base32 string (no I/L/O/U); used when generating codes.
+* `maxClaimPerInvitee` â€“ positive integer, typically 1.
+* `maxClaimsPerInviter` â€“ positive integer soft cap; business logic can enforce downstream.
+* `inviteeRewards` â€“ array of `{ skuId, qty }` entries granted to the player who claims a code.
+* `inviterRewards` â€“ array of `{ threshold, rewards: [{ skuId, qty }] }` awarded when an inviter reaches `threshold` successful claims.
+* `blockSelfReferral` / `blockCircularReferral` â€“ booleans toggling extra guardrails.
 
 All referenced `skuId` values must exist in the v3 catalogs (validated via `tools/validate_referral_config.ts`).
 
@@ -137,9 +178,9 @@ Consolidates all car definitions, stats, and upgrade paths into a single documen
 *   **Document ID:** `CarsCatalog`
 
 ID and level rules
-- Car IDs follow `car_{crockford-base32}` — no embedded names. Example: `car_h4ayzwf31g`.
+- Car IDs follow `car_{crockford-base32}` â€” no embedded names. Example: `car_h4ayzwf31g`.
 - Levels include a base `"0"` plus 20 upgrades up to `"20"`.
-- `priceCoins` for levels `1..20` is sourced from `legacy-firebase-backend/json-files/Car_Progressions.json` for the car’s `displayName`.
+- `priceCoins` for levels `1..20` is sourced from `legacy-firebase-backend/json-files/Car_Progressions.json` for the carâ€™s `displayName`.
 - Updated: per-level stats are split into display slider values and computed real physics values. Legacy fields (`speed`, `accel`, `handling`, any `*Multiplier`) are deprecated and must not be used by Cloud Functions.
 
 Per-level fields (authoritative):
@@ -208,7 +249,7 @@ Example: `/GameData/v1/config/BotConfig`
           "boostRegen": 8.0,
           "boostPower": 8.0
         }
-        // … up to "20"
+        // â€¦ up to "20"
       },
       "growthModel": { "price": "linear", "stat": "topSpeed", "configKey": "starter" },
       "i18n": { "en": "Mitsabi Eon" },
@@ -223,9 +264,9 @@ Example: `/GameData/v1/config/BotConfig`
 
 The following catalogs follow the same singleton structure as `CarsCatalog`, containing a map of items keyed by their ID.
 
-*   `/GameData/v1/catalogs/SpellsCatalog` — Spell IDs follow `spell_{crockford-base32}` (no embedded names).
-*   `/GameData/v1/catalogs/ItemsCatalog` — Item master records (display name, rarity, stackability, sub-type). Each item exposes its collectible variants through a `variants[]` array where every entry carries a unique `skuId`.
-*   `/GameData/v1/catalogs/ItemSkusCatalog` — Legacy mirror of SKU metadata. New work relies on the `variants[]` embedded in `ItemsCatalog`; this document is retained for back-compat tooling.
+*   `/GameData/v1/catalogs/SpellsCatalog` â€” Spell IDs follow `spell_{crockford-base32}` (no embedded names).
+*   `/GameData/v1/catalogs/ItemsCatalog` â€” Item master records (display name, rarity, stackability, sub-type). Each item exposes its collectible variants through a `variants[]` array where every entry carries a unique `skuId`.
+*   `/GameData/v1/catalogs/ItemSkusCatalog` â€” Legacy mirror of SKU metadata. New work relies on the `variants[]` embedded in `ItemsCatalog`; this document is retained for back-compat tooling.
 *   `/GameData/v1/catalogs/CratesCatalog`
 *   `/GameData/v1/catalogs/OffersCatalog`
 
@@ -235,18 +276,18 @@ Stores every grantable SKU keyed by `skuId`. SKU entries carry the display metad
 
 * **Document ID:** `ItemSkusCatalog`
 * **Structure:**
-  * `version` — semantic or date-based string used by seed tooling.
-  * `defaults` — map of well-known SKU IDs (e.g., `starterCrateSkuId`, `starterKeySkuId`, `welcomeBundleSkuId`). Cloud Functions read from this block instead of hard-coding strings.
-  * `skus` — record keyed by `skuId` where each entry describes a purchasable or grantable SKU.
-    * `itemId` — canonical item identifier from `ItemsCatalog` (when applicable).
-    * `displayName` — localized display string (English stored inline; additional locales live in `/GameData/v1/Strings`).
-    * `category` — high-level grouping (`crate`, `key`, `booster`, `cosmetic`, `currency`, etc.). Inventory summaries mirror these keys.
-    * `subType` *(optional)* — finer classification (e.g., boosters use `coin` or `xp`; cosmetics use slot names).
-    * `rarity` — `common`, `rare`, `epic`, `legendary`, etc.
-    * `stackable` — boolean; crates/keys/boosters default to `true`, one-off cosmetics default to `false`.
-    * `purchasable` *(optional)* — canonical pricing object `{ "currency": "gems" | "coins", "amount": number }`. The unified shop reads this block; legacy code derives `price` maps from it.
-    * `durationSeconds` *(optional)* — length of time for booster effects.
-    * `variant`, `tags`, `metadata` *(optional)* — free-form helpers for UI and tooling.
+  * `version` â€” semantic or date-based string used by seed tooling.
+  * `defaults` â€” map of well-known SKU IDs (e.g., `starterCrateSkuId`, `starterKeySkuId`, `welcomeBundleSkuId`). Cloud Functions read from this block instead of hard-coding strings.
+  * `skus` â€” record keyed by `skuId` where each entry describes a purchasable or grantable SKU.
+    * `itemId` â€” canonical item identifier from `ItemsCatalog` (when applicable).
+    * `displayName` â€” localized display string (English stored inline; additional locales live in `/GameData/v1/Strings`).
+    * `category` â€” high-level grouping (`crate`, `key`, `booster`, `cosmetic`, `currency`, etc.). Inventory summaries mirror these keys.
+    * `subType` *(optional)* â€” finer classification (e.g., boosters use `coin` or `xp`; cosmetics use slot names).
+    * `rarity` â€” `common`, `rare`, `epic`, `legendary`, etc.
+    * `stackable` â€” boolean; crates/keys/boosters default to `true`, one-off cosmetics default to `false`.
+    * `purchasable` *(optional)* â€” canonical pricing object `{ "currency": "gems" | "coins", "amount": number }`. The unified shop reads this block; legacy code derives `price` maps from it.
+    * `durationSeconds` *(optional)* â€” length of time for booster effects.
+    * `variant`, `tags`, `metadata` *(optional)* â€” free-form helpers for UI and tooling.
 
 > **Legacy price compatibility:** Older call sites still expect a `{ gems, coins }` map under `price`. The runtime converter in `core/config.ts` derives that map automatically from `purchasable`. Seeds should only author the `purchasable` object going forward.
 
@@ -297,14 +338,14 @@ Defines crate loot tables. Each record describes which SKU is granted when the c
 
 * **Document ID:** `CratesCatalog`
 * **Structure:**
-  * `version` — semantic/date string for change tracking.
-  * `defaults` — optional crate references (`starterCrateId`, `starterCrateSkuId`, `starterKeySkuId`, etc.) consumed by Cloud Functions in lieu of hard-coded strings.
-  * `crates` — record keyed by `crateId` with:
-    * `crateSkuId` — inventory SKU for the unopened crate (authoritative).
-    * `keySkuId` — SKU consumed when the crate is opened.
-    * `rarityWeights` — `{ [rarity]: weight }` map that drives loot rarity selection (weights may be fractional).
-    * `poolsByRarity` — `{ [rarity]: [skuId, ...] }` map of reward SKUs available at each rarity tier.
-    * `displayName`, `rarity`, `tags`, `metadata` *(optional)* — presentation helpers.
+  * `version` â€” semantic/date string for change tracking.
+  * `defaults` â€” optional crate references (`starterCrateId`, `starterCrateSkuId`, `starterKeySkuId`, etc.) consumed by Cloud Functions in lieu of hard-coded strings.
+  * `crates` â€” record keyed by `crateId` with:
+    * `crateSkuId` â€” inventory SKU for the unopened crate (authoritative).
+    * `keySkuId` â€” SKU consumed when the crate is opened.
+    * `rarityWeights` â€” `{ [rarity]: weight }` map that drives loot rarity selection (weights may be fractional).
+    * `poolsByRarity` â€” `{ [rarity]: [skuId, ...] }` map of reward SKUs available at each rarity tier.
+    * `displayName`, `rarity`, `tags`, `metadata` *(optional)* â€” presentation helpers.
 
 **Example (excerpt):**
 ```jsonc
@@ -335,7 +376,7 @@ Defines crate loot tables. Each record describes which SKU is granted when the c
           "sku_0yqtcmwc",
           "sku_267afz7c",
           "sku_381epphy"
-          // … 63 additional SKUs (68 total)
+          // â€¦ 63 additional SKUs (68 total)
         ],
         "rare": [
           "sku_000809gq",
@@ -343,7 +384,7 @@ Defines crate loot tables. Each record describes which SKU is granted when the c
           "sku_0bysr2mb",
           "sku_0s49vjyp",
           "sku_1rms3ck4"
-          // … 65 additional SKUs (70 total)
+          // â€¦ 65 additional SKUs (70 total)
         ],
         "exotic": [
           "sku_0afa8651",
@@ -351,7 +392,7 @@ Defines crate loot tables. Each record describes which SKU is granted when the c
           "sku_0fv7y19a",
           "sku_0mq3fa08",
           "sku_127h9wjp"
-          // … 85 additional SKUs (90 total)
+          // â€¦ 85 additional SKUs (90 total)
         ],
         "legendary": [
           "sku_000t1a9z",
@@ -359,7 +400,7 @@ Defines crate loot tables. Each record describes which SKU is granted when the c
           "sku_01c9e0jk",
           "sku_01z9rj4n",
           "sku_029nt7zk"
-          // … 81 additional SKUs (86 total)
+          // â€¦ 81 additional SKUs (86 total)
         ],
         "mythical": [
           "sku_0gzfm1j3",
@@ -367,7 +408,7 @@ Defines crate loot tables. Each record describes which SKU is granted when the c
           "sku_1ezhssps",
           "sku_1p8g9csw",
           "sku_2nq7we3x"
-          // … 53 additional SKUs (58 total)
+          // â€¦ 53 additional SKUs (58 total)
         ]
       }
     }
@@ -385,7 +426,7 @@ Consolidates rank definitions. Unlike other catalogs, this is stored as an array
 
 Content rules
 - Ranks are ordered and keyed as an array.
-- Trophy thresholds follow 250‑point steps from 0 up to 7000 (per current UI), mapping tiers Bronze → Silver → Gold → Platinum → Diamond → Master → Champion → Ascendant → Hypersonic.
+- Trophy thresholds follow 250â€‘point steps from 0 up to 7000 (per current UI), mapping tiers Bronze â†' Silver â†' Gold â†' Platinum â†' Diamond â†' Master â†' Champion â†' Ascendant â†' Hypersonic.
 
 **Example: `/GameData/v1/catalogs/RanksCatalog`**
 ```jsonc
@@ -587,9 +628,9 @@ A consolidated document for the player's active loadout, including car, spell de
 The v3 inventory model treats each SKU as the unit of record. All consumables, cosmetics, crates, keys, and boosters live under per-SKU documents, while `_summary` keeps lightweight roll-ups for HUD counters.
 
 * **`{skuId}` (per-SKU ledger):**
-  * `skuId` — canonical identifier, always `sku_{crockford}`.
-  * `quantity` / `qty` — the authoritative stack count.
-  * `createdAt` / `updatedAt` — server timestamps managed by Cloud Functions.
+  * `skuId` â€” canonical identifier, always `sku_{crockford}`.
+  * `quantity` / `qty` â€” the authoritative stack count.
+  * `createdAt` / `updatedAt` â€” server timestamps managed by Cloud Functions.
   * Optional metadata such as the first grant `receiptId` can be stored alongside the counts when needed.
 
   **Example: `/Players/{uid}/Inventory/sku_zz3twgp0wx`**
@@ -624,16 +665,16 @@ Inventory summary keys mirror the `category`, `rarity`, and `subType` metadata d
 
 #### `/Players/{uid}/Boosters/Active`
 
-Singleton document tracking the player’s active time-based boosters. Coin and XP timers are stored independently so both effects can run in parallel.
+Singleton document tracking the playerâ€™s active time-based boosters. Coin and XP timers are stored independently so both effects can run in parallel.
 
 * **Document ID:** `Active`
 * **Location:** `/Players/{uid}/Boosters/Active`
 * **Fields:**
-  * `coin`, `xp` – objects with:
-    * `activeUntil` (epoch ms) – when the booster expires; ≤ `Date.now()` means inactive.
-    * `lastActivatedAt` (epoch ms) – when the booster was most recently extended.
-    * `totalSecondsAccumulated` (number) – lifetime seconds awarded for audit/UX.
-  * `updatedAt` (epoch ms) – last time either booster slot changed.
+  * `coin`, `xp` â€“ objects with:
+    * `activeUntil` (epoch ms) â€“ when the booster expires; â‰¤ `Date.now()` means inactive.
+    * `lastActivatedAt` (epoch ms) â€“ when the booster was most recently extended.
+    * `totalSecondsAccumulated` (number) â€“ lifetime seconds awarded for audit/UX.
+  * `updatedAt` (epoch ms) â€“ last time either booster slot changed.
 
 **Example:**
 ```json
@@ -677,17 +718,17 @@ Compact progress document tracking how many successful referrals the player has 
 
 * **Document ID:** `Progress`
 * **Fields:**
-  * `sentTotal` (number) – count of successful invitees tied to this player's code.
-  * `awardedThresholds` (number[]) – sorted list of inviter thresholds already paid; used to prevent double-awards.
-  * `lastUpdatedAt` (timestamp) – server timestamp written with the most recent mutation.
+  * `sentTotal` (number) â€“ count of successful invitees tied to this player's code.
+  * `awardedThresholds` (number[]) â€“ sorted list of inviter thresholds already paid; used to prevent double-awards.
+  * `lastUpdatedAt` (timestamp) â€“ server timestamp written with the most recent mutation.
 
-The document is mutated exclusively by Cloud Functions during referral claims. Clients read it to show inviter progress (e.g., “3/5 invites complete”).
+The document is mutated exclusively by Cloud Functions during referral claims. Clients read it to show inviter progress (e.g., â€œ3/5 invites completeâ€).
 
 #### `/Players/{uid}/Referrals/Events/{eventId}` (Sub-Collection)
 
 Append-only event log for auditability and analytics. Each event captures the action (`claim`, `reward-sent`, `reward-received`), tying together both parties for dispute resolution.
 
-* **Document ID:** `{eventId}` — UUID or ULID generated server-side.
+* **Document ID:** `{eventId}` â€” UUID or ULID generated server-side.
 
 #### `/Players/{uid}/Social/Profile` (Singleton)
 
@@ -695,11 +736,11 @@ Extends the player's public card with social metadata that powers the Friends/Re
 
 * **Document ID:** `Profile`
 * **Fields**
-  * `friendsCount` *(number)* — authoritative counter incremented/decremented alongside `/Social/Friends`.
-  * `hasFriendRequests` *(boolean)* — badge boolean that the UI can poll in a single read.
-  * `referralCode` *(string|null)* — immutable referral code mirror so social/profile views do not need to read the root profile.
-  * `lastActiveAt` *(number|null)* — ms epoch copied from RTDB presence by the scheduled mirror job.
-  * `updatedAt` *(timestamp)* — server timestamp written by every social mutation.
+  * `friendsCount` *(number)* â€” authoritative counter incremented/decremented alongside `/Social/Friends`.
+  * `hasFriendRequests` *(boolean)* â€” badge boolean that the UI can poll in a single read.
+  * `referralCode` *(string|null)* â€” immutable referral code mirror so social/profile views do not need to read the root profile.
+  * `lastActiveAt` *(number|null)* â€” ms epoch copied from RTDB presence by the scheduled mirror job.
+  * `updatedAt` *(timestamp)* â€” server timestamp written by every social mutation.
 
 ```json
 {
@@ -762,19 +803,19 @@ Holds outstanding friend requests in two bounded arrays. Incoming entries embed 
 }
 ```
 
-Arrays are truncated server-side (≤100 entries) to avoid oversized docs; pagination for UI views happens via callable reads.
+Arrays are truncated server-side (â‰¤100 entries) to avoid oversized docs; pagination for UI views happens via callable reads.
 
 #### `/Players/{uid}/Social/Blocks` (Singleton)
 
 Optional sparse map `{ [blockedUid]: true }` used to prevent unsolicited requests or spam. Missing documents are treated as empty maps by the Cloud Functions. Writes remain server-only per the social guardrails.
 * **Fields:**
-  * `type` – one of `claim`, `reward-sent`, `reward-received`.
-  * `opId` – idempotent operation ID associated with the event.
-  * `referralCode` – code involved in the action (inviter's code for rewards, code used by invitee for claims).
-  * `otherUid` – optional, Firebase UID of the counterpart player.
-  * `awarded` – optional array of `{ skuId, qty }` describing granted rewards.
-  * `createdAt` – millisecond timestamp written by the server.
-  * `deviceHash` / `ipHash` – optional salted hashes recorded for anti-abuse analytics.
+  * `type` â€“ one of `claim`, `reward-sent`, `reward-received`.
+  * `opId` â€“ idempotent operation ID associated with the event.
+  * `referralCode` â€“ code involved in the action (inviter's code for rewards, code used by invitee for claims).
+  * `otherUid` â€“ optional, Firebase UID of the counterpart player.
+  * `awarded` â€“ optional array of `{ skuId, qty }` describing granted rewards.
+  * `createdAt` â€“ millisecond timestamp written by the server.
+  * `deviceHash` / `ipHash` â€“ optional salted hashes recorded for anti-abuse analytics.
 
 Events are emitted for both parties during a claim: the invitee records `claim` + `reward-received`, while the inviter records `reward-sent` whenever a threshold reward is paid.
 
@@ -894,11 +935,11 @@ Maps opaque device anchor tokens to the owning `uid` for guest recovery flows. A
 
 ### `/Usernames/{displayNameLower}` (Username Registry & Search)
 
-Stores the lowercase username reservation along with the owning `uid`. The `searchPlayer` callable uses range queries on this collection to power prefix searches (≤2 characters) and direct lookups for longer, exact names.
+Stores the lowercase username reservation along with the owning `uid`. The `searchPlayer` callable uses range queries on this collection to power prefix searches (â‰¤2 characters) and direct lookups for longer, exact names.
 
 * **Document ID:** `displayNameLower`
 * **Fields:**
-  * `uid` *(string)* — player identifier owning the name.
+  * `uid` *(string)* â€” player identifier owning the name.
   * (additional metadata may be added later, e.g., `reservedAt`)
 
 **Prefix search:** When the user types one or two characters, the callable executes:
@@ -919,8 +960,8 @@ to fetch up to 10 matching usernames, then hydrates their `/Players/{uid}/Profil
 
 Realtime presence is stored outside Firestore to avoid write amplification:
 
-* `/presence/online/{uid}` *(boolean)* — toggled by the client connect/disconnect hooks. Values are `true` while connected, removed (or set `false`) on disconnect.
-* `/presence/lastSeen/{uid}` *(number)* — ms epoch maintained by the client via `onDisconnect`. This is the source of truth for “last online”.
+* `/presence/online/{uid}` *(boolean)* â€” toggled by the client connect/disconnect hooks. Values are `true` while connected, removed (or set `false`) on disconnect.
+* `/presence/lastSeen/{uid}` *(number)* â€” ms epoch maintained by the client via `onDisconnect`. This is the source of truth for â€œlast onlineâ€.
 
 A scheduled Cloud Function (`socialPresenceMirrorLastSeen`) runs every ~10 minutes, reads `/presence/lastSeen`, and patches `/Players/{uid}/Social/Profile.lastActiveAt` for the small set of players that changed recently. This keeps Firestore as the durable store for profile views while leveraging RTDB for millisecond-accurate presence and typing indicators.
 *   [ ] Profile/Profile includes HUD fields: `displayName, avatarId, exp, level, trophies, highestTrophies, careerCoins, totalWins, totalRaces, dailyStreak, dailyCooldownUntil`.
@@ -933,3 +974,7 @@ A scheduled Cloud Function (`socialPresenceMirrorLastSeen`) runs every ~10 minut
 ## Contracts Alignment (TODO)
 
 *   Review `FUNCTION_CONTRACTS.md` to ensure all field names (`activeSpellDeck`, `spellTokens`, etc.) are perfectly aligned with this schema. Any discrepancies should be flagged and resolved.
+
+
+
+

@@ -22,20 +22,7 @@ export { openCrate } from "./crates";
 export { upgradeSpell, setLoadout, equipCosmetics, setSpellDeck, selectActiveSpellDeck } from "./spells";
 export { startRace, generateBotLoadout, recordRaceResult } from "./race";
 export { prepareRace } from "./race/prepareRace";
-export {
-  createClan,
-  joinClan,
-  leaveClan,
-  inviteToClan,
-  requestToJoinClan,
-  acceptJoinRequest,
-  declineJoinRequest,
-  promoteClanMember,
-  demoteClanMember,
-  kickClanMember,
-  updateClanSettings,
-} from "./clan";
-export { updateMemberTrophies } from "./clan/members";
+export * from "./clan";
 export { getMaintenanceStatus, claimMaintenanceReward } from "./game-systems/maintenance";
 export { healthcheck } from "./health/healthcheck";
 export * from "./profile";

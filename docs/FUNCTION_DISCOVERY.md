@@ -1,4 +1,4 @@
-# Function Discovery
+﻿# Function Discovery
 
 This document provides a high-level overview of the cloud functions available in this project, based on the detailed specifications in `FUNCTION_CONTRACTS.md`.
 
@@ -41,7 +41,7 @@ Functions for managing player spells and loadouts.
 
 | Function | Purpose | Trigger |
 | --- | --- | --- |
-| `upgradeSpell` | Unlocks level 0 → 1 or levels up an owned spell, deducting spell tokens and writing an idempotent receipt. | HTTPS `onCall` |
+| `upgradeSpell` | Unlocks level 0 â†' 1 or levels up an owned spell, deducting spell tokens and writing an idempotent receipt. | HTTPS `onCall` |
 | `setLoadout` | Writes a custom spell deck configuration by slot. | HTTPS `onCall` |
 | `equipCosmetics` | Applies spell-focused cosmetics onto the active loadout. | HTTPS `onCall` |
 | `setSpellDeck` | Bulk updates a single deck's spell list. | HTTPS `onCall` |
@@ -64,23 +64,48 @@ Functions that manage the race lifecycle, from starting a race to recording resu
 
 ## 5. Clans
 
-Functions for creating, joining, and managing clans.
+Functions for creating, joining, and managing clans (all HTTPS `onCall`, region `us-central1`).
 
-| Function | Purpose | Trigger |
-| --- | --- | --- |
-| `createClan` | Creates a new clan. | HTTPS `onCall` |
-| `joinClan` | Joins an "open" clan. | HTTPS `onCall` |
-| `leaveClan` | Leaves the current clan, handling leader succession. | HTTPS `onCall` |
-| `inviteToClan` | Invites a player to a clan. | HTTPS `onCall` |
-| `requestToJoinClan` | Requests to join a closed/invite-only clan. | HTTPS `onCall` |
-| `acceptJoinRequest` | Manages join requests. | HTTPS `onCall` |
-| `declineJoinRequest` | Manages join requests. | HTTPS `onCall` |
-| `promoteClanMember` | Manages member roles. | HTTPS `onCall` |
-| `demoteClanMember` | Manages member roles. | HTTPS `onCall` |
-| `kickClanMember` | Removes a member from the clan. | HTTPS `onCall` |
-| `updateClanSettings` | Updates a clan's public information. | HTTPS `onCall` |
+**Management & Roles**
 
----
+| Function | Purpose |
+| --- | --- |
+| `createClan` | Creates a clan and adds the caller as leader. |
+| `updateClanSettings` | Updates clan presentation, type, badge, and requirements. |
+| `deleteClan` | Deletes an empty clan (leader-only). |
+| `joinClan` | Joins an open clan instantly. |
+| `requestToJoinClan` | Creates a join request for invite-only clans. |
+| `cancelJoinRequest` | Removes the callerâ€™s pending request. |
+| `leaveClan` | Leaves the current clan, handling leadership succession. |
+| `acceptJoinRequest` | Officers accept pending requests. |
+| `declineJoinRequest` | Officers decline pending requests. |
+| `promoteClanMember` | Raises a memberâ€™s rank (never to leader). |
+| `demoteClanMember` | Lowers a memberâ€™s rank. |
+| `transferClanLeadership` | Leader hands control to another member. |
+| `kickClanMember` | Removes a member from the clan. |
+| `updateMemberTrophies` | Internal helper that mirrors trophy deltas into clan stats. |
+
+**Invites, Bookmarks, and Discovery**
+
+| Function | Purpose |
+| --- | --- |
+| `inviteToClan` | Sends an invite to another player. |
+| `acceptClanInvite` | Accepts a stored invite and joins the clan. |
+| `declineClanInvite` | Clears a stored invite without joining. |
+| `bookmarkClan` / `unbookmarkClan` | Adds/removes clan bookmarks under `/Players/{uid}/Social`. |
+| `getBookmarkedClans` | Returns the callerâ€™s bookmark list with live hydration. |
+| `getClanDetails` | Fetches clan summary, roster, and (for officers) pending requests. |
+| `searchClans` | Searches by name/tag with trophy/capacity filters. |
+| `getClanLeaderboard` | Returns top clans ordered by `stats.trophies`. |
+
+**Chat**
+
+| Function | Purpose |
+| --- | --- |
+| `sendGlobalChatMessage` | Posts to a global language room (`/Rooms/{roomId}`) with profile/clan snapshot metadata. |
+| `getGlobalChatMessages` | Reads the latest (up to 25) global messages for a room. |
+| `sendClanChatMessage` | Posts to the caller's clan chat (`/Clans/{clanId}/Chat`) with profile/clan snapshot metadata. |
+| `getClanChatMessages` | Reads the caller's clan chat history (up to 25 messages). |
 
 ## 6. Economy
 
@@ -131,7 +156,7 @@ Core functions for user initialization and game maintenance.
 
 | Function | Purpose | Trigger |
 | --- | --- | --- |
-| (no auth trigger) | Initialization occurs via callables (`ensureGuestSession`, `signup*`) and `initUser`. | — |
+| (no auth trigger) | Initialization occurs via callables (`ensureGuestSession`, `signup*`) and `initUser`. | â€” |
 | `getMaintenanceStatus` | Retrieves the current maintenance status of the game. | HTTPS `onCall` |
 | `claimMaintenanceReward` | Allows a player to claim a reward after a maintenance period. | HTTPS `onCall` |
 | `healthcheck` | A simple health check endpoint. | HTTPS Request |
@@ -161,12 +186,16 @@ The functions below load master data from the canonical catalog documents under 
 | Function | Purpose | Trigger |
 | --- | --- | --- |
 | `getGlobalLeaderboard` | Scans every player profile, sorts by metric, and returns a paginated top list (expensive, dev-only). | HTTPS `onCall` |
-| `searchPlayers` / `searchPlayer` | Uses `/Usernames/{displayNameLower}` for prefix (≤2 chars) and exact searches. | HTTPS `onCall` |
+| `searchPlayers` / `searchPlayer` | Uses `/Usernames/{displayNameLower}` for prefix (â‰¤2 chars) and exact searches. | HTTPS `onCall` |
 | `sendFriendRequest` | Idempotently writes to both players' `/Social/Requests`, sets badges, logs receipt. | HTTPS `onCall` |
 | `acceptFriendRequest` | Converts a pending request into mutual `/Social/Friends` entries and bumps counts. | HTTPS `onCall` |
 | `rejectFriendRequest` | Removes an incoming request without creating a friendship. | HTTPS `onCall` |
 | `cancelFriendRequest` | Lets the sender withdraw their pending outgoing request. | HTTPS `onCall` |
-| `getFriendRequests` | Returns the caller’s incoming requests with live player summaries. | HTTPS `onCall` |
+| `getFriendRequests` | Returns the callerâ€™s incoming requests with live player summaries. | HTTPS `onCall` |
 | `getFriends` | Returns the caller's confirmed friends with live player summaries. | HTTPS `onCall` |
 | `viewPlayerProfile` | Returns the public summary + stats + social metadata for any `uid`. | HTTPS `onCall` |
 | `socialPresenceMirrorLastSeen` | Scheduled job mirroring RTDB `/presence/lastSeen` into `/Players/{uid}/Social/Profile`. | Cloud Scheduler |
+
+
+
+

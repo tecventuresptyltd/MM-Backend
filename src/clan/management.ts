@@ -1,164 +1,631 @@
 import * as admin from "firebase-admin";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
-import { checkIdempotency, createInProgressReceipt } from "../core/idempotency";
-import { runTransactionWithReceipt } from "../core/transactions";
+import type { CallableRequest } from "firebase-functions/v2/https";
+import { callableOptions } from "../shared/callableOptions.js";
+import { checkIdempotency, createInProgressReceipt } from "../core/idempotency.js";
+import { runTransactionWithReceipt } from "../core/transactions.js";
+import {
+  ClanBadge,
+  ClanType,
+  buildSearchFields,
+  canManageMembers,
+  clanChatCollection,
+  clanMembersCollection,
+  clanRef,
+  clanRequestsCollection,
+  clanSummaryProjection,
+  clanTagRef,
+  clansCollection,
+  ClanRole,
+  clearPlayerClanProfile,
+  clearPlayerClanState,
+  getPlayerProfile,
+  isLeader,
+  playerClanStateRef,
+  resolveClanBadge,
+  resolveClanType,
+  resolveLanguage,
+  resolveLocation,
+  resolveMemberLimit,
+  resolveMinimumTrophies,
+  sanitizeDescription,
+  sanitizeName,
+  sanitizeTag,
+  setPlayerClanState,
+  updatePlayerClanProfile,
+} from "./helpers.js";
 
 const db = admin.firestore();
+const { FieldValue } = admin.firestore;
 
-// --- Create Clan ---
+const requireOpId = (raw?: unknown): string => {
+  if (typeof raw !== "string" || raw.trim().length < 8) {
+    throw new HttpsError("invalid-argument", "opId must be a non-empty string.");
+  }
+  return raw.trim();
+};
+
+const sanitizeWith = <T>(fn: () => T): T => {
+  try {
+    return fn();
+  } catch (error) {
+    throw new HttpsError("invalid-argument", (error as Error).message);
+  }
+};
+
+const assertAuthenticated = (request: CallableRequest): string => {
+  const uid = request.auth?.uid;
+  if (!uid) {
+    throw new HttpsError("unauthenticated", "Authentication required.");
+  }
+  return uid;
+};
 
 interface CreateClanRequest {
   opId: string;
-  name: string;
-  type: "open" | "closed" | "invite-only";
-  minimumTrophies: number;
+  name?: string;
+  clanName?: string;
+  tag?: string;
+  clanTag?: string;
+  description?: string;
+  type?: ClanType | "invite-only";
+  location?: string;
+  language?: string;
+  badge?: ClanBadge;
+  minimumTrophies?: number;
+  memberLimit?: number;
 }
 
 interface CreateClanResponse {
-  success: boolean;
-  opId: string;
   clanId: string;
+  name: string;
+  tag: string;
 }
 
-export const createClan = onCall({ region: "us-central1" }, async (request) => {
-  const { opId, name, type, minimumTrophies } = request.data as CreateClanRequest;
-  const uid = request.auth?.uid;
+export const createClan = onCall(callableOptions(), async (request) => {
+  const uid = assertAuthenticated(request);
+  const payload = (request.data ?? {}) as CreateClanRequest;
+  const opId = requireOpId(payload.opId);
 
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "User must be authenticated.");
+  const name = sanitizeWith(() => sanitizeName(payload.name ?? payload.clanName ?? ""));
+  const tag = sanitizeWith(() => sanitizeTag(payload.tag ?? payload.clanTag ?? ""));
+  const description = sanitizeWith(() => sanitizeDescription(payload.description));
+  const clanType = resolveClanType(payload.type);
+  const badge = resolveClanBadge(payload.badge);
+  const minimumTrophies = sanitizeWith(() => resolveMinimumTrophies(payload.minimumTrophies));
+  const memberLimit = sanitizeWith(() => resolveMemberLimit(payload.memberLimit));
+  const location = sanitizeWith(() => resolveLocation(payload.location));
+  const language = sanitizeWith(() => resolveLanguage(payload.language));
+
+  const profile = await getPlayerProfile(uid);
+  if (!profile) {
+    throw new HttpsError("failed-precondition", "Player profile not initialised.");
   }
 
-  if (!opId || !name || !type || minimumTrophies === undefined) {
-    throw new HttpsError("invalid-argument", "Missing required parameters.");
+  const cached = await checkIdempotency(uid, opId);
+  if (cached) {
+    return cached as CreateClanResponse;
   }
+  await createInProgressReceipt(uid, opId, "createClan");
 
-  try {
-    const idempotencyResult = await checkIdempotency(uid, opId);
-    if (idempotencyResult) {
-      return idempotencyResult;
-    }
+  const now = FieldValue.serverTimestamp();
+  const clanId = clansCollection().doc().id;
+  const clanDocRef = clanRef(clanId);
+  const memberRef = clanMembersCollection(clanId).doc(uid);
+  const clanStateRef = playerClanStateRef(uid);
+  const clanTagIndexRef = clanTagRef(tag);
+  const chatRef = clanChatCollection(clanId).doc();
 
-    await createInProgressReceipt(uid, opId, "createClan");
-
-    const clanId = `clan_${Math.random().toString(36).substring(2, 12)}`;
-
-    return await runTransactionWithReceipt<CreateClanResponse>(
-      uid,
-      opId,
-      "createClan",
-      async (transaction) => {
-        const playerPrivateStatusRef = db.doc(`/Players/${uid}/Private/Status`);
-        const clanRef = db.doc(`/Clans/${clanId}`);
-        const clanMemberRef = db.doc(`/Clans/${clanId}/Members/${uid}`);
-
-        const playerStatusDoc = await transaction.get(playerPrivateStatusRef);
-        if (playerStatusDoc.exists && playerStatusDoc.data()!.clanId) {
-          throw new HttpsError("failed-precondition", "Player is already in a clan.");
-        }
-
-        transaction.set(clanRef, {
-          clanId,
-          name,
-          type,
-          minimumTrophies,
-          stats: {
-            members: 1,
-            trophies: 0, // Will be updated by updateMemberTrophies
-          },
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-
-        transaction.set(clanMemberRef, {
-          trophies: 0, // Will be updated by updateMemberTrophies
-          role: "leader",
-          joinedAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-
-        transaction.set(playerPrivateStatusRef, {
-          clanId,
-        }, { merge: true });
-
-        return {
-          success: true,
-          opId,
-          clanId,
-        };
+  const result = await runTransactionWithReceipt<CreateClanResponse>(
+    uid,
+    opId,
+    "createClan",
+    async (transaction) => {
+      const stateSnap = await transaction.get(clanStateRef);
+      if (stateSnap.exists && typeof stateSnap.data()?.clanId === "string") {
+        throw new HttpsError("failed-precondition", "Player is already in a clan.");
       }
-    );
-  } catch (error) {
-    const e = error as Error;
-    throw new HttpsError("internal", e.message, e);
-  }
-});
 
-// --- Update Clan Settings ---
+      const tagSnap = await transaction.get(clanTagIndexRef);
+      if (tagSnap.exists) {
+        throw new HttpsError("already-exists", "Clan tag already in use.");
+      }
+
+      transaction.set(clanDocRef, {
+        clanId,
+        name,
+        tag,
+        description,
+        type: clanType,
+        location,
+        language,
+        badge,
+        leaderUid: uid,
+        minimumTrophies,
+        memberLimit,
+        stats: {
+          members: 1,
+          trophies: profile.trophies ?? 0,
+          totalWins: 0,
+        },
+        status: "active",
+        search: buildSearchFields(name, tag, location, language),
+        createdAt: now,
+        updatedAt: now,
+      });
+
+      transaction.set(memberRef, {
+        uid,
+        role: "leader",
+        rolePriority: 4,
+        trophies: profile.trophies ?? 0,
+        joinedAt: now,
+        displayName: profile.displayName,
+        lastPromotedAt: now,
+      });
+
+      updatePlayerClanProfile(transaction, uid, {
+        clanId,
+        clanName: name,
+        clanTag: tag,
+        role: "leader",
+      });
+      setPlayerClanState(transaction, uid, {
+        clanId,
+        role: "leader",
+        joinedAt: now,
+      });
+
+      transaction.set(clanTagIndexRef, {
+        clanId,
+        claimedBy: uid,
+        createdAt: now,
+        updatedAt: now,
+      });
+
+      transaction.set(chatRef, {
+        clanId,
+        authorUid: null,
+        authorDisplayName: "System",
+        type: "system",
+        text: `${profile.displayName} founded ${name}`,
+        createdAt: now,
+        payload: { kind: "clan_created", by: uid },
+      });
+
+      return { clanId, name, tag };
+    },
+  );
+
+  return result;
+});
 
 interface UpdateClanSettingsRequest {
   opId: string;
   clanId: string;
+  name?: string;
   description?: string;
-  badge?: string;
+  type?: ClanType;
+  location?: string;
+  language?: string;
+  badge?: ClanBadge;
+  minimumTrophies?: number;
+  memberLimit?: number;
 }
 
 interface UpdateClanSettingsResponse {
-  success: boolean;
-  opId: string;
+  clanId: string;
+  updated: string[];
 }
 
-export const updateClanSettings = onCall({ region: "us-central1" }, async (request) => {
-  const { opId, clanId, description, badge } = request.data as UpdateClanSettingsRequest;
-  const uid = request.auth?.uid;
+const sanitizeUpdatePayload = (payload: UpdateClanSettingsRequest) => {
+  const updates: Record<string, unknown> = {};
+  const touched: string[] = [];
 
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "User must be authenticated.");
+  if (payload.name !== undefined) {
+    updates.name = sanitizeWith(() => sanitizeName(payload.name));
+    touched.push("name");
+  }
+  if (payload.description !== undefined) {
+    updates.description = sanitizeWith(() => sanitizeDescription(payload.description));
+    touched.push("description");
+  }
+  if (payload.type !== undefined) {
+    updates.type = resolveClanType(payload.type);
+    touched.push("type");
+  }
+  if (payload.location !== undefined) {
+    updates.location = sanitizeWith(() => resolveLocation(payload.location));
+    touched.push("location");
+  }
+  if (payload.language !== undefined) {
+    updates.language = sanitizeWith(() => resolveLanguage(payload.language));
+    touched.push("language");
+  }
+  if (payload.badge !== undefined) {
+    updates.badge = resolveClanBadge(payload.badge);
+    touched.push("badge");
+  }
+  if (payload.minimumTrophies !== undefined) {
+    updates.minimumTrophies = sanitizeWith(() => resolveMinimumTrophies(payload.minimumTrophies));
+    touched.push("minimumTrophies");
+  }
+  if (payload.memberLimit !== undefined) {
+    updates.memberLimit = sanitizeWith(() => resolveMemberLimit(payload.memberLimit));
+    touched.push("memberLimit");
   }
 
-  if (!opId || !clanId) {
-    throw new HttpsError("invalid-argument", "Missing required parameters.");
+  if (touched.length === 0) {
+    throw new HttpsError("invalid-argument", "At least one setting must be updated.");
   }
 
-  try {
-    const idempotencyResult = await checkIdempotency(uid, opId);
-    if (idempotencyResult) {
-      return idempotencyResult;
-    }
+  return { updates, touched };
+};
 
-    await createInProgressReceipt(uid, opId, "updateClanSettings");
+export const updateClanSettings = onCall(callableOptions(), async (request) => {
+  const uid = assertAuthenticated(request);
+  const payload = (request.data ?? {}) as UpdateClanSettingsRequest;
+  const opId = requireOpId(payload.opId);
+  const clanId = typeof payload.clanId === "string" ? payload.clanId.trim() : "";
+  if (!clanId) {
+    throw new HttpsError("invalid-argument", "clanId is required.");
+  }
+  const { updates, touched } = sanitizeUpdatePayload(payload);
 
-    return await runTransactionWithReceipt<UpdateClanSettingsResponse>(
-      uid,
-      opId,
-      "updateClanSettings",
-      async (transaction) => {
-        const clanRef = db.doc(`/Clans/${clanId}`);
-        const clanMemberRef = db.doc(`/Clans/${clanId}/Members/${uid}`);
+  const cached = await checkIdempotency(uid, opId);
+  if (cached) {
+    return cached as UpdateClanSettingsResponse;
+  }
+  await createInProgressReceipt(uid, opId, "updateClanSettings");
+  const now = FieldValue.serverTimestamp();
 
-        const clanMemberDoc = await transaction.get(clanMemberRef);
-        if (!clanMemberDoc.exists || clanMemberDoc.data()!.role !== "leader") {
-          throw new HttpsError("permission-denied", "Only the clan leader can update settings.");
-        }
+  const clanDocRef = clanRef(clanId);
+  const memberRef = clanMembersCollection(clanId).doc(uid);
 
-        const updateData: { [key: string]: string | admin.firestore.FieldValue } = {
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        };
-        if (description) {
-          updateData.description = description;
-        }
-        if (badge) {
-          updateData.badge = badge;
-        }
-
-        transaction.update(clanRef, updateData);
-
-        return {
-          success: true,
-          opId,
-        };
+  const result = await runTransactionWithReceipt<UpdateClanSettingsResponse>(
+    uid,
+    opId,
+    "updateClanSettings",
+    async (transaction) => {
+      const [clanSnap, memberSnap] = await Promise.all([
+        transaction.get(clanDocRef),
+        transaction.get(memberRef),
+      ]);
+      if (!clanSnap.exists) {
+        throw new HttpsError("not-found", "Clan not found.");
       }
-    );
-  } catch (error) {
-    const e = error as Error;
-    throw new HttpsError("internal", e.message, e);
+      if (!memberSnap.exists) {
+        throw new HttpsError("permission-denied", "Player is not a member of this clan.");
+      }
+      const memberData = memberSnap.data();
+      if (!memberData || !canManageMembers(memberData.role)) {
+        throw new HttpsError("permission-denied", "Insufficient permissions to update clan.");
+      }
+
+      const clanData = clanSnap.data() ?? {};
+      if (
+        typeof updates.memberLimit === "number" &&
+        Number(clanData?.stats?.members ?? 0) > updates.memberLimit
+      ) {
+        throw new HttpsError("failed-precondition", "memberLimit cannot be less than current members.");
+      }
+
+      const searchPayload = clanData.search ?? {};
+      if (updates.name || updates.location || updates.language) {
+        const nameToUse = (updates.name as string) ?? clanData.name;
+        const locationToUse = (updates.location as string) ?? searchPayload.location ?? clanData.location;
+        const languageToUse = (updates.language as string) ?? searchPayload.language ?? clanData.language;
+        updates.search = buildSearchFields(nameToUse, clanData.tag, locationToUse, languageToUse);
+      }
+
+      transaction.update(clanDocRef, {
+        ...updates,
+        updatedAt: now,
+      });
+
+      return { clanId, updated: touched };
+    },
+  );
+
+  return result;
+});
+
+interface DeleteClanRequest {
+  opId: string;
+  clanId: string;
+}
+
+interface DeleteClanResponse {
+  clanId: string;
+  deleted: boolean;
+}
+
+export const deleteClan = onCall(callableOptions(), async (request) => {
+  const uid = assertAuthenticated(request);
+  const payload = (request.data ?? {}) as DeleteClanRequest;
+  const opId = requireOpId(payload.opId);
+  if (typeof payload.clanId !== "string" || payload.clanId.trim().length === 0) {
+    throw new HttpsError("invalid-argument", "clanId is required.");
   }
+
+  const cached = await checkIdempotency(uid, opId);
+  if (cached) {
+    return cached as DeleteClanResponse;
+  }
+  await createInProgressReceipt(uid, opId, "deleteClan");
+  const clanDocRef = clanRef(payload.clanId);
+  const memberRef = clanMembersCollection(payload.clanId).doc(uid);
+
+  const result = await runTransactionWithReceipt<DeleteClanResponse>(
+    uid,
+    opId,
+    "deleteClan",
+    async (transaction) => {
+      const [clanSnap, memberSnap] = await Promise.all([
+        transaction.get(clanDocRef),
+        transaction.get(memberRef),
+      ]);
+      if (!clanSnap.exists) {
+        throw new HttpsError("not-found", "Clan not found.");
+      }
+      if (!memberSnap.exists) {
+        throw new HttpsError("permission-denied", "Player is not a member of this clan.");
+      }
+      const memberData = memberSnap.data();
+      if (!memberData || !isLeader(memberData.role)) {
+        throw new HttpsError("permission-denied", "Only the leader can delete a clan.");
+      }
+      const clanData = clanSnap.data() ?? {};
+      if (Number(clanData?.stats?.members ?? 0) > 1) {
+        throw new HttpsError("failed-precondition", "Transfer leadership or kick members before deleting.");
+      }
+
+      transaction.delete(memberRef);
+      clearPlayerClanProfile(transaction, uid);
+      clearPlayerClanState(transaction, uid);
+
+      if (typeof clanData.tag === "string" && clanData.tag.length > 0) {
+        transaction.delete(clanTagRef(clanData.tag));
+      }
+
+      transaction.delete(clanDocRef);
+
+      return { clanId: payload.clanId, deleted: true };
+    },
+  );
+
+  await admin.firestore().recursiveDelete(clanDocRef);
+  return result;
+});
+
+interface GetClanDetailsRequest {
+  clanId: string;
+}
+
+interface ClanMemberView {
+  uid: string;
+  role: string;
+  trophies: number;
+  displayName: string;
+  joinedAt?: number;
+}
+
+interface ClanRequestView {
+  uid: string;
+  displayName: string;
+  trophies: number;
+  message?: string;
+  requestedAt?: number;
+}
+
+interface GetClanDetailsResponse {
+  clan: ReturnType<typeof clanSummaryProjection>;
+  members: ClanMemberView[];
+  membership: {
+    role: string;
+    joinedAt?: number;
+  } | null;
+  requests?: ClanRequestView[];
+}
+
+export const getClanDetails = onCall(callableOptions(), async (request) => {
+  const uid = assertAuthenticated(request);
+  const payload = (request.data ?? {}) as GetClanDetailsRequest;
+  if (typeof payload.clanId !== "string" || payload.clanId.trim().length === 0) {
+    throw new HttpsError("invalid-argument", "clanId is required.");
+  }
+  const clanDocRef = clanRef(payload.clanId);
+  const clanSnap = await clanDocRef.get();
+  if (!clanSnap.exists) {
+    throw new HttpsError("not-found", "Clan not found.");
+  }
+  const clanData = clanSnap.data() ?? {};
+  if (clanData.status && clanData.status !== "active") {
+    throw new HttpsError("failed-precondition", "Clan is inactive.");
+  }
+
+  const membersSnap = await clanMembersCollection(payload.clanId)
+    .orderBy("rolePriority", "desc")
+    .orderBy("trophies", "desc")
+    .limit(100)
+    .get();
+
+  const members: ClanMemberView[] = membersSnap.docs.map((doc) => {
+    const data = doc.data() ?? {};
+    return {
+      uid: doc.id,
+      role: data.role ?? "member",
+      trophies: Number(data.trophies ?? 0),
+      displayName: data.displayName ?? "Racer",
+      joinedAt: data.joinedAt?.toMillis?.(),
+    };
+  });
+
+  const membershipDoc = await clanMembersCollection(payload.clanId).doc(uid).get();
+  const membership = membershipDoc.exists
+    ? {
+        role: membershipDoc.data()?.role ?? "member",
+        joinedAt: membershipDoc.data()?.joinedAt?.toMillis?.(),
+      }
+    : null;
+
+  let requests: ClanRequestView[] | undefined;
+  if (membership?.role && canManageMembers(membership.role as ClanRole)) {
+    const requestsSnap = await clanRequestsCollection(payload.clanId)
+      .orderBy("requestedAt", "asc")
+      .limit(25)
+      .get();
+    requests = requestsSnap.docs.map((doc) => {
+      const data = doc.data() ?? {};
+      return {
+        uid: doc.id,
+        displayName: data.displayName ?? "Racer",
+        trophies: Number(data.trophies ?? 0),
+        message: data.message,
+        requestedAt: data.requestedAt?.toMillis?.(),
+      };
+    });
+  }
+
+  return {
+    clan: clanSummaryProjection(clanData),
+    members,
+    membership,
+    requests,
+  };
+});
+
+interface SearchClansRequest {
+  query?: string;
+  location?: string;
+  language?: string;
+  type?: ClanType | "any";
+  limit?: number;
+  minMembers?: number;
+  maxMembers?: number;
+  minTrophies?: number;
+  requireOpenSpots?: boolean;
+}
+
+interface SearchClansResponse {
+  clans: ReturnType<typeof clanSummaryProjection>[];
+}
+
+const clampLimit = (value?: unknown, fallback = 25, max = 50): number => {
+  if (value === undefined || value === null) {
+    return fallback;
+  }
+  const parsed = Math.floor(Number(value));
+  if (!Number.isFinite(parsed) || parsed <= 0 || parsed > max) {
+    throw new HttpsError("invalid-argument", `limit must be between 1 and ${max}.`);
+  }
+  return parsed;
+};
+
+export const searchClans = onCall(callableOptions(), async (request) => {
+  assertAuthenticated(request);
+  const payload = (request.data ?? {}) as SearchClansRequest;
+  const limit = clampLimit(payload.limit);
+  const requireOpenSpots = Boolean(payload.requireOpenSpots);
+
+  const queryText = typeof payload.query === "string" ? payload.query.trim() : "";
+  if (queryText.startsWith("#")) {
+    const lookedUpTag = sanitizeWith(() => sanitizeTag(queryText.replace("#", "")));
+    const tagSnap = await clansCollection()
+      .where("search.tagUpper", "==", lookedUpTag)
+      .where("status", "==", "active")
+      .limit(1)
+      .get();
+    if (tagSnap.empty) {
+      return { clans: [] };
+    }
+    const doc = tagSnap.docs[0];
+    const data = doc.data() ?? {};
+    const summary = clanSummaryProjection(data);
+    if (
+      (payload.location && summary.location !== resolveLocation(payload.location)) ||
+      (payload.language && summary.language !== resolveLanguage(payload.language)) ||
+      (payload.type && payload.type !== "any" && summary.type !== resolveClanType(payload.type))
+    ) {
+      return { clans: [] };
+    }
+    return { clans: [summary] };
+  }
+
+  let query: FirebaseFirestore.Query = clansCollection().where("status", "==", "active");
+  if (payload.location) {
+    const location = sanitizeWith(() => resolveLocation(payload.location));
+    query = query.where("search.location", "==", location);
+  }
+  if (payload.language) {
+    const language = sanitizeWith(() => resolveLanguage(payload.language));
+    query = query.where("search.language", "==", language);
+  }
+  if (payload.type && payload.type !== "any") {
+    query = query.where("type", "==", resolveClanType(payload.type));
+  }
+  if (payload.minMembers !== undefined) {
+    query = query.where("stats.members", ">=", Number(payload.minMembers));
+  }
+  if (payload.maxMembers !== undefined) {
+    query = query.where("stats.members", "<=", Number(payload.maxMembers));
+  }
+  if (payload.minTrophies !== undefined) {
+    query = query.where("stats.trophies", ">=", Number(payload.minTrophies));
+  }
+
+  query = query.orderBy("stats.trophies", "desc").limit(limit * 2);
+  const snapshot = await query.get();
+  const lowerQuery = queryText.toLowerCase();
+
+  const results = snapshot.docs
+    .map((doc: FirebaseFirestore.QueryDocumentSnapshot) => clanSummaryProjection(doc.data() ?? {}))
+    .filter((clan: ReturnType<typeof clanSummaryProjection>) => {
+      if (requireOpenSpots && clan.stats.members >= clan.memberLimit) {
+        return false;
+      }
+      if (lowerQuery.length === 0) {
+        return true;
+      }
+      return clan.name.toLowerCase().includes(lowerQuery);
+    })
+    .slice(0, limit);
+
+  return { clans: results };
+});
+
+interface GetClanLeaderboardRequest {
+  limit?: number;
+  location?: string;
+}
+
+interface GetClanLeaderboardResponse {
+  clans: ReturnType<typeof clanSummaryProjection>[];
+}
+
+export const getClanLeaderboard = onCall(callableOptions(), async (request) => {
+  assertAuthenticated(request);
+  const payload = (request.data ?? {}) as GetClanLeaderboardRequest;
+  const limit = clampLimit(payload.limit, 25, 100);
+
+  let query: FirebaseFirestore.Query = clansCollection()
+    .where("status", "==", "active")
+    .orderBy("stats.trophies", "desc")
+    .limit(limit);
+
+  if (payload.location) {
+    const location = sanitizeWith(() => resolveLocation(payload.location));
+    query = clansCollection()
+      .where("status", "==", "active")
+      .where("search.location", "==", location)
+      .orderBy("stats.trophies", "desc")
+      .limit(limit);
+  }
+
+  const snapshot = await query.get();
+  return {
+    clans: snapshot.docs.map((doc: FirebaseFirestore.QueryDocumentSnapshot) =>
+      clanSummaryProjection(doc.data() ?? {}),
+    ),
+  };
 });

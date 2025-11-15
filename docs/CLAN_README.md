@@ -1,298 +1,145 @@
-# Mystic Motors Clan System – Complete Reference
+# Mystic Motors Clans & Chat - Final Design
 
-## Overview
-
-The Mystic Motors Clan system enables players to form, manage, and participate in clans. This document details the Firestore schema, all Cloud Functions, and their contracts, covering every aspect of clan creation, membership, roles, requests, chat, and settings.
+This document is the canonical reference for the Mystic Motors clan + chat backend. It captures the Firestore schema, Cloud Function responsibilities, and validation/permission rules that every client must rely on.
 
 ---
 
-## Firestore Schema for Clans
+## Feature Overview
 
-### Core Collections
+- Clash-of-Clans style clans without wars: create, search, join, leave, manage members, and update clan presentation.
+- Rich role hierarchy: `leader`, `coLeader`, `elder`, `member`, with clear promotion/demotion semantics.
+- Join flows for every clan type: open joins, invite-only requests, manual invitations, and bookmark lists.
+- Server-authoritative chats: multilingual global rooms + per-clan chat with slow mode and history trimming.
+- Cost-friendly reads: singleton player social docs and precomputed clan search fields to keep Firestore queries efficient.
+
+---
+
+## Firestore Schema
+
+### `/Clans/{clanId}`
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `clanId` | string | Document ID mirror. |
+| `name` | string | Display name (3-24 characters). |
+| `tag` | string | Uppercase unique code (2-5 chars). |
+| `description` | string | Optional 0-140 char message. |
+| `type` | `"open" \| "invite" \| "closed"` | Controls how players join. |
+| `location` | string | ISO country or `GLOBAL`. |
+| `language` | string | Lowercase ISO language (e.g. `en`). |
+| `badge` | object | `{ frameId, backgroundId, emblemId }`. |
+| `minimumTrophies` | number | Entry requirement. |
+| `memberLimit` | number | Usually 50. |
+| `leaderUid` | string | UID of current leader. |
+| `stats` | object | `{ members, trophies, totalWins? }` and is updated transactionally. |
+| `status` | string | `"active"` today but reserved for moderation. |
+| `search` | object | `{ nameLower, tagUpper, location, language }` for indexed queries. |
+| `createdAt` / `updatedAt` | timestamp | Server timestamps. |
+
+#### Subcollections
+
+- `/Members/{uid}` ? `{ uid, role, rolePriority, trophies, joinedAt, displayName, lastPromotedAt }`
+- `/Requests/{uid}` ? `{ uid, displayName, trophies, message?, requestedAt }`
+- `/Chat/{messageId}` ? `{ clanId, authorUid?, authorDisplayName, type, text?, payload?, createdAt }`
+
+### Player Social Data (`/Players/{uid}/Social`)
+
+| Doc/Collection | Key Fields |
+| --- | --- |
+| `Clan` (doc) | `{ clanId, role, joinedAt, lastVisitedClanChatAt, lastVisitedGlobalChatAt, bookmarkedClanIds? }` |
+| `ClanInvites` (doc) | `{ invites: { [clanId]: { clanId, clanName, clanTag, fromUid, fromRole, message?, createdAt } }, updatedAt }` |
+| `ClanBookmarks` (doc) | `{ bookmarks: { [clanId]: { clanId, clanName, clanTag, addedAt } }, bookmarkedClanIds, updatedAt }` |
+| `ChatRate` (doc) | `{ rooms: { [roomOrClanKey]: { lastSentAt } }, updatedAt }` |
+
+### Chat Rooms
 
 ```
-/Clans/{clanId}
-  /Chat/{messageId}
-  /Members/{uid}
-  /Requests/{uid}
+/Rooms/{roomId}
+  /Messages/{messageId}
 ```
 
-- **/Clans/{clanId}**: Main clan document, keyed by a unique clan ID.
-- **/Clans/{clanId}/Chat/{messageId}**: Stores clan chat messages.
-- **/Clans/{clanId}/Members/{uid}**: Each member’s data, keyed by their UID.
-- **/Clans/{clanId}/Requests/{uid}**: Join requests for invite-only clans.
+| Field | Description |
+| --- | --- |
+| `roomId` | e.g. `global_en`, `global_hi`. |
+| `type` | `"global"` or `"system"`. |
+| `language` / `location?` | Used for UI filtering. |
+| `slowModeSeconds` | Minimum delay between messages per user. |
+| `maxMessages` | Soft cap for history trimming. |
+| `Messages` docs | `{ roomId, authorUid, authorDisplayName, authorAvatarId, authorTrophies, authorClanName?, authorClanTag?, authorClanBadge?, type, text, clientCreatedAt?, createdAt, deleted, deletedReason }`. |
 
-### Clan Document Fields
-
-- `clanId`: Unique identifier.
-- `clanName`: Display name.
-- `clanTag`: Short tag for leaderboard and UI.
-- `createdAt`: Timestamp.
-- `leaderId`: UID of the current leader.
-- `settings`: Public clan settings (e.g., open/invite-only, description, requirements).
-- `members`: Map of member UIDs to their roles and join dates.
-- `requests`: Map of pending join requests.
-
-### Security
-
-- Only authenticated users can read/write their own clan membership.
-- Sensitive clan mutations (e.g., leader succession, member roles) are performed by Cloud Functions.
-- Clan chat is public to members; requests and membership changes are server-authoritative.
+The backend trims both global and clan chat history to a server-configured threshold (currently 100 messages) so collections stay bounded.
 
 ---
 
-## Clan Functionality – Cloud Function Contracts
+## Cloud Functions
 
-### 1. Create Clan
+All functions are HTTPS `onCall`, `us-central1`, AppCheck optional. Every request requires auth and, when provided, the `opId` (idempotency token) is validated via `/Players/{uid}/Receipts/{opId}`.
 
-**Function:** `createClan`
+### Clan Management
 
-- **Purpose:** Creates a new clan.
-- **Input:**
-  ```json
-  { "clanName": "string", "clanTag": "string" }
-  ```
-- **Output:**
-  ```json
-  { "success": true, "clanId": "string" }
-  ```
-- **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `FAILED_PRECONDITION`
+| Function | Request | Response | Notes |
+| --- | --- | --- | --- |
+| `createClan` | `{ opId, name, tag, description?, type?, location?, language?, badge?, minimumTrophies?, memberLimit? }` | `{ clanId, name, tag }` | Reserves tag, creates clan doc, adds creator as leader, writes `/Social/Clan` doc, posts system message. |
+| `updateClanSettings` | `{ opId, clanId, name?, description?, type?, location?, language?, badge?, minimumTrophies?, memberLimit? }` | `{ clanId, updated: string[] }` | Officers only; updates search mirror + timestamp; rejects shrinking memberLimit below current count. |
+| `deleteClan` | `{ opId, clanId }` | `{ clanId, deleted: true }` | Leader-only, clan must be empty aside from leader (kick/transfer first). Recursively deletes clan tree after txn. |
 
----
+### Membership & Roles
 
-### 2. Join Clan
+| Function | Request | Response | Validation Highlights |
+| --- | --- | --- | --- |
+| `joinClan` | `{ opId, clanId }` | `{ clanId }` | Open clans only; checks trophies, capacity, and clears join requests/invites. |
+| `requestToJoinClan` | `{ opId, clanId, message? }` | `{ clanId }` | Invite-only clans; prevents duplicates and enforces capacity/trophies. |
+| `cancelJoinRequest` | `{ opId, clanId }` | `{ clanId }` | Deletes pending request atomically. |
+| `leaveClan` | `{ opId }` | `{ clanId }` | Removes membership, decrements stats, handles leader succession (promotes highest priority member). |
+| `acceptJoinRequest` | `{ opId, clanId, targetUid }` | `{ clanId }` | Officer+, moves request into membership, updates player social docs, posts system message. |
+| `declineJoinRequest` | `{ opId, clanId, targetUid }` | `{ clanId }` | Officer+, simply deletes request. |
+| `promoteClanMember` | `{ opId, clanId, targetUid, role? }` | `{ clanId }` | Officer+ with higher priority than target; optional explicit role, otherwise +1 rank (never to leader). |
+| `demoteClanMember` | `{ opId, clanId, targetUid, role? }` | `{ clanId }` | Officer+, ensures lowered rank and target not leader. |
+| `transferClanLeadership` | `{ opId, clanId, targetUid }` | `{ clanId }` | Leader only -> promotes target to leader, demotes self to coLeader, posts system message. |
+| `kickClanMember` | `{ opId, clanId, targetUid }` | `{ clanId }` | Officer+, cannot kick leader, clears member's social docs and invite. |
+| `updateMemberTrophies` | `{ opId, trophyDelta }` | `{ opId, updated: boolean }` | Internal helper called by race results; increments clan + member trophies when player currently in a clan. |
 
-**Function:** `joinClan`
+### Invites, Bookmarks, and Lookups
 
-- **Purpose:** Joins an open clan.
-- **Input:**
-  ```json
-  { "clanId": "string" }
-  ```
-- **Output:**
-  ```json
-  { "success": true, "clanId": "string" }
-  ```
-- **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `FAILED_PRECONDITION`, `NOT_FOUND`
+| Function | Request | Response | Notes |
+| --- | --- | --- | --- |
+| `inviteToClan` | `{ opId, clanId, targetUid, message? }` | `{ clanId }` | Officer+, writes invite blob under target's `/Social/ClanInvites`. |
+| `acceptClanInvite` | `{ opId, clanId }` | `{ clanId }` | Converts invite to membership after validating capacity/trophies. |
+| `declineClanInvite` | `{ opId, clanId }` | `{ clanId }` | Removes stored invite. |
+| `bookmarkClan` | `{ opId, clanId }` | `{ clanId }` | Stores snapshot in `/Social/ClanBookmarks` + array helper for quick UI rendering. |
+| `unbookmarkClan` | `{ opId, clanId }` | `{ clanId }` | Removes bookmark snapshot + ID. |
+| `getBookmarkedClans` | `{}` | `{ clans: ClanSummary[] }` | Hydrates live data when available, otherwise falls back to cached bookmark metadata. |
+| `getClanDetails` | `{ clanId }` | `{ clan, members, membership, requests? }` | Returns roster sorted by `rolePriority` + trophies, includes pending requests when caller is officer+. |
+| `searchClans` | `{ query?, location?, language?, type?, limit?, minMembers?, maxMembers?, minTrophies?, requireOpenSpots? }` | `{ clans: ClanSummary[] }` | Supports `#TAG` lookup, name substring filtering, capacity checks. |
+| `getClanLeaderboard` | `{ limit?, location? }` | `{ clans: ClanSummary[] }` | Ordered by `stats.trophies`, supports location filter. |
 
----
+`ClanSummary` objects mirror the Firestore doc: `{ clanId, name, tag, description, type, location, language, badge, minimumTrophies, memberLimit, stats }`.
 
-### 3. Leave Clan
+### Chat
 
-**Function:** `leaveClan`
+| Function | Request | Response | Notes |
+| --- | --- | --- | --- |
+| `sendGlobalChatMessage` | `{ opId, roomId, text, clientCreatedAt? }` | `{ roomId, messageId }` | Enforces slow mode, trims to backend-configured history, stamps display name, avatarId, trophies, and clan snapshot for every message. |
+| `getGlobalChatMessages` | `{ roomId, limit? }` | `{ roomId, messages: Message[] }` | Returns up to 25 most recent global messages, newest-last, reflecting the stored metadata. |
+| `sendClanChatMessage` | `{ opId, clanId?, text, clientCreatedAt? }` | `{ clanId, messageId }` | Requires current membership, enforces clan slow mode, logs profile + clan snapshot, updates `lastVisitedClanChatAt`. |
+| `getClanChatMessages` | `{ limit? }` | `{ clanId, messages: Message[] }` | Requires membership; returns up to 25 most recent clan messages. |
 
-- **Purpose:** Leaves the current clan, handling leader succession if needed.
-- **Input:** `{}` (no parameters)
-- **Output:**
-  ```json
-  { "success": true }
-  ```
-- **Errors:** `UNAUTHENTICATED`, `FAILED_PRECONDITION`
+`Message` objects contain `{ messageId, roomId?, clanId?, authorUid, authorDisplayName, authorAvatarId, authorTrophies, authorClanName?, authorClanTag?, authorClanBadge?, type, text, clientCreatedAt?, createdAt, deleted, deletedReason }`.
 
----
-
-### 4. Invite to Clan
-
-**Function:** `inviteToClan`
-
-- **Purpose:** Invites a player to a clan.
-- **Input:**
-  ```json
-  { "inviteeId": "string" }
-  ```
-- **Output:**
-  ```json
-  { "success": true }
-  ```
-- **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `FAILED_PRECONDITION`, `PERMISSION_DENIED`
+Moderation helpers (`moderateChatMessage`) are optional future work but should follow the same schema if added.
 
 ---
 
-### 5. Request to Join Clan
+## Validation & Error Semantics
 
-**Function:** `requestToJoinClan`
+- **Auth**: Every callable throws `unauthenticated` if no Firebase Auth context.
+- **Idempotency**: All mutation endpoints with `opId` cache receipts; repeated `opId` returns previous result immediately.
+- **Role checks**: `leader` > `coLeader` > `elder` > `member`. Promotions/demotions require strictly higher-ranking caller.
+- **Capacity**: `memberLimit` enforced everywhere (join, invite acceptance, requests). `minimumTrophies` compared against cached player trophies.
+- **Slow mode**: Chat endpoints compare `Date.now()` to stored `lastSentAt`. Violations throw `resource-exhausted`.
+- **Error Codes**: Use `invalid-argument`, `failed-precondition`, `permission-denied`, `already-exists`, and `not-found` per scenario so the Unity client can localize copy.
 
-- **Purpose:** Requests to join a closed/invite-only clan.
-- **Input:**
-  ```json
-  { "clanId": "string" }
-  ```
-- **Output:**
-  ```json
-  { "success": true }
-  ```
-- **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `FAILED_PRECONDITION`
+Keep this document synced whenever schema or callable contracts evolve. It is the source-of-truth for gameplay, QA, and LiveOps.
 
----
 
-### 6. Accept Join Request
 
-**Function:** `acceptJoinRequest`
-
-- **Purpose:** Accepts a pending join request.
-- **Input:**
-  ```json
-  { "clanId": "string", "requesteeId": "string" }
-  ```
-- **Output:**
-  ```json
-  { "success": true }
-  ```
-- **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `PERMISSION_DENIED`, `NOT_FOUND`
-
----
-
-### 7. Decline Join Request
-
-**Function:** `declineJoinRequest`
-
-- **Purpose:** Declines a pending join request.
-- **Input:**
-  ```json
-  { "clanId": "string", "requesteeId": "string" }
-  ```
-- **Output:**
-  ```json
-  { "success": true }
-  ```
-- **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `PERMISSION_DENIED`
-
----
-
-### 8. Promote Clan Member
-
-**Function:** `promoteClanMember`
-
-- **Purpose:** Promotes a member to a higher role (e.g., officer, co-leader).
-- **Input:**
-  ```json
-  { "clanId": "string", "memberId": "string" }
-  ```
-- **Output:**
-  ```json
-  { "success": true }
-  ```
-- **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `NOT_FOUND`, `PERMISSION_DENIED`
-
----
-
-### 9. Demote Clan Member
-
-**Function:** `demoteClanMember`
-
-- **Purpose:** Demotes a member to a lower role.
-- **Input:**
-  ```json
-  { "clanId": "string", "memberId": "string" }
-  ```
-- **Output:**
-  ```json
-  { "success": true }
-  ```
-- **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `NOT_FOUND`, `PERMISSION_DENIED`, `FAILED_PRECONDITION`
-
----
-
-### 10. Kick Clan Member
-
-**Function:** `kickClanMember`
-
-- **Purpose:** Removes a member from the clan.
-- **Input:**
-  ```json
-  { "clanId": "string", "memberId": "string" }
-  ```
-- **Output:**
-  ```json
-  { "success": true }
-  ```
-- **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `NOT_FOUND`, `PERMISSION_DENIED`
-
----
-
-### 11. Update Clan Settings
-
-**Function:** `updateClanSettings`
-
-- **Purpose:** Updates a clan's public information (e.g., description, requirements).
-- **Input:**
-  ```json
-  { "clanId": "string", "newSettings": {} }
-  ```
-- **Output:**
-  ```json
-  { "success": true }
-  ```
-- **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `PERMISSION_DENIED`
-
----
-
-## Additional Clan Features
-
-### Clan Chat
-
-- **Path:** `/Clans/{clanId}/Chat/{messageId}`
-- **Functionality:** Members can send and read messages. Messages are timestamped and may include sender UID, display name, and content.
-
-### Clan Membership
-
-- **Path:** `/Clans/{clanId}/Members/{uid}`
-- **Fields:** Role (leader, officer, member), join date, activity stats.
-
-### Clan Requests
-
-- **Path:** `/Clans/{clanId}/Requests/{uid}`
-- **Fields:** Request date, status (pending, accepted, declined).
-
-### Leader Succession
-
-- When a leader leaves, the next eligible member (e.g., officer, longest-tenured) is promoted automatically.
-
-### Permissions
-
-- Only leaders/officers can invite, accept/decline requests, promote/demote, or kick members.
-- Members can leave clans and send join requests.
-
----
-
-## Error Handling
-
-All clan-related functions return clear error codes for authentication, permission, argument validation, and precondition failures. See each function contract for details.
-
----
-
-## Security & Best Practices
-
-- All sensitive mutations are server-authoritative.
-- Membership and role changes are validated for permissions.
-- Clan chat and requests are only accessible to members.
-- All IDs use opaque, consistent formats for security and scalability.
-
----
-
-## Summary Table
-
-| Function             | Purpose                        | Input Fields                | Output Fields         | Errors                       |
-|----------------------|-------------------------------|-----------------------------|-----------------------|------------------------------|
-| createClan           | Create a new clan              | clanName, clanTag           | success, clanId       | UNAUTHENTICATED, INVALID_ARGUMENT, FAILED_PRECONDITION |
-| joinClan             | Join an open clan              | clanId                      | success, clanId       | UNAUTHENTICATED, INVALID_ARGUMENT, FAILED_PRECONDITION, NOT_FOUND |
-| leaveClan            | Leave current clan             | (none)                      | success               | UNAUTHENTICATED, FAILED_PRECONDITION |
-| inviteToClan         | Invite player to clan          | inviteeId                   | success               | UNAUTHENTICATED, INVALID_ARGUMENT, FAILED_PRECONDITION, PERMISSION_DENIED |
-| requestToJoinClan    | Request to join closed clan    | clanId                      | success               | UNAUTHENTICATED, INVALID_ARGUMENT, FAILED_PRECONDITION |
-| acceptJoinRequest    | Accept join request            | clanId, requesteeId         | success               | UNAUTHENTICATED, INVALID_ARGUMENT, PERMISSION_DENIED, NOT_FOUND |
-| declineJoinRequest   | Decline join request           | clanId, requesteeId         | success               | UNAUTHENTICATED, INVALID_ARGUMENT, PERMISSION_DENIED |
-| promoteClanMember    | Promote member                 | clanId, memberId            | success               | UNAUTHENTICATED, INVALID_ARGUMENT, NOT_FOUND, PERMISSION_DENIED |
-| demoteClanMember     | Demote member                  | clanId, memberId            | success               | UNAUTHENTICATED, INVALID_ARGUMENT, NOT_FOUND, PERMISSION_DENIED, FAILED_PRECONDITION |
-| kickClanMember       | Remove member                  | clanId, memberId            | success               | UNAUTHENTICATED, INVALID_ARGUMENT, NOT_FOUND, PERMISSION_DENIED |
-| updateClanSettings   | Update clan info               | clanId, newSettings         | success               | UNAUTHENTICATED, INVALID_ARGUMENT, PERMISSION_DENIED |
-
----
-
-## References
-
-- See Firestore schema for document structure and security rules.
-- See function contracts for API details and error codes.
-
----
-
-**This README covers every aspect of Mystic Motors Clan functionality, including schema, API, permissions, and error handling. Use this as the canonical reference for development, integration, and documentation.**

@@ -22,34 +22,36 @@ This document is the canonical reference for the Mystic Motors clan + chat backe
 | --- | --- | --- |
 | `clanId` | string | Document ID mirror. |
 | `name` | string | Display name (3-24 characters). |
-| `tag` | string | Uppercase unique code (2-5 chars). |
 | `description` | string | Optional 0-140 char message. |
 | `type` | `"open" \| "invite" \| "closed"` | Controls how players join. |
-| `location` | string | ISO country or `GLOBAL`. |
+| `location` | string | Free-form string (UI filter). |
 | `language` | string | Lowercase ISO language (e.g. `en`). |
 | `badge` | object | `{ frameId, backgroundId, emblemId }`. |
 | `minimumTrophies` | number | Entry requirement. |
-| `memberLimit` | number | Usually 50. |
 | `leaderUid` | string | UID of current leader. |
 | `stats` | object | `{ members, trophies, totalWins? }` and is updated transactionally. |
 | `status` | string | `"active"` today but reserved for moderation. |
-| `search` | object | `{ nameLower, tagUpper, location, language }` for indexed queries. |
+| `search` | object | `{ nameLower, location, language }` for indexed queries. |
 | `createdAt` / `updatedAt` | timestamp | Server timestamps. |
 
 #### Subcollections
 
-- `/Members/{uid}` ? `{ uid, role, rolePriority, trophies, joinedAt, displayName, lastPromotedAt }`
+- `/Members/{uid}` ? `{ uid, role, rolePriority, trophies, joinedAt, displayName, avatarId, level, lastPromotedAt }`
 - `/Requests/{uid}` ? `{ uid, displayName, trophies, message?, requestedAt }`
 - `/Chat/{messageId}` ? `{ clanId, authorUid?, authorDisplayName, type, text?, payload?, createdAt }`
+
+> **Realtime tip:** Attach a Firestore listener to `Clans/{clanId}/Members` (optionally with ordering) to stream roster changes into Unity. Each member lives in its own document, so updates remain fine-grained and cheap.
 
 ### Player Social Data (`/Players/{uid}/Social`)
 
 | Doc/Collection | Key Fields |
 | --- | --- |
 | `Clan` (doc) | `{ clanId, role, joinedAt, lastVisitedClanChatAt, lastVisitedGlobalChatAt, bookmarkedClanIds? }` |
-| `ClanInvites` (doc) | `{ invites: { [clanId]: { clanId, clanName, clanTag, fromUid, fromRole, message?, createdAt } }, updatedAt }` |
-| `ClanBookmarks` (doc) | `{ bookmarks: { [clanId]: { clanId, clanName, clanTag, addedAt } }, bookmarkedClanIds, updatedAt }` |
+| `ClanInvites` (doc) | `{ invites: { [clanId]: { clanId, clanName, fromUid, fromRole, message?, createdAt } }, updatedAt }` |
+| `ClanBookmarks` (doc) | `{ bookmarks: { [clanId]: { clanId, clanName, addedAt } }, bookmarkedClanIds, updatedAt }` |
 | `ChatRate` (doc) | `{ rooms: { [roomOrClanKey]: { lastSentAt } }, updatedAt }` |
+
+> The `/Players/{uid}/Social/Clan` singleton is the canonical "Am I in a clan?" flag. Read or listen to it at boot to discover the current clanId and role, then pass that clanId into `getClanDetails` (or call `getMyClanDetails` below) to hydrate the roster.
 
 ### Chat Rooms
 
@@ -65,7 +67,7 @@ This document is the canonical reference for the Mystic Motors clan + chat backe
 | `language` / `location?` | Used for UI filtering. |
 | `slowModeSeconds` | Minimum delay between messages per user. |
 | `maxMessages` | Soft cap for history trimming. |
-| `Messages` docs | `{ roomId, authorUid, authorDisplayName, authorAvatarId, authorTrophies, authorClanName?, authorClanTag?, authorClanBadge?, type, text, clientCreatedAt?, createdAt, deleted, deletedReason }`. |
+| `Messages` docs | `{ roomId, authorUid, authorDisplayName, authorAvatarId, authorTrophies, authorClanName?, authorClanBadge?, type, text, clientCreatedAt?, createdAt, deleted, deletedReason }`. |
 
 The backend trims both global and clan chat history to a server-configured threshold (currently 100 messages) so collections stay bounded.
 
@@ -79,8 +81,8 @@ All functions are HTTPS `onCall`, `us-central1`, AppCheck optional. Every reques
 
 | Function | Request | Response | Notes |
 | --- | --- | --- | --- |
-| `createClan` | `{ opId, name, tag, description?, type?, location?, language?, badge?, minimumTrophies?, memberLimit? }` | `{ clanId, name, tag }` | Reserves tag, creates clan doc, adds creator as leader, writes `/Social/Clan` doc, posts system message. |
-| `updateClanSettings` | `{ opId, clanId, name?, description?, type?, location?, language?, badge?, minimumTrophies?, memberLimit? }` | `{ clanId, updated: string[] }` | Officers only; updates search mirror + timestamp; rejects shrinking memberLimit below current count. |
+| `createClan` | `{ opId, name, description?, type?, location?, language?, badge?, minimumTrophies? }` | `{ clanId, name }` | Creates the clan doc, adds creator as leader, writes `/Social/Clan` doc, posts system message. |
+| `updateClanSettings` | `{ opId, clanId, name?, description?, type?, location?, language?, badge?, minimumTrophies? }` | `{ clanId, updated: string[] }` | Officers only; updates search mirror + timestamp. |
 | `deleteClan` | `{ opId, clanId }` | `{ clanId, deleted: true }` | Leader-only, clan must be empty aside from leader (kick/transfer first). Recursively deletes clan tree after txn. |
 
 ### Membership & Roles
@@ -110,10 +112,13 @@ All functions are HTTPS `onCall`, `us-central1`, AppCheck optional. Every reques
 | `unbookmarkClan` | `{ opId, clanId }` | `{ clanId }` | Removes bookmark snapshot + ID. |
 | `getBookmarkedClans` | `{}` | `{ clans: ClanSummary[] }` | Hydrates live data when available, otherwise falls back to cached bookmark metadata. |
 | `getClanDetails` | `{ clanId }` | `{ clan, members, membership, requests? }` | Returns roster sorted by `rolePriority` + trophies, includes pending requests when caller is officer+. |
-| `searchClans` | `{ query?, location?, language?, type?, limit?, minMembers?, maxMembers?, minTrophies?, requireOpenSpots? }` | `{ clans: ClanSummary[] }` | Supports `#TAG` lookup, name substring filtering, capacity checks. |
+| `getMyClanDetails` | `{}` | `{ clan, members, membership, requests? }` | Convenience wrapper that reads `/Players/{uid}/Social/Clan.clanId` to hydrate the caller's own clan without passing an ID. |
+| `searchClans` | `{ query?, location?, language?, type?, limit?, minMembers?, maxMembers?, minTrophies?, requireOpenSpots? }` | `{ clans: ClanSummary[] }` | Supports case-insensitive name filtering plus location/language/trophy filters. |
 | `getClanLeaderboard` | `{ limit?, location? }` | `{ clans: ClanSummary[] }` | Ordered by `stats.trophies`, supports location filter. |
 
-`ClanSummary` objects mirror the Firestore doc: `{ clanId, name, tag, description, type, location, language, badge, minimumTrophies, memberLimit, stats }`.
+`ClanSummary` objects mirror the Firestore doc: `{ clanId, name, description, type, location, language, badge, minimumTrophies, stats }`.
+
+`members[]` entries return `{ uid, displayName, avatarId, level, role, trophies, joinedAt }` so the client can render live rosters without additional lookups.
 
 ### Chat
 
@@ -124,7 +129,7 @@ All functions are HTTPS `onCall`, `us-central1`, AppCheck optional. Every reques
 | `sendClanChatMessage` | `{ opId, clanId?, text, clientCreatedAt? }` | `{ clanId, messageId }` | Requires current membership, enforces clan slow mode, logs profile + clan snapshot, updates `lastVisitedClanChatAt`. |
 | `getClanChatMessages` | `{ limit? }` | `{ clanId, messages: Message[] }` | Requires membership; returns up to 25 most recent clan messages. |
 
-`Message` objects contain `{ messageId, roomId?, clanId?, authorUid, authorDisplayName, authorAvatarId, authorTrophies, authorClanName?, authorClanTag?, authorClanBadge?, type, text, clientCreatedAt?, createdAt, deleted, deletedReason }`.
+`Message` objects contain `{ messageId, roomId?, clanId?, authorUid, authorDisplayName, authorAvatarId, authorTrophies, authorClanName?, authorClanBadge?, type, text, clientCreatedAt?, createdAt, deleted, deletedReason }`.
 
 Moderation helpers (`moderateChatMessage`) are optional future work but should follow the same schema if added.
 
@@ -135,7 +140,7 @@ Moderation helpers (`moderateChatMessage`) are optional future work but should f
 - **Auth**: Every callable throws `unauthenticated` if no Firebase Auth context.
 - **Idempotency**: All mutation endpoints with `opId` cache receipts; repeated `opId` returns previous result immediately.
 - **Role checks**: `leader` > `coLeader` > `elder` > `member`. Promotions/demotions require strictly higher-ranking caller.
-- **Capacity**: `memberLimit` enforced everywhere (join, invite acceptance, requests). `minimumTrophies` compared against cached player trophies.
+- **Eligibility**: `minimumTrophies` is checked against cached player trophies; there is no hard member cap, so availability is driven only by clan status.
 - **Slow mode**: Chat endpoints compare `Date.now()` to stored `lastSentAt`. Violations throw `resource-exhausted`.
 - **Error Codes**: Use `invalid-argument`, `failed-precondition`, `permission-denied`, `already-exists`, and `not-found` per scenario so the Unity client can localize copy.
 

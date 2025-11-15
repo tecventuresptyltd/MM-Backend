@@ -74,39 +74,39 @@ Main clan document keyed by a generated `clan_*` ID. Fields:
 
 * `clanId` *(string)* â€” mirror of the document ID for convenience.
 * `name` *(string)* â€” 3â€“24 characters, trimmed.
-* `tag` *(string)* â€” 2â€“5 uppercase characters. Index is enforced via `/ClanTags/{tag}` reservation.
 * `description` *(string)* â€” optional, â‰¤ 140 characters.
 * `type` *(string)* â€” `"open"`, `"invite"`, or `"closed"`.
-* `location` *(string)* â€” ISO country (uppercase) or `"GLOBAL"`.
+* `location` *(string)* â€” free-form string used for filtering (defaults to `"GLOBAL"` if blank).
 * `language` *(string)* â€” lowercase ISO language (e.g. `en`).
 * `badge` *(map)* â€” `{ frameId, backgroundId, emblemId }` referencing cosmetics.
 * `minimumTrophies` *(number)* â€” required trophies to join/request.
-* `memberLimit` *(number)* â€” soft cap (50 default).
 * `leaderUid` *(string)* â€” current leaderâ€™s UID for quick lookups.
 * `stats` *(map)* â€” `{ members, trophies, totalWins? }`, updated transactionally alongside member docs.
 * `status` *(string)* â€” `"active"` now but reserved for moderation.
-* `search` *(map)* â€” `{ nameLower, tagUpper, location, language }` to power Firestore queries.
+* `search` *(map)* â€” `{ nameLower, location, language }` to power Firestore queries.
 * `createdAt` / `updatedAt` *(timestamp)* â€” server timestamps.
 
 ##### Subcollections
 
-* `/Members/{uid}` – `{ uid, role, rolePriority, trophies, joinedAt, displayName, lastPromotedAt }`.
+* `/Members/{uid}` - `{ uid, role, rolePriority, trophies, joinedAt, displayName, avatarId, level, lastPromotedAt }`.
 * `/Requests/{uid}` – `{ uid, displayName, trophies, message?, requestedAt }`.
-* `/Chat/{messageId}` – `{ clanId, authorUid?, authorDisplayName, authorAvatarId?, authorTrophies?, authorClanName?, authorClanTag?, authorClanBadge?, type ("text" or system), text?, payload?, clientCreatedAt?, createdAt, deleted?, deletedReason? }`.
+* `/Chat/{messageId}` - `{ clanId, authorUid?, authorDisplayName, authorAvatarId?, authorTrophies?, authorClanName?, authorClanBadge?, type ("text" or system), text?, payload?, clientCreatedAt?, createdAt, deleted?, deletedReason? }`.
 
 #### Player-side clan metadata
 
 Under `/Players/{uid}/Social`:
 
 * `Clan` *(doc)* – `{ clanId, role, joinedAt, lastVisitedClanChatAt, lastVisitedGlobalChatAt, bookmarkedClanIds? }`.
-* `ClanInvites` *(doc)* – `{ invites: { [clanId]: { clanId, clanName, clanTag, fromUid, fromRole, message?, createdAt } }, updatedAt }`.
-* `ClanBookmarks` *(doc)* – `{ bookmarks: { [clanId]: { clanId, clanName, clanTag, addedAt } }, bookmarkedClanIds, updatedAt }`.
-* `ChatRate` *(doc)* – `{ rooms: { [roomIdOrClanKey]: { lastSentAt } }, updatedAt }` used by slow mode.
+* `ClanInvites` *(doc)* - `{ invites: { [clanId]: { clanId, clanName, fromUid, fromRole, message?, createdAt } }, updatedAt }`.
+* `ClanBookmarks` *(doc)* - `{ bookmarks: { [clanId]: { clanId, clanName, addedAt } }, bookmarkedClanIds, updatedAt }`.
+* `ChatRate` *(doc)* - `{ rooms: { [roomIdOrClanKey]: { lastSentAt } }, updatedAt }` used by slow mode.
+
+> Listen to `/Players/{uid}/Social/Clan` at startup; it is the canonical pointer indicating whether the user currently belongs to a clan and what role they hold.
 
 #### Global Chat
 
 * `/Rooms/{roomId}` – `roomId`, `type` (`"global"` or `"system"`), `language`, `location?`, `slowModeSeconds`, `maxMessages`, timestamps.
-* `/Rooms/{roomId}/Messages/{messageId}` – `roomId`, `authorUid`, `authorDisplayName`, `authorAvatarId`, `authorTrophies`, `authorClanName?`, `authorClanTag?`, `authorClanBadge?`, `type`, `text`, `clientCreatedAt`, `createdAt`, `deleted`, `deletedReason`.
+* `/Rooms/{roomId}/Messages/{messageId}` - `roomId`, `authorUid`, `authorDisplayName`, `authorAvatarId`, `authorTrophies`, `authorClanName?`, `authorClanBadge?`, `type`, `text`, `clientCreatedAt`, `createdAt`, `deleted`, `deletedReason`.
 ---
 
 ## Core Collections
@@ -768,7 +768,7 @@ Compact map keyed by friend `uid`. Each entry carries the `since` timestamp, opt
         "avatarId": 4,
         "level": 19,
         "trophies": 3120,
-        "clan": { "clanId": "clan_123", "name": "Night Riders", "tag": "NR" }
+        "clan": { "clanId": "clan_123", "name": "Night Riders" }
       }
     }
   },

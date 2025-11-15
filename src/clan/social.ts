@@ -122,7 +122,7 @@ const clampFetchLimit = (value?: unknown): number => {
 
 const fetchClanSummaryLite = async (
   clanId?: string | null,
-): Promise<{ clanId: string; name: string | null; tag: string | null; badge: unknown } | null> => {
+): Promise<{ clanId: string; name: string | null; badge: unknown } | null> => {
   if (!clanId) {
     return null;
   }
@@ -135,7 +135,6 @@ const fetchClanSummaryLite = async (
     return {
       clanId,
       name: typeof data.name === "string" ? data.name : null,
-      tag: typeof data.tag === "string" ? data.tag : null,
       badge: data.badge ?? null,
     };
   } catch (error) {
@@ -160,7 +159,6 @@ const serializeChatMessage = (
     authorTrophies: data.authorTrophies ?? null,
     authorClanName: data.authorClanName ?? null,
     authorClanBadge: data.authorClanBadge ?? null,
-    authorClanTag: data.authorClanTag ?? null,
     type: data.type ?? "text",
     text: data.text ?? "",
     clientCreatedAt: data.clientCreatedAt ?? null,
@@ -256,7 +254,6 @@ export const inviteToClan = onCall(callableOptions(), async (request) => {
             [clanId]: {
               clanId,
               clanName: clanData.name ?? "Clan",
-              clanTag: clanData.tag ?? "",
               fromUid: uid,
               fromRole: actorRole,
               createdAt: now,
@@ -326,11 +323,6 @@ export const acceptClanInvite = onCall(callableOptions(), async (request) => {
       if (clanData.status && clanData.status !== "active") {
         throw new HttpsError("failed-precondition", "Clan is not accepting members.");
       }
-      const memberLimit = Number(clanData.memberLimit ?? 0) || 50;
-      const currentMembers = Number(clanData?.stats?.members ?? 0);
-      if (currentMembers >= memberLimit) {
-        throw new HttpsError("failed-precondition", "Clan is full.");
-      }
       const minTrophies = Number(clanData.minimumTrophies ?? 0);
       if ((profile.trophies ?? 0) < minTrophies) {
         throw new HttpsError("failed-precondition", "Not enough trophies to join this clan.");
@@ -343,6 +335,8 @@ export const acceptClanInvite = onCall(callableOptions(), async (request) => {
         trophies: profile.trophies ?? 0,
         joinedAt: now,
         displayName: profile.displayName,
+        avatarId: profile.avatarId,
+        level: profile.level ?? 1,
       });
       transaction.update(clanDocRef, {
         "stats.members": FieldValue.increment(1),
@@ -361,7 +355,6 @@ export const acceptClanInvite = onCall(callableOptions(), async (request) => {
       updatePlayerClanProfile(transaction, uid, {
         clanId,
         clanName: clanData.name ?? "Clan",
-        clanTag: clanData.tag ?? "",
         role: "member",
       });
       setPlayerClanState(transaction, uid, {
@@ -453,7 +446,6 @@ export const bookmarkClan = onCall(callableOptions(), async (request) => {
             [clanId]: {
               clanId,
               clanName: clanData.name ?? "Clan",
-              clanTag: clanData.tag ?? "",
               addedAt: now,
             },
           },
@@ -578,7 +570,6 @@ export const sendGlobalChatMessage = onCall(callableOptions(), async (request) =
         authorAvatarId: profile.avatarId,
         authorTrophies: profile.trophies ?? 0,
         authorClanName: clanSummary?.name ?? profile.clanName ?? null,
-        authorClanTag: clanSummary?.tag ?? profile.clanTag ?? null,
         authorClanBadge: clanSummary?.badge ?? null,
         type: "text",
         text,
@@ -679,7 +670,6 @@ export const sendClanChatMessage = onCall(callableOptions(), async (request) => 
         authorAvatarId: profile.avatarId,
         authorTrophies: profile.trophies ?? 0,
         authorClanName: clanData.name ?? null,
-        authorClanTag: clanData.tag ?? null,
         authorClanBadge: clanData.badge ?? null,
         type: "text",
         text,

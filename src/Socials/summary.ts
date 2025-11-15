@@ -58,7 +58,6 @@ export const fetchClanSummary = async (
     return {
       clanId,
       name: normalizeString(data.name ?? data.displayName, "Clan"),
-      tag: normalizeString(data.tag ?? data.clanTag ?? "", "") || undefined,
       badge: normalizeString(data.badge ?? data.badgeId ?? "", "") || null,
     };
   } catch (error) {
@@ -85,7 +84,6 @@ const fetchClanSummaryMap = async (
     result.set(clanId, {
       clanId,
       name: normalizeString(data.name ?? data.displayName ?? clanId, "Clan"),
-      tag: normalizeString(data.tag ?? data.clanTag ?? "", "") || undefined,
       badge: normalizeString(data.badge ?? data.badgeId ?? "", "") || null,
     });
   });

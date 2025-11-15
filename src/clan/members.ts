@@ -226,11 +226,6 @@ export const joinClan = onCall(callableOptions(), async (request) => {
       if (clanData.type !== "open") {
         throw new HttpsError("failed-precondition", "Clan does not allow instant joins.");
       }
-      const memberLimit = Number(clanData.memberLimit ?? 0) || 50;
-      const currentMembers = Number(clanData?.stats?.members ?? 0);
-      if (currentMembers >= memberLimit) {
-        throw new HttpsError("failed-precondition", "Clan is full.");
-      }
       const minTrophies = Number(clanData.minimumTrophies ?? 0);
       if ((profile.trophies ?? 0) < minTrophies) {
         throw new HttpsError("failed-precondition", "Not enough trophies to join this clan.");
@@ -243,6 +238,8 @@ export const joinClan = onCall(callableOptions(), async (request) => {
         trophies: profile.trophies ?? 0,
         joinedAt: now,
         displayName: profile.displayName,
+        avatarId: profile.avatarId,
+        level: profile.level ?? 1,
       });
       transaction.update(clanDocRef, {
         "stats.members": FieldValue.increment(1),
@@ -262,7 +259,6 @@ export const joinClan = onCall(callableOptions(), async (request) => {
       updatePlayerClanProfile(transaction, uid, {
         clanId,
         clanName: clanData.name ?? "Clan",
-        clanTag: clanData.tag ?? "",
         role: "member",
       });
       setPlayerClanState(transaction, uid, {
@@ -711,11 +707,6 @@ export const requestToJoinClan = onCall(callableOptions(), async (request) => {
       if (clanData.type === "open") {
         throw new HttpsError("failed-precondition", "Clan is open. Use joinClan instead.");
       }
-      const memberLimit = Number(clanData.memberLimit ?? 0) || 50;
-      const currentMembers = Number(clanData?.stats?.members ?? 0);
-      if (currentMembers >= memberLimit) {
-        throw new HttpsError("failed-precondition", "Clan is full.");
-      }
       const minTrophies = Number(clanData.minimumTrophies ?? 0);
       if ((profile.trophies ?? 0) < minTrophies) {
         throw new HttpsError("failed-precondition", "Not enough trophies to request this clan.");
@@ -906,11 +897,6 @@ export const acceptJoinRequest = onCall(callableOptions(), async (request) => {
       }
 
       const clanData = clanSnap.data() ?? {};
-      const memberLimit = Number(clanData.memberLimit ?? 0) || 50;
-      const currentMembers = Number(clanData?.stats?.members ?? 0);
-      if (currentMembers >= memberLimit) {
-        throw new HttpsError("failed-precondition", "Clan is full.");
-      }
 
       const trophies = targetProfile.trophies ?? requestSnap.data()?.trophies ?? 0;
       transaction.set(targetMemberRef, {
@@ -920,6 +906,8 @@ export const acceptJoinRequest = onCall(callableOptions(), async (request) => {
         trophies,
         joinedAt: now,
         displayName: targetProfile.displayName,
+        avatarId: targetProfile.avatarId,
+        level: targetProfile.level ?? 1,
       });
       transaction.update(clanDocRef, {
         "stats.members": FieldValue.increment(1),
@@ -939,7 +927,6 @@ export const acceptJoinRequest = onCall(callableOptions(), async (request) => {
       updatePlayerClanProfile(transaction, targetUid, {
         clanId,
         clanName: clanData.name ?? "Clan",
-        clanTag: clanData.tag ?? "",
         role: "member",
       });
       setPlayerClanState(transaction, targetUid, {

@@ -95,7 +95,8 @@ Functions for creating, joining, and managing clans (all HTTPS `onCall`, region 
 | `bookmarkClan` / `unbookmarkClan` | Adds/removes clan bookmarks under `/Players/{uid}/Social`. |
 | `getBookmarkedClans` | Returns the callerâ€™s bookmark list with live hydration. |
 | `getClanDetails` | Fetches clan summary, roster, and (for officers) pending requests. |
-| `searchClans` | Searches by name/tag with trophy/capacity filters. |
+| `getMyClanDetails` | Same payload as `getClanDetails` but derives the clanId from `/Players/{uid}/Social/Clan`. |
+| `searchClans` | Searches by name with trophy/location/language filters. |
 | `getClanLeaderboard` | Returns top clans ordered by `stats.trophies`. |
 
 **Chat**

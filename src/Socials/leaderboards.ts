@@ -24,7 +24,6 @@ interface LeaderboardPlayer {
   clan?: {
     clanId: string;
     clanName: string;
-    clanTag: string;
   } | null;
 }
 
@@ -240,11 +239,12 @@ export const getGlobalLeaderboard = onCall(
       rank: entry.rank,
       stat: entry.stat,
       uid: entry.player.uid,
-      clan: entry.player.clan ? {
-        clanId: entry.player.clan.clanId,
-        clanName: entry.player.clan.name,
-        clanTag: entry.player.clan.tag || "",
-      } : null,
+      clan: entry.player.clan
+        ? {
+            clanId: entry.player.clan.clanId,
+            clanName: entry.player.clan.name,
+          }
+        : null,
     }));
 
     const youIndex = sorted.findIndex((entry) => entry.uid === uid);

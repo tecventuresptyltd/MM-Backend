@@ -16,9 +16,9 @@ export interface PlayerProfileData {
   uid: string;
   displayName: string;
   avatarId: number;
+  level: number;
   trophies: number;
   clanId?: string | null;
-  clanTag?: string | null;
   clanName?: string | null;
   language?: string | null;
   location?: string | null;
@@ -41,6 +41,8 @@ export interface ClanMemberDoc {
   trophies: number;
   joinedAt: admin.firestore.Timestamp | admin.firestore.FieldValue;
   displayName: string;
+  avatarId: number;
+  level: number;
   lastPromotedAt?: admin.firestore.Timestamp | admin.firestore.FieldValue;
 }
 
@@ -49,8 +51,6 @@ export const MIN_CLAN_NAME_LENGTH = 3;
 export const MAX_CLAN_NAME_LENGTH = 24;
 export const MIN_CLAN_DESCRIPTION_LENGTH = 0;
 export const MAX_CLAN_DESCRIPTION_LENGTH = 140;
-export const MIN_MEMBER_LIMIT = 5;
-export const MAX_MEMBER_LIMIT = 50;
 export const MIN_TROPHY_REQUIREMENT = 0;
 export const MAX_TROPHY_REQUIREMENT = 100000;
 
@@ -87,7 +87,6 @@ export const clanRef = (clanId: string) => clansCollection().doc(clanId);
 export const clanMembersCollection = (clanId: string) => clanRef(clanId).collection("Members");
 export const clanRequestsCollection = (clanId: string) => clanRef(clanId).collection("Requests");
 export const clanChatCollection = (clanId: string) => clanRef(clanId).collection("Chat");
-export const clanTagRef = (tagUpper: string) => db.collection("ClanTags").doc(tagUpper);
 
 export const playersCollection = () => db.collection("Players");
 export const playerProfileRef = (uid: string) => playersCollection().doc(uid).collection("Profile").doc("Profile");
@@ -108,17 +107,6 @@ export const sanitizeName = (value?: unknown): string => {
     );
   }
   return trimmed;
-};
-
-export const sanitizeTag = (value?: unknown): string => {
-  if (typeof value !== "string") {
-    throw new Error("Clan tag must be a string.");
-  }
-  const candidate = value.trim().toUpperCase();
-  if (!/^[A-Z0-9]{2,5}$/.test(candidate)) {
-    throw new Error("Clan tag must be 2-5 alphanumeric characters.");
-  }
-  return candidate;
 };
 
 export const sanitizeDescription = (value?: unknown): string => {
@@ -163,17 +151,6 @@ export const resolveClanBadge = (value?: unknown): ClanBadge => {
   };
 };
 
-export const resolveMemberLimit = (value?: unknown): number => {
-  if (value === undefined || value === null) {
-    return 50;
-  }
-  const limit = Math.floor(Number(value));
-  if (!Number.isFinite(limit) || limit < MIN_MEMBER_LIMIT || limit > MAX_MEMBER_LIMIT) {
-    throw new Error(`memberLimit must be between ${MIN_MEMBER_LIMIT} and ${MAX_MEMBER_LIMIT}.`);
-  }
-  return limit;
-};
-
 export const resolveMinimumTrophies = (value?: unknown): number => {
   if (value === undefined || value === null) {
     return 0;
@@ -192,25 +169,19 @@ export const resolveMinimumTrophies = (value?: unknown): number => {
 };
 
 export const resolveLocation = (value?: unknown): string => {
-  if (typeof value !== "string" || value.trim().length === 0) {
+  if (typeof value !== "string") {
     return "GLOBAL";
   }
-  const normalized = value.trim().toUpperCase();
-  if (!/^[A-Z]{2,3}$/.test(normalized) && normalized !== "GLOBAL") {
-    throw new Error("location must be a 2-3 letter ISO code or GLOBAL.");
-  }
-  return normalized;
+  const normalized = value.trim();
+  return normalized.length > 0 ? normalized : "GLOBAL";
 };
 
 export const resolveLanguage = (value?: unknown): string => {
-  if (typeof value !== "string" || value.trim().length === 0) {
-    return "en";
+  if (typeof value !== "string") {
+    return "unknown";
   }
-  const normalized = value.trim().toLowerCase();
-  if (!/^[a-z]{2,5}$/.test(normalized)) {
-    throw new Error("language must be a lowercase locale code.");
-  }
-  return normalized;
+  const normalized = value.trim();
+  return normalized.length > 0 ? normalized : "unknown";
 };
 
 export const getPlayerProfile = async (
@@ -231,11 +202,11 @@ export const getPlayerProfile = async (
     avatarId: typeof data.avatarId === "number" && Number.isFinite(data.avatarId)
       ? data.avatarId
       : Number(data.avatarId) || 1,
+    level: typeof data.level === "number" && Number.isFinite(data.level) ? data.level : Number(data.level) || 1,
     trophies: typeof data.trophies === "number" && Number.isFinite(data.trophies)
       ? data.trophies
       : Number(data.trophies) || 0,
     clanId: typeof data.clanId === "string" ? data.clanId : null,
-    clanTag: typeof data.clanTag === "string" ? data.clanTag : null,
     clanName: typeof data.clanName === "string" ? data.clanName : null,
     language: typeof data.language === "string" ? data.language : null,
     location: typeof data.location === "string" ? data.location : null,
@@ -248,7 +219,6 @@ export const updatePlayerClanProfile = (
   payload: {
     clanId: string;
     clanName: string;
-    clanTag: string;
     role: ClanRole;
   },
 ) => {
@@ -257,7 +227,6 @@ export const updatePlayerClanProfile = (
     {
       clanId: payload.clanId,
       clanName: payload.clanName,
-      clanTag: payload.clanTag,
       clanRole: payload.role,
     },
     { merge: true },
@@ -273,7 +242,6 @@ export const clearPlayerClanProfile = (
     {
       clanId: admin.firestore.FieldValue.delete(),
       clanName: admin.firestore.FieldValue.delete(),
-      clanTag: admin.firestore.FieldValue.delete(),
       clanRole: admin.firestore.FieldValue.delete(),
     },
     { merge: true },
@@ -335,9 +303,8 @@ export const getClanMemberDoc = async (
   return transaction ? transaction.get(ref) : ref.get();
 };
 
-export const buildSearchFields = (name: string, tag: string, location: string, language: string) => ({
+export const buildSearchFields = (name: string, location: string, language: string) => ({
   nameLower: name.toLowerCase(),
-  tagUpper: tag,
   location,
   language,
 });
@@ -345,14 +312,12 @@ export const buildSearchFields = (name: string, tag: string, location: string, l
 export const clanSummaryProjection = (data: FirebaseFirestore.DocumentData) => ({
   clanId: data.clanId,
   name: data.name,
-  tag: data.tag,
   description: data.description ?? "",
   type: data.type,
   location: data.location,
   language: data.language,
   badge: data.badge ?? EMPTY_CLAN_BADGE,
   minimumTrophies: data.minimumTrophies,
-  memberLimit: data.memberLimit,
   stats: data.stats ?? { members: 0, trophies: 0 },
 });
 

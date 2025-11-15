@@ -14,7 +14,6 @@ export const LEADERBOARD_METRICS: Record<
 export interface PlayerClanSummary {
   clanId: string;
   name: string;
-  tag?: string;
   badge?: string | null;
 }
 

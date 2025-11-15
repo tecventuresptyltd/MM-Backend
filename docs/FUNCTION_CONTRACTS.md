@@ -904,8 +904,7 @@ When the SKU is coin-priced the response mirrors this shape with `currency: "coi
       "uid": "gAWy13PNRtRMrWEL06nSnqvYPS3w1",
       "clan": {
         "clanId": "clan_abc123",
-        "clanName": "Mystic Racers",
-        "clanTag": "MR"
+        "clanName": "Mystic Racers"
       }
     },
     {
@@ -923,7 +922,7 @@ When the SKU is coin-priced the response mirrors this shape with `currency: "coi
 
 **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `FAILED_PRECONDITION` (leaderboard still warming up)
 
-**Notes:** The response now follows a simplified format with `callerRank` (the authenticated user's position), `leaderboardType` (legacy metric type), and `players[]` array. Each player entry includes their stats, rank, and clan information. Clan information includes `clanId`, `clanName`, and `clanTag` when the player belongs to a clan, or `null` if they don't. This callable currently reads every `/Players/{uid}/Profile/Profile` document on demand, sorts all players by the requested metric, and slices the result in memory before returning it. That means each request scales with your player count—great for development/debugging, but expensive at scale. When you're ready for production you should reintroduce a scheduled snapshot (or another caching strategy) to avoid scanning millions of documents per call.
+**Notes:** The response now follows a simplified format with `callerRank` (the authenticated user's position), `leaderboardType` (legacy metric type), and `players[]` array. Each player entry includes their stats, rank, and clan information. Clan information includes `clanId` and `clanName` when the player belongs to a clan, or `null` if they don't. This callable currently reads every `/Players/{uid}/Profile/Profile` document on demand, sorts all players by the requested metric, and slices the result in memory before returning it. That means each request scales with your player count—great for development/debugging, but expensive at scale. When you're ready for production you should reintroduce a scheduled snapshot (or another caching strategy) to avoid scanning millions of documents per call.
 
 ---
 
@@ -1072,7 +1071,7 @@ When the SKU is coin-priced the response mirrors this shape with `currency: "coi
           "avatarId": 5,
           "level": 20,
           "trophies": 3100,
-          "clan": { "clanId": "clan_123", "name": "Night Riders", "tag": "NR" }
+          "clan": { "clanId": "clan_123", "name": "Night Riders" }
         }
       }
     ]
@@ -1107,7 +1106,7 @@ When the SKU is coin-priced the response mirrors this shape with `currency: "coi
           "avatarId": 4,
           "level": 18,
           "trophies": 4200,
-          "clan": { "clanId": "clan_123", "name": "Night Riders", "tag": "NR" }
+          "clan": { "clanId": "clan_123", "name": "Night Riders" }
         }
       }
     ]
@@ -1288,23 +1287,21 @@ This section documents all clan and chat-related Cloud Functions, with input, ou
 ---
 
 ### `createClan`
-**Purpose:** Creates a new clan, reserves tag, adds creator as leader.
+**Purpose:** Creates a new clan and adds the creator as leader.
 **Input:**
 ```json
 {
   "opId": "string",
   "name": "string",
-  "tag": "string",
   "description": "string (optional)",
   "type": "open|invite|closed (optional)",
   "location": "string (optional)",
   "language": "string (optional)",
   "badge": "object (optional)",
-  "minimumTrophies": "number (optional)",
-  "memberLimit": "number (optional)"
+  "minimumTrophies": "number (optional)"
 }
 ```
-**Output:** `{ "clanId": "string", "name": "string", "tag": "string" }`
+**Output:** `{ "clanId": "string", "name": "string" }`
 **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `FAILED_PRECONDITION`, `ALREADY_EXISTS`
 
 ---
@@ -1322,8 +1319,7 @@ This section documents all clan and chat-related Cloud Functions, with input, ou
   "location": "string (optional)",
   "language": "string (optional)",
   "badge": "object (optional)",
-  "minimumTrophies": "number (optional)",
-  "memberLimit": "number (optional)"
+  "minimumTrophies": "number (optional)"
 }
 ```
 **Output:** `{ "clanId": "string", "updated": ["field1", ...] }`
@@ -1588,7 +1584,7 @@ This section documents all clan and chat-related Cloud Functions, with input, ou
 ---
 
 ### `getClanDetails`
-**Purpose:** Returns roster sorted by `rolePriority` + trophies, includes pending requests when caller is officer+.
+**Purpose:** Returns clan summary plus roster entries (each member includes `displayName`, `avatarId`, `level`, `role`, `trophies`, `joinedAt`). Pending requests are included when the caller is officer+.
 **Input:**
 ```json
 {
@@ -1596,12 +1592,72 @@ This section documents all clan and chat-related Cloud Functions, with input, ou
 }
 ```
 **Output:** `{ "clan": { ... }, "members": [ ... ], "membership": { ... }, "requests": [ ... ] }`
+**Example:**
+```json
+{
+  "clan": {
+    "clanId": "clan_SUN",
+    "name": "Solar Syndicate",
+    "description": "Top-speed freaks who love night drives.",
+    "type": "invite",
+    "location": "AUSTRALIA",
+    "language": "en",
+    "badge": { "frameId": "frame_gold", "backgroundId": "bg_ember", "emblemId": "emblem_sun" },
+    "minimumTrophies": 2500,
+    "stats": { "members": 5, "trophies": 17850, "totalWins": 120 }
+  },
+  "members": [
+    { "uid": "uid_leader", "displayName": "RAVEN", "avatarId": 8, "level": 42, "role": "leader", "trophies": 4200, "joinedAt": 1731650000000 },
+    { "uid": "uid_co1", "displayName": "LYNX", "avatarId": 11, "level": 37, "role": "coLeader", "trophies": 3650, "joinedAt": 1731300000000 },
+    { "uid": "uid_co2", "displayName": "MIRA", "avatarId": 3, "level": 33, "role": "coLeader", "trophies": 3525, "joinedAt": 1731210000000 },
+    { "uid": "uid_elder", "displayName": "ZED", "avatarId": 19, "level": 28, "role": "elder", "trophies": 3400, "joinedAt": 1731000000000 },
+    { "uid": "uid_member", "displayName": "ATUL22", "avatarId": 5, "level": 24, "role": "member", "trophies": 3075, "joinedAt": 1730900000000 }
+  ],
+  "membership": { "role": "coLeader", "joinedAt": 1731300000000 },
+  "requests": [
+    { "uid": "uid_req01", "displayName": "NITROGIRL", "trophies": 2950, "message": "Ready to grind", "requestedAt": 1731700000000 },
+    { "uid": "uid_req02", "displayName": "DRIFTKING", "trophies": 3100, "message": "Need a fast clan", "requestedAt": 1731710000000 }
+  ]
+}
+```
 **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `NOT_FOUND`, `PERMISSION_DENIED`
 
 ---
 
+### `getMyClanDetails`
+**Purpose:** Convenience helper that reads `/Players/{uid}/Social/Clan` to hydrate the caller's own clan without passing an ID.
+**Input:** `{ }`
+**Output:** Same as `getClanDetails`.
+**Example:**
+```json
+{
+  "clan": {
+    "clanId": "clan_NOVA",
+    "name": "Neon Novas",
+    "description": "We race at dawn.",
+    "type": "open",
+    "location": "USA-WEST",
+    "language": "en",
+    "badge": { "frameId": "frame_neon", "backgroundId": "bg_night", "emblemId": "emblem_star" },
+    "minimumTrophies": 1200,
+    "stats": { "members": 5, "trophies": 14320, "totalWins": 64 }
+  },
+  "members": [
+    { "uid": "uid_lead2", "displayName": "EMBER", "avatarId": 2, "level": 39, "role": "leader", "trophies": 3600, "joinedAt": 1731100000000 },
+    { "uid": "uid_co3", "displayName": "GLITCH", "avatarId": 15, "level": 34, "role": "coLeader", "trophies": 3300, "joinedAt": 1731050000000 },
+    { "uid": "uid_co4", "displayName": "JAY", "avatarId": 1, "level": 32, "role": "coLeader", "trophies": 2890, "joinedAt": 1730990000000 },
+    { "uid": "uid_elder2", "displayName": "PIXEL", "avatarId": 9, "level": 27, "role": "elder", "trophies": 2580, "joinedAt": 1730960000000 },
+    { "uid": "myUid", "displayName": "PLAYER_ME", "avatarId": 7, "level": 25, "role": "member", "trophies": 2450, "joinedAt": 1730950000000 }
+  ],
+  "membership": { "role": "member", "joinedAt": 1730950000000 }
+}
+```
+**Errors:** `UNAUTHENTICATED`, `FAILED_PRECONDITION`
+
+---
+
 ### `searchClans`
-**Purpose:** Supports `#TAG` lookup, name substring filtering, capacity checks.
+**Purpose:** Supports case-insensitive name filtering plus location/language/trophy filters.
 **Input:**
 ```json
 {
@@ -1649,7 +1705,7 @@ This section documents all clan and chat-related Cloud Functions, with input, ou
 **Output:** `{ "roomId": "string", "messageId": "string" }`
 **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `RESOURCE_EXHAUSTED`, `FAILED_PRECONDITION`, `NOT_FOUND`
 
-Each stored message contains `{ roomId, authorUid, authorDisplayName, authorAvatarId, authorTrophies, authorClanName?, authorClanTag?, authorClanBadge?, type, text, clientCreatedAt?, createdAt, deleted, deletedReason }`.
+Each stored message contains `{ roomId, authorUid, authorDisplayName, authorAvatarId, authorTrophies, authorClanName?, authorClanBadge?, type, text, clientCreatedAt?, createdAt, deleted, deletedReason }`.
 
 ---
 

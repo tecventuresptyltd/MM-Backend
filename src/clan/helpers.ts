@@ -202,7 +202,6 @@ export const updatePlayerClanProfile = (
   payload: {
     clanId: string;
     clanName: string;
-    role: ClanRole;
   },
 ) => {
   transaction.set(
@@ -210,7 +209,6 @@ export const updatePlayerClanProfile = (
     {
       clanId: payload.clanId,
       clanName: payload.clanName,
-      clanRole: payload.role,
     },
     { merge: true },
   );
@@ -225,7 +223,6 @@ export const clearPlayerClanProfile = (
     {
       clanId: admin.firestore.FieldValue.delete(),
       clanName: admin.firestore.FieldValue.delete(),
-      clanRole: admin.firestore.FieldValue.delete(),
     },
     { merge: true },
   );

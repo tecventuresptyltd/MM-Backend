@@ -152,7 +152,6 @@ export const createClan = onCall(callableOptions(), async (request) => {
       updatePlayerClanProfile(transaction, uid, {
         clanId,
         clanName: name,
-        role: "leader",
       });
       setPlayerClanState(transaction, uid, {
         clanId,

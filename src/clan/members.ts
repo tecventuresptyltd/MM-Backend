@@ -261,7 +261,6 @@ export const joinClan = onCall(callableOptions(), async (request) => {
       updatePlayerClanProfile(transaction, uid, {
         clanId,
         clanName: clanData.name ?? "Clan",
-        role: "member",
       });
       setPlayerClanState(transaction, uid, {
         clanId,
@@ -930,7 +929,6 @@ export const acceptJoinRequest = onCall(callableOptions(), async (request) => {
       updatePlayerClanProfile(transaction, targetUid, {
         clanId,
         clanName: clanData.name ?? "Clan",
-        role: "member",
       });
       setPlayerClanState(transaction, targetUid, {
         clanId,

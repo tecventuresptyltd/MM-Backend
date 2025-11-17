@@ -7,6 +7,7 @@ import {
   acceptFriendRequest,
   rejectFriendRequest,
   cancelFriendRequest,
+  removeFriends,
   viewPlayerProfile,
   getFriends,
   getFriendRequests,
@@ -235,6 +236,83 @@ describe("social functions", () => {
       });
       const carolRequests = await admin.firestore().doc(`Players/${carol}/Social/Requests`).get();
       expect((carolRequests.data()?.incoming ?? []).length).toEqual(0);
+    });
+  });
+
+  describe("friend removal", () => {
+    it("removes a single friend and updates both players", async () => {
+      const sendWrapped = wrapCallable(sendFriendRequest);
+      const acceptWrapped = wrapCallable(acceptFriendRequest);
+      const removeWrapped = wrapCallable(removeFriends);
+
+      const request = await sendWrapped({
+        data: { opId: "op-remove-single-send", targetUid: bob },
+        ...authFor(alice),
+      });
+      await acceptWrapped({
+        data: { opId: "op-remove-single-accept", requestId: request.data.requestId },
+        ...authFor(bob),
+      });
+
+      const response = await removeWrapped({
+        data: { opId: "op-remove-single", friendUid: bob },
+        ...authFor(alice),
+      });
+      expect(response.ok).toBe(true);
+      expect(response.data.removed).toEqual([bob]);
+      expect(response.data.friendsCount).toEqual(0);
+
+      const aliceFriendsDoc = await admin.firestore().doc(`Players/${alice}/Social/Friends`).get();
+      expect(aliceFriendsDoc.data()?.friends?.[bob]).toBeUndefined();
+      const bobFriendsDoc = await admin.firestore().doc(`Players/${bob}/Social/Friends`).get();
+      expect(bobFriendsDoc.data()?.friends?.[alice]).toBeUndefined();
+
+      const aliceProfileDoc = await admin.firestore().doc(`Players/${alice}/Social/Profile`).get();
+      const bobProfileDoc = await admin.firestore().doc(`Players/${bob}/Social/Profile`).get();
+      expect(aliceProfileDoc.data()?.friendsCount).toEqual(0);
+      expect(bobProfileDoc.data()?.friendsCount).toEqual(0);
+    });
+
+    it("supports bulk removal via friendUids array", async () => {
+      const sendWrapped = wrapCallable(sendFriendRequest);
+      const acceptWrapped = wrapCallable(acceptFriendRequest);
+      const removeWrapped = wrapCallable(removeFriends);
+
+      const bobRequest = await sendWrapped({
+        data: { opId: "op-remove-bulk-bob-send", targetUid: bob },
+        ...authFor(alice),
+      });
+      await acceptWrapped({
+        data: { opId: "op-remove-bulk-bob-accept", requestId: bobRequest.data.requestId },
+        ...authFor(bob),
+      });
+
+      const carolRequest = await sendWrapped({
+        data: { opId: "op-remove-bulk-carol-send", targetUid: carol },
+        ...authFor(alice),
+      });
+      await acceptWrapped({
+        data: { opId: "op-remove-bulk-carol-accept", requestId: carolRequest.data.requestId },
+        ...authFor(carol),
+      });
+
+      const response = await removeWrapped({
+        data: { opId: "op-remove-bulk", friendUids: [bob, carol] },
+        ...authFor(alice),
+      });
+      expect(response.ok).toBe(true);
+      expect(response.data.removed).toEqual([bob, carol]);
+      expect(response.data.friendsCount).toEqual(0);
+
+      const aliceFriendsDoc = await admin.firestore().doc(`Players/${alice}/Social/Friends`).get();
+      expect(Object.keys(aliceFriendsDoc.data()?.friends ?? {})).toHaveLength(0);
+      const bobFriendsDoc = await admin.firestore().doc(`Players/${bob}/Social/Friends`).get();
+      expect(bobFriendsDoc.data()?.friends?.[alice]).toBeUndefined();
+      const carolFriendsDoc = await admin.firestore().doc(`Players/${carol}/Social/Friends`).get();
+      expect(carolFriendsDoc.data()?.friends?.[alice]).toBeUndefined();
+
+      const aliceProfileDoc = await admin.firestore().doc(`Players/${alice}/Social/Profile`).get();
+      expect(aliceProfileDoc.data()?.friendsCount).toEqual(0);
     });
   });
 

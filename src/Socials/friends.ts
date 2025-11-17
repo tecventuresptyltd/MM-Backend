@@ -4,13 +4,20 @@ import { checkIdempotency } from "../core/idempotency.js";
 import { runTransactionWithReceipt } from "../core/transactions.js";
 import { generateRequestId } from "./id.js";
 import { playerProfileRef } from "./refs.js";
-import { readSocialSnapshot, writeFriendsDoc, writeRequestsDoc, updateSocialProfile } from "./socialStore.js";
+import {
+  readFriendsDoc,
+  readSocialSnapshot,
+  writeFriendsDoc,
+  writeRequestsDoc,
+  updateSocialProfile,
+} from "./socialStore.js";
 import { buildPlayerSummary } from "./summary.js";
-import type { PlayerSummary } from "./types.js";
+import type { FriendEntry, PlayerSummary } from "./types.js";
 
 const FRIENDS_SOFT_LIMIT = 400;
 const REQUESTS_SOFT_LIMIT = 100;
 const MESSAGE_MAX = 140;
+const REMOVE_FRIENDS_BATCH_LIMIT = 20;
 
 const sanitizeUid = (value: unknown): string => {
   if (typeof value !== "string" || value.trim().length === 0) {
@@ -38,6 +45,38 @@ const sanitizeMessage = (value: unknown): string | undefined => {
     return undefined;
   }
   return trimmed.slice(0, MESSAGE_MAX);
+};
+
+const sanitizeFriendTargets = (raw: unknown): string[] => {
+  if (raw === undefined || raw === null) {
+    throw new HttpsError("invalid-argument", "friendUids is required.");
+  }
+  let entries: string[];
+  if (Array.isArray(raw)) {
+    entries = raw.map((value) => sanitizeUid(value));
+  } else if (typeof raw === "string") {
+    entries = [sanitizeUid(raw)];
+  } else {
+    throw new HttpsError("invalid-argument", "friendUids must be a string or array of strings.");
+  }
+  const unique: string[] = [];
+  const seen = new Set<string>();
+  for (const entry of entries) {
+    if (!seen.has(entry)) {
+      seen.add(entry);
+      unique.push(entry);
+    }
+  }
+  if (unique.length === 0) {
+    throw new HttpsError("invalid-argument", "friendUids cannot be empty.");
+  }
+  if (unique.length > REMOVE_FRIENDS_BATCH_LIMIT) {
+    throw new HttpsError(
+      "invalid-argument",
+      `friendUids cannot exceed ${REMOVE_FRIENDS_BATCH_LIMIT}.`,
+    );
+  }
+  return unique;
 };
 
 const ensureFriendCapacity = (friends: Record<string, unknown>) => {
@@ -387,6 +426,83 @@ export const cancelFriendRequest = onCall(
         return { ok: true };
       },
       { kind: "friend-cancel" },
+    );
+
+    return result;
+  },
+);
+
+export const removeFriends = onCall(
+  callableOptions(),
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "Authentication required.");
+    }
+    const opId = sanitizeOpId(request.data?.opId);
+    const rawTargets =
+      request.data?.friendUids ??
+      request.data?.targetUids ??
+      request.data?.friendUid ??
+      request.data?.targetUid;
+    const targetUids = sanitizeFriendTargets(rawTargets);
+    if (targetUids.includes(uid)) {
+      throw new HttpsError("invalid-argument", "Cannot remove yourself from friends.");
+    }
+
+    const cached = await checkIdempotency(uid, opId);
+    if (cached) {
+      return cached;
+    }
+
+    const result = await runTransactionWithReceipt(
+      uid,
+      opId,
+      "remove-friends",
+      async (tx) => {
+        const callerSocial = await readSocialSnapshot(uid, tx);
+        const missing = targetUids.find((targetUid) => !callerSocial.friends[targetUid]);
+        if (missing) {
+          throw new HttpsError("failed-precondition", "not-friends");
+        }
+
+        const nextCallerFriends: Record<string, FriendEntry> = { ...callerSocial.friends };
+        targetUids.forEach((targetUid) => {
+          delete nextCallerFriends[targetUid];
+        });
+
+        const targetSnapshots = await Promise.all(
+          targetUids.map(async (targetUid) => ({
+            uid: targetUid,
+            friends: await readFriendsDoc(targetUid, tx),
+          })),
+        );
+        targetSnapshots.forEach((entry) => {
+          delete entry.friends[uid];
+        });
+
+        writeFriendsDoc(tx, uid, nextCallerFriends);
+        const callerFriendsCount = Object.keys(nextCallerFriends).length;
+        updateSocialProfile(tx, uid, {
+          friendsCount: callerFriendsCount,
+        });
+
+        targetSnapshots.forEach(({ uid: friendUid, friends }) => {
+          writeFriendsDoc(tx, friendUid, friends);
+          updateSocialProfile(tx, friendUid, {
+            friendsCount: Object.keys(friends).length,
+          });
+        });
+
+        return {
+          ok: true,
+          data: {
+            removed: targetUids,
+            friendsCount: callerFriendsCount,
+          },
+        };
+      },
+      { kind: "friend-remove" },
     );
 
     return result;

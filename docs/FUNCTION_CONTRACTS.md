@@ -1048,6 +1048,36 @@ When the SKU is coin-priced the response mirrors this shape with `currency: "coi
 
 ---
 
+### `removeFriends`
+
+**Purpose:** Removes one or more confirmed friends, keeping both `/Social/Friends` maps and `friendsCount` tallies in sync.
+
+**Input:**
+```json
+{
+  "opId": "friend-remove-123",
+  "friendUids": ["otherUid"]
+}
+```
+(`friendUid`, `targetUid`, or `targetUids` are also accepted for convenience.)
+
+**Output:**
+```json
+{
+  "ok": true,
+  "data": {
+    "removed": ["otherUid"],
+    "friendsCount": 3
+  }
+}
+```
+
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT` (missing opId, empty list, >20 entries, attempting to remove yourself), `FAILED_PRECONDITION` (not currently friends)
+
+**Side-effects:** Deletes the friendship entry from both players' `/Social/Friends` docs, recalculates `/Social/Profile.friendsCount` for each affected user, and records a receipt `/Players/{uid}/Receipts/{opId}` with `kind: "friend-remove"`.
+
+---
+
 ### `getFriendRequests`
 
 **Purpose:** Returns the caller's *incoming* pending requests. Each entry now includes the cached `player` snapshot stored in `/Social/Requests`, which the backend refreshes whenever profiles change. Outgoing requests remain stored in `/Social/Requests` but are not returned by this API.

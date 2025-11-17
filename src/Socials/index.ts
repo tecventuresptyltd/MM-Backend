@@ -7,6 +7,7 @@ export {
   acceptFriendRequest,
   rejectFriendRequest,
   cancelFriendRequest,
+  removeFriends,
 } from "./friends";
 export { viewPlayerProfile } from "./viewProfile";
 export { getFriends, getFriendRequests } from "./lists";

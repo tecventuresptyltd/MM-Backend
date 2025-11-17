@@ -96,6 +96,14 @@ export const readSocialSnapshot = async (
   };
 };
 
+export const readFriendsDoc = async (
+  uid: string,
+  transaction: admin.firestore.Transaction,
+): Promise<Record<string, FriendEntry>> => {
+  const snapshot = await transaction.get(socialFriendsRef(uid));
+  return parseFriendsDoc(snapshot);
+};
+
 export const writeFriendsDoc = (
   transaction: admin.firestore.Transaction,
   uid: string,

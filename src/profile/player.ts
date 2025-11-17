@@ -17,6 +17,7 @@ import {
   txIncSkuQty,
   txUpdateInventorySummary,
 } from "../inventory/index.js";
+import { updateClanMemberSnapshot } from "../clan/helpers.js";
 
 const db = admin.firestore();
 
@@ -46,13 +47,15 @@ export const setUsername = onCall({ region: REGION }, async (request) => {
   const usernameRef = db.collection("Usernames").doc(usernameLower);
   const profileRef = db.collection("Players").doc(uid).collection("Profile").doc("Profile");
  
-   await db.runTransaction(async (transaction) => {
-     transaction.set(usernameRef, {
-       uid,
-       createdAt: admin.firestore.FieldValue.serverTimestamp(),
-     });
-     transaction.update(profileRef, { displayName: username });
-   });
+  await db.runTransaction(async (transaction) => {
+    transaction.set(usernameRef, {
+      uid,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    transaction.update(profileRef, { displayName: username });
+  });
+
+  await updateClanMemberSnapshot(uid, { displayName: username });
 
   return { status: "ok" };
 });
@@ -130,6 +133,8 @@ export const setAvatar = onCall({ region: REGION }, async (request) => {
 
   const profileRef = db.collection("Players").doc(uid).collection("Profile").doc("Profile");
   await profileRef.update({ avatarId });
+
+  await updateClanMemberSnapshot(uid, { avatarId });
 
   return { status: "ok" };
 });

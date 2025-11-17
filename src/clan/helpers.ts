@@ -302,3 +302,22 @@ export const clanSummaryProjection = (data: FirebaseFirestore.DocumentData) => (
 });
 
 export const nowTimestamp = () => admin.firestore.Timestamp.now();
+
+type ClanMemberMirrorFields = Partial<
+  Pick<ClanMemberDoc, "displayName" | "avatarId" | "level" | "trophies">
+>;
+
+export const updateClanMemberSnapshot = async (
+  uid: string,
+  fields: ClanMemberMirrorFields,
+) => {
+  if (!fields || Object.keys(fields).length === 0) {
+    return;
+  }
+  const stateSnap = await playerClanStateRef(uid).get();
+  const clanId = stateSnap.data()?.clanId;
+  if (typeof clanId !== "string" || clanId.length === 0) {
+    return;
+  }
+  await clanMembersCollection(clanId).doc(uid).set(fields, { merge: true });
+};

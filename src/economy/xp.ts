@@ -2,6 +2,7 @@ import * as admin from "firebase-admin";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { ensureOp } from "../shared/idempotency.js";
 import { getLevelInfo } from "../shared/xp.js";
+import { updateClanMemberSnapshot } from "../clan/helpers.js";
 
 const db = admin.firestore();
 
@@ -30,7 +31,7 @@ export const grantXP = onCall({ enforceAppCheck: false, region: "us-central1" },
 
   await ensureOp(uid, opId);
 
-  return db.runTransaction(async (transaction) => {
+  const result = await db.runTransaction(async (transaction) => {
     const statsRef = db.doc(`/Players/${uid}/Economy/Stats`);
     const profileRef = db.doc(`/Players/${uid}/Profile/Profile`);
     
@@ -91,4 +92,8 @@ export const grantXP = onCall({ enforceAppCheck: false, region: "us-central1" },
       },
     };
   });
+
+  await updateClanMemberSnapshot(uid, { level: result.levelAfter });
+
+  return result;
 });

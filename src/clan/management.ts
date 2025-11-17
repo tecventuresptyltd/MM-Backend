@@ -368,31 +368,6 @@ interface ClanMemberView {
 
 type ClanMemberInternal = ClanMemberView & { rolePriority: number };
 
-const hydrateMemberProfiles = async (
-  members: ClanMemberInternal[],
-): Promise<ClanMemberView[]> => {
-  const hydrated = await Promise.all(
-    members.map(async (member) => {
-      try {
-        const profile = await getPlayerProfile(member.uid);
-        if (profile) {
-          return {
-            ...member,
-            displayName: profile.displayName,
-            avatarId: profile.avatarId,
-            level: profile.level ?? member.level,
-            trophies: profile.trophies ?? member.trophies ?? 0,
-          };
-        }
-      } catch (error) {
-        console.warn("[clan.management] failed to hydrate member profile", member.uid, error);
-      }
-      return member;
-    }),
-  );
-  return hydrated.map(({ rolePriority: _ignore, ...rest }) => rest);
-};
-
 interface ClanRequestView {
   uid: string;
   displayName: string;
@@ -450,7 +425,16 @@ const loadClanDetails = async (clanId: string, uid: string): Promise<ClanDetails
     })
     .slice(0, 100);
 
-  const members: ClanMemberView[] = await hydrateMemberProfiles(sortedMembers);
+  const members: ClanMemberView[] = sortedMembers.map(({ rolePriority: _ignore, ...rest }) => ({
+    ...rest,
+    displayName:
+      typeof rest.displayName === "string" && rest.displayName.trim().length > 0
+        ? rest.displayName
+        : "Racer",
+    avatarId: typeof rest.avatarId === "number" ? rest.avatarId : Number(rest.avatarId) || null,
+    level: typeof rest.level === "number" ? rest.level : Number(rest.level) || null,
+    trophies: Number(rest.trophies ?? 0),
+  }));
 
   const membershipDoc = await clanMembersCollection(clanId).doc(uid).get();
   const membership = membershipDoc.exists

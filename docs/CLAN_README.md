@@ -111,7 +111,7 @@ All functions are HTTPS `onCall`, `us-central1`, AppCheck optional. Every reques
 | `bookmarkClan` | `{ opId, clanId }` | `{ clanId }` | Stores snapshot in `/Social/ClanBookmarks` + array helper for quick UI rendering. |
 | `unbookmarkClan` | `{ opId, clanId }` | `{ clanId }` | Removes bookmark snapshot + ID. |
 | `getBookmarkedClans` | `{}` | `{ clans: ClanSummary[] }` | Hydrates live data when available, otherwise falls back to cached bookmark metadata. |
-| `getClanDetails` | `{ clanId }` | `{ clan, members, membership, requests? }` | Returns roster sorted by `rolePriority` + trophies, includes pending requests when caller is officer+. Member rows are hydrated from live player profiles each call to ensure names/avatars/trophies are current. |
+| `getClanDetails` | `{ clanId }` | `{ clan, members, membership, requests? }` | Returns roster sorted by `rolePriority` + trophies, includes pending requests when caller is officer+. Member rows mirror the `/Clans/{clanId}/Members/{uid}` docs, which the backend keeps in sync whenever players update their profile. |
 | `getMyClanDetails` | `{}` | `{ clan, members, membership, requests? }` | Convenience wrapper that reads `/Players/{uid}/Social/Clan.clanId` to hydrate the caller's own clan without passing an ID. |
 | `searchClans` | `{ query?, location?, language?, type?, limit?, minMembers?, maxMembers?, minTrophies?, requireOpenSpots? }` | `{ clans: ClanSummary[] }` | Supports case-insensitive name filtering plus location/language/trophy filters. |
 | `getClanLeaderboard` | `{ limit?, location? }` | `{ clans: ClanSummary[] }` | Ordered by `stats.trophies`, supports location filter. |

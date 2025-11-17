@@ -1584,7 +1584,7 @@ This section documents all clan and chat-related Cloud Functions, with input, ou
 ---
 
 ### `getClanDetails`
-**Purpose:** Returns clan summary plus roster entries (each member includes `displayName`, `avatarId`, `level`, `role`, `trophies`, `joinedAt`). The roster is hydrated against live `/Players/{uid}/Profile/Profile` documents on each call so names/avatars/trophies reflect the latest profile data. Pending requests are included when the caller is officer+.
+**Purpose:** Returns clan summary plus roster entries (each member includes `displayName`, `avatarId`, `level`, `role`, `trophies`, `joinedAt`). Pending requests are included when the caller is officer+. Member rows mirror `/Clans/{clanId}/Members/{uid}`, which is kept up to date when players change profile fields.
 **Input:**
 ```json
 {

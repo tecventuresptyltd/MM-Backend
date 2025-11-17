@@ -18,6 +18,7 @@ import {
   txUpdateInventorySummary,
 } from "../inventory/index.js";
 import { updateClanMemberSnapshot } from "../clan/helpers.js";
+import { refreshFriendSnapshots } from "../Socials/updateSnapshots.js";
 
 const db = admin.firestore();
 
@@ -55,7 +56,10 @@ export const setUsername = onCall({ region: REGION }, async (request) => {
     transaction.update(profileRef, { displayName: username });
   });
 
-  await updateClanMemberSnapshot(uid, { displayName: username });
+  await Promise.all([
+    updateClanMemberSnapshot(uid, { displayName: username }),
+    refreshFriendSnapshots(uid),
+  ]);
 
   return { status: "ok" };
 });
@@ -134,7 +138,10 @@ export const setAvatar = onCall({ region: REGION }, async (request) => {
   const profileRef = db.collection("Players").doc(uid).collection("Profile").doc("Profile");
   await profileRef.update({ avatarId });
 
-  await updateClanMemberSnapshot(uid, { avatarId });
+  await Promise.all([
+    updateClanMemberSnapshot(uid, { avatarId }),
+    refreshFriendSnapshots(uid),
+  ]);
 
   return { status: "ok" };
 });

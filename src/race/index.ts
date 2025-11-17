@@ -3,6 +3,7 @@ import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { REGION } from "../shared/region.js";
 import { getRanksCatalog } from "../core/config.js";
 import { getLevelInfo } from "../shared/xp.js";
+import { refreshFriendSnapshots } from "../Socials/updateSnapshots.js";
 
 const db = admin.firestore();
 
@@ -20,7 +21,7 @@ export const startRace = onCall({ enforceAppCheck: false, region: REGION }, asyn
   const raceId = db.collection("Races").doc().id;
   const preDeductedTrophies = -5; // Simplified penalty
 
-  return db.runTransaction(async (transaction) => {
+  const result = await db.runTransaction(async (transaction) => {
     const profileRef = db.doc(`/Players/${uid}/Profile/Profile`);
     
     transaction.update(profileRef, {
@@ -39,6 +40,9 @@ export const startRace = onCall({ enforceAppCheck: false, region: REGION }, asyn
 
     return { success: true, raceId, preDeductedTrophies };
   });
+
+  await refreshFriendSnapshots(uid);
+  return result;
 });
 
 export const generateBotLoadout = onCall({ region: REGION }, async (request) => {
@@ -66,7 +70,7 @@ export const recordRaceResult = onCall({ enforceAppCheck: false, region: REGION 
     throw new HttpsError("invalid-argument", "Invalid arguments provided.");
   }
 
-  return db.runTransaction(async (transaction) => {
+  const result = await db.runTransaction(async (transaction) => {
     const raceRef = db.doc(`/Races/${raceId}`);
     const raceDoc = await transaction.get(raceRef);
 
@@ -150,4 +154,7 @@ export const recordRaceResult = onCall({ enforceAppCheck: false, region: REGION 
       },
     };
   });
+
+  await refreshFriendSnapshots(uid);
+  return result;
 });

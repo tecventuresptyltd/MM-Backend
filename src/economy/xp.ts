@@ -3,6 +3,7 @@ import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { ensureOp } from "../shared/idempotency.js";
 import { getLevelInfo } from "../shared/xp.js";
 import { updateClanMemberSnapshot } from "../clan/helpers.js";
+import { refreshFriendSnapshots } from "../Socials/updateSnapshots.js";
 
 const db = admin.firestore();
 
@@ -93,7 +94,10 @@ export const grantXP = onCall({ enforceAppCheck: false, region: "us-central1" },
     };
   });
 
-  await updateClanMemberSnapshot(uid, { level: result.levelAfter });
+  await Promise.all([
+    updateClanMemberSnapshot(uid, { level: result.levelAfter }),
+    refreshFriendSnapshots(uid),
+  ]);
 
   return result;
 });

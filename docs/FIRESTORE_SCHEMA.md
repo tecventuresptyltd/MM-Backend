@@ -754,7 +754,7 @@ Extends the player's public card with social metadata that powers the Friends/Re
 
 #### `/Players/{uid}/Social/Friends` (Singleton Map)
 
-Compact map keyed by friend `uid`. Each entry carries the `since` timestamp, optional `lastInteractedAt`, and a cached `player` summary (displayName, avatarId, level, trophies, clan). Keeping the entire friend graph in one document keeps the Friends tab at a single read; if the map approaches the 128 KB soft limit, shard deterministically (e.g., `/Social/FriendsA-M`, `/Social/FriendsN-Z`). The callable `getFriends` hydrates fresh summaries when responding, so this cached blob is used only as a fallback.
+Compact map keyed by friend `uid`. Each entry carries the `since` timestamp, optional `lastInteractedAt`, and a cached `player` summary (displayName, avatarId, level, trophies, clan). Backend functions refresh the `player` snapshot whenever a profile changes, so `getFriends` can render the list with a single read (it only rehydrates missing entries). If the map approaches the 128 KB soft limit, shard deterministically (e.g., `/Social/FriendsA-M`, `/Social/FriendsN-Z`).
 
 ```json
 {
@@ -778,7 +778,7 @@ Compact map keyed by friend `uid`. Each entry carries the `since` timestamp, opt
 
 #### `/Players/{uid}/Social/Requests` (Singleton)
 
-Holds outstanding friend requests in two bounded arrays. Incoming entries embed a lightweight `player` summary so the target can render the sender immediately; outgoing entries store only `{ requestId, toUid, sentAt, message? }` because the sender already knows who they targeted. Mutations always occur inside the same transaction that updates `/Social/Profile` so badges remain accurate. The callable `getFriendRequests` refreshes the summaries from `/Players/{uid}/Profile/Profile` on each read but returns only the **incoming** array; outgoing entries stay server-side for auditing.
+Holds outstanding friend requests in two bounded arrays. Incoming entries embed a `player` summary so the target can render the sender immediately; outgoing entries include the caller’s summary for parity. Mutations occur alongside `/Social/Profile` updates, and the backend refreshes these snapshots whenever a profile changes, so `getFriendRequests` usually reads a single document (rehydrates only if a snapshot is missing). Arrays remain bounded (≈100 entries) to avoid oversized docs.
 
 ```json
 {

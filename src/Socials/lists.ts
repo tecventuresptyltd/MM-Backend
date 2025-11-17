@@ -46,11 +46,17 @@ export const getFriends = onCall(
     const friendsData = snapshot.exists
       ? ((snapshot.data() ?? {}) as { friends?: Record<string, FriendEntry> }).friends ?? {}
       : {};
-    const friendUids = Object.keys(friendsData);
-    const liveSummaries = await getPlayerSummaries(friendUids);
+    const entries = Object.entries(friendsData);
+    const missingSummaries = entries
+      .filter(([, entry]) => !entry?.player)
+      .map(([friendUid]) => friendUid);
+    const liveSummaries =
+      missingSummaries.length > 0
+        ? await getPlayerSummaries(missingSummaries)
+        : new Map();
 
-    const friends = friendUids.map((friendUid) =>
-      mergeFriendEntry(friendUid, friendsData[friendUid], liveSummaries.get(friendUid)),
+    const friends = entries.map(([friendUid, entry]) =>
+      mergeFriendEntry(friendUid, entry, liveSummaries.get(friendUid)),
     );
 
     return {
@@ -79,17 +85,25 @@ export const getFriendRequests = onCall(
       : {};
     const incoming = Array.isArray(data.incoming) ? data.incoming : [];
     const outgoing = Array.isArray(data.outgoing) ? data.outgoing : [];
-    const lookupUids = [
-      ...incoming.map((entry) => entry.fromUid),
-      ...outgoing.map((entry) => entry.toUid),
-    ];
-    const summaries = await getPlayerSummaries(lookupUids);
+    const missingIncoming = incoming
+      .filter((entry) => !entry.player)
+      .map((entry) => entry.fromUid);
+    const missingOutgoing = outgoing
+      .filter((entry) => !entry.player)
+      .map((entry) => entry.toUid);
+    const lookupUids = Array.from(new Set([...missingIncoming, ...missingOutgoing]));
+    const summaries =
+      lookupUids.length > 0 ? await getPlayerSummaries(lookupUids) : new Map<string, PlayerSummary>();
 
     return {
       ok: true,
       data: {
         incoming: incoming.map((entry) =>
-          mergeRequestEntry(entry, summaries.get(entry.fromUid), entry.fromUid),
+          mergeRequestEntry(
+            entry,
+            entry.player ?? summaries.get(entry.fromUid),
+            entry.fromUid,
+          ),
         ),
       },
     };

@@ -1050,7 +1050,7 @@ When the SKU is coin-priced the response mirrors this shape with `currency: "coi
 
 ### `getFriendRequests`
 
-**Purpose:** Returns the caller's *incoming* pending requests with fresh player summaries so the UI can immediately render names/avatars/trophies without extra reads. Outgoing requests remain stored in `/Social/Requests` but are not returned by this API.
+**Purpose:** Returns the caller's *incoming* pending requests. Each entry now includes the cached `player` snapshot stored in `/Social/Requests`, which the backend refreshes whenever profiles change. Outgoing requests remain stored in `/Social/Requests` but are not returned by this API.
 
 **Input:** `{}`
 
@@ -1081,13 +1081,13 @@ When the SKU is coin-priced the response mirrors this shape with `currency: "coi
 
 **Errors:** `UNAUTHENTICATED`
 
-**Notes:** Each call rehydrates summaries from `/Players/{uid}/Profile/Profile`, so the response reflects any name/avatar/trophy changes made after the request was created.
+**Notes:** The callable now trusts the snapshot stored in `/Social/Requests`; it only rehydrates a player if the cached `player` block is missing. This keeps the read cost at ~1 document per call.
 
 ---
 
 ### `getFriends`
 
-**Purpose:** Returns all confirmed friends with timestamps and live `player` summaries (displayName, avatarId, level, trophies, clan).
+**Purpose:** Returns all confirmed friends with timestamps and cached `player` summaries (displayName, avatarId, level, trophies, clan). Snapshots are refreshed whenever a friend updates their profile, so the callable usually performs a single read.
 
 **Input:** `{}`
 
@@ -1116,7 +1116,7 @@ When the SKU is coin-priced the response mirrors this shape with `currency: "coi
 
 **Errors:** `UNAUTHENTICATED`
 
-**Notes:** Live summaries ensure the Friends tab always shows the latest profile data. The cached snapshot stored in `/Social/Friends` is only used as a fallback if the profile document is missing.
+**Notes:** Falls back to live hydration only if a cached `player` snapshot is missing, keeping the default cost at one document read.
 
 ---
 

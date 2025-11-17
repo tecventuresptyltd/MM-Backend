@@ -193,7 +193,7 @@ The functions below load master data from the canonical catalog documents under 
 | `rejectFriendRequest` | Removes an incoming request without creating a friendship. | HTTPS `onCall` |
 | `cancelFriendRequest` | Lets the sender withdraw their pending outgoing request. | HTTPS `onCall` |
 | `getFriendRequests` | Returns the callerâ€™s incoming requests with live player summaries. | HTTPS `onCall` |
-| `getFriends` | Returns the caller's confirmed friends with live player summaries. | HTTPS `onCall` |
+| `getFriends` | Returns the caller's confirmed friends using the cached snapshots stored in `/Social/Friends` (rehydrates only if missing). | HTTPS `onCall` |
 | `viewPlayerProfile` | Returns the public summary + stats + social metadata for any `uid`. | HTTPS `onCall` |
 | `socialPresenceMirrorLastSeen` | Scheduled job mirroring RTDB `/presence/lastSeen` into `/Players/{uid}/Social/Profile`. | Cloud Scheduler |
 

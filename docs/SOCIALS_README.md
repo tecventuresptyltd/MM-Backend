@@ -7,8 +7,8 @@ This note explains every document we create under `/Players/{uid}/Social` so eng
 | Path | Purpose | Created When |
 | --- | --- | --- |
 | `/Players/{uid}/Social/Profile` | HUD counters (`friendsCount`, `lastActiveAt`, etc.). | Account bootstrap. |
-| `/Players/{uid}/Social/Friends` | Map keyed by friend `uid` with cached summaries and `since` timestamps. | First successful friend acceptance. |
-| `/Players/{uid}/Social/Requests` | `{ incoming: [], outgoing: [] }` arrays for friend requests. | First request sent/received. |
+| `/Players/{uid}/Social/Friends` | Map keyed by friend `uid` with cached `player` summaries and `since` timestamps. Backend refreshes each entry when profiles change so `getFriends` is a single read. | First successful friend acceptance. |
+| `/Players/{uid}/Social/Requests` | `{ incoming: [], outgoing: [] }` arrays for friend requests (each embeds a `player` snapshot kept in sync server-side). | First request sent/received. |
 | `/Players/{uid}/Social/Blocks` | Map of blocked `uid`s. | First block action. |
 | `/Players/{uid}/Social/Clan` | Canonical clan membership (`clanId`, `role`, `joinedAt`, chat timestamps, bookmarkedClanIds?). | First clan join. |
 | `/Players/{uid}/Social/ClanInvites` | `{ invites: { [clanId]: {...} }, updatedAt }` payload for inbound clan invites. | First invite received. |
@@ -20,6 +20,7 @@ This note explains every document we create under `/Players/{uid}/Social` so eng
 - **Listen early:** Attach listeners to all paths above at app boot. If a document does not exist yet, the listener fires with an empty snapshot and will update automatically when the first Cloud Function writes data.
 - **No guessing IDs:** Every doc name is fixed; you never need to poll or derive dynamic names for player-centric data.
 - **Clan-specific collections:** Roster (`/Clans/{clanId}/Members`), join requests (`/Clans/{clanId}/Requests`), and chat (`/Clans/{clanId}/Chat`) remain collections by design. Use collection listeners with ordering (e.g., `orderBy("rolePriority", "desc")`) for live rosters.
+- **Friends snapshots:** `setUsername`, `setAvatar`, race rewards, and XP grants refresh the cached friend/request snapshots so `getFriends` and `getFriendRequests` rarely need extra reads.
 - **Receipts & operations:** Idempotency receipts live under `/Players/{uid}/Receipts/{opId}`; same pattern applies—fixed ID equals the operation ID.
 
 Keep this file alongside the clan README so Unity/LiveOps engineers always know which documents exist and when they appear.*** End Patch

@@ -47,8 +47,33 @@ export const setUsername = onCall({ region: REGION }, async (request) => {
   const usernameLower = username.toLowerCase();
   const usernameRef = db.collection("Usernames").doc(usernameLower);
   const profileRef = db.collection("Players").doc(uid).collection("Profile").doc("Profile");
- 
+  const userUsernameQuery = db.collection("Usernames").where("uid", "==", uid);
+
   await db.runTransaction(async (transaction) => {
+    const [profileSnap, existingUsernameSnap, usernameDocSnap] = await Promise.all([
+      transaction.get(profileRef),
+      transaction.get(userUsernameQuery),
+      transaction.get(usernameRef),
+    ]);
+
+    if (!profileSnap.exists) {
+      throw new HttpsError("failed-precondition", "Player profile not found.");
+    }
+
+    if (usernameDocSnap.exists) {
+      const existingUid = (usernameDocSnap.data() ?? {}).uid;
+      if (typeof existingUid === "string" && existingUid !== uid) {
+        throw new HttpsError("already-exists", "Username is not available.");
+      }
+    }
+
+    // Remove stale username documents that still map to this uid so searches do not return duplicates.
+    for (const doc of existingUsernameSnap.docs) {
+      if (doc.id !== usernameLower) {
+        transaction.delete(doc.ref);
+      }
+    }
+
     transaction.set(usernameRef, {
       uid,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),

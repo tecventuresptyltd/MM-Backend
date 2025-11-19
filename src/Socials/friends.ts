@@ -494,7 +494,7 @@ export const cancelFriendRequest = onCall(
           hasFriendRequests: nextTargetIncoming.length > 0,
         });
 
-        return { ok: true };
+        return { success: true };
       },
       { kind: "friend-cancel" },
     );

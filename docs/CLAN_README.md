@@ -114,7 +114,7 @@ All functions are HTTPS `onCall`, `us-central1`, AppCheck optional. Every reques
 | `getClanDetails` | `{ clanId }` | `{ clan, members, membership, requests? }` | Returns roster sorted by `rolePriority` + trophies, includes pending requests when caller is officer+. Member rows mirror the `/Clans/{clanId}/Members/{uid}` docs, which the backend keeps in sync whenever players update their profile. |
 | `getMyClanDetails` | `{}` | `{ clan, members, membership, requests? }` | Convenience wrapper that reads `/Players/{uid}/Social/Clan.clanId` to hydrate the caller's own clan without passing an ID. |
 | `searchClans` | `{ query?, location?, language?, type?, limit?, minMembers?, maxMembers?, minTrophies?, requireOpenSpots? }` | `{ clans: ClanSummary[] }` | Supports case-insensitive name filtering plus location/language/trophy filters. |
-| `getClanLeaderboard` | `{ limit?, location? }` | `{ clans: ClanSummary[] }` | Ordered by `stats.trophies`, supports location filter. |
+| `getClanLeaderboard` | `{ limit?, location? }` | `{ clans: { clanId, name, badge, type, members, totalTrophies }[] }` | Ordered by `stats.trophies`, supports location filter. Only the fields required by the leaderboard UI are returned. |
 
 `ClanSummary` objects mirror the Firestore doc: `{ clanId, name, description, type, location, language, badge, minimumTrophies, stats }`.
 

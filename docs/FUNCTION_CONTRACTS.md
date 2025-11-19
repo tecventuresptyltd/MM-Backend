@@ -1717,7 +1717,21 @@ This section documents all clan and chat-related Cloud Functions, with input, ou
   "requireOpenSpots": "boolean (optional)"
 }
 ```
-**Output:** `{ "clans": [ClanSummary, ...] }`
+**Output:**
+```json
+{
+  "clans": [
+    {
+      "clanId": "string",
+      "name": "string",
+      "badge": "string|null",
+      "type": "anyone can join|invite only|closed",
+      "members": 47,
+      "totalTrophies": 18234
+    }
+  ]
+}
+```
 **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `FAILED_PRECONDITION`
 
 ---

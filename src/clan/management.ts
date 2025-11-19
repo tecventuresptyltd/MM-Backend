@@ -567,10 +567,6 @@ interface GetClanLeaderboardRequest {
   location?: string;
 }
 
-interface GetClanLeaderboardResponse {
-  clans: ReturnType<typeof clanSummaryProjection>[];
-}
-
 export const getClanLeaderboard = onCall(callableOptions(), async (request) => {
   assertAuthenticated(request);
   const payload = (request.data ?? {}) as GetClanLeaderboardRequest;
@@ -592,8 +588,17 @@ export const getClanLeaderboard = onCall(callableOptions(), async (request) => {
 
   const snapshot = await query.get();
   return {
-    clans: snapshot.docs.map((doc: FirebaseFirestore.QueryDocumentSnapshot) =>
-      clanSummaryProjection(doc.data() ?? {}),
-    ),
+    clans: snapshot.docs.map((doc: FirebaseFirestore.QueryDocumentSnapshot) => {
+      const data = doc.data() ?? {};
+      const stats = data.stats ?? {};
+      return {
+        clanId: data.clanId,
+        name: data.name,
+        badge: data.badge ?? null,
+        type: data.type,
+        members: Number(stats.members ?? 0),
+        totalTrophies: Number(stats.trophies ?? 0),
+      };
+    }),
   };
 });

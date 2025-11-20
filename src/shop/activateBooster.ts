@@ -173,6 +173,7 @@ export const activateBooster = onCall({ region: REGION }, async (request) => {
     stackedCount: number;
     boosterContext: TxSkuMutationContext;
     summaryState: ReturnType<typeof createTxInventorySummaryState>;
+    serverNowMs: number;
   }, ActivateBoosterResult>(
     uid,
     opId,
@@ -218,6 +219,7 @@ export const activateBooster = onCall({ region: REGION }, async (request) => {
         stackedCount,
         boosterContext,
         summaryState,
+        serverNowMs: nowMs,
       };
     },
     async (transaction, reads) => {
@@ -261,6 +263,10 @@ export const activateBooster = onCall({ region: REGION }, async (request) => {
               stackedCount: reads.stackedCount,
             },
           } satisfies PlayerBoostersState,
+          boostersServerClock: {
+            serverNowMs: reads.serverNowMs,
+            updatedAt: reads.timestamp,
+          },
           updatedAt: reads.timestamp,
         },
         { merge: true },

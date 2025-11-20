@@ -26,15 +26,32 @@ interface ActivateBoosterRequest {
 }
 
 interface ActivateBoosterResult {
-  success: true;
-  opId: string;
-  boosterSkuId: string;
-  boosterItemId: string;
-  subType: BoosterSubType;
-  activeUntil: number;
-  stackedCount: number;
-  remaining: number;
+  success: boolean;
+  error: string | null;
 }
+
+const SUCCESS_RESULT: ActivateBoosterResult = { success: true, error: null } as const;
+
+const normalizeResult = (raw: unknown): ActivateBoosterResult => {
+  if (raw && typeof raw === "object") {
+    const candidate = raw as { success?: unknown; error?: unknown };
+    const success =
+      typeof candidate.success === "boolean"
+        ? candidate.success
+        : candidate.success === undefined
+          ? true
+          : Boolean(candidate.success);
+    if (success) {
+      return SUCCESS_RESULT;
+    }
+    const error =
+      typeof candidate.error === "string" && candidate.error.trim().length > 0
+        ? candidate.error
+        : "Activation failed.";
+    return { success: false, error };
+  }
+  return SUCCESS_RESULT;
+};
 
 const readRequest = (data: ActivateBoosterRequest): { opId: string; boosterId: string } => {
   if (typeof data.opId !== "string" || !data.opId.trim()) {
@@ -99,7 +116,7 @@ export const activateBooster = onCall({ region: REGION }, async (request) => {
 
   const cached = await checkIdempotency(uid, opId);
   if (cached) {
-    return cached as ActivateBoosterResult;
+    return normalizeResult(cached);
   }
 
   await createInProgressReceipt(uid, opId, "activateBooster");
@@ -272,16 +289,7 @@ export const activateBooster = onCall({ region: REGION }, async (request) => {
         { merge: true },
       );
 
-      return {
-        success: true,
-        opId,
-        boosterSkuId: boosterSku.skuId,
-        boosterItemId: boosterSku.itemId,
-        subType: boosterSubType,
-        activeUntil: reads.activeUntil,
-        stackedCount: reads.stackedCount,
-        remaining: adjustment.after,
-      };
+      return SUCCESS_RESULT;
     },
   );
 

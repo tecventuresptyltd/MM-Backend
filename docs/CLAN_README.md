@@ -22,7 +22,7 @@ This document is the canonical reference for the Mystic Motors clan + chat backe
 | --- | --- | --- |
 | `clanId` | string | Document ID mirror. |
 | `name` | string | Display name (3-24 characters). |
-| `description` | string | Optional 0-140 char message. |
+| `description` | string | Optional 0-500 char message. |
 | `type` | `"anyone can join" \| "invite only" \| "closed"` | Controls how players join. |
 | `location` | string | Free-form string (UI filter). |
 | `language` | string | Lowercase ISO language (e.g. `en`). |

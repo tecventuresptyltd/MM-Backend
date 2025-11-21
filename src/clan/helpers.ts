@@ -46,7 +46,7 @@ export const REGION = "us-central1";
 export const MIN_CLAN_NAME_LENGTH = 3;
 export const MAX_CLAN_NAME_LENGTH = 24;
 export const MIN_CLAN_DESCRIPTION_LENGTH = 0;
-export const MAX_CLAN_DESCRIPTION_LENGTH = 140;
+export const MAX_CLAN_DESCRIPTION_LENGTH = 500;
 export const MIN_TROPHY_REQUIREMENT = 0;
 export const MAX_TROPHY_REQUIREMENT = 100000;
 

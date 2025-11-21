@@ -75,7 +75,7 @@ Main clan document keyed by a generated `clan_*` ID. Fields:
 
 * `clanId` *(string)* â€” mirror of the document ID for convenience.
 * `name` *(string)* â€” 3â€“24 characters, trimmed.
-* `description` *(string)* â€” optional, â‰¤ 140 characters.
+* `description` *(string)* — optional, ≤ 500 characters.
 * `type` *(string)* â€” `"anyone can join"`, `"invite only"`, or `"closed"`.
 * `location` *(string)* â€” free-form string used for filtering (defaults to `"GLOBAL"` if blank).
 * `language` *(string)* â€” lowercase ISO language (e.g. `en`).

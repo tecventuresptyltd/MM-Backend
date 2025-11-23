@@ -63,7 +63,12 @@ The schema is designed with the following principles to ensure performance, scal
 /Rooms/{roomId}
   /Messages/{messageId}
 /System/RecommendedClans (singleton)
-/presence/online/{uid}        (Realtime Database)
+
+Realtime Database (RTDB):
+```
+/chat_messages/{clanId}/{messageId}
+/presence/online/{uid}
+```
 /presence/lastSeen/{uid}      (Realtime Database mirror source)
 ```
 
@@ -113,6 +118,22 @@ Singleton doc used for the “smart pool” join flow. A scheduled job rebuilds 
 * `updatedAt` *(timestamp)* – server timestamp of the last rebuild.
 * `poolSize` *(number)* – number of entries currently stored.
 * `pool` *(array)* – list of `{ id, minimumTrophies, name, badge, type, members, totalTrophies }` where each entry mirrors the lightweight clan card data (current limit: 10 entries).
+
+### Realtime Database – Clan Chat
+
+* `/chat_messages/{clanId}/{messageId}` holds the live clan chat feed. Each node stores:
+  * `u`: author UID (or `null` for system messages)
+  * `n`: display name snapshot
+  * `m`: message text (optional for system)
+  * `type`: `"text"` or `"system"`
+  * `c`: clan badge snapshot
+  * `av`: avatar ID
+  * `tr`: trophies at send time
+  * `cl`: clan name snapshot
+  * `op`: `opId` from the callable payload (used by the client to reconcile optimistic messages)
+  * `clientCreatedAt`: optional client timestamp
+  * `ts`: server timestamp (indexed)
+* `/presence/online/{uid}` mirrors `{ clanId, lastSeen }` while the client is connected. RTDB security rules ensure users can only read/write the channel that matches their presence entry.
 
 Clients call `getRecommendedClansPool`, cache the payload (e.g., 30 minutes), filter the pool locally by the user's trophies, shuffle it, and only hydrate the handful of selected IDs with batched `IN` queries.
 

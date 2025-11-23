@@ -1837,7 +1837,7 @@ Each stored message contains `{ roomId, authorUid, authorDisplayName, authorAvat
 ---
 
 ### `sendClanChatMessage`
-**Purpose:** Requires current membership, enforces clan slow mode, logs latest profile/clan snapshot.
+**Purpose:** Requires current membership, enforces clan slow mode, then pushes the message directly to Realtime Database (`/chat_messages/{clanId}`) with the caller’s display name, avatar, badge, and trophy snapshot.
 **Input:**
 ```json
 {
@@ -1847,20 +1847,20 @@ Each stored message contains `{ roomId, authorUid, authorDisplayName, authorAvat
   "clientCreatedAt": "string (optional ISO8601)"
 }
 ```
-**Output:** `{ "clanId": "string", "messageId": "string" }`
+**Output:** `{ "clanId": "string", "messageId": "string" }` (RTDB push key)
 **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `RESOURCE_EXHAUSTED`, `FAILED_PRECONDITION`, `NOT_FOUND`
 
 ---
 
 ### `getClanChatMessages`
-**Purpose:** Returns up to 25 of the latest clan messages for the caller’s clan.
+**Purpose:** Convenience callable for clients that can’t attach a listener; reads the latest RTDB messages for the caller’s clan (same stream used by the realtime client).
 **Input:**
 ```json
 {
   "limit": 25
 }
 ```
-**Output:** `{ "clanId": "string", "messages": [ { ...Message } ] }`
+**Output:** `{ "clanId": "string", "messages": [ { ...Message } ] }` (ordered oldest→newest)
 **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `FAILED_PRECONDITION`
 
 ---

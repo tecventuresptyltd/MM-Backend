@@ -17,13 +17,17 @@ import {
   setPlayerClanState,
   updatePlayerClanProfile,
   getPlayerProfile,
-  clanChatCollection,
 } from "./helpers.js";
+import {
+  PendingClanSystemMessage,
+  clanChatMessagesRef,
+  publishClanSystemMessages,
+  pushClanChatMessage,
+} from "./chat.js";
 
 const { FieldValue } = admin.firestore;
 const roomsCollection = () => admin.firestore().collection("Rooms");
 const GLOBAL_CHAT_HISTORY_LIMIT = 100;
-const CLAN_CHAT_HISTORY_LIMIT = 100;
 const CHAT_FETCH_LIMIT = 25;
 const MAX_BOOKMARK_REFRESH_BATCH = 20;
 
@@ -195,22 +199,39 @@ const serializeChatMessage = (
   };
 };
 
-const queueClanSystemMessage = (
-  transaction: FirebaseFirestore.Transaction,
+const mapClanRtdbMessage = (
+  clanId: string,
+  key: string,
+  data: Record<string, unknown> | null,
+) => {
+  const createdAt = typeof data?.ts === "number" ? data?.ts : null;
+  return {
+    messageId: key,
+    roomId: null,
+    clanId,
+    authorUid: (data?.u as string) ?? null,
+    authorDisplayName: (data?.n as string) ?? ((data?.type as string) === "system" ? "System" : "Racer"),
+    authorAvatarId: (data?.av as number) ?? null,
+    authorTrophies: (data?.tr as number) ?? null,
+    authorClanName: (data?.cl as string) ?? null,
+    authorClanBadge: (data?.c as string) ?? null,
+    type: (data?.type as string) ?? "text",
+    text: (data?.m as string) ?? "",
+    clientCreatedAt: (data?.clientCreatedAt as string) ?? null,
+    createdAt,
+    opId: (data?.op as string) ?? null,
+    deleted: false,
+    deletedReason: null,
+  };
+};
+
+const enqueueClanSystemMessage = (
+  messages: PendingClanSystemMessage[],
   clanId: string,
   text: string,
   payload: Record<string, unknown>,
-  timestamp: FirebaseFirestore.FieldValue,
 ) => {
-  transaction.set(clanChatCollection(clanId).doc(), {
-    clanId,
-    authorUid: null,
-    authorDisplayName: "System",
-    type: "system",
-    text,
-    payload,
-    createdAt: timestamp,
-  });
+  messages.push({ clanId, text, payload });
 };
 
 interface ClanActionResponse {
@@ -326,11 +347,14 @@ export const acceptClanInvite = onCall(callableOptions(), async (request) => {
   const stateRef = playerClanStateRef(uid);
   const inviteDocRef = playerClanInvitesRef(uid);
 
-  const result = await runTransactionWithReceipt<ClanActionResponse>(
+  const result = await runTransactionWithReceipt<
+    ClanActionResponse & { systemMessages: PendingClanSystemMessage[] }
+  >(
     uid,
     opId,
     "acceptClanInvite",
     async (transaction) => {
+      const systemMessages: PendingClanSystemMessage[] = [];
       const [clanSnap, stateSnap, inviteSnap] = await Promise.all([
         transaction.get(clanDocRef),
         transaction.get(stateRef),
@@ -390,16 +414,17 @@ export const acceptClanInvite = onCall(callableOptions(), async (request) => {
         joinedAt: now,
       });
 
-      queueClanSystemMessage(transaction, clanId, `${profile.displayName} joined the clan`, {
+      enqueueClanSystemMessage(systemMessages, clanId, `${profile.displayName} joined the clan`, {
         kind: "member_joined",
         uid,
-      }, now);
+      });
 
-      return { clanId };
+      return { clanId, systemMessages };
     },
   );
 
-  return result;
+  await publishClanSystemMessages(result.systemMessages ?? []);
+  return { clanId: result.clanId };
 });
 
 interface DeclineClanInviteRequest {
@@ -740,7 +765,9 @@ export const sendClanChatMessage = onCall(callableOptions(), async (request) => 
     throw new HttpsError("failed-precondition", "Player profile not initialised.");
   }
 
-  const result = await runTransactionWithReceipt<ChatResponse & { clanId: string }>(
+  const result = await runTransactionWithReceipt<
+    ChatResponse & { clanId: string; clanName: string | null; clanBadge: string | null }
+  >(
     uid,
     opId,
     "sendClanChatMessage",
@@ -756,9 +783,6 @@ export const sendClanChatMessage = onCall(callableOptions(), async (request) => 
 
       const clanDocRef = clanRef(clanId);
       const memberRef = clanMembersCollection(clanId).doc(uid);
-      const chatCollection = clanChatCollection(clanId);
-      const messageRef = chatCollection.doc();
-
       const [clanSnap, memberSnap, rateSnap] = await Promise.all([
         transaction.get(clanDocRef),
         transaction.get(memberRef),
@@ -780,21 +804,6 @@ export const sendClanChatMessage = onCall(callableOptions(), async (request) => 
         throw new HttpsError("resource-exhausted", "Slow mode in effect. Please wait.");
       }
 
-      transaction.set(messageRef, {
-        clanId,
-        authorUid: uid,
-        authorDisplayName: profile.displayName,
-        authorAvatarId: profile.avatarId,
-        authorTrophies: profile.trophies ?? 0,
-        authorClanName: clanData.name ?? null,
-        authorClanBadge: clanData.badge ?? null,
-        type: "text",
-        text,
-        clientCreatedAt: typeof payload.clientCreatedAt === "string" ? payload.clientCreatedAt : null,
-        createdAt: now,
-        deleted: false,
-        deletedReason: null,
-      });
       transaction.set(
         rateRef,
         {
@@ -809,12 +818,29 @@ export const sendClanChatMessage = onCall(callableOptions(), async (request) => 
         { merge: true },
       );
 
-      return { clanId, messageId: messageRef.id };
+      return {
+        clanId,
+        clanName: typeof clanData.name === "string" ? clanData.name : profile.clanName ?? null,
+        clanBadge: typeof clanData.badge === "string" ? clanData.badge : null,
+        messageId: "",
+      };
     },
   );
 
-  await trimMessages(clanChatCollection(result.clanId), CLAN_CHAT_HISTORY_LIMIT);
-  return { clanId: result.clanId, messageId: result.messageId };
+  const messageId = await pushClanChatMessage(result.clanId, {
+    u: uid,
+    n: profile.displayName,
+    type: "text",
+    m: text,
+    op: opId,
+    c: result.clanBadge ?? null,
+    cl: result.clanName ?? null,
+    av: profile.avatarId ?? null,
+    tr: profile.trophies ?? 0,
+    clientCreatedAt: typeof payload.clientCreatedAt === "string" ? payload.clientCreatedAt : null,
+  });
+
+  return { clanId: result.clanId, messageId: messageId ?? "" };
 });
 
 interface GetGlobalChatMessagesRequest {
@@ -866,9 +892,9 @@ export const getClanChatMessages = onCall(callableOptions(), async (request) => 
     throw new HttpsError("failed-precondition", "Player is not in a clan.");
   }
 
-  const chatSnap = await clanChatCollection(clanId)
-    .orderBy("createdAt", "desc")
-    .limit(limit)
+  const chatSnap = await clanChatMessagesRef(clanId)
+    .orderByChild("ts")
+    .limitToLast(limit)
     .get();
 
   await playerClanStateRef(uid).set(
@@ -876,8 +902,16 @@ export const getClanChatMessages = onCall(callableOptions(), async (request) => 
     { merge: true },
   );
 
+  const messages: ReturnType<typeof mapClanRtdbMessage>[] = [];
+  if (chatSnap.exists()) {
+    chatSnap.forEach((child) => {
+      messages.push(mapClanRtdbMessage(clanId, child.key ?? "", (child.val() as Record<string, unknown>) ?? {}));
+    });
+    messages.sort((a, b) => (a.createdAt ?? 0) - (b.createdAt ?? 0));
+  }
+
   return {
     clanId,
-    messages: chatSnap.docs.map(serializeChatMessage).reverse(),
+    messages,
   };
 });

@@ -76,7 +76,6 @@ export const clansCollection = () => db.collection("Clans");
 export const clanRef = (clanId: string) => clansCollection().doc(clanId);
 export const clanMembersCollection = (clanId: string) => clanRef(clanId).collection("Members");
 export const clanRequestsCollection = (clanId: string) => clanRef(clanId).collection("Requests");
-export const clanChatCollection = (clanId: string) => clanRef(clanId).collection("Chat");
 
 export const playersCollection = () => db.collection("Players");
 export const playerProfileRef = (uid: string) => playersCollection().doc(uid).collection("Profile").doc("Profile");

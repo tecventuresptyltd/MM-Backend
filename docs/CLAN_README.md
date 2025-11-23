@@ -38,7 +38,7 @@ This document is the canonical reference for the Mystic Motors clan + chat backe
 
 - `/Members/{uid}` ? `{ uid, role, rolePriority, trophies, joinedAt, displayName, avatarId, level, lastPromotedAt }`
 - `/Requests/{uid}` ? `{ uid, displayName, trophies, message?, requestedAt }`
-- `/Chat/{messageId}` ? `{ clanId, authorUid?, authorDisplayName, type, text?, payload?, createdAt }`
+- **Clan chat history now lives in Realtime Database** under `/chat_messages/{clanId}/{messageId}`. See the chat section below for the RTDB schema.
 
 > **Realtime tip:** Attach a Firestore listener to `Clans/{clanId}/Members` (optionally with ordering) to stream roster changes into Unity. Each member lives in its own document, so updates remain fine-grained and cheap.
 
@@ -150,12 +150,18 @@ All functions are HTTPS `onCall`, `us-central1`, AppCheck optional. Every reques
 | --- | --- | --- | --- |
 | `sendGlobalChatMessage` | `{ opId, roomId, text, clientCreatedAt? }` | `{ roomId, messageId }` | Enforces slow mode, trims to backend-configured history, stamps display name, avatarId, trophies, and clan snapshot for every message. |
 | `getGlobalChatMessages` | `{ roomId, limit? }` | `{ roomId, messages: Message[] }` | Returns up to 25 most recent global messages, newest-last, reflecting the stored metadata. |
-| `sendClanChatMessage` | `{ opId, clanId?, text, clientCreatedAt? }` | `{ clanId, messageId }` | Requires current membership, enforces clan slow mode, logs profile + clan snapshot, updates `lastVisitedClanChatAt`. |
-| `getClanChatMessages` | `{ limit? }` | `{ clanId, messages: Message[] }` | Requires membership; returns up to 25 most recent clan messages. |
+| `sendClanChatMessage` | `{ opId, clanId?, text, clientCreatedAt? }` | `{ clanId, messageId }` | Requires current membership, enforces clan slow mode, writes directly to RTDB (`/chat_messages/{clanId}`) with the author’s display name, avatar, trophies, and clan badge snapshot. |
+| `getClanChatMessages` | `{ limit? }` | `{ clanId, messages: Message[] }` | Reads the latest RTDB messages (default 25) for callers that can’t maintain a listener. |
+| `cleanupClanChatHistory` | `schedule` | n/a | Scheduled job (every 24h) that prunes RTDB messages older than 30 days. |
 
 `Message` objects contain `{ messageId, roomId?, clanId?, authorUid, authorDisplayName, authorAvatarId, authorTrophies, authorClanName?, authorClanBadge?, type, text, clientCreatedAt?, createdAt, deleted, deletedReason }`.
 
-Moderation helpers (`moderateChatMessage`) are optional future work but should follow the same schema if added.
+**Clan chat transport:**  
+- Clients listen to `/chat_messages/{clanId}` in Realtime Database (`orderByChild("ts").limitToLast(200)`).
+- Each message stores `{ u, n, m, c, av, tr, cl, type, payload?, clientCreatedAt?, op (opId), ts }`.
+- Players must mirror their `clanId` into `/presence/online/{uid}` so RTDB rules can verify that they only read/write their own clan channel.  
+- System events (join/leave/kick/promotion) are published via backend helpers that push `type: "system"` messages after the transaction succeeds.  
+- `cleanupClanChatHistory` (scheduled every 24h) prunes entries older than 30 days to keep storage predictable.
 
 ---
 

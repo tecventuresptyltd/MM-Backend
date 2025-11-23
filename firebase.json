@@ -113,6 +113,12 @@
       }
     ]
   },
+  "database": [
+    {
+      "instance": "mystic-motors-sandbox-default-rtdb",
+      "rules": "database.rules.json"
+    }
+  ],
   "emulators": {
     "firestore": { "port": 8180 },
     "auth": { "port": 9199 }

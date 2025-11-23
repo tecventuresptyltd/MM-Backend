@@ -9,7 +9,6 @@ import {
   ClanType,
   buildSearchFields,
   canManageMembers,
-  clanChatCollection,
   clanMembersCollection,
   clanRef,
   clanRequestsCollection,
@@ -31,6 +30,7 @@ import {
   setPlayerClanState,
   updatePlayerClanProfile,
 } from "./helpers.js";
+import { pushClanSystemMessage } from "./chat.js";
 
 const db = admin.firestore();
 const { FieldValue } = admin.firestore;
@@ -99,7 +99,6 @@ export const createClan = onCall(callableOptions(), async (request) => {
   const clanDocRef = clanRef(clanId);
   const memberRef = clanMembersCollection(clanId).doc(uid);
   const clanStateRef = playerClanStateRef(uid);
-  const chatRef = clanChatCollection(clanId).doc();
 
   const result = await runTransactionWithReceipt<{ clanId: string; name: string }>(
     uid,
@@ -154,19 +153,14 @@ export const createClan = onCall(callableOptions(), async (request) => {
         joinedAt: now,
       });
 
-      transaction.set(chatRef, {
-        clanId,
-        authorUid: null,
-        authorDisplayName: "System",
-        type: "system",
-        text: `${profile.displayName} founded ${name}`,
-        createdAt: now,
-        payload: { kind: "clan_created", by: uid },
-      });
-
       return { clanId, name };
     },
   );
+
+  await pushClanSystemMessage(result.clanId, `${profile.displayName} founded ${result.name}`, {
+    kind: "clan_created",
+    by: uid,
+  });
 
   return loadClanDetails(result.clanId, uid);
 });

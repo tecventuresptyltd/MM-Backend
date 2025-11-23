@@ -8,7 +8,6 @@ import {
   ClanRole,
   canInviteMembers,
   canManageMembers,
-  clanChatCollection,
   clanMembersCollection,
   clanRef,
   clanRequestsCollection,
@@ -22,6 +21,7 @@ import {
   setPlayerClanState,
   updatePlayerClanProfile,
 } from "./helpers.js";
+import { PendingClanSystemMessage, publishClanSystemMessages } from "./chat.js";
 
 const { FieldValue } = admin.firestore;
 
@@ -61,22 +61,13 @@ const sanitizeRequestMessage = (value?: unknown): string | undefined => {
   return trimmed.slice(0, 200);
 };
 
-const queueSystemMessage = (
-  transaction: FirebaseFirestore.Transaction,
+const enqueueSystemMessage = (
+  messages: PendingClanSystemMessage[],
   clanId: string,
   text: string,
   payload: Record<string, unknown>,
-  timestamp: FirebaseFirestore.FieldValue,
 ) => {
-  transaction.set(clanChatCollection(clanId).doc(), {
-    clanId,
-    authorUid: null,
-    authorDisplayName: "System",
-    type: "system",
-    text,
-    payload,
-    createdAt: timestamp,
-  });
+  messages.push({ clanId, text, payload });
 };
 
 const requireTargetUid = (value?: unknown): string => {
@@ -214,11 +205,14 @@ export const joinClan = onCall(callableOptions(), async (request) => {
   const requestRef = clanRequestsCollection(clanId).doc(uid);
   const invitesRef = playerClanInvitesRef(uid);
 
-  const result = await runTransactionWithReceipt<ClanMutationResponse>(
+  const result = await runTransactionWithReceipt<
+    ClanMutationResponse & { systemMessages: PendingClanSystemMessage[] }
+  >(
     uid,
     opId,
     "joinClan",
     async (transaction) => {
+      const systemMessages: PendingClanSystemMessage[] = [];
       const [clanSnap, stateSnap] = await Promise.all([
         transaction.get(clanDocRef),
         transaction.get(stateRef),
@@ -275,19 +269,17 @@ export const joinClan = onCall(callableOptions(), async (request) => {
         joinedAt: now,
       });
 
-      queueSystemMessage(
-        transaction,
-        clanId,
-        `${profile.displayName} joined the clan`,
-        { kind: "member_joined", uid },
-        now,
-      );
+      enqueueSystemMessage(systemMessages, clanId, `${profile.displayName} joined the clan`, {
+        kind: "member_joined",
+        uid,
+      });
 
-      return { clanId };
+      return { clanId, systemMessages };
     },
   );
 
-  return result;
+  await publishClanSystemMessages(result.systemMessages ?? []);
+  return { clanId: result.clanId };
 });
 
 interface PromoteClanMemberRequest {
@@ -319,11 +311,14 @@ export const promoteClanMember = onCall(callableOptions(), async (request) => {
   const actorMemberRef = clanMembersCollection(clanId).doc(uid);
   const targetMemberRef = clanMembersCollection(clanId).doc(targetUid);
 
-  const result = await runTransactionWithReceipt<ClanMutationResponse>(
+  const result = await runTransactionWithReceipt<
+    ClanMutationResponse & { systemMessages: PendingClanSystemMessage[] }
+  >(
     uid,
     opId,
     "promoteClanMember",
     async (transaction) => {
+      const systemMessages: PendingClanSystemMessage[] = [];
       const [clanSnap, actorSnap, targetSnap] = await Promise.all([
         transaction.get(clanDocRef),
         transaction.get(actorMemberRef),
@@ -352,19 +347,19 @@ export const promoteClanMember = onCall(callableOptions(), async (request) => {
         lastPromotedAt: now,
       });
 
-      queueSystemMessage(
-        transaction,
+      enqueueSystemMessage(
+        systemMessages,
         clanId,
         `${targetSnap.data()?.displayName ?? "Member"} was promoted to ${desiredRole}`,
         { kind: "member_promoted", uid: targetUid, role: desiredRole, by: uid },
-        now,
       );
 
-      return { clanId };
+      return { clanId, systemMessages };
     },
   );
 
-  return result;
+  await publishClanSystemMessages(result.systemMessages ?? []);
+  return { clanId: result.clanId };
 });
 
 interface DemoteClanMemberRequest {
@@ -396,11 +391,14 @@ export const demoteClanMember = onCall(callableOptions(), async (request) => {
   const actorMemberRef = clanMembersCollection(clanId).doc(uid);
   const targetMemberRef = clanMembersCollection(clanId).doc(targetUid);
 
-  const result = await runTransactionWithReceipt<ClanMutationResponse>(
+  const result = await runTransactionWithReceipt<
+    ClanMutationResponse & { systemMessages: PendingClanSystemMessage[] }
+  >(
     uid,
     opId,
     "demoteClanMember",
     async (transaction) => {
+      const systemMessages: PendingClanSystemMessage[] = [];
       const [clanSnap, actorSnap, targetSnap] = await Promise.all([
         transaction.get(clanDocRef),
         transaction.get(actorMemberRef),
@@ -429,19 +427,19 @@ export const demoteClanMember = onCall(callableOptions(), async (request) => {
         lastPromotedAt: now,
       });
 
-      queueSystemMessage(
-        transaction,
+      enqueueSystemMessage(
+        systemMessages,
         clanId,
         `${targetSnap.data()?.displayName ?? "Member"} was demoted to ${desiredRole}`,
         { kind: "member_demoted", uid: targetUid, role: desiredRole, by: uid },
-        now,
       );
 
-      return { clanId };
+      return { clanId, systemMessages };
     },
   );
 
-  return result;
+  await publishClanSystemMessages(result.systemMessages ?? []);
+  return { clanId: result.clanId };
 });
 
 interface TransferClanLeadershipRequest {
@@ -472,11 +470,14 @@ export const transferClanLeadership = onCall(callableOptions(), async (request) 
   const leaderRef = clanMembersCollection(clanId).doc(uid);
   const targetRef = clanMembersCollection(clanId).doc(targetUid);
 
-  const result = await runTransactionWithReceipt<ClanMutationResponse>(
+  const result = await runTransactionWithReceipt<
+    ClanMutationResponse & { systemMessages: PendingClanSystemMessage[] }
+  >(
     uid,
     opId,
     "transferClanLeadership",
     async (transaction) => {
+      const systemMessages: PendingClanSystemMessage[] = [];
       const [clanSnap, leaderSnap, targetSnap] = await Promise.all([
         transaction.get(clanDocRef),
         transaction.get(leaderRef),
@@ -504,19 +505,19 @@ export const transferClanLeadership = onCall(callableOptions(), async (request) 
       });
       transaction.update(clanDocRef, { leaderUid: targetUid, updatedAt: now });
 
-      queueSystemMessage(
-        transaction,
+      enqueueSystemMessage(
+        systemMessages,
         clanId,
         `${targetSnap.data()?.displayName ?? "Member"} is now the clan leader`,
         { kind: "leadership_transfer", from: uid, to: targetUid },
-        now,
       );
 
-      return { clanId };
+      return { clanId, systemMessages };
     },
   );
 
-  return result;
+  await publishClanSystemMessages(result.systemMessages ?? []);
+  return { clanId: result.clanId };
 });
 
 interface KickClanMemberRequest {
@@ -548,11 +549,14 @@ export const kickClanMember = onCall(callableOptions(), async (request) => {
   const targetMemberRef = clanMembersCollection(clanId).doc(targetUid);
   const invitesRef = playerClanInvitesRef(targetUid);
 
-  const result = await runTransactionWithReceipt<ClanMutationResponse>(
+  const result = await runTransactionWithReceipt<
+    ClanMutationResponse & { systemMessages: PendingClanSystemMessage[] }
+  >(
     uid,
     opId,
     "kickClanMember",
     async (transaction) => {
+      const systemMessages: PendingClanSystemMessage[] = [];
       const [clanSnap, actorSnap, targetSnap] = await Promise.all([
         transaction.get(clanDocRef),
         transaction.get(actorMemberRef),
@@ -592,19 +596,19 @@ export const kickClanMember = onCall(callableOptions(), async (request) => {
         { merge: true },
       );
 
-      queueSystemMessage(
-        transaction,
+      enqueueSystemMessage(
+        systemMessages,
         clanId,
         `${targetSnap.data()?.displayName ?? "Member"} was removed from the clan`,
         { kind: "member_kicked", uid: targetUid, by: uid },
-        now,
       );
 
-      return { clanId };
+      return { clanId, systemMessages };
     },
   );
 
-  return result;
+  await publishClanSystemMessages(result.systemMessages ?? []);
+  return { clanId: result.clanId };
 });
 
 interface UpdateMemberTrophiesRequest {
@@ -781,11 +785,14 @@ export const leaveClan = onCall(callableOptions(), async (request) => {
   const stateRef = playerClanStateRef(uid);
   const now = FieldValue.serverTimestamp();
 
-  const result = await runTransactionWithReceipt<ClanMutationResponse>(
+  const result = await runTransactionWithReceipt<
+    (ClanMutationResponse & { deleted: boolean }) & { systemMessages: PendingClanSystemMessage[] }
+  >(
     uid,
     opId,
     "leaveClan",
     async (transaction) => {
+      const systemMessages: PendingClanSystemMessage[] = [];
       const stateSnap = await transaction.get(stateRef);
       const clanId = stateSnap.data()?.clanId;
       if (typeof clanId !== "string" || clanId.length === 0) {
@@ -814,13 +821,11 @@ export const leaveClan = onCall(callableOptions(), async (request) => {
           if (!promoted) {
             throw new HttpsError("failed-precondition", "No eligible member to take leadership.");
           }
-          queueSystemMessage(
-            transaction,
-            clanId,
-            `${promoted.displayName} is now the clan leader`,
-            { kind: "leadership_transfer", to: promoted.uid, from: uid },
-            now,
-          );
+          enqueueSystemMessage(systemMessages, clanId, `${promoted.displayName} is now the clan leader`, {
+            kind: "leadership_transfer",
+            to: promoted.uid,
+            from: uid,
+          });
         }
       }
 
@@ -833,18 +838,16 @@ export const leaveClan = onCall(callableOptions(), async (request) => {
       clearPlayerClanProfile(transaction, uid);
       clearPlayerClanState(transaction, uid);
 
-      queueSystemMessage(
-        transaction,
-        clanId,
-        `${memberData.displayName ?? "Member"} left the clan`,
-        { kind: "member_left", uid },
-        now,
-      );
+      enqueueSystemMessage(systemMessages, clanId, `${memberData.displayName ?? "Member"} left the clan`, {
+        kind: "member_left",
+        uid,
+      });
 
-      return { clanId, deleted: deletedClan };
+      return { clanId, deleted: deletedClan, systemMessages };
     },
   );
 
+  await publishClanSystemMessages(result.systemMessages ?? []);
   if (result.deleted) {
     await deleteClanTree(result.clanId);
   }
@@ -883,11 +886,14 @@ export const acceptJoinRequest = onCall(callableOptions(), async (request) => {
   const targetStateRef = playerClanStateRef(targetUid);
   const invitesRef = playerClanInvitesRef(targetUid);
 
-  const result = await runTransactionWithReceipt<ClanMutationResponse>(
+  const result = await runTransactionWithReceipt<
+    ClanMutationResponse & { systemMessages: PendingClanSystemMessage[] }
+  >(
     uid,
     opId,
     "acceptJoinRequest",
     async (transaction) => {
+      const systemMessages: PendingClanSystemMessage[] = [];
       const [clanSnap, actorSnap, requestSnap, targetStateSnap] = await Promise.all([
         transaction.get(clanDocRef),
         transaction.get(actorMemberRef),
@@ -950,19 +956,17 @@ export const acceptJoinRequest = onCall(callableOptions(), async (request) => {
         joinedAt: now,
       });
 
-      queueSystemMessage(
-        transaction,
-        clanId,
-        `${targetProfile.displayName} joined the clan`,
-        { kind: "member_joined", uid: targetUid },
-        now,
-      );
+      enqueueSystemMessage(systemMessages, clanId, `${targetProfile.displayName} joined the clan`, {
+        kind: "member_joined",
+        uid: targetUid,
+      });
 
-      return { clanId };
+      return { clanId, systemMessages };
     },
   );
 
-  return result;
+  await publishClanSystemMessages(result.systemMessages ?? []);
+  return { clanId: result.clanId };
 });
 
 interface DeclineJoinRequestRequest {

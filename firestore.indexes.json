@@ -114,6 +114,15 @@
         { "fieldPath": "region", "order": "ASCENDING" },
         { "fieldPath": "connectedCount", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionId": "Members",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "rolePriority", "order": "DESCENDING" },
+        { "fieldPath": "lastPromotedAt", "order": "ASCENDING" },
+        { "fieldPath": "joinedAt", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": [

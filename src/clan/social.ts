@@ -370,6 +370,7 @@ export const inviteToClan = onCall(callableOptions(), async (request) => {
   }
   await createInProgressReceipt(uid, opId, "inviteToClan");
   const now = FieldValue.serverTimestamp();
+  const inviterProfile = await getPlayerProfile(uid);
 
   const clanDocRef = clanRef(clanId);
   const actorMemberRef = clanMembersCollection(clanId).doc(uid);
@@ -401,19 +402,31 @@ export const inviteToClan = onCall(callableOptions(), async (request) => {
       }
 
       const clanData = clanSnap.data() ?? {};
+      const summary = clanSummaryProjection(clanData);
+      const inviteData: Record<string, unknown> = {
+        clanId,
+        clanName: summary.name ?? clanData.name ?? "Clan",
+        fromUid: uid,
+        fromRole: actorRole,
+        fromName: inviterProfile?.displayName ?? "Racer",
+        fromAvatarId: inviterProfile?.avatarId ?? null,
+        createdAt: now,
+        clanBadge: summary.badge ?? null,
+        clanType: summary.type ?? null,
+        minimumTrophies: summary.minimumTrophies ?? 0,
+        statsMembers: Number(summary.stats?.members ?? 0),
+        statsTrophies: Number(summary.stats?.trophies ?? 0),
+        snapshotRefreshedAt: now,
+      };
+      if (message !== undefined) {
+        inviteData.message = message;
+      }
       transaction.set(
         inviteDocRef,
         {
           updatedAt: now,
           invites: {
-            [clanId]: {
-              clanId,
-              clanName: clanData.name ?? "Clan",
-              fromUid: uid,
-              fromRole: actorRole,
-              createdAt: now,
-              message,
-            },
+            [clanId]: inviteData,
           },
         },
         { merge: true },
@@ -757,6 +770,78 @@ export const refreshBookmarkedClans = onCall(callableOptions(), async (request) 
   }
 
   return { bookmarks: refreshed };
+});
+
+interface RefreshClanInvitesRequest {
+  clanIds?: string[];
+}
+
+export const refreshClanInvites = onCall(callableOptions(), async (request) => {
+  const uid = assertAuthenticated(request);
+  const payload = (request.data ?? {}) as RefreshClanInvitesRequest;
+  const requestedIds = Array.isArray(payload.clanIds)
+    ? Array.from(
+        new Set(
+          payload.clanIds
+            .map((value) => (typeof value === "string" ? value.trim() : ""))
+            .filter((value) => value.length > 0),
+        ),
+      )
+    : [];
+
+  const invitesRef = playerClanInvitesRef(uid);
+  const invitesSnap = await invitesRef.get();
+  const existingInvites = (invitesSnap.data()?.invites ?? {}) as Record<string, Record<string, unknown>>;
+  const clanIds = requestedIds.length > 0 ? requestedIds : Object.keys(existingInvites);
+  if (clanIds.length === 0) {
+    return { invites: [] };
+  }
+
+  const now = admin.firestore.Timestamp.now();
+  const clanRefs = clanIds.map((id) => clanRef(id));
+  const clanSnapshots = await admin.firestore().getAll(...clanRefs);
+
+  const updates: Record<string, Record<string, unknown>> = {};
+  const refreshed: Record<string, unknown>[] = [];
+
+  clanSnapshots.forEach((clanSnap) => {
+    if (!clanSnap.exists) {
+      return;
+    }
+    const summary = clanSummaryProjection(clanSnap.data() ?? {});
+    const clanId = summary.clanId ?? clanSnap.id;
+    if (!clanId) {
+      return;
+    }
+    const existingEntry = existingInvites[clanId];
+    if (!existingEntry) {
+      return;
+    }
+    const refreshedEntry = {
+      ...existingEntry,
+      clanName: summary.name ?? existingEntry.clanName ?? "Clan",
+      clanBadge: summary.badge ?? existingEntry.clanBadge ?? null,
+      clanType: summary.type ?? existingEntry.clanType ?? null,
+      minimumTrophies: summary.minimumTrophies ?? existingEntry.minimumTrophies ?? 0,
+      statsMembers: Number(summary.stats?.members ?? 0),
+      statsTrophies: Number(summary.stats?.trophies ?? 0),
+      snapshotRefreshedAt: now,
+    };
+    updates[clanId] = refreshedEntry;
+    refreshed.push(refreshedEntry);
+  });
+
+  if (Object.keys(updates).length > 0) {
+    await invitesRef.set(
+      {
+        updatedAt: now,
+        invites: updates,
+      },
+      { merge: true },
+    );
+  }
+
+  return { invites: refreshed };
 });
 
 interface AssignGlobalChatRoomRequest {

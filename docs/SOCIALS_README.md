@@ -11,7 +11,7 @@ This note explains every document we create under `/Players/{uid}/Social` so eng
 | `/Players/{uid}/Social/Requests` | `{ incoming: [], outgoing: [] }` arrays for friend requests (each embeds a `player` snapshot kept in sync server-side, including clan badge data). | First request sent/received. |
 | `/Players/{uid}/Social/Blocks` | Map of blocked `uid`s. | First block action. |
 | `/Players/{uid}/Social/Clan` | Canonical clan membership (`clanId`, `role`, `joinedAt`, chat timestamps, bookmarkedClanIds?). | First clan join. |
-| `/Players/{uid}/Social/ClanInvites` | `{ invites: { [clanId]: {...} }, updatedAt }` payload for inbound clan invites. | First invite received. |
+| `/Players/{uid}/Social/ClanInvites` | `{ invites: { [clanId]: { clanName, clanBadge, clanType, minimumTrophies, statsMembers, statsTrophies, fromUid, fromRole, fromName, fromAvatarId, message?, createdAt, snapshotRefreshedAt? } }, updatedAt }` payload for inbound clan invites. | First invite received. |
 | `/Players/{uid}/Social/ClanBookmarks` | `{ bookmarks: { [clanId]: { clanId, name, badge, type, memberCount, totalTrophies, addedAt, lastRefreshedAt } }, bookmarkedClanIds, updatedAt }`. | First bookmark. |
 | `/Players/{uid}/Social/ChatRate` | Per-room slow-mode state `{ rooms: { [roomIdOrClanKey]: { lastSentAt } }, updatedAt }`. | First chat message via Cloud Function. |
 

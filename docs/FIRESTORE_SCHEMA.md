@@ -119,7 +119,7 @@ Main clan document keyed by a generated `clan_*` ID. Fields:
 Under `/Players/{uid}/Social`:
 
 * `Clan` *(doc)* – `{ clanId, role, joinedAt, lastVisitedClanChatAt, lastVisitedGlobalChatAt, bookmarkedClanIds? }`.
-* `ClanInvites` *(doc)* - `{ invites: { [clanId]: { clanId, clanName, fromUid, fromRole, message?, createdAt } }, updatedAt }`.
+* `ClanInvites` *(doc)* - `{ invites: { [clanId]: { clanId, clanName, clanBadge, clanType, minimumTrophies, statsMembers, statsTrophies, fromUid, fromRole, fromName, fromAvatarId, message?, createdAt, snapshotRefreshedAt? } }, updatedAt }`.
 * `ClanBookmarks` *(doc)* - `{ bookmarks: { [clanId]: { clanId, name, badge, type, memberCount, totalTrophies, addedAt, lastRefreshedAt } }, bookmarkedClanIds, updatedAt }`.
 * `ChatRate` *(doc)* - `{ rooms: { [roomIdOrClanKey]: { lastSentAt } }, updatedAt }` used by slow mode.
 

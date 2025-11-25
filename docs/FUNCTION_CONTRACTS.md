@@ -1549,7 +1549,7 @@ This section documents all clan and chat-related Cloud Functions, with input, ou
 ---
 
 ### `inviteToClan`
-**Purpose:** Officer+; writes invite blob under target's `/Social/ClanInvites`.
+**Purpose:** Any clan member may invite another player; writes a snapshot (clan name, badge, type, member/trophy counts, minimum trophies, sender info including `fromName` and `fromAvatarId`, optional message) under target's `/Social/ClanInvites`.
 **Input:**
 ```json
 {
@@ -1589,6 +1589,39 @@ This section documents all clan and chat-related Cloud Functions, with input, ou
 ```
 **Output:** `{ "clanId": "string" }`
 **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `NOT_FOUND`
+
+---
+
+### `refreshClanInvites`
+**Purpose:** Re-reads the specified clan IDs (or all current invites when omitted) and refreshes the cached snapshot in `/Players/{uid}/Social/ClanInvites`.
+**Input:**
+```json
+{
+  "clanIds": ["clan_abc", "clan_xyz"] // optional
+}
+```
+**Output example:**
+```json
+{
+  "invites": [
+    {
+      "clanId": "clan_abc",
+      "clanName": "Atlus",
+      "clanBadge": "badge_01",
+      "clanType": "anyone can join",
+      "minimumTrophies": 1200,
+      "statsMembers": 25,
+      "statsTrophies": 9800,
+      "fromUid": "uid_sender",
+      "fromRole": "leader",
+      "message": "Join us!",
+      "createdAt": { "_seconds": 1732077460, "_nanoseconds": 0 },
+      "snapshotRefreshedAt": { "_seconds": 1732079000, "_nanoseconds": 0 }
+    }
+  ]
+}
+```
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`
 
 ---
 
@@ -1822,7 +1855,7 @@ This section documents all clan and chat-related Cloud Functions, with input, ou
   
   ---
   
-  ### `sendGlobalChatMessage`
+### `sendGlobalChatMessage`
   **Purpose:** Verifies that the caller is assigned to the provided `roomId`, enforces slow mode, snapshots profile + clan metadata (including the clanId when present), and pushes the payload to RTDB (`/chat_messages/global/{roomId}`) together with the supplied `opId`.
 **Input:**
 ```json

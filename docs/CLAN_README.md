@@ -47,7 +47,7 @@ This document is the canonical reference for the Mystic Motors clan + chat backe
 | Doc/Collection | Key Fields |
 | --- | --- |
 | `Clan` (doc) | `{ clanId, role, joinedAt, lastVisitedClanChatAt, lastVisitedGlobalChatAt, bookmarkedClanIds? }` |
-| `ClanInvites` (doc) | `{ invites: { [clanId]: { clanId, clanName, fromUid, fromRole, message?, createdAt } }, updatedAt }` |
+| `ClanInvites` (doc) | `{ invites: { [clanId]: { clanId, clanName, clanBadge, clanType, minimumTrophies, statsMembers, statsTrophies, fromUid, fromRole, fromName, fromAvatarId, message?, createdAt, snapshotRefreshedAt? } }, updatedAt }` |
 | `ClanBookmarks` (doc) | `{ bookmarks: { [clanId]: { clanId, name, badge, type, memberCount, totalTrophies, addedAt, lastRefreshedAt } }, bookmarkedClanIds, updatedAt }` |
 | `ChatRate` (doc) | `{ rooms: { [roomOrClanKey]: { lastSentAt } }, updatedAt }` |
 
@@ -111,9 +111,10 @@ All functions are HTTPS `onCall`, `us-central1`, AppCheck optional. Every reques
 
 | Function | Request | Response | Notes |
 | --- | --- | --- | --- |
-| `inviteToClan` | `{ opId, clanId, targetUid, message? }` | `{ clanId }` | Officer+, writes invite blob under target's `/Social/ClanInvites`. |
+| `inviteToClan` | `{ opId, clanId, targetUid, message? }` | `{ clanId }` | Any member can invite; writes invite snapshot (name, badge, type, member counts, etc.) under target's `/Social/ClanInvites`. |
 | `acceptClanInvite` | `{ opId, clanId }` | `{ clanId }` | Converts invite to membership after validating capacity/trophies. |
 | `declineClanInvite` | `{ opId, clanId }` | `{ clanId }` | Removes stored invite. |
+| `refreshClanInvites` | `{ clanIds?: string[] }` | `{ invites: [...] }` | Re-reads the specified (or all) invited clans to refresh their cached badge/type/member stats inside `/Social/ClanInvites`. |
 | `bookmarkClan` | `{ opId, clanId }` | `{ clanId }` | Stores a cached snapshot (`name`, `badge`, `type`, `memberCount`, `totalTrophies`, timestamps) under `/Social/ClanBookmarks`. |
 | `unbookmarkClan` | `{ opId, clanId }` | `{ clanId }` | Removes bookmark snapshot + ID. |
 | `getBookmarkedClans` | `{}` | `{ bookmarks: BookmarkSnapshot[] }` | Returns cached bookmark entries sorted by `addedAt`. No live clan reads happen here. |

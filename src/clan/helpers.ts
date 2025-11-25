@@ -59,7 +59,8 @@ export const CLAN_ROLE_ORDER: Record<ClanRole, number> = {
   member: 1,
 };
 
-export const canInviteMembers = (role: ClanRole): boolean => role === "leader" || role === "coLeader";
+export const canInviteMembers = (role: ClanRole): boolean =>
+  role === "leader" || role === "coLeader" || role === "member";
 
 export const canManageMembers = (role: ClanRole): boolean => role === "leader" || role === "coLeader";
 

@@ -68,14 +68,24 @@ export const pushSystemGlobalMessage = async (roomId: string, text: string) =>
     m: text,
   });
 
+export interface SystemMessageAuthorSnapshot {
+  uid: string | null;
+  displayName: string;
+  avatarId: number | null;
+  trophies: number | null;
+}
+
 export const pushClanSystemMessage = async (
   clanId: string,
   text: string,
   payload?: Record<string, unknown>,
+  author?: SystemMessageAuthorSnapshot | null,
 ): Promise<string | null> =>
   pushClanChatMessage(clanId, {
-    u: null,
-    n: "System",
+    u: author?.uid ?? null,
+    n: author?.displayName ?? "System",
+    av: author?.avatarId ?? null,
+    tr: author?.trophies ?? null,
     type: "system",
     m: text,
     payload: payload ?? null,
@@ -85,13 +95,16 @@ export interface PendingClanSystemMessage {
   clanId: string;
   text: string;
   payload?: Record<string, unknown>;
+  author?: SystemMessageAuthorSnapshot | null;
 }
 
 export const publishClanSystemMessages = async (messages: PendingClanSystemMessage[]) => {
   if (!messages || messages.length === 0) {
     return;
   }
-  await Promise.all(messages.map((msg) => pushClanSystemMessage(msg.clanId, msg.text, msg.payload)));
+  await Promise.all(
+    messages.map((msg) => pushClanSystemMessage(msg.clanId, msg.text, msg.payload, msg.author)),
+  );
 };
 
 const pruneChatHistory = async (path: string, cutoffMs: number): Promise<number> => {

@@ -18,9 +18,11 @@ import {
   setPlayerClanState,
   updatePlayerClanProfile,
   getPlayerProfile,
+  PlayerProfileData,
 } from "./helpers.js";
 import {
   PendingClanSystemMessage,
+  SystemMessageAuthorSnapshot,
   clanChatMessagesRef,
   publishClanSystemMessages,
   pushClanChatMessage,
@@ -332,13 +334,28 @@ const mapRtdbMessage = (
   };
 };
 
+const buildAuthorFromProfile = (
+  profile?: PlayerProfileData | null,
+): SystemMessageAuthorSnapshot | null => {
+  if (!profile) {
+    return null;
+  }
+  return {
+    uid: profile.uid,
+    displayName: profile.displayName,
+    avatarId: profile.avatarId ?? null,
+    trophies: profile.trophies ?? 0,
+  };
+};
+
 const enqueueClanSystemMessage = (
   messages: PendingClanSystemMessage[],
   clanId: string,
   text: string,
   payload: Record<string, unknown>,
+  author?: SystemMessageAuthorSnapshot | null,
 ) => {
-  messages.push({ clanId, text, payload });
+  messages.push({ clanId, text, payload, author });
 };
 
 interface ClanActionResponse {
@@ -534,10 +551,16 @@ export const acceptClanInvite = onCall(callableOptions(), async (request) => {
         joinedAt: now,
       });
 
-      enqueueClanSystemMessage(systemMessages, clanId, `${profile.displayName} joined the clan`, {
-        kind: "member_joined",
-        uid,
-      });
+      enqueueClanSystemMessage(
+        systemMessages,
+        clanId,
+        `${profile.displayName} joined the clan`,
+        {
+          kind: "member_joined",
+          uid,
+        },
+        buildAuthorFromProfile(profile),
+      );
 
       return { clanId, systemMessages };
     },

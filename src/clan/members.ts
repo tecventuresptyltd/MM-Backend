@@ -6,6 +6,7 @@ import { checkIdempotency, createInProgressReceipt } from "../core/idempotency.j
 import { runTransactionWithReceipt } from "../core/transactions.js";
 import {
   ClanRole,
+  PlayerProfileData,
   canInviteMembers,
   canManageMembers,
   clanMembersCollection,
@@ -21,7 +22,11 @@ import {
   setPlayerClanState,
   updatePlayerClanProfile,
 } from "./helpers.js";
-import { PendingClanSystemMessage, publishClanSystemMessages } from "./chat.js";
+import {
+  PendingClanSystemMessage,
+  SystemMessageAuthorSnapshot,
+  publishClanSystemMessages,
+} from "./chat.js";
 
 const { FieldValue } = admin.firestore;
 
@@ -61,13 +66,38 @@ const sanitizeRequestMessage = (value?: unknown): string | undefined => {
   return trimmed.slice(0, 200);
 };
 
+const buildAuthorFromProfile = (
+  profile?: PlayerProfileData | null,
+): SystemMessageAuthorSnapshot | null => {
+  if (!profile) {
+    return null;
+  }
+  return {
+    uid: profile.uid,
+    displayName: profile.displayName,
+    avatarId: profile.avatarId ?? null,
+    trophies: profile.trophies ?? 0,
+  };
+};
+
+const buildAuthorFromMemberDoc = (
+  uid: string,
+  data?: FirebaseFirestore.DocumentData,
+): SystemMessageAuthorSnapshot => ({
+  uid: typeof data?.uid === "string" ? data.uid : uid,
+  displayName: typeof data?.displayName === "string" ? data.displayName : "Member",
+  avatarId: typeof data?.avatarId === "number" ? data.avatarId : Number(data?.avatarId) || null,
+  trophies: Number(data?.trophies ?? 0),
+});
+
 const enqueueSystemMessage = (
   messages: PendingClanSystemMessage[],
   clanId: string,
   text: string,
   payload: Record<string, unknown>,
+  author?: SystemMessageAuthorSnapshot | null,
 ) => {
-  messages.push({ clanId, text, payload });
+  messages.push({ clanId, text, payload, author });
 };
 
 const requireTargetUid = (value?: unknown): string => {
@@ -269,10 +299,16 @@ export const joinClan = onCall(callableOptions(), async (request) => {
         joinedAt: now,
       });
 
-      enqueueSystemMessage(systemMessages, clanId, `${profile.displayName} joined the clan`, {
-        kind: "member_joined",
-        uid,
-      });
+      enqueueSystemMessage(
+        systemMessages,
+        clanId,
+        `${profile.displayName} joined the clan`,
+        {
+          kind: "member_joined",
+          uid,
+        },
+        buildAuthorFromProfile(profile),
+      );
 
       return { clanId, systemMessages };
     },
@@ -295,6 +331,7 @@ export const promoteClanMember = onCall(callableOptions(), async (request) => {
   const opId = requireOpId(payload.opId);
   const clanId = requireClanId(payload.clanId);
   const targetUid = requireTargetUid(payload.targetUid);
+  const targetProfile = await getPlayerProfile(targetUid);
 
   if (targetUid === uid) {
     throw new HttpsError("invalid-argument", "Cannot promote yourself.");
@@ -347,11 +384,15 @@ export const promoteClanMember = onCall(callableOptions(), async (request) => {
         lastPromotedAt: now,
       });
 
+      const targetAuthor = buildAuthorFromMemberDoc(targetUid, targetSnap.data());
       enqueueSystemMessage(
         systemMessages,
         clanId,
-        `${targetSnap.data()?.displayName ?? "Member"} was promoted to ${desiredRole}`,
+        `${targetSnap.data()?.displayName ?? "Member"} was promoted to ${desiredRole} by ${actorSnap
+          .data()
+          ?.displayName ?? "Member"}`,
         { kind: "member_promoted", uid: targetUid, role: desiredRole, by: uid },
+        targetAuthor,
       );
 
       return { clanId, systemMessages };
@@ -427,11 +468,15 @@ export const demoteClanMember = onCall(callableOptions(), async (request) => {
         lastPromotedAt: now,
       });
 
+      const targetAuthor = buildAuthorFromMemberDoc(targetUid, targetSnap.data());
       enqueueSystemMessage(
         systemMessages,
         clanId,
-        `${targetSnap.data()?.displayName ?? "Member"} was demoted to ${desiredRole}`,
+        `${targetSnap.data()?.displayName ?? "Member"} was demoted to ${desiredRole} by ${actorSnap
+          .data()
+          ?.displayName ?? "Member"}`,
         { kind: "member_demoted", uid: targetUid, role: desiredRole, by: uid },
+        targetAuthor,
       );
 
       return { clanId, systemMessages };
@@ -596,11 +641,15 @@ export const kickClanMember = onCall(callableOptions(), async (request) => {
         { merge: true },
       );
 
+      const targetAuthor = buildAuthorFromMemberDoc(targetUid, targetSnap.data());
       enqueueSystemMessage(
         systemMessages,
         clanId,
-        `${targetSnap.data()?.displayName ?? "Member"} was removed from the clan`,
+        `${targetSnap.data()?.displayName ?? "Member"} was removed from the clan by ${actorSnap
+          .data()
+          ?.displayName ?? "Member"}`,
         { kind: "member_kicked", uid: targetUid, by: uid },
+        targetAuthor,
       );
 
       return { clanId, systemMessages };
@@ -697,11 +746,14 @@ export const requestToJoinClan = onCall(callableOptions(), async (request) => {
   const requestRef = clanRequestsCollection(clanId).doc(uid);
   const stateRef = playerClanStateRef(uid);
 
-  const result = await runTransactionWithReceipt<ClanMutationResponse>(
+  const result = await runTransactionWithReceipt<
+    ClanMutationResponse & { systemMessages: PendingClanSystemMessage[] }
+  >(
     uid,
     opId,
     "requestToJoinClan",
     async (transaction) => {
+      const systemMessages: PendingClanSystemMessage[] = [];
       const [clanSnap, stateSnap] = await Promise.all([
         transaction.get(clanDocRef),
         transaction.get(stateRef),
@@ -733,11 +785,24 @@ export const requestToJoinClan = onCall(callableOptions(), async (request) => {
         requestedAt: now,
       });
 
-      return { clanId };
+      enqueueSystemMessage(
+        systemMessages,
+        clanId,
+        `${profile.displayName} requested to join the clan`,
+        {
+          kind: "join_request",
+          uid,
+          message: message ?? null,
+        },
+        buildAuthorFromProfile(profile),
+      );
+
+      return { clanId, systemMessages };
     },
   );
 
-  return result;
+  await publishClanSystemMessages(result.systemMessages ?? []);
+  return { clanId: result.clanId };
 });
 
 interface CancelJoinRequest {
@@ -821,11 +886,17 @@ export const leaveClan = onCall(callableOptions(), async (request) => {
           if (!promoted) {
             throw new HttpsError("failed-precondition", "No eligible member to take leadership.");
           }
-          enqueueSystemMessage(systemMessages, clanId, `${promoted.displayName} is now the clan leader`, {
-            kind: "leadership_transfer",
-            to: promoted.uid,
-            from: uid,
-          });
+          enqueueSystemMessage(
+            systemMessages,
+            clanId,
+            `${promoted.displayName} is now the clan leader`,
+            {
+              kind: "leadership_transfer",
+              to: promoted.uid,
+              from: uid,
+            },
+            buildAuthorFromMemberDoc(promoted.uid, { displayName: promoted.displayName }),
+          );
         }
       }
 
@@ -838,10 +909,16 @@ export const leaveClan = onCall(callableOptions(), async (request) => {
       clearPlayerClanProfile(transaction, uid);
       clearPlayerClanState(transaction, uid);
 
-      enqueueSystemMessage(systemMessages, clanId, `${memberData.displayName ?? "Member"} left the clan`, {
-        kind: "member_left",
-        uid,
-      });
+      enqueueSystemMessage(
+        systemMessages,
+        clanId,
+        `${memberData.displayName ?? "Member"} left the clan`,
+        {
+          kind: "member_left",
+          uid,
+        },
+        buildAuthorFromMemberDoc(uid, memberData),
+      );
 
       return { clanId, deleted: deletedClan, systemMessages };
     },
@@ -956,10 +1033,30 @@ export const acceptJoinRequest = onCall(callableOptions(), async (request) => {
         joinedAt: now,
       });
 
-      enqueueSystemMessage(systemMessages, clanId, `${targetProfile.displayName} joined the clan`, {
-        kind: "member_joined",
-        uid: targetUid,
-      });
+      const targetAuthor = buildAuthorFromProfile(targetProfile);
+      enqueueSystemMessage(
+        systemMessages,
+        clanId,
+        `${targetProfile.displayName} joined the clan`,
+        {
+          kind: "member_joined",
+          uid: targetUid,
+        },
+        targetAuthor,
+      );
+      enqueueSystemMessage(
+        systemMessages,
+        clanId,
+        `Join request from ${targetProfile.displayName} was accepted by ${actorSnap
+          .data()
+          ?.displayName ?? "Member"}`,
+        {
+          kind: "join_request_accepted",
+          uid: targetUid,
+          by: uid,
+        },
+        targetAuthor,
+      );
 
       return { clanId, systemMessages };
     },
@@ -981,6 +1078,7 @@ export const declineJoinRequest = onCall(callableOptions(), async (request) => {
   const opId = requireOpId(payload.opId);
   const clanId = requireClanId(payload.clanId);
   const targetUid = requireTargetUid(payload.targetUid);
+  const targetProfile = await getPlayerProfile(targetUid);
 
   const cached = await checkIdempotency(uid, opId);
   if (cached) {
@@ -991,11 +1089,14 @@ export const declineJoinRequest = onCall(callableOptions(), async (request) => {
   const actorMemberRef = clanMembersCollection(clanId).doc(uid);
   const requestRef = clanRequestsCollection(clanId).doc(targetUid);
 
-  const result = await runTransactionWithReceipt<ClanMutationResponse>(
+  const result = await runTransactionWithReceipt<
+    ClanMutationResponse & { systemMessages: PendingClanSystemMessage[] }
+  >(
     uid,
     opId,
     "declineJoinRequest",
     async (transaction) => {
+      const systemMessages: PendingClanSystemMessage[] = [];
       const [clanSnap, actorSnap, requestSnap] = await Promise.all([
         transaction.get(clanDocRef),
         transaction.get(actorMemberRef),
@@ -1012,12 +1113,25 @@ export const declineJoinRequest = onCall(callableOptions(), async (request) => {
         throw new HttpsError("permission-denied", "Insufficient rank to decline requests.");
       }
       if (!requestSnap.exists) {
-        return { clanId };
+        return { clanId, systemMessages };
       }
       transaction.delete(requestRef);
-      return { clanId };
+      const displayName =
+        targetProfile?.displayName ?? requestSnap.data()?.displayName ?? "Player";
+      const authorSnapshot =
+        buildAuthorFromProfile(targetProfile) ??
+        buildAuthorFromMemberDoc(targetUid, requestSnap.data());
+      enqueueSystemMessage(
+        systemMessages,
+        clanId,
+        `Join request from ${displayName} was declined by ${actorSnap.data()?.displayName ?? "Member"}`,
+        { kind: "join_request_declined", uid: targetUid, by: uid },
+        authorSnapshot,
+      );
+      return { clanId, systemMessages };
     },
   );
 
-  return result;
+  await publishClanSystemMessages(result.systemMessages ?? []);
+  return { clanId: result.clanId };
 });

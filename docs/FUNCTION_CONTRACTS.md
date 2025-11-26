@@ -877,15 +877,13 @@ When the SKU is coin-priced the response mirrors this shape with `currency: "coi
 
 ### `getGlobalLeaderboard`
 
-**Purpose:** Returns the cached leaderboard snapshot (trophies, careerCoins, or totalWins) from `/Leaderboards_v1/{metric}` in a single read, including the caller's personal rank/value even if they are outside the top 100. The cached document is written by the scheduled job (`leaderboards.refreshAll`) and can also be rebuilt on demand via the QA helper `refreshGlobalLeaderboardNow`, so this callable never scans live player docs.
+**Purpose:** Returns the cached leaderboard snapshot (trophies, careerCoins, or totalWins) from `/Leaderboards_v1/{metric}`. The snapshot is rebuilt every five minutes by `leaderboards.refreshAll` (or on demand via `refreshGlobalLeaderboardNow`), so this callable is always a single Firestore read regardless of player count.
 
 **Input:**
 ```json
 {
-  "metric": "trophies",           // Optional; defaults to "trophies"
-  "type": 1,                      // Legacy alias: 1=trophies, 2=careerCoins, 3=totalWins
-  "limit": 50,                 // Optional; 1-100 (default 50)
-  "pageToken": "base64cursor"     // Optional pagination cursor issued by a previous call
+  "metric": "trophies",
+  "type": 1
 }
 ```
 
@@ -897,35 +895,44 @@ When the SKU is coin-priced the response mirrors this shape with `currency: "coi
   "myRank": 3,
   "leaderboardType": 1,
   "players": [
-    {
-      "avatarId": 10,
-      "displayName": "mystic",
-      "level": 25,
-      "rank": 1,
-      "stat": 5,
-      "uid": "gAWy13PNRtRMrWEL06nSnqvYPS3w1",
-      "clan": {
-        "clanId": "clan_abc123",
-        "name": "Mystic Racers",
-        "badge": "badge_cobra"
-      }
-    },
-    {
-      "avatarId": 4,
-      "displayName": "Kraken",
-      "level": 1,
-      "rank": 2,
-      "stat": 0,
-      "uid": "096IZ0NijQ0u60RTNw6AiyVbhwy2",
-      "clan": null
-    }
-  ]
+    { "uid": "uid1", "displayName": "Mystic", "avatarId": 10, "level": 25, "rank": 1, "stat": 5421, "clan": { "clanId": "clan_abc", "name": "Mystic Racers", "badge": "badge_cobra" } },
+    { "uid": "uid2", "displayName": "Kraken", "avatarId": 4, "level": 21, "rank": 2, "stat": 5300, "clan": null }
+  ],
+  "updatedAt": 1740002400000
 }
 ```
 
 **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `FAILED_PRECONDITION` (leaderboard still warming up)
 
-**Notes:** The response now follows a simplified format with `callerRank` (the authenticated user's position), `leaderboardType` (legacy metric type), and `players[]` array. Each player entry includes their stats, rank, and clan information (`{ clanId, name, badge }`). This callable currently reads every `/Players/{uid}/Profile/Profile` document on demand, sorts all players by the requested metric, and slices the result in memory before returning it. That means each request scales with your player count—great for development/debugging, but expensive at scale. When you're ready for production you should reintroduce a scheduled snapshot (or another caching strategy) to avoid scanning millions of documents per call.
+**Notes:** `players[]` contains at most 100 rows ordered by stat. When the caller is outside that slice `myRank` is `null`; call `getMyLeaderboardRank` to compute the exact position via a COUNT aggregate.
+
+---
+
+### `getMyLeaderboardRank`
+
+**Purpose:** Returns the caller's exact rank for a metric using a Firestore COUNT aggregate (one document read regardless of player count).
+
+**Input:**
+```json
+{
+  "metric": "trophies",
+  "type": 1
+}
+```
+
+**Output:**
+```json
+{
+  "metric": "trophies",
+  "leaderboardType": 1,
+  "value": 5421,
+  "rank": 23456
+}
+```
+
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `FAILED_PRECONDITION`
+
+**Notes:** Loads the caller's stat from `/Players/{uid}/Profile/Profile`, then runs `collectionGroup("Profile").where(metricField, ">", value).count()` to determine how many players are ahead. Firestore bills that aggregate as a single document read.
 
 ---
 

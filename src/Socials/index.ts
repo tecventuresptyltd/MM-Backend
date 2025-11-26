@@ -1,6 +1,6 @@
 import { presence } from "./presence";
 
-export { getGlobalLeaderboard } from "./leaderboards";
+export { getGlobalLeaderboard, getMyLeaderboardRank } from "./leaderboards";
 export { searchPlayer } from "./searchPlayer";
 export {
   sendFriendRequest,

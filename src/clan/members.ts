@@ -777,13 +777,16 @@ export const requestToJoinClan = onCall(callableOptions(), async (request) => {
         throw new HttpsError("failed-precondition", "Not enough trophies to request this clan.");
       }
 
-      transaction.set(requestRef, {
+      const requestPayload: Record<string, unknown> = {
         uid,
         displayName: profile.displayName,
         trophies: profile.trophies ?? 0,
-        message,
         requestedAt: now,
-      });
+      };
+      if (message !== undefined) {
+        requestPayload.message = message;
+      }
+      transaction.set(requestRef, requestPayload);
 
       enqueueSystemMessage(
         systemMessages,

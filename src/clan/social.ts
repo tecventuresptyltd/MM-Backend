@@ -336,6 +336,7 @@ const mapRtdbMessage = (
 
 const buildAuthorFromProfile = (
   profile?: PlayerProfileData | null,
+  role?: string | null,
 ): SystemMessageAuthorSnapshot | null => {
   if (!profile) {
     return null;
@@ -345,6 +346,7 @@ const buildAuthorFromProfile = (
     displayName: profile.displayName,
     avatarId: profile.avatarId ?? null,
     trophies: profile.trophies ?? 0,
+    role: role ?? null,
   };
 };
 
@@ -559,7 +561,7 @@ export const acceptClanInvite = onCall(callableOptions(), async (request) => {
           kind: "member_joined",
           uid,
         },
-        buildAuthorFromProfile(profile),
+        buildAuthorFromProfile(profile, "member"),
       );
 
       return { clanId, systemMessages };

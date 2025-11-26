@@ -68,6 +68,7 @@ const sanitizeRequestMessage = (value?: unknown): string | undefined => {
 
 const buildAuthorFromProfile = (
   profile?: PlayerProfileData | null,
+  role?: string | null,
 ): SystemMessageAuthorSnapshot | null => {
   if (!profile) {
     return null;
@@ -77,6 +78,7 @@ const buildAuthorFromProfile = (
     displayName: profile.displayName,
     avatarId: profile.avatarId ?? null,
     trophies: profile.trophies ?? 0,
+    role: role ?? null,
   };
 };
 
@@ -88,7 +90,19 @@ const buildAuthorFromMemberDoc = (
   displayName: typeof data?.displayName === "string" ? data.displayName : "Member",
   avatarId: typeof data?.avatarId === "number" ? data.avatarId : Number(data?.avatarId) || null,
   trophies: Number(data?.trophies ?? 0),
+  role: typeof data?.role === "string" ? data.role : null,
 });
+
+const formatRoleLabel = (role: ClanRole): string => {
+  switch (role) {
+    case "coLeader":
+      return "co-leader";
+    case "leader":
+      return "leader";
+    default:
+      return role;
+  }
+};
 
 const enqueueSystemMessage = (
   messages: PendingClanSystemMessage[],
@@ -385,11 +399,12 @@ export const promoteClanMember = onCall(callableOptions(), async (request) => {
       });
 
       const targetAuthor = buildAuthorFromMemberDoc(targetUid, targetSnap.data());
+      const roleLabel = formatRoleLabel(desiredRole);
       const actorName = actorSnap.data()?.displayName ?? "Member";
       enqueueSystemMessage(
         systemMessages,
         clanId,
-        `${targetSnap.data()?.displayName ?? "Member"} was promoted to ${desiredRole} by ${actorSnap
+        `${targetSnap.data()?.displayName ?? "Member"} was promoted to ${roleLabel} by ${actorSnap
           .data()
           ?.displayName ?? "Member"}`,
         {
@@ -476,11 +491,12 @@ export const demoteClanMember = onCall(callableOptions(), async (request) => {
       });
 
       const targetAuthor = buildAuthorFromMemberDoc(targetUid, targetSnap.data());
+      const roleLabel = formatRoleLabel(desiredRole);
       const actorName = actorSnap.data()?.displayName ?? "Member";
       enqueueSystemMessage(
         systemMessages,
         clanId,
-        `${targetSnap.data()?.displayName ?? "Member"} was demoted to ${desiredRole} by ${actorSnap
+        `${targetSnap.data()?.displayName ?? "Member"} was demoted to ${roleLabel} by ${actorSnap
           .data()
           ?.displayName ?? "Member"}`,
         {

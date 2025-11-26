@@ -170,6 +170,7 @@ export const createClan = onCall(callableOptions(), async (request) => {
       displayName: profile.displayName,
       avatarId: profile.avatarId ?? null,
       trophies: profile.trophies ?? 0,
+      role: "leader",
     },
   );
 

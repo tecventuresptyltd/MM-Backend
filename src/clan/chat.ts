@@ -73,6 +73,7 @@ export interface SystemMessageAuthorSnapshot {
   displayName: string;
   avatarId: number | null;
   trophies: number | null;
+  role?: string | null;
 }
 
 export const pushClanSystemMessage = async (
@@ -86,6 +87,7 @@ export const pushClanSystemMessage = async (
     n: author?.displayName ?? "System",
     av: author?.avatarId ?? null,
     tr: author?.trophies ?? null,
+    role: author?.role ?? null,
     type: "system",
     m: text,
     payload: payload ?? null,

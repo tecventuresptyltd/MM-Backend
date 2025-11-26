@@ -112,7 +112,7 @@ This deploys every callable/HTTP/RTDB trigger, plus the scheduled jobs listed be
 | Function | Location | Trigger | Purpose |
 | --- | --- | --- | --- |
 | `recommendedClansPoolJob` | `us-central1` | Cloud Scheduler (`every 60 minutes`) | Builds `/System/RecommendedClans` pool used by the Join UI. |
-| `clanLeaderboardJob.refresh` | `us-central1` | Cloud Scheduler (`every 5 minutes`) | Writes top-100 clan leaderboard to `/Leaderboards/Clans`. |
+| `clanLeaderboardJob.refresh` | `us-central1` | Cloud Scheduler (`every 5 minutes`) | Writes top-100 clan leaderboard to `/ClanLeaderboard/snapshot`. |
 | `leaderboards.refreshAll` | `us-central1` | Cloud Scheduler (`every 5 minutes`) | Recomputes player leaderboards (XP, trophies, etc.). |
 | `cleanupChatHistory` | `us-central1` | Cloud Scheduler (`every 24 hours`) | Prunes RTDB chat history (30d for clans, 24h for global). |
 | `presence.mirrorLastSeen` | `us-central1` | Cloud Scheduler (`every 10 minutes`) | Mirrors `/presence/lastSeen` into Firestore for “last online” badges. |

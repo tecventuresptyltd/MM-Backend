@@ -38,7 +38,7 @@ const fetchTopClanEntries = async (): Promise<ClanLeaderboardEntry[]> => {
 const persistClanLeaderboard = async (
   entries: ClanLeaderboardEntry[],
 ): Promise<void> => {
-  await db.collection("Leaderboards").doc("Clans").set({
+  await db.collection("ClanLeaderboard").doc("snapshot").set({
     limit: CLAN_LEADERBOARD_LIMIT,
     updatedAt: Date.now(),
     top: entries,
@@ -57,7 +57,7 @@ export const clanLeaderboardJob = {
   refresh: onSchedule(
     {
       region: REGION,
-      schedule: "every 6 hours",
+      schedule: "every 5 minutes",
       timeZone: "Etc/UTC",
     },
     async () => {

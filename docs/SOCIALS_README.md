@@ -22,8 +22,8 @@ This note explains every document we create under `/Players/{uid}/Social` so eng
 - **Clan-specific collections:** Roster (`/Clans/{clanId}/Members`), join requests (`/Clans/{clanId}/Requests`), and chat (`/Clans/{clanId}/Chat`) remain collections by design. Use collection listeners with ordering (e.g., `orderBy("rolePriority", "desc")`) for live rosters.
 - **Friends snapshots:** `setUsername`, `setAvatar`, race rewards, and XP grants refresh the cached friend/request snapshots so `getFriends` and `getFriendRequests` rarely need extra reads.
 - **Scheduled leaderboards (social & clan):**
-  - *Social metrics:* `src/Socials/leaderboardJob.ts` contains an `onSchedule` handler that snapshots player leaderboards into `/Leaderboards_v1/{metric}`. To activate later, import it in `src/index.ts` (e.g., `import { leaderboards as socialLeaderboards } from "./Socials/leaderboardJob.js";`) and export `export const refreshSocialLeaderboards = socialLeaderboards.refreshAll;`, then deploy `firebase deploy --only functions:mm-sandbox-refreshSocialLeaderboards`.
-  - *Clan leaderboard cache:* `src/clan/leaderboardJob.ts` keeps the top 100 clans in `/Leaderboards/Clans`. To enable, import `{ clanLeaderboardJob }` in `src/index.ts`, export `export const refreshClanLeaderboardJob = clanLeaderboardJob.refresh;`, and deploy that function so clients can read the cached doc instead of querying `Clans` directly.
+  - *Social metrics:* `src/Socials/leaderboardJob.ts` contains an `onSchedule` handler that snapshots player leaderboards into `/GlobalLeaderboard/{metric}`.
+  - *Clan leaderboard cache:* `src/clan/leaderboardJob.ts` keeps the top 100 clans in `/ClanLeaderboard/snapshot`.
 - **Receipts & operations:** Idempotency receipts live under `/Players/{uid}/Receipts/{opId}`; same pattern applies—fixed ID equals the operation ID.
 
 Keep this file alongside the clan README so Unity/LiveOps engineers always know which documents exist and when they appear.*** End Patch

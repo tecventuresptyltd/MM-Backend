@@ -129,19 +129,10 @@ const toLeaderboardEntries = async (
 };
 
 const persistEntries = async (metric: LeaderboardMetric, entries: LeaderboardEntry[]) => {
-  const youCache = entries.reduce<Record<string, { rank: number; value: number }>>(
-    (acc, entry) => {
-      acc[entry.uid] = { rank: entry.rank, value: entry.value };
-      return acc;
-    },
-    {},
-  );
-
   await leaderboardDocRef(metric).set({
     metric,
     updatedAt: Date.now(),
     top100: entries,
-    youCache,
   });
 };
 
@@ -161,7 +152,7 @@ export const leaderboards = {
   refreshAll: onSchedule(
     {
       region: REGION,
-      schedule: "every 6 hours",
+      schedule: "every 5 minutes",
       timeZone: "Etc/UTC",
     },
     async () => {

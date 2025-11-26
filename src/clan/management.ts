@@ -578,7 +578,7 @@ export const getClanLeaderboard = onCall(callableOptions(), async (request) => {
   const payload = (request.data ?? {}) as GetClanLeaderboardRequest;
   const limit = clampLimit(payload.limit, 25, 100);
 
-  const doc = await db.collection("Leaderboards").doc("Clans").get();
+  const doc = await db.collection("ClanLeaderboard").doc("snapshot").get();
   if (!doc.exists) {
     throw new HttpsError("failed-precondition", "Clan leaderboard not ready.");
   }

@@ -188,7 +188,8 @@ The functions below load master data from the canonical catalog documents under 
 
 | Function | Purpose | Trigger |
 | --- | --- | --- |
-| `getGlobalLeaderboard` | Scans every player profile, sorts by metric, and returns a paginated top list (expensive, dev-only). Clan info is `{ clanId, name, badge }`. | HTTPS `onCall` |
+| `getGlobalLeaderboard` | Reads the cached `/GlobalLeaderboard/{metric}` doc (top 100 with clan info) rebuilt every 5 minutes. | HTTPS `onCall` |
+| `getMyLeaderboardRank` | Returns the caller's exact rank/value for a metric using a COUNT aggregate (1 read). | HTTPS `onCall` |
 | `searchPlayers` / `searchPlayer` | Uses `/Usernames/{displayNameLower}` for prefix (≤2 chars) and exact searches. | HTTPS `onCall` |
 | `sendFriendRequest` | Idempotently writes to both players' `/Social/Requests`, sets badges, logs receipt. | HTTPS `onCall` |
 | `acceptFriendRequest` | Converts a pending request into mutual `/Social/Friends` entries and bumps counts. | HTTPS `onCall` |

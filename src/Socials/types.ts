@@ -37,13 +37,6 @@ export interface LeaderboardDocument {
   metric: LeaderboardMetric;
   updatedAt: number;
   top100: LeaderboardEntry[];
-  youCache?: Record<
-    string,
-    {
-      rank: number;
-      value: number;
-    }
-  >;
 }
 
 export interface PlayerProfileSeed {

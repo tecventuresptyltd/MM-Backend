@@ -20,7 +20,7 @@ export const socialBlocksRef = (uid: string) =>
   db.collection("Players").doc(uid).collection("Social").doc("Blocks");
 
 export const leaderboardDocRef = (metric: LeaderboardMetric) =>
-  db.collection("Leaderboards_v1").doc(metric);
+  db.collection("GlobalLeaderboard").doc(metric);
 
 export const playerLoadoutRef = (uid: string) =>
   db.collection("Players").doc(uid).collection("Loadouts").doc("Active");

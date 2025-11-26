@@ -1,7 +1,7 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { callableOptions } from "../shared/callableOptions.js";
 import { db } from "../shared/firestore.js";
-import { playerProfileRef } from "./refs.js";
+import { leaderboardDocRef, playerProfileRef } from "./refs.js";
 import { LEADERBOARD_METRICS, LeaderboardMetric } from "./types.js";
 
 const legacyTypeToMetric = (type?: unknown): LeaderboardMetric | null => {
@@ -41,7 +41,7 @@ export const getGlobalLeaderboard = onCall(
 
     const metric = resolveMetric(request.data?.metric, request.data?.type);
 
-    const doc = await db.collection("Leaderboards_v1").doc(metric).get();
+    const doc = await leaderboardDocRef(metric).get();
     if (!doc.exists) {
       throw new HttpsError(
         "failed-precondition",
@@ -50,9 +50,8 @@ export const getGlobalLeaderboard = onCall(
     }
     const data = doc.data() ?? {};
     const entries = (data.top100 ?? []) as any[];
-    const youCache =
-      (data.youCache as Record<string, { rank: number; value: number }>) ?? {};
-    const myRank = youCache[uid]?.rank ?? null;
+    const myEntry = entries.find((entry) => entry.snapshot?.uid === uid);
+    const myRank = myEntry?.rank ?? null;
 
     const players = entries.map((entry) => ({
       avatarId: entry.snapshot.avatarId,

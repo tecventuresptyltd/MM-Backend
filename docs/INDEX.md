@@ -134,7 +134,7 @@ npm run fix:catalogs
 
 ## Social Runbook
 
-* **Schema:** `/Players/{uid}/Social/*`, `/Leaderboards_v1/{metric}` (optional cache), `/Usernames/{displayNameLower}`, plus the RTDB presence paths documented in [**FIRESTORE_SCHEMA.md**](./FIRESTORE_SCHEMA.md#playersuid-socialprofile-singleton).
+* **Schema:** `/Players/{uid}/Social/*`, `/GlobalLeaderboard/{metric}` (optional cache), `/ClanLeaderboard/snapshot`, `/Usernames/{displayNameLower}`, plus the RTDB presence paths documented in [**FIRESTORE_SCHEMA.md**](./FIRESTORE_SCHEMA.md#playersuid-socialprofile-singleton).
 * **Contracts:** See [**FUNCTION_CONTRACTS.md**](./FUNCTION_CONTRACTS.md#social--leaderboards) for callable payloads/idempotency and [**FUNCTION_DISCOVERY.md**](./FUNCTION_DISCOVERY.md#11-social--leaderboards) for the quick index.
 * **Jobs:** `socialPresenceMirrorLastSeen` mirrors `/presence/lastSeen` into `/Players/{uid}/Social/Profile`. The leaderboard callable currently scans all players on demand (dev mode) — reintroduce a scheduled cache before going to production.
 * **APIs:** Use `getFriendRequests` (incoming only) / `getFriends` for list views; both read the cached snapshots stored under `/Social` and only hydrate live profiles if a snapshot is missing. Use `viewPlayerProfile` when drilling into a player card.

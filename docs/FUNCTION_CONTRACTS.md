@@ -877,7 +877,7 @@ When the SKU is coin-priced the response mirrors this shape with `currency: "coi
 
 ### `getGlobalLeaderboard`
 
-**Purpose:** Returns the cached leaderboard snapshot (trophies, careerCoins, or totalWins) from `/Leaderboards_v1/{metric}`. The snapshot is rebuilt every five minutes by `leaderboards.refreshAll` (or on demand via `refreshGlobalLeaderboardNow`), so this callable is always a single Firestore read regardless of player count.
+**Purpose:** Returns the cached leaderboard snapshot (trophies, careerCoins, or totalWins) from `/GlobalLeaderboard/{metric}`. The snapshot is rebuilt every five minutes by `leaderboards.refreshAll` (or on demand via `refreshGlobalLeaderboardNow`), so this callable is always a single Firestore read regardless of player count.
 
 **Input:**
 ```json
@@ -887,7 +887,7 @@ When the SKU is coin-priced the response mirrors this shape with `currency: "coi
 }
 ```
 
-**Notes:** On a fresh deploy, call `refreshGlobalLeaderboardNow` once (or wait for the next scheduled run, every five minutes) to seed the `/Leaderboards_v1/{metric}` documents before invoking this callable; otherwise it returns `failed-precondition`.
+**Notes:** On a fresh deploy, call `refreshGlobalLeaderboardNow` once (or wait for the next scheduled run, every five minutes) to seed the `/GlobalLeaderboard/{metric}` documents before invoking this callable; otherwise it returns `failed-precondition`.
 
 **Output:**
 ```json
@@ -1833,7 +1833,7 @@ This section documents all clan and chat-related Cloud Functions, with input, ou
 ---
 
 ### `getClanLeaderboard`
-**Purpose:** Returns the cached clan leaderboard stored at `/Leaderboards/Clans` (populated by the scheduled job and the QA helper `refreshClanLeaderboardNow`). Supports optional location filtering by post-processing the cached array so the callable always stays a single read.
+**Purpose:** Returns the cached clan leaderboard stored at `/ClanLeaderboard/snapshot` (populated by the scheduled job and the QA helper `refreshClanLeaderboardNow`). Supports optional location filtering by post-processing the cached array so the callable always stays a single read.
 **Input:**
 ```json
 {
@@ -1849,7 +1849,7 @@ This section documents all clan and chat-related Cloud Functions, with input, ou
 ---
 
 ### `refreshGlobalLeaderboardNow`
-**Purpose:** QA-only helper that runs the same routine as the scheduled job and rewrites all `/Leaderboards_v1/{metric}` documents immediately.
+**Purpose:** QA-only helper that runs the same routine as the scheduled job and rewrites all `/GlobalLeaderboard/{metric}` documents immediately.
 **Input:** `{ }`
 **Output:** `{ "ok": true, "metrics": 3 }`
 **Errors:** `UNAUTHENTICATED`
@@ -1857,7 +1857,7 @@ This section documents all clan and chat-related Cloud Functions, with input, ou
 ---
 
 ### `refreshClanLeaderboardNow`
-**Purpose:** QA-only helper that rebuilds `/Leaderboards/Clans` on demand so testers do not have to wait for the next cron run.
+**Purpose:** QA-only helper that rebuilds `/ClanLeaderboard/snapshot` on demand so testers do not have to wait for the next cron run.
 **Input:** `{ }`
 **Output:** `{ "ok": true, "processed": 100 }`
 **Errors:** `UNAUTHENTICATED`

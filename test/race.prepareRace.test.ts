@@ -98,8 +98,8 @@ describe("race.prepareRace", () => {
     // Seed minimal RanksCatalog (required by prepareRace)
     await admin.firestore().doc("/GameData/v1/catalogs/RanksCatalog").set({
       ranks: [
-        { rankId: 1, displayName: "Bronze I", minMmr: 0 },
-        { rankId: 2, displayName: "Bronze II", minMmr: 1000 },
+        { rankId: "rank_bronze_1", displayName: "Bronze I", minMmr: 0 },
+        { rankId: "rank_bronze_2", displayName: "Bronze II", minMmr: 1000 },
       ],
       updatedAt: 0,
     });

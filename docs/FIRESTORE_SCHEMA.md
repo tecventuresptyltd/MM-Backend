@@ -494,14 +494,30 @@ Consolidates rank definitions. Unlike other catalogs, this is stored as an array
 Content rules
 - Ranks are ordered and keyed as an array.
 - Trophy thresholds follow 250â€‘point steps from 0 up to 7000 (per current UI), mapping tiers Bronze â†' Silver â†' Gold â†' Platinum â†' Diamond â†' Master â†' Champion â†' Ascendant â†' Hypersonic.
+- Reward objects may include `gems` (numeric) and an `inventory` array of `{ "skuId": string, "quantity": number }` entries that reference `ItemSkusCatalog`.
 
 **Example: `/GameData/v1/catalogs/RanksCatalog`**
 ```jsonc
 // /GameData/v1/catalogs/RanksCatalog
 {
   "ranks": [
-    { "rankId": 1, "displayName": "Bronze I", "minTrophies": 0 },
-    { "rankId": 2, "displayName": "Bronze II", "minTrophies": 250 }
+    {
+      "rankId": "rank_bronze_1",
+      "displayName": "Bronze I",
+      "minMmr": 250,
+      "rewards": {
+        "gems": 100,
+        "inventory": [{ "skuId": "sku_rjwe5tdtc4", "quantity": 1 }]
+      }
+    },
+    {
+      "rankId": "rank_bronze_2",
+      "displayName": "Bronze II",
+      "minMmr": 500,
+      "rewards": {
+        "inventory": [{ "skuId": "sku_zz3twgp0wx", "quantity": 1 }]
+      }
+    }
   ],
   "updatedAt": 0
 }
@@ -1050,7 +1066,6 @@ A scheduled Cloud Function (`socialPresenceMirrorLastSeen`) runs every ~10 minut
 ## Contracts Alignment (TODO)
 
 *   Review `FUNCTION_CONTRACTS.md` to ensure all field names (`activeSpellDeck`, `spellTokens`, etc.) are perfectly aligned with this schema. Any discrepancies should be flagged and resolved.
-
 
 
 

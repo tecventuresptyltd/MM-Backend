@@ -285,9 +285,15 @@ export interface PlayerBoostersState {
   exp?: BoosterTimerState;
 }
 
+export interface RewardInventoryGrant {
+  skuId: string;
+  quantity: number;
+}
+
 export interface Rewards {
   coins?: number;
   gems?: number;
+  inventory?: RewardInventoryGrant[];
 }
 
 export interface XpCurve {

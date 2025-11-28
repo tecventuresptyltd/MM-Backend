@@ -4,8 +4,79 @@ import { REGION } from "../shared/region.js";
 import { getRanksCatalog } from "../core/config.js";
 import { getLevelInfo } from "../shared/xp.js";
 import { refreshFriendSnapshots } from "../Socials/updateSnapshots.js";
+import { grantInventoryRewards } from "../shared/inventoryAwards.js";
 
 const db = admin.firestore();
+
+type RaceDrop = {
+  type: string;
+  skuId: string | null;
+};
+
+type BotDrop = {
+  bot: string;
+  drop: RaceDrop;
+};
+
+type RaceDropResolution = {
+  playerDrop: RaceDrop;
+  botDrops: BotDrop[];
+};
+
+const RACE_REWARD_TABLE: Array<{ type: string; weight: number; skuId?: string | null }> = [
+  { type: "noreward", weight: 27.9, skuId: null },
+  { type: "commoncrate", weight: 20, skuId: "sku_zz3twgp0wx" },
+  { type: "rarecrate", weight: 7.5, skuId: "sku_72wnqwtfmx" },
+  { type: "exoticcrate", weight: 5, skuId: "sku_e8e7jeba7v" },
+  { type: "legendarycrate", weight: 2.5, skuId: "sku_n9hsc0wxxk" },
+  { type: "mythicalcrate", weight: 1.5, skuId: "sku_kgkjadrd79" },
+  { type: "commonkey", weight: 20, skuId: "sku_rjwe5tdtc4" },
+  { type: "rarekey", weight: 7.5, skuId: "sku_p3yxnyhkpx" },
+  { type: "exotickey", weight: 5, skuId: "sku_zqqmqz7mwb" },
+  { type: "legendarykey", weight: 2.5, skuId: "sku_acxbr542j1" },
+  { type: "mythicalkey", weight: 0.6, skuId: "sku_hq5ywspmr5" },
+];
+
+const TOTAL_REWARD_WEIGHT = RACE_REWARD_TABLE.reduce((sum, entry) => sum + entry.weight, 0);
+
+const rollRaceDrop = (): RaceDrop => {
+  const roll = Math.random() * TOTAL_REWARD_WEIGHT;
+  let cursor = 0;
+  for (const entry of RACE_REWARD_TABLE) {
+    cursor += entry.weight;
+    if (roll <= cursor) {
+      return { type: entry.type, skuId: entry.skuId ?? null };
+    }
+  }
+  return { type: "noreward", skuId: null };
+};
+
+const resolveRaceDrops = async (
+  transaction: FirebaseFirestore.Transaction,
+  uid: string,
+  botNames: string[],
+): Promise<RaceDropResolution> => {
+  const playerDrop = rollRaceDrop();
+  if (playerDrop.skuId) {
+    await grantInventoryRewards(transaction, uid, [
+      { skuId: playerDrop.skuId, quantity: 1 },
+    ]);
+  }
+  const botDrops = botNames.map((bot) => ({
+    bot,
+    drop: rollRaceDrop(),
+  }));
+  return { playerDrop, botDrops };
+};
+
+const normaliseBotNames = (botNames: unknown): string[] => {
+  if (!Array.isArray(botNames)) {
+    return [];
+  }
+  return botNames
+    .map((name) => (typeof name === "string" ? name.trim() : ""))
+    .filter((name) => name.length > 0);
+};
 
 export const startRace = onCall({ enforceAppCheck: false, region: REGION }, async (request) => {
   const uid = request.auth?.uid;
@@ -65,10 +136,11 @@ export const recordRaceResult = onCall({ enforceAppCheck: false, region: REGION 
     throw new HttpsError("unauthenticated", "User is not authenticated.");
   }
 
-  const { raceId, finishOrder } = request.data;
+  const { raceId, finishOrder, botNames } = request.data;
   if (typeof raceId !== "string" || !Array.isArray(finishOrder)) {
     throw new HttpsError("invalid-argument", "Invalid arguments provided.");
   }
+  const botDisplayNames = normaliseBotNames(botNames);
 
   const result = await db.runTransaction(async (transaction) => {
     const raceRef = db.doc(`/Races/${raceId}`);
@@ -93,7 +165,8 @@ export const recordRaceResult = onCall({ enforceAppCheck: false, region: REGION 
 
     // Simplified reward calculation based on rank
     const ranksCatalog = await getRanksCatalog();
-    const playerRank = ranksCatalog.find(rank => rank.minMmr <= (profileData.trophies || 0));
+    const trophies = Number(profileData.trophies || 0);
+    const playerRank = [...ranksCatalog].reverse().find((rank) => trophies >= rank.minMmr);
     const trophiesGained = playerRank ? 20 - playerRank.minMmr / 100 : 10;
     const coinsGained = playerRank ? 100 + playerRank.minMmr / 10 : 50;
     const xpGained = playerRank ? 50 + playerRank.minMmr / 20 : 25;
@@ -136,6 +209,8 @@ export const recordRaceResult = onCall({ enforceAppCheck: false, region: REGION 
 
     transaction.update(raceRef, { status: "settled", updatedAt: admin.firestore.FieldValue.serverTimestamp() });
 
+    const drops = await resolveRaceDrops(transaction, uid, botDisplayNames);
+
     return {
       success: true,
       rewards: {
@@ -151,6 +226,10 @@ export const recordRaceResult = onCall({ enforceAppCheck: false, region: REGION 
         expInLevelBefore: beforeInfo.expInLevel,
         expInLevelAfter: afterInfo.expInLevel,
         expToNextLevel: afterInfo.expToNext,
+      },
+      drops: {
+        player: drops.playerDrop,
+        bots: drops.botDrops,
       },
     };
   });

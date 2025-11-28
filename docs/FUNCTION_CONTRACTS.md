@@ -545,18 +545,19 @@ Notes:
 
 ### `recordRaceResult`
 
-**Purpose:** Settles a race and applies rewards. Recalculates XP using the shared progression helpers, writes `exp`, `level`, `expProgress`, and `expToNextLevel` to `Profile/Profile`, and increments `spellTokens` on level-up. Also updates `Profile/Profile` (trophies, highestTrophies, careerCoins, totalWins, totalRaces) and `Economy/Stats` (coins).
+**Purpose:** Settles a race and applies rewards. Recalculates XP using the shared progression helpers, writes `exp`, `level`, `expProgress`, and `expToNextLevel` to `Profile/Profile`, increments `spellTokens` on level-up, applies trophy/coin deltas, and rolls for end-of-race crate/key drops. Player drops are persisted to `/Players/{uid}/Inventory`, and optional bot rolls are returned for client display only.
 
 **Input:**
 ```json
 {
   "raceId": "string",
-  "finishOrder": ["string"]
+  "finishOrder": ["string"],
+  "botNames": ["string"] // optional display names for bots
 }
 ```
 
 **Output:**
-*   **Success:** `{ "success": true, "rewards": { "trophies": "number", "coins": "number", "xp": "number" }, "xpProgress": { "xpBefore": "number", "xpAfter": "number", "levelBefore": "number", "levelAfter": "number", "expInLevelBefore": "number", "expInLevelAfter": "number", "expToNextLevel": "number" } }`
+*   **Success:** `{ "success": true, "rewards": { "trophies": "number", "coins": "number", "xp": "number" }, "xpProgress": { "xpBefore": "number", "xpAfter": "number", "levelBefore": "number", "levelAfter": "number", "expInLevelBefore": "number", "expInLevelAfter": "number", "expToNextLevel": "number" }, "drops": { "player": { "type": "string", "skuId": "string|null" }, "bots": [{ "bot": "Frost AI", "drop": { "type": "string", "skuId": "string|null" } }] } }`
 
 **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `FAILED_PRECONDITION`, `NOT_FOUND`
 
@@ -680,7 +681,7 @@ When the SKU is coin-priced the response mirrors this shape with `currency: "coi
 ```
 
 **Output:**
-*   **Success:** `{ "success": true, "rewards": {} }`
+*   **Success:** `{ "success": true, "rewards": {}, "inventoryGrants": [{ "skuId": "string", "quantity": "number" }] }`
 
 **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `ALREADY_EXISTS`, `NOT_FOUND`, `INTERNAL`, `FAILED_PRECONDITION`
 
@@ -1942,4 +1943,3 @@ This section documents all clan and chat-related Cloud Functions, with input, ou
 **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `FAILED_PRECONDITION`
 
 ---
-

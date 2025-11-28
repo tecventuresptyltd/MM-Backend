@@ -4,6 +4,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 
 import { getOffersCatalog, getRanksCatalog } from "../core/config.js";
 import { checkIdempotency, createInProgressReceipt, completeOperation } from "../core/idempotency.js";
+import { grantInventoryRewards, InventoryGrantResult } from "../shared/inventoryAwards.js";
 
 export const offers = onCall(
   { region: "us-central1" },
@@ -140,11 +141,19 @@ export const claimRankUpReward = onCall(
           gems: admin.firestore.FieldValue.increment(rankGameData.rewards.gems || 0),
         });
 
+        let inventoryGrants: InventoryGrantResult[] = [];
+        const inventoryRewards = Array.isArray(rankGameData.rewards.inventory)
+          ? rankGameData.rewards.inventory
+          : [];
+        if (inventoryRewards.length > 0) {
+          inventoryGrants = await grantInventoryRewards(transaction, uid, inventoryRewards);
+        }
+
         transaction.set(playerProgressRef, {
           [rankId]: true,
         }, { merge: true });
 
-        return { success: true, rewards: rankGameData.rewards };
+        return { success: true, rewards: rankGameData.rewards, inventoryGrants };
       });
 
       // Complete the operation with result

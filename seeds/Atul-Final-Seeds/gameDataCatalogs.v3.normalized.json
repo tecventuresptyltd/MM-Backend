@@ -16186,15 +16186,29 @@
       "updatedAt": 1762566860531,
       "ranks": [
         {
+          "rankId": "rank_unranked",
+          "displayName": "Unranked",
+          "i18n": {
+            "en": "Unranked"
+          },
+          "minMmr": 0,
+          "rewards": {}
+        },
+        {
           "rankId": "rank_bronze_1",
           "displayName": "Bronze I",
           "i18n": {
             "en": "Bronze I"
           },
-          "minMmr": 0,
+          "minMmr": 250,
           "rewards": {
-            "coins": 100,
-            "gems": 0
+            "gems": 100,
+            "inventory": [
+              {
+                "skuId": "sku_rjwe5tdtc4",
+                "quantity": 1
+              }
+            ]
           }
         },
         {
@@ -16205,8 +16219,29 @@
           },
           "minMmr": 500,
           "rewards": {
-            "coins": 150,
-            "gems": 0
+            "inventory": [
+              {
+                "skuId": "sku_zz3twgp0wx",
+                "quantity": 1
+              }
+            ]
+          }
+        },
+        {
+          "rankId": "rank_bronze_3",
+          "displayName": "Bronze III",
+          "i18n": {
+            "en": "Bronze III"
+          },
+          "minMmr": 750,
+          "rewards": {
+            "gems": 100,
+            "inventory": [
+              {
+                "skuId": "sku_rjwe5tdtc4",
+                "quantity": 1
+              }
+            ]
           }
         },
         {
@@ -16217,8 +16252,45 @@
           },
           "minMmr": 1000,
           "rewards": {
-            "coins": 200,
-            "gems": 5
+            "inventory": [
+              {
+                "skuId": "sku_zz3twgp0wx",
+                "quantity": 1
+              }
+            ]
+          }
+        },
+        {
+          "rankId": "rank_silver_2",
+          "displayName": "Silver II",
+          "i18n": {
+            "en": "Silver II"
+          },
+          "minMmr": 1250,
+          "rewards": {
+            "gems": 150,
+            "inventory": [
+              {
+                "skuId": "sku_p3yxnyhkpx",
+                "quantity": 1
+              }
+            ]
+          }
+        },
+        {
+          "rankId": "rank_silver_3",
+          "displayName": "Silver III",
+          "i18n": {
+            "en": "Silver III"
+          },
+          "minMmr": 1500,
+          "rewards": {
+            "inventory": [
+              {
+                "skuId": "sku_72wnqwtfmx",
+                "quantity": 1
+              }
+            ]
           }
         },
         {
@@ -16227,10 +16299,48 @@
           "i18n": {
             "en": "Gold I"
           },
-          "minMmr": 1500,
+          "minMmr": 1750,
           "rewards": {
-            "coins": 250,
-            "gems": 10
+            "gems": 150,
+            "inventory": [
+              {
+                "skuId": "sku_p3yxnyhkpx",
+                "quantity": 1
+              }
+            ]
+          }
+        },
+        {
+          "rankId": "rank_gold_2",
+          "displayName": "Gold II",
+          "i18n": {
+            "en": "Gold II"
+          },
+          "minMmr": 2000,
+          "rewards": {
+            "inventory": [
+              {
+                "skuId": "sku_72wnqwtfmx",
+                "quantity": 1
+              }
+            ]
+          }
+        },
+        {
+          "rankId": "rank_gold_3",
+          "displayName": "Gold III",
+          "i18n": {
+            "en": "Gold III"
+          },
+          "minMmr": 2250,
+          "rewards": {
+            "gems": 200,
+            "inventory": [
+              {
+                "skuId": "sku_zqqmqz7mwb",
+                "quantity": 1
+              }
+            ]
           }
         },
         {
@@ -16239,10 +16349,47 @@
           "i18n": {
             "en": "Platinum I"
           },
-          "minMmr": 2000,
+          "minMmr": 2500,
           "rewards": {
-            "coins": 300,
-            "gems": 15
+            "inventory": [
+              {
+                "skuId": "sku_e8e7jeba7v",
+                "quantity": 1
+              }
+            ]
+          }
+        },
+        {
+          "rankId": "rank_platinum_2",
+          "displayName": "Platinum II",
+          "i18n": {
+            "en": "Platinum II"
+          },
+          "minMmr": 2750,
+          "rewards": {
+            "gems": 200,
+            "inventory": [
+              {
+                "skuId": "sku_zqqmqz7mwb",
+                "quantity": 1
+              }
+            ]
+          }
+        },
+        {
+          "rankId": "rank_platinum_3",
+          "displayName": "Platinum III",
+          "i18n": {
+            "en": "Platinum III"
+          },
+          "minMmr": 3000,
+          "rewards": {
+            "inventory": [
+              {
+                "skuId": "sku_e8e7jeba7v",
+                "quantity": 1
+              }
+            ]
           }
         },
         {
@@ -16251,10 +16398,246 @@
           "i18n": {
             "en": "Diamond I"
           },
-          "minMmr": 2500,
+          "minMmr": 3250,
           "rewards": {
-            "coins": 400,
-            "gems": 20
+            "gems": 300,
+            "inventory": [
+              {
+                "skuId": "sku_acxbr542j1",
+                "quantity": 1
+              }
+            ]
+          }
+        },
+        {
+          "rankId": "rank_diamond_2",
+          "displayName": "Diamond II",
+          "i18n": {
+            "en": "Diamond II"
+          },
+          "minMmr": 3500,
+          "rewards": {
+            "inventory": [
+              {
+                "skuId": "sku_n9hsc0wxxk",
+                "quantity": 1
+              }
+            ]
+          }
+        },
+        {
+          "rankId": "rank_diamond_3",
+          "displayName": "Diamond III",
+          "i18n": {
+            "en": "Diamond III"
+          },
+          "minMmr": 3750,
+          "rewards": {
+            "gems": 300,
+            "inventory": [
+              {
+                "skuId": "sku_acxbr542j1",
+                "quantity": 1
+              }
+            ]
+          }
+        },
+        {
+          "rankId": "rank_master_1",
+          "displayName": "Master I",
+          "i18n": {
+            "en": "Master I"
+          },
+          "minMmr": 4000,
+          "rewards": {
+            "inventory": [
+              {
+                "skuId": "sku_n9hsc0wxxk",
+                "quantity": 1
+              }
+            ]
+          }
+        },
+        {
+          "rankId": "rank_master_2",
+          "displayName": "Master II",
+          "i18n": {
+            "en": "Master II"
+          },
+          "minMmr": 4250,
+          "rewards": {
+            "gems": 350,
+            "inventory": [
+              {
+                "skuId": "sku_acxbr542j1",
+                "quantity": 1
+              }
+            ]
+          }
+        },
+        {
+          "rankId": "rank_master_3",
+          "displayName": "Master III",
+          "i18n": {
+            "en": "Master III"
+          },
+          "minMmr": 4500,
+          "rewards": {
+            "inventory": [
+              {
+                "skuId": "sku_n9hsc0wxxk",
+                "quantity": 1
+              }
+            ]
+          }
+        },
+        {
+          "rankId": "rank_champion_1",
+          "displayName": "Champion I",
+          "i18n": {
+            "en": "Champion I"
+          },
+          "minMmr": 4750,
+          "rewards": {
+            "gems": 400,
+            "inventory": [
+              {
+                "skuId": "sku_acxbr542j1",
+                "quantity": 1
+              }
+            ]
+          }
+        },
+        {
+          "rankId": "rank_champion_2",
+          "displayName": "Champion II",
+          "i18n": {
+            "en": "Champion II"
+          },
+          "minMmr": 5000,
+          "rewards": {
+            "inventory": [
+              {
+                "skuId": "sku_n9hsc0wxxk",
+                "quantity": 1
+              }
+            ]
+          }
+        },
+        {
+          "rankId": "rank_champion_3",
+          "displayName": "Champion III",
+          "i18n": {
+            "en": "Champion III"
+          },
+          "minMmr": 5250,
+          "rewards": {
+            "gems": 450,
+            "inventory": [
+              {
+                "skuId": "sku_hq5ywspmr5",
+                "quantity": 1
+              }
+            ]
+          }
+        },
+        {
+          "rankId": "rank_ascendant_1",
+          "displayName": "Ascendant I",
+          "i18n": {
+            "en": "Ascendant I"
+          },
+          "minMmr": 5500,
+          "rewards": {
+            "inventory": [
+              {
+                "skuId": "sku_kgkjadrd79",
+                "quantity": 1
+              }
+            ]
+          }
+        },
+        {
+          "rankId": "rank_ascendant_2",
+          "displayName": "Ascendant II",
+          "i18n": {
+            "en": "Ascendant II"
+          },
+          "minMmr": 5750,
+          "rewards": {
+            "gems": 500,
+            "inventory": [
+              {
+                "skuId": "sku_acxbr542j1",
+                "quantity": 1
+              }
+            ]
+          }
+        },
+        {
+          "rankId": "rank_ascendant_3",
+          "displayName": "Ascendant III",
+          "i18n": {
+            "en": "Ascendant III"
+          },
+          "minMmr": 6000,
+          "rewards": {
+            "inventory": [
+              {
+                "skuId": "sku_n9hsc0wxxk",
+                "quantity": 1
+              }
+            ]
+          }
+        },
+        {
+          "rankId": "rank_hypersonic_1",
+          "displayName": "Hypersonic I",
+          "i18n": {
+            "en": "Hypersonic I"
+          },
+          "minMmr": 6250,
+          "rewards": {
+            "gems": 500,
+            "inventory": [
+              {
+                "skuId": "sku_hq5ywspmr5",
+                "quantity": 1
+              }
+            ]
+          }
+        },
+        {
+          "rankId": "rank_hypersonic_2",
+          "displayName": "Hypersonic II",
+          "i18n": {
+            "en": "Hypersonic II"
+          },
+          "minMmr": 6500,
+          "rewards": {
+            "inventory": [
+              {
+                "skuId": "sku_kgkjadrd79",
+                "quantity": 1
+              }
+            ]
+          }
+        },
+        {
+          "rankId": "rank_hypersonic_3",
+          "displayName": "Hypersonic III",
+          "i18n": {
+            "en": "Hypersonic III"
+          },
+          "minMmr": 7000,
+          "rewards": {
+            "gems": 750,
+            "inventory": [
+              {
+                "skuId": "sku_kgkjadrd79",
+                "quantity": 1
+              }
+            ]
           }
         }
       ]

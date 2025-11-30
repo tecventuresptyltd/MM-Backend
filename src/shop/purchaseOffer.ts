@@ -491,7 +491,7 @@ export const purchaseOffer = onCall({ region: REGION }, async (request) => {
       }
 
       if (reads.activeUpdate) {
-        const activePayload: FirebaseFirestore.UpdateData = {
+        const activePayload: FirebaseFirestore.UpdateData<FirebaseFirestore.DocumentData> = {
           updatedAt: reads.activeUpdatedAt,
         };
         switch (reads.activeUpdate.slot) {

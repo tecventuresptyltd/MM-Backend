@@ -1,10 +1,12 @@
 import * as admin from "firebase-admin";
+import * as logger from "firebase-functions/logger";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { REGION } from "../shared/region.js";
 import { getRanksCatalog } from "../core/config.js";
 import { getLevelInfo } from "../shared/xp.js";
 import { refreshFriendSnapshots } from "../Socials/updateSnapshots.js";
 import { grantInventoryRewards } from "../shared/inventoryAwards.js";
+import { maybeTriggerFlashSales } from "../triggers/flashSales.js";
 
 const db = admin.firestore();
 
@@ -233,6 +235,12 @@ export const recordRaceResult = onCall({ enforceAppCheck: false, region: REGION 
       },
     };
   });
+
+  try {
+    await maybeTriggerFlashSales({ uid });
+  } catch (error) {
+    logger.warn("Flash sale trigger failed after race result", { uid, error });
+  }
 
   await refreshFriendSnapshots(uid);
   return result;

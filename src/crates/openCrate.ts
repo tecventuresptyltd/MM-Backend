@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 
 import * as admin from "firebase-admin";
+import * as logger from "firebase-functions/logger";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 
 import {
@@ -22,6 +23,7 @@ import {
   TxSkuMutationContext,
 } from "../inventory/index.js";
 import { resolveInventoryContext } from "../shared/inventory.js";
+import { maybeTriggerFlashSales } from "../triggers/flashSales.js";
 
 interface OpenCrateRequest {
   opId: unknown;
@@ -507,6 +509,12 @@ export const openCrate = onCall({ region: REGION }, async (request) => {
       };
     },
   );
+
+  try {
+    await maybeTriggerFlashSales({ uid });
+  } catch (error) {
+    logger.warn("Flash sale trigger failed after crate open", { uid, error });
+  }
 
   return result;
 });

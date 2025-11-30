@@ -10,7 +10,13 @@ import { checkIdempotency, createInProgressReceipt } from "../core/idempotency.j
 import { runReadThenWriteWithReceipt } from "../core/transactions.js";
 import { REGION } from "../shared/region.js";
 import { db } from "../shared/firestore.js";
-import { Offer, OfferEntitlement, ItemSku } from "../shared/types.js";
+import {
+  Offer,
+  OfferEntitlement,
+  ItemSku,
+  ActiveOffers,
+  ActiveSpecialOffer,
+} from "../shared/types.js";
 import {
   incSkuQtyTx,
   txUpdateInventorySummary,
@@ -19,6 +25,11 @@ import {
   TxSkuMutationContext,
 } from "../inventory/index.js";
 import { resolveInventoryContext } from "../shared/inventory.js";
+import {
+  activeOffersRef,
+  normaliseActiveOffers,
+  pruneExpiredSpecialOffers,
+} from "./offerState.js";
 
 interface PurchaseOfferRequest {
   opId: unknown;
@@ -66,6 +77,16 @@ type GrantPlan =
       context: TxSkuMutationContext;
     };
 
+type ActiveOfferSlot =
+  | { kind: "daily" }
+  | { kind: "starter" }
+  | { kind: "special"; index: number };
+
+interface ActiveOfferUpdate {
+  slot: ActiveOfferSlot["kind"];
+  special?: ActiveSpecialOffer[];
+}
+
 interface PurchaseOfferReadState {
   timestamp: FirebaseFirestore.FieldValue;
   economyRef: FirebaseFirestore.DocumentReference;
@@ -78,6 +99,9 @@ interface PurchaseOfferReadState {
   };
   grantPlans: GrantPlan[];
   summaryState: TxInventorySummaryState;
+  activeRef: FirebaseFirestore.DocumentReference;
+  activeUpdate: ActiveOfferUpdate;
+  activeUpdatedAt: number;
 }
 
 const ensureOfferRequest = (request: PurchaseOfferRequest): { opId: string; offerId: string } => {
@@ -167,6 +191,59 @@ const resolveItemType = (sku: ItemSku): ItemSku["type"] => {
   );
 };
 
+const resolveActiveOfferSlot = (
+  offerId: string,
+  state: ActiveOffers,
+  now: number,
+): ActiveOfferSlot | null => {
+  if (state.starter && state.starter.offerId === offerId) {
+    if (state.starter.expiresAt > now) {
+      return { kind: "starter" };
+    }
+    return null;
+  }
+  if (state.daily.offerId === offerId && state.daily.expiresAt > now) {
+    return { kind: "daily" };
+  }
+  const specialIndex = state.special.findIndex(
+    (entry) => entry.offerId === offerId && entry.expiresAt > now,
+  );
+  if (specialIndex >= 0) {
+    return { kind: "special", index: specialIndex };
+  }
+  return null;
+};
+
+const ensureActiveOfferUpdate = (
+  offerId: string,
+  state: ActiveOffers,
+  now: number,
+  prunedSpecial?: ActiveSpecialOffer[],
+): ActiveOfferUpdate => {
+  const slot = resolveActiveOfferSlot(offerId, state, now);
+  if (!slot) {
+    throw new HttpsError(
+      "failed-precondition",
+      `Offer ${offerId} is not active for this player.`,
+    );
+  }
+  if (slot.kind === "daily" && state.daily.isPurchased) {
+    throw new HttpsError(
+      "failed-precondition",
+      "Daily offer has already been purchased.",
+    );
+  }
+  if (slot.kind === "special") {
+    const base = prunedSpecial ?? state.special;
+    const filtered = base.filter((_, index) => index !== slot.index);
+    return { slot: "special", special: filtered };
+  }
+  if (prunedSpecial && prunedSpecial.length !== state.special.length) {
+    return { slot: slot.kind, special: prunedSpecial };
+  }
+  return { slot: slot.kind };
+};
+
 export const purchaseOffer = onCall({ region: REGION }, async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
@@ -193,12 +270,32 @@ export const purchaseOffer = onCall({ region: REGION }, async (request) => {
     opId,
     `purchaseOffer.${offerId}`,
     async (transaction) => {
+      const nowMillis = Date.now();
       const timestamp = admin.firestore.FieldValue.serverTimestamp();
       const economyRef = db.doc(`Players/${uid}/Economy/Stats`);
-      const statsSnap = await transaction.get(economyRef);
+      const activeRef = activeOffersRef(uid);
+      const [statsSnap, activeSnap] = await Promise.all([
+        transaction.get(economyRef),
+        transaction.get(activeRef),
+      ]);
       if (!statsSnap.exists) {
         throw new HttpsError("failed-precondition", "Economy profile missing for player.");
       }
+      if (!activeSnap.exists) {
+        throw new HttpsError(
+          "failed-precondition",
+          "Active offers not initialized. Call getDailyOffers before purchasing offers.",
+        );
+      }
+
+      const activeState = normaliseActiveOffers(activeSnap.data());
+      const prunedSpecial = pruneExpiredSpecialOffers(activeState.special, nowMillis);
+      const activeUpdate = ensureActiveOfferUpdate(
+        offerId,
+        { ...activeState, special: prunedSpecial },
+        nowMillis,
+        prunedSpecial,
+      );
 
       const stats = statsSnap.data() ?? {};
       const gemsBefore = Number(stats.gems ?? 0);
@@ -345,6 +442,9 @@ export const purchaseOffer = onCall({ region: REGION }, async (request) => {
         },
         grantPlans,
         summaryState,
+        activeRef,
+        activeUpdate,
+        activeUpdatedAt: nowMillis,
       };
       return readState;
     },
@@ -388,6 +488,30 @@ export const purchaseOffer = onCall({ region: REGION }, async (request) => {
           state: reads.summaryState,
           timestamp: reads.timestamp,
         });
+      }
+
+      if (reads.activeUpdate) {
+        const activePayload: FirebaseFirestore.UpdateData = {
+          updatedAt: reads.activeUpdatedAt,
+        };
+        switch (reads.activeUpdate.slot) {
+          case "daily":
+            activePayload["daily.isPurchased"] = true;
+            break;
+          case "starter":
+            activePayload.starter = admin.firestore.FieldValue.delete();
+            break;
+          case "special":
+            activePayload.special = reads.activeUpdate.special ?? [];
+            break;
+        }
+        if (
+          reads.activeUpdate.special &&
+          reads.activeUpdate.slot !== "special"
+        ) {
+          activePayload.special = reads.activeUpdate.special;
+        }
+        transaction.set(reads.activeRef, activePayload, { merge: true });
       }
 
       transaction.set(

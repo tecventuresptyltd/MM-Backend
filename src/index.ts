@@ -16,7 +16,7 @@ export { exchangeGemsForCoins, claimRankUpReward, getLeaderboard } from "./econo
 export { adjustCoins } from "./economy/coins";
 export { adjustGems } from "./economy/gems";
 export { grantXP } from "./economy/xp";
-export { purchaseShopSku, activateBooster, purchaseOffer } from "./shop";
+export { purchaseShopSku, activateBooster, purchaseOffer, getDailyOffers } from "./shop";
 export { purchaseCar, upgradeCar, equipCosmetic, purchaseCrateItem, grantItem } from "./garage";
 export { openCrate } from "./crates";
 export { upgradeSpell, setLoadout, equipCosmetics, setSpellDeck, selectActiveSpellDeck } from "./spells";

@@ -545,7 +545,7 @@ Notes:
 
 ### `recordRaceResult`
 
-**Purpose:** Settles a race and applies rewards. Recalculates XP using the shared progression helpers, writes `exp`, `level`, `expProgress`, and `expToNextLevel` to `Profile/Profile`, increments `spellTokens` on level-up, applies trophy/coin deltas, and rolls for end-of-race crate/key drops. Player drops are persisted to `/Players/{uid}/Inventory`, and optional bot rolls are returned for client display only.
+**Purpose:** Settles a race and applies rewards. Recalculates XP using the shared progression helpers, writes `exp`, `level`, `expProgress`, and `expToNextLevel` to `Profile/Profile`, increments `spellTokens` on level-up, applies trophy/coin deltas, and rolls for end-of-race crate/key drops. Player drops are persisted to `/Players/{uid}/Inventory`, and optional bot rolls are returned for client display only. Once the transaction completes, the flash-sale helper inspects the player’s inventory to see whether a “missing key” or “missing crate” situation now applies.
 
 **Input:**
 ```json
@@ -561,13 +561,16 @@ Notes:
 
 **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `FAILED_PRECONDITION`, `NOT_FOUND`
 
+**Side Effects:**
+* After rewards finish, `maybeTriggerFlashSales` runs. Owning ≥ 1 Mythical Crate but 0 Mythical Keys queues `offer_zqcpwsbz` (`flash_missing_key`) for 15 minutes. The inverse (≥ 1 Mythical Key, 0 Mythical Crates) queues `offer_1aka0xdg`. Each trigger type respects the 72 hour cooldown tracked in `/Offers/History.lastTriggerAt`.
+
 
 
 ## Economy & Offers
 
 ### `grantXP`
 
-**Purpose:** Grants XP to a player using the runtime XP progression formula (no Firestore lookups). The helper computes the active level, current progress, and XP required for the next level. On level-up the player earns spell tokens. The function writes the derived values to `/Players/{uid}/Profile/Profile` (`exp`, `level`, `expProgress`, `expToNextLevel`) and, when applicable, increments `spellTokens` in `/Players/{uid}/Economy/Stats`.
+**Purpose:** Grants XP to a player using the runtime XP progression formula (no Firestore lookups). The helper computes the active level, current progress, and XP required for the next level. On level-up the player earns spell tokens. The function writes the derived values to `/Players/{uid}/Profile/Profile` (`exp`, `level`, `expProgress`, `expToNextLevel`) and, when applicable, increments `spellTokens` in `/Players/{uid}/Economy/Stats`. Crossing the level‑5 or level‑10 thresholds also injects the cataloged level-up offers into `/Players/{uid}/Offers/Active.special`.
 
 **Input:**
 ```json
@@ -582,6 +585,9 @@ Notes:
 *   **Success:** `{ "success": true, "opId": "string", "xpBefore": "number", "xpAfter": "number", "levelBefore": "number", "levelAfter": "number", "leveledUp": "boolean", "expProgress": { "before": { "expInLevel": "number", "expToNextLevel": "number" }, "after": { "expInLevel": "number", "expToNextLevel": "number" } } }`
 
 **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `NOT_FOUND`, `INTERNAL`
+
+**Side Effects:**
+* When `levelBefore < 5 <= levelAfter`, `offer_3vv3me0e` is appended to `special` with a 24 h expiry (`triggerType: "level_up"`). When `levelBefore < 10 <= levelAfter`, `offer_jw7ms0ny` is appended similarly. Both entries are deduplicated against any active copy before being added.
 
 ---
 
@@ -707,9 +713,42 @@ When the SKU is coin-priced the response mirrors this shape with `currency: "coi
 
 ---
 
+### `getDailyOffers`
+
+**Purpose:** Lazily hydrates `/Players/{uid}/Offers/Active`. The callable prunes expired specials, expires the starter slot when needed, applies the daily ladder logic (Tier 0 RNG with a 20 % “no offer” roll or deterministic Tier 1‑4 IDs), and writes the refreshed structure back to Firestore before returning it to the caller. When the previous daily offer expired, the ladder steps up one tier if `isPurchased === true` or falls back two tiers otherwise, clamping to `[0, 4]`.
+
+**Input:** `{}` (no payload required).
+
+**Output:** The full `ActiveOffers` snapshot, e.g.:
+```jsonc
+{
+  "starter": { "offerId": "offer_3jaky2p2", "expiresAt": 1762051200000 },
+  "daily": {
+    "offerId": "offer_bwebp6s4",
+    "tier": 1,
+    "expiresAt": 1762137600000,
+    "isPurchased": false,
+    "generatedAt": 1762051200000
+  },
+  "special": [
+    { "offerId": "offer_3vv3me0e", "triggerType": "level_up", "expiresAt": 1762137600000 }
+  ],
+  "updatedAt": 1762051200000
+}
+```
+
+**Side Effects:**
+* Creates `/Offers/Active` on first call.
+* Prunes special entries whose `expiresAt <= Date.now()`.
+* Advances or regresses the ladder, writes the next daily entry (`expiresAt = now + 24h`, `isPurchased = false`), and records the generation timestamp.
+
+**Errors:** `UNAUTHENTICATED`, `INTERNAL`
+
+---
+
 ### `purchaseOffer`
 
-**Purpose:** Processes a catalog offer. The callable loads `/GameData/v1/catalogs/OffersCatalog`, resolves each entitlement to a concrete SKU (legacy `itemId` entitlements expand to the item’s primary variant), enforces stackability rules, deducts the configured currency, grants the SKUs, updates the per-SKU docs and `_summary`, and persists an idempotent receipt.
+**Purpose:** Processes a catalog offer that is currently surfaced to the player. The callable loads `/GameData/v1/catalogs/OffersCatalog`, resolves each entitlement to a concrete SKU (legacy `itemId` entitlements expand to the item’s primary variant), enforces stackability rules, validates that the requested `offerId` exists (and hasn’t expired) inside `/Players/{uid}/Offers/Active`, deducts the configured currency, grants the SKUs, updates the per-SKU docs and `_summary`, and persists an idempotent receipt.
 
 **Input:**
 ```json
@@ -738,11 +777,18 @@ When the SKU is coin-priced the response mirrors this shape with `currency: "coi
 
 **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `NOT_FOUND`, `FAILED_PRECONDITION`, `RESOURCE_EXHAUSTED`, `INTERNAL`
 
+**Side Effects:**
+* Daily purchases flip `/Offers/Active.daily.isPurchased` to `true`, priming the ladder so the next `getDailyOffers` call steps up a tier.
+* Starter purchases clear the `starter` slot; special purchases remove the matching entry from the `special` array.
+
 ---
 
 ### `openCrate`
 
 **Purpose:** Consumes a crate the player owns, decrements the associated key, rolls a reward SKU using the crate’s `rarityWeights` + `poolsByRarity`, and grants the result. The crate metadata (crate SKU, key SKU) is resolved from `/GameData/v1/catalogs/CratesCatalog`. The function mutates the affected per-SKU documents, refreshes `_summary`, returns post-operation counts for the affected SKUs, and records an idempotency receipt.
+
+**Side Effects:**
+* After the transaction, `maybeTriggerFlashSales` checks the player’s inventory. If they hold ≥ 1 Mythical Crate and `0` Mythical Keys it queues `offer_zqcpwsbz` (`flash_missing_key`); if they hold ≥ 1 Mythical Key and `0` Mythical Crates it queues `offer_1aka0xdg` (`flash_missing_crate`). Each flash sale lasts 15 minutes and respects the 72 hour per-trigger cooldown stored in `/Offers/History.lastTriggerAt`.
 
 **Input:**
 ```json

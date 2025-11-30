@@ -4,8 +4,18 @@ import { ensureOp } from "../shared/idempotency.js";
 import { getLevelInfo } from "../shared/xp.js";
 import { updateClanMemberSnapshot } from "../clan/helpers.js";
 import { refreshFriendSnapshots } from "../Socials/updateSnapshots.js";
+import {
+  activeOffersRef,
+  normaliseActiveOffers,
+  pruneExpiredSpecialOffers,
+} from "../shop/offerState.js";
 
 const db = admin.firestore();
+const LEVEL_UP_SPECIAL_DURATION_MS = 24 * 60 * 60 * 1000;
+const LEVEL_UP_OFFERS: Array<{ level: number; offerId: string }> = [
+  { level: 5, offerId: "offer_3vv3me0e" },
+  { level: 10, offerId: "offer_jw7ms0ny" },
+];
 
 interface GrantXPRequest {
   amount: number;
@@ -54,6 +64,10 @@ export const grantXP = onCall({ enforceAppCheck: false, region: "us-central1" },
     const levelsGained = afterInfo.level - beforeInfo.level;
     const leveledUp = levelsGained > 0;
 
+    const unlockedOffers = LEVEL_UP_OFFERS.filter(
+      (entry) => beforeInfo.level < entry.level && afterInfo.level >= entry.level,
+    );
+
     // Update Economy/Stats for spell tokens if leveled up
     if (levelsGained > 0) {
       const economyUpdate = {
@@ -72,6 +86,29 @@ export const grantXP = onCall({ enforceAppCheck: false, region: "us-central1" },
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
     transaction.update(profileRef, profileUpdate);
+
+    if (unlockedOffers.length > 0) {
+      const offersRef = activeOffersRef(uid);
+      const offersSnap = await transaction.get(offersRef);
+      const nowMs = Date.now();
+      const activeState = normaliseActiveOffers(offersSnap.data());
+      const existing = pruneExpiredSpecialOffers(activeState.special, nowMs).filter(
+        (entry) => !unlockedOffers.some((offer) => offer.offerId === entry.offerId),
+      );
+      const additions = unlockedOffers.map((offer) => ({
+        offerId: offer.offerId,
+        triggerType: "level_up" as const,
+        expiresAt: nowMs + LEVEL_UP_SPECIAL_DURATION_MS,
+      }));
+      transaction.set(
+        offersRef,
+        {
+          special: [...existing, ...additions],
+          updatedAt: nowMs,
+        },
+        { merge: true },
+      );
+    }
 
     return {
       success: true,

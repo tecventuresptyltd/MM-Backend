@@ -14,6 +14,7 @@ import { loadStarterSpellIds } from "../../src/shared/catalogHelpers";
 import { initializeUserIfNeeded } from "../../src/shared/initializeUser";
 import { __resetCachedFlagsForTests } from "../../src/core/flags";
 import { __resetCatalogCacheForTests } from "../../src/core/config";
+import { defaultDailyState } from "../../src/shop/offerState";
 
 const resetTestFeatureFlags = () => {
   __resetCachedFlagsForTests();
@@ -23,6 +24,35 @@ const resetTestFeatureFlags = () => {
 resetTestFeatureFlags();
 
 const PROJECT_ID = process.env.GCLOUD_PROJECT || process.env.FIREBASE_PROJECT || "demo-test";
+const REFERRAL_CONFIG_DOC = "/GameData/v1/config/ReferralConfig.v1";
+const REFERRAL_INVITEE_SKU = "sku_rjwe5tdtc4";
+const REFERRAL_INVITER_SKU = "sku_2xw1r4bah7";
+
+const seedReferralConfigFixture = async (): Promise<void> => {
+  const ref = admin.firestore().doc(REFERRAL_CONFIG_DOC);
+  await ref.set(
+    {
+      alphabet: "0123456789ABCDEFGHJKMNPQRSTVWXYZ",
+      codeLength: 8,
+      maxClaimPerInvitee: 1,
+      maxClaimsPerInviter: 1000,
+      inviteeRewards: [
+        { skuId: REFERRAL_INVITEE_SKU, qty: 1 },
+      ],
+      inviterRewards: [
+        {
+          threshold: 1,
+          rewards: [{ skuId: REFERRAL_INVITER_SKU, qty: 1 }],
+        },
+      ],
+      blockSelfReferral: true,
+      blockCircularReferral: true,
+      version: "test-fixture",
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    },
+    { merge: true },
+  );
+};
 
 let catalogSeedPromise: Promise<void> | null = null;
 
@@ -30,10 +60,14 @@ export const ensureCatalogsSeeded = async (): Promise<void> => {
   if (!catalogSeedPromise) {
     console.log("[cleanup] ensureCatalogsSeeded: seeding GameData catalogs");
     resetTestFeatureFlags();
-    catalogSeedPromise = seedGameDataCatalogs().catch((error) => {
-      catalogSeedPromise = null;
-      throw error;
-    });
+    catalogSeedPromise = seedGameDataCatalogs()
+      .then(async () => {
+        await seedReferralConfigFixture();
+      })
+      .catch((error) => {
+        catalogSeedPromise = null;
+        throw error;
+      });
   }
   await catalogSeedPromise;
   console.log("[cleanup] ensureCatalogsSeeded: catalogs ready");
@@ -140,6 +174,20 @@ export async function seedMinimalPlayer(uid: string) {
     {
       gems: 5000,
       updatedAt: now,
+    },
+    { merge: true },
+  );
+
+  const offersNow = Date.now();
+  await db.doc(`Players/${uid}/Offers/Active`).set(
+    {
+      starter: {
+        offerId: "offer_3jaky2p2",
+        expiresAt: offersNow + 48 * 60 * 60 * 1000,
+      },
+      daily: defaultDailyState(),
+      special: [],
+      updatedAt: offersNow,
     },
     { merge: true },
   );

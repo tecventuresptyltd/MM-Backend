@@ -748,6 +748,63 @@ Inventory summary keys mirror the `category`, `rarity`, and `subType` metadata d
 > * `_summary` lets the client display totals instantly without scanning every entry.  
 > * Legacy aggregate `Items` / `Cosmetics` documents have been retired; new features must interact exclusively with the per-SKU documents.
 
+#### `/Players/{uid}/Offers/Active` (Singleton)
+
+Stores all offer slots currently visible to the player. The document is created lazily by `getDailyOffers` and mutated by the purchase, XP, and flash-sale flows.
+
+* `starter` *(optional)* — starter offer slot.
+  * `offerId` — catalog identifier (e.g., `offer_3jaky2p2`).
+  * `expiresAt` — epoch milliseconds when the starter slot disappears.
+* `daily` — state for the ladder-driven daily slot.
+  * `offerId` — catalog ID or `null` if Tier 0 RNG rolled “no offer”.
+  * `tier` — `0` (base RNG pool) through `4` (Treasure tier). Tiers ≥ 1 map directly to the fixed IDs listed in `OfferLadderIndex`.
+  * `expiresAt` — epoch ms; once `Date.now() >= expiresAt`, `getDailyOffers` regenerates the ladder state.
+  * `isPurchased` — set to `true` by `purchaseOffer` when the current daily offer is bought so the next regen steps up instead of down.
+  * `generatedAt` — epoch ms when this daily entry was produced. Prevents duplicate generation within the same 24‑hour window.
+* `special` — array of ad‑hoc limited-time slots.
+  * Each element includes `offerId`, `triggerType` (`"level_up" | "flash_missing_key" | "flash_missing_crate"`), and `expiresAt` epoch ms.
+  * Flash sales (15 min) and level-up offers (24 h) are both stored here; expired entries are pruned before new ones are pushed.
+* `updatedAt` — epoch ms mirroring the last mutation (useful for cache-busting on the client).
+
+**Example:**
+```jsonc
+{
+  "starter": { "offerId": "offer_3jaky2p2", "expiresAt": 1762051200000 },
+  "daily": {
+    "offerId": "offer_bwebp6s4",
+    "tier": 1,
+    "expiresAt": 1762137600000,
+    "isPurchased": false,
+    "generatedAt": 1762051200000
+  },
+  "special": [
+    { "offerId": "offer_3vv3me0e", "triggerType": "level_up", "expiresAt": 1762137600000 },
+    { "offerId": "offer_zqcpwsbz", "triggerType": "flash_missing_key", "expiresAt": 1762052100000 }
+  ],
+  "updatedAt": 1762051200000
+}
+```
+
+#### `/Players/{uid}/Offers/History` (Singleton)
+
+Cooldown metadata that throttles how frequently flash sales can reappear and (optionally) keeps Tier 0 RNG from repeating the same offer ID.
+
+* `lastTriggerAt` — map of `triggerType → epochMillis`. `maybeTriggerFlashSales` reads/updates it to enforce the 72‑hour cooldown for `"flash_missing_key"` and `"flash_missing_crate"`.
+* `lastDailyOfferId` *(optional)* — when populated, the ladder RNG can skip rolling the same Tier 0 ID twice consecutively.
+* `updatedAt` — server timestamp written whenever the helper touches the document.
+
+**Example:**
+```jsonc
+{
+  "lastTriggerAt": {
+    "flash_missing_key": 1762047600000,
+    "flash_missing_crate": 0
+  },
+  "lastDailyOfferId": "offer_kn1k91mn",
+  "updatedAt": 1762047601000
+}
+```
+
 #### `/Players/{uid}/Boosters/Active`
 
 Singleton document tracking the playerâ€™s active time-based boosters. Coin and XP timers are stored independently so both effects can run in parallel.
@@ -1066,6 +1123,5 @@ A scheduled Cloud Function (`socialPresenceMirrorLastSeen`) runs every ~10 minut
 ## Contracts Alignment (TODO)
 
 *   Review `FUNCTION_CONTRACTS.md` to ensure all field names (`activeSpellDeck`, `spellTokens`, etc.) are perfectly aligned with this schema. Any discrepancies should be flagged and resolved.
-
 
 

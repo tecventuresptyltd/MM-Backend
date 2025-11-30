@@ -4474,7 +4474,7 @@
               }
             },
             {
-              "skuId": "sku_tpt3379j8p",
+              "skuId": "sku_amf7txny",
               "displayName": "Coin Booster (24h)",
               "rarity": "special",
               "stackable": true,
@@ -4538,7 +4538,7 @@
               }
             },
             {
-              "skuId": "sku_9pnmmjpscv",
+              "skuId": "sku_07hw4ry3",
               "displayName": "EXP Booster (24h)",
               "rarity": "special",
               "stackable": true,
@@ -5027,13 +5027,13 @@
           "sku_amf7txny",
           "sku_eqzbetwm",
           "sku_wkm0amtg",
-          "sku_tpt3379j8p"
+          "sku_amf7txny"
         ],
         "family_bst_hhhb8w5q": [
           "sku_07hw4ry3",
           "sku_60fdgqkm",
           "sku_nhh7jtda",
-          "sku_9pnmmjpscv"
+          "sku_07hw4ry3"
         ]
       }
     }
@@ -5517,13 +5517,13 @@
           "sku_amf7txny",
           "sku_eqzbetwm",
           "sku_wkm0amtg",
-          "sku_tpt3379j8p"
+          "sku_amf7txny"
         ],
         "family_bst_hhhb8w5q": [
           "sku_07hw4ry3",
           "sku_60fdgqkm",
           "sku_nhh7jtda",
-          "sku_9pnmmjpscv"
+          "sku_07hw4ry3"
         ],
         "family_crt_ayvncyt0": [
           "sku_zz3twgp0wx"
@@ -9769,8 +9769,8 @@
           "gemPrice": 800,
           "durationSeconds": 43200
         },
-        "sku_tpt3379j8p": {
-          "skuId": "sku_tpt3379j8p",
+        "sku_amf7txny": {
+          "skuId": "sku_amf7txny",
           "itemId": "bst_kcemzpr4",
           "displayName": "Coin Booster (24h)",
           "category": "booster",
@@ -9841,8 +9841,8 @@
           "gemPrice": 500,
           "durationSeconds": 43200
         },
-        "sku_9pnmmjpscv": {
-          "skuId": "sku_9pnmmjpscv",
+        "sku_07hw4ry3": {
+          "skuId": "sku_07hw4ry3",
           "itemId": "bst_hhhb8w5q",
           "displayName": "EXP Booster (24h)",
           "category": "booster",
@@ -11913,12 +11913,12 @@
             },
             {
               "type": "booster",
-              "id": "sku_tpt3379j8p",
+              "id": "sku_amf7txny",
               "quantity": 1
             },
             {
               "type": "booster",
-              "id": "sku_9pnmmjpscv",
+              "id": "sku_07hw4ry3",
               "quantity": 1
             }
           ],
@@ -11972,12 +11972,12 @@
             },
             {
               "type": "booster",
-              "id": "sku_tpt3379j8p",
+              "id": "sku_amf7txny",
               "quantity": 1
             },
             {
               "type": "booster",
-              "id": "sku_9pnmmjpscv",
+              "id": "sku_07hw4ry3",
               "quantity": 1
             }
           ],
@@ -12031,12 +12031,12 @@
             },
             {
               "type": "booster",
-              "id": "sku_tpt3379j8p",
+              "id": "sku_amf7txny",
               "quantity": 1
             },
             {
               "type": "booster",
-              "id": "sku_9pnmmjpscv",
+              "id": "sku_07hw4ry3",
               "quantity": 1
             }
           ],
@@ -12095,12 +12095,12 @@
             },
             {
               "type": "booster",
-              "id": "sku_tpt3379j8p",
+              "id": "sku_amf7txny",
               "quantity": 1
             },
             {
               "type": "booster",
-              "id": "sku_9pnmmjpscv",
+              "id": "sku_07hw4ry3",
               "quantity": 1
             }
           ],
@@ -12113,7 +12113,7 @@
           "offerId": "offer_edcayzxw"
         },
         "offer_bwebp6s4": {
-          "displayName": "Gold Surge",
+          "displayName": "Gem Surge",
           "offerType": 5,
           "productId": "com.tecventures.mysticmotors.goldsurge",
           "entitlements": [
@@ -12154,12 +12154,12 @@
             },
             {
               "type": "booster",
-              "id": "sku_tpt3379j8p",
+              "id": "sku_amf7txny",
               "quantity": 1
             },
             {
               "type": "booster",
-              "id": "sku_9pnmmjpscv",
+              "id": "sku_07hw4ry3",
               "quantity": 1
             }
           ],
@@ -12223,12 +12223,12 @@
             },
             {
               "type": "booster",
-              "id": "sku_tpt3379j8p",
+              "id": "sku_amf7txny",
               "quantity": 1
             },
             {
               "type": "booster",
-              "id": "sku_9pnmmjpscv",
+              "id": "sku_07hw4ry3",
               "quantity": 1
             }
           ],
@@ -12241,7 +12241,7 @@
           "offerId": "offer_z5k1130z"
         },
         "offer_nymn2fmt": {
-          "displayName": "Fortune",
+          "displayName": "Fortune Fuel",
           "offerType": 7,
           "productId": "com.tecventures.mysticmotors.fortune",
           "entitlements": [
@@ -12292,12 +12292,12 @@
             },
             {
               "type": "booster",
-              "id": "sku_tpt3379j8p",
+              "id": "sku_amf7txny",
               "quantity": 2
             },
             {
               "type": "booster",
-              "id": "sku_9pnmmjpscv",
+              "id": "sku_07hw4ry3",
               "quantity": 2
             }
           ],
@@ -12310,7 +12310,7 @@
           "offerId": "offer_nymn2fmt"
         },
         "offer_wwgzr06v": {
-          "displayName": "Treasure",
+          "displayName": "Treasure Circuit",
           "offerType": 8,
           "productId": "com.tecventures.mysticmotors.treasure",
           "entitlements": [
@@ -12361,12 +12361,12 @@
             },
             {
               "type": "booster",
-              "id": "sku_tpt3379j8p",
+              "id": "sku_amf7txny",
               "quantity": 5
             },
             {
               "type": "booster",
-              "id": "sku_9pnmmjpscv",
+              "id": "sku_07hw4ry3",
               "quantity": 5
             }
           ],
@@ -12430,12 +12430,12 @@
             },
             {
               "type": "booster",
-              "id": "sku_tpt3379j8p",
+              "id": "sku_amf7txny",
               "quantity": 1
             },
             {
               "type": "booster",
-              "id": "sku_9pnmmjpscv",
+              "id": "sku_07hw4ry3",
               "quantity": 1
             }
           ],
@@ -12499,12 +12499,12 @@
             },
             {
               "type": "booster",
-              "id": "sku_tpt3379j8p",
+              "id": "sku_amf7txny",
               "quantity": 1
             },
             {
               "type": "booster",
-              "id": "sku_9pnmmjpscv",
+              "id": "sku_07hw4ry3",
               "quantity": 1
             }
           ],
@@ -12528,7 +12528,7 @@
             },
             {
               "type": "booster",
-              "id": "sku_tpt3379j8p",
+              "id": "sku_amf7txny",
               "quantity": 1
             },
             {
@@ -12557,7 +12557,7 @@
             },
             {
               "type": "booster",
-              "id": "sku_tpt3379j8p",
+              "id": "sku_amf7txny",
               "quantity": 1
             },
             {

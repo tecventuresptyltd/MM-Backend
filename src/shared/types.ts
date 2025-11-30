@@ -253,12 +253,48 @@ export interface OfferEntitlement {
 export interface Offer {
   offerId: string;
   displayName: string;
-  currency: string;
-  amount: number;
+  currency?: string;
+  amount?: number;
+  price?: number;
+  originalPrice?: number;
+  productId?: string;
   entitlements: OfferEntitlement[];
   startAt?: number;
   endAt?: number;
   metadata?: Record<string, unknown>;
+  validityHours?: number;
+  offerType?: number;
+  updatedAt?: number;
+}
+
+export interface ActiveStarterOffer {
+  offerId: string;
+  expiresAt: number;
+}
+
+export interface ActiveDailyOfferState {
+  offerId: string | null;
+  tier: number;
+  expiresAt: number;
+  isPurchased: boolean;
+  generatedAt: number;
+}
+
+export type SpecialOfferTriggerType =
+  | "level_up"
+  | "flash_missing_key"
+  | "flash_missing_crate";
+
+export interface ActiveSpecialOffer {
+  offerId: string;
+  triggerType: SpecialOfferTriggerType;
+  expiresAt: number;
+}
+
+export interface ActiveOffers {
+  starter?: ActiveStarterOffer;
+  daily: ActiveDailyOfferState;
+  special: ActiveSpecialOffer[];
   updatedAt?: number;
 }
 

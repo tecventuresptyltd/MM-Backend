@@ -181,6 +181,9 @@ export const recordRaceResult = onCall({ enforceAppCheck: false, region: REGION 
     const afterInfo = getLevelInfo(xpAfter);
     const levelsGained = afterInfo.level - beforeInfo.level;
 
+    // Resolve loot before any other writes to keep transaction read-before-write ordering valid.
+    const drops = await resolveRaceDrops(transaction, uid, botDisplayNames);
+
     // Update Economy/Stats (no trophies here)
     const economyUpdate: Record<string, admin.firestore.FieldValue> = {
       coins: admin.firestore.FieldValue.increment(coinsGained),
@@ -210,8 +213,6 @@ export const recordRaceResult = onCall({ enforceAppCheck: false, region: REGION 
     transaction.update(profileRef, profileUpdate);
 
     transaction.update(raceRef, { status: "settled", updatedAt: admin.firestore.FieldValue.serverTimestamp() });
-
-    const drops = await resolveRaceDrops(transaction, uid, botDisplayNames);
 
     return {
       success: true,

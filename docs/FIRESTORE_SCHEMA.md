@@ -495,7 +495,7 @@ Defines the real-money Gem packs that the IAP system recognizes. Each entry is k
     * `gemAmount` — integer amount that will be granted.
     * `priceUsd` — numeric price for reference/analytics.
     * `bonusLabel` — optional badge such as `"+10%"`.
-    * `productId` — store-facing identifier (`com.mysticmotors.gems.100`).
+* `productId` — store-facing identifier (`com.tecventures.mysticmotors.gems.sack`).
     * `sortOrder` — integer indicating the UI ordering (lowest pack = 1, highest = 7).
 
 **Example:**
@@ -509,7 +509,7 @@ Defines the real-money Gem packs that the IAP system recognizes. Each entry is k
       "gemAmount": 100,
       "priceUsd": 0.99,
       "bonusLabel": null,
-      "productId": "com.mysticmotors.gems.100",
+      "productId": "com.tecventures.mysticmotors.gems.sack",
       "sortOrder": 1
     },
     "iap_q4n5w8v2": {
@@ -518,7 +518,7 @@ Defines the real-money Gem packs that the IAP system recognizes. Each entry is k
       "gemAmount": 550,
       "priceUsd": 4.99,
       "bonusLabel": "+10%",
-      "productId": "com.mysticmotors.gems.550",
+      "productId": "com.tecventures.mysticmotors.gems.bag",
       "sortOrder": 2
     }
   }

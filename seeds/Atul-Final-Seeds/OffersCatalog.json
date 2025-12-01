@@ -4,7 +4,7 @@
     "offer_3jaky2p2": {
       "displayName": "Starter Offer",
       "offerType": 0,
-      "productId": "com.tecventures.mysticmotors.starteroffer",
+      "productId": "com.tecventures.mysticmotors.starter.offer",
       "entitlements": [
         {
           "type": "gems",
@@ -43,7 +43,7 @@
     "offer_kn1k91mn": {
       "displayName": "Daily Offer I",
       "offerType": 1,
-      "productId": "com.tecventures.mysticmotors.dailyoffer1",
+      "productId": "com.tecventures.mysticmotors.dailyoffer.1",
       "entitlements": [
         {
           "type": "gems",
@@ -92,7 +92,7 @@
     "offer_bfnnjavw": {
       "displayName": "Daily Offer II",
       "offerType": 2,
-      "productId": "com.tecventures.mysticmotors.dailyoffer2",
+      "productId": "com.tecventures.mysticmotors.dailyoffer.2",
       "entitlements": [
         {
           "type": "gems",
@@ -151,7 +151,7 @@
     "offer_g3dxevzg": {
       "displayName": "Daily Offer III",
       "offerType": 3,
-      "productId": "com.tecventures.mysticmotors.dailyoffer3",
+      "productId": "com.tecventures.mysticmotors.dailyoffer.3",
       "entitlements": [
         {
           "type": "gems",
@@ -210,7 +210,7 @@
     "offer_edcayzxw": {
       "displayName": "Daily Offer IV",
       "offerType": 4,
-      "productId": "com.tecventures.mysticmotors.dailyoffer4",
+      "productId": "com.tecventures.mysticmotors.dailyoffer.4",
       "entitlements": [
         {
           "type": "crate",
@@ -263,7 +263,7 @@
           "quantity": 1
         }
       ],
-      "price": 1.49,
+      "price": 0.99,
       "originalPrice": 21,
       "currency": "USD",
       "startAt": 1761228851445,
@@ -274,7 +274,7 @@
     "offer_bwebp6s4": {
       "displayName": "Gold Surge",
       "offerType": 5,
-      "productId": "com.tecventures.mysticmotors.goldsurge",
+      "productId": "com.tecventures.mysticmotors.gemsurge",
       "entitlements": [
         {
           "type": "gems",
@@ -333,7 +333,7 @@
     "offer_z5k1130z": {
       "displayName": "Gemstreem",
       "offerType": 6,
-      "productId": "com.tecventures.mysticmotors.gemstreem",
+      "productId": "com.tecventures.mysticmotors.gemstream",
       "entitlements": [
         {
           "type": "gems",
@@ -402,7 +402,7 @@
     "offer_nymn2fmt": {
       "displayName": "Fortune",
       "offerType": 7,
-      "productId": "com.tecventures.mysticmotors.fortune",
+      "productId": "com.tecventures.mysticmotors.fortunefuel",
       "entitlements": [
         {
           "type": "gems",
@@ -540,7 +540,7 @@
     "offer_3vv3me0e": {
       "displayName": "LVL 5",
       "offerType": 9,
-      "productId": "com.tecventures.mysticmotors.lvl5",
+      "productId": "com.tecventures.mysticmotors.lvl.5",
       "entitlements": [
         {
           "type": "gems",
@@ -609,7 +609,7 @@
     "offer_jw7ms0ny": {
       "displayName": "LVL 10",
       "offerType": 10,
-      "productId": "com.tecventures.mysticmotors.lvl10",
+      "productId": "com.tecventures.mysticmotors.lvl.10",
       "entitlements": [
         {
           "type": "gems",
@@ -678,7 +678,7 @@
     "offer_zqcpwsbz": {
       "displayName": "Flash Sale I",
       "offerType": 11,
-      "productId": "com.tecventures.mysticmotors.flashsale1",
+      "productId": "com.tecventures.mysticmotors.flashsale.1",
       "entitlements": [
         {
           "type": "gems",
@@ -707,7 +707,7 @@
     "offer_1aka0xdg": {
       "displayName": "Flash Sale II",
       "offerType": 12,
-      "productId": "com.tecventures.mysticmotors.flashsale2",
+      "productId": "com.tecventures.mysticmotors.flashsale.2",
       "entitlements": [
         {
           "type": "gems",

@@ -679,7 +679,7 @@ When the SKU is coin-priced the response mirrors this shape with `currency: "coi
 ```json
 {
   "platform": "ios" | "android",
-  "productId": "com.mysticmotors.gems.100",
+  "productId": "com.tecventures.mysticmotors.gems.sack",
   "receipt": {
     "transactionId": "string",
     "...": "platform-specific payload"

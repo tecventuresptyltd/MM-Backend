@@ -5,6 +5,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getOffersCatalog, getRanksCatalog } from "../core/config.js";
 import { checkIdempotency, createInProgressReceipt, completeOperation } from "../core/idempotency.js";
 import { grantInventoryRewards, InventoryGrantResult } from "../shared/inventoryAwards.js";
+import { calculateGemConversionRate } from "./rates.js";
 
 export const offers = onCall(
   { region: "us-central1" },
@@ -41,16 +42,22 @@ export const exchangeGemsForCoins = onCall(
     await createInProgressReceipt(uid, opId, `Exchange ${gemAmount} gems for coins`);
 
     const db = admin.firestore();
-    const conversionRate = 100; // 1 gem = 100 coins
-    const coinsGained = gemAmount * conversionRate;
 
     try {
       const result = await db.runTransaction(async (transaction) => {
         const playerEconomyRef = db.doc(`/Players/${uid}/Economy/Stats`);
-        const playerEconomyDoc = await transaction.get(playerEconomyRef);
+        const playerProfileRef = db.doc(`/Players/${uid}/Profile/Profile`);
+
+        const [playerEconomyDoc, playerProfileDoc] = await Promise.all([
+          transaction.get(playerEconomyRef),
+          transaction.get(playerProfileRef),
+        ]);
 
         if (!playerEconomyDoc.exists) {
           throw new HttpsError("not-found", "Player economy data not found.");
+        }
+        if (!playerProfileDoc.exists) {
+          throw new HttpsError("not-found", "Player profile data not found.");
         }
 
         const economyData = playerEconomyDoc.data();
@@ -58,12 +65,16 @@ export const exchangeGemsForCoins = onCall(
           throw new HttpsError("resource-exhausted", "Insufficient gems.");
         }
 
+        const trophies = Number(playerProfileDoc.data()?.trophies ?? 0);
+        const conversionRate = calculateGemConversionRate(trophies);
+        const coinsGained = gemAmount * conversionRate;
+
         transaction.update(playerEconomyRef, {
           gems: admin.firestore.FieldValue.increment(-gemAmount),
           coins: admin.firestore.FieldValue.increment(coinsGained),
         });
 
-        return { success: true, coinsGained, gemsSpent: gemAmount };
+        return { success: true, coinsGained, gemsSpent: gemAmount, conversionRate };
       });
 
       // Complete the operation with result

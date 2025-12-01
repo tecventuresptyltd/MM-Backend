@@ -593,7 +593,7 @@ Notes:
 
 ### `exchangeGemsForCoins`
 
-**Purpose:** To convert gems to coins based on a trophy-scaled rate.
+**Purpose:** Converts gems to coins using the economy’s dynamic rate formula. The callable reads the player’s trophies from `/Players/{uid}/Profile/Profile`, computes the current conversion rate (higher-rank players receive better value), and applies that rate inside a Firestore transaction.
 
 **Input:**
 ```json
@@ -603,9 +603,33 @@ Notes:
 ```
 
 **Output:**
-*   **Success:** `{ "success": true, "coinsGained": "number", "gemsSpent": "number" }`
+*   **Success:** `{ "success": true, "coinsGained": "number", "gemsSpent": "number", "conversionRate": "number" }`
 
 **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `NOT_FOUND`, `RESOURCE_EXHAUSTED`
+
+**Side Effects:** Records an idempotent receipt. All conversions are rate-limited by the player’s current trophies; there is no longer a fixed `1:100` ratio.
+
+---
+
+### `getGemConversionPreview`
+
+**Purpose:** Returns the player’s current gem→coin conversion multiplier so the client can render pricing without committing to a purchase. Reads `/Players/{uid}/Profile/Profile` for trophies, runs the shared `calculateGemConversionRate` helper, and returns a rate plus convenience package previews.
+
+**Input:** `{}` (auth required; no payload).
+
+**Output:**
+```jsonc
+{
+  "rate": 1250,          // coins per 100 gems
+  "trophies": 500,
+  "packages": [
+    { "gems": 100, "coins": 1250 },
+    { "gems": 500, "coins": 6250 }
+  ]
+}
+```
+
+**Errors:** `UNAUTHENTICATED`, `INTERNAL`
 
 ---
 
@@ -642,6 +666,40 @@ Notes:
 When the SKU is coin-priced the response mirrors this shape with `currency: "coins"` and a `totalCostCoins` field instead of `totalCostGems`.
 
 **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `NOT_FOUND`, `FAILED_PRECONDITION`, `RESOURCE_EXHAUSTED`, `INTERNAL`
+
+---
+
+### `verifyIapPurchase`
+
+**Purpose:** Validates an App Store / Play Store receipt, resolves the configured Gem pack from `/GameData/v1/catalogs/GemPacksCatalog`, credits the gems to the player, and writes a receipt document keyed by the platform transaction ID so duplicates are rejected.
+
+**Input:**
+```json
+{
+  "platform": "ios" | "android",
+  "productId": "com.mysticmotors.gems.100",
+  "receipt": {
+    "transactionId": "string",
+    "...": "platform-specific payload"
+  }
+}
+```
+
+**Output:**
+```json
+{
+  "success": true,
+  "transactionId": "string",
+  "iapId": "iap_h72k9z3m",
+  "gemsGranted": 100
+}
+```
+
+**Side Effects:**
+* Updates `/Players/{uid}/Economy/Stats` (`gems` increment, `updatedAt`).
+* Writes `/Players/{uid}/Receipts/iap.{transactionId}` with the normalized receipt payload (`platform`, `productId`, `iapId`, `gemAmount`, raw receipt blob). Replays with the same transaction ID return `already-exists`.
+
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `NOT_FOUND`, `ALREADY_EXISTS`, `FAILED_PRECONDITION`
 
 ---
 

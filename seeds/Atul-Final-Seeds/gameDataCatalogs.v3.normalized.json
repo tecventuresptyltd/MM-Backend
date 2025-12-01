@@ -9718,7 +9718,7 @@
         "sku_amf7txny": {
           "skuId": "sku_amf7txny",
           "itemId": "bst_kcemzpr4",
-          "displayName": "Coin Booster (1h)",
+          "displayName": "Coin Booster (24h)",
           "category": "booster",
           "type": "booster",
           "rarity": "special",
@@ -9727,11 +9727,11 @@
           "subType": "coin",
           "purchasable": {
             "currency": "gems",
-            "amount": 150
+            "amount": 1350
           },
           "metadata": null,
-          "gemPrice": 150,
-          "durationSeconds": 3600
+          "gemPrice": 1350,
+          "durationSeconds": 86400
         },
         "sku_eqzbetwm": {
           "skuId": "sku_eqzbetwm",
@@ -9769,28 +9769,10 @@
           "gemPrice": 800,
           "durationSeconds": 43200
         },
-        "sku_amf7txny": {
-          "skuId": "sku_amf7txny",
-          "itemId": "bst_kcemzpr4",
-          "displayName": "Coin Booster (24h)",
-          "category": "booster",
-          "type": "booster",
-          "rarity": "special",
-          "stackable": true,
-          "variant": null,
-          "subType": "coin",
-          "purchasable": {
-            "currency": "gems",
-            "amount": 1350
-          },
-          "metadata": null,
-          "gemPrice": 1350,
-          "durationSeconds": 86400
-        },
         "sku_07hw4ry3": {
           "skuId": "sku_07hw4ry3",
           "itemId": "bst_hhhb8w5q",
-          "displayName": "EXP Booster (1h)",
+          "displayName": "EXP Booster (24h)",
           "category": "booster",
           "type": "booster",
           "rarity": "special",
@@ -9799,11 +9781,11 @@
           "subType": "exp",
           "purchasable": {
             "currency": "gems",
-            "amount": 100
+            "amount": 800
           },
           "metadata": null,
-          "gemPrice": 100,
-          "durationSeconds": 3600
+          "gemPrice": 800,
+          "durationSeconds": 86400
         },
         "sku_60fdgqkm": {
           "skuId": "sku_60fdgqkm",
@@ -9840,24 +9822,6 @@
           "metadata": null,
           "gemPrice": 500,
           "durationSeconds": 43200
-        },
-        "sku_07hw4ry3": {
-          "skuId": "sku_07hw4ry3",
-          "itemId": "bst_hhhb8w5q",
-          "displayName": "EXP Booster (24h)",
-          "category": "booster",
-          "type": "booster",
-          "rarity": "special",
-          "stackable": true,
-          "variant": null,
-          "subType": "exp",
-          "purchasable": {
-            "currency": "gems",
-            "amount": 800
-          },
-          "metadata": null,
-          "gemPrice": 800,
-          "durationSeconds": 86400
         }
       }
     }
@@ -16702,6 +16666,77 @@
         "48": 58750,
         "49": 61200,
         "50": 63700
+      }
+    }
+  },
+  {
+    "path": "/GameData/v1/catalogs/GemPacksCatalog",
+    "data": {
+      "version": "iap.v1",
+      "packs": {
+        "iap_h72k9z3m": {
+          "iapId": "iap_h72k9z3m",
+          "displayName": "Sack of Gems",
+          "gemAmount": 100,
+          "priceUsd": 0.99,
+          "bonusLabel": null,
+          "productId": "com.mysticmotors.gems.100",
+          "sortOrder": 1
+        },
+        "iap_q4n5w8v2": {
+          "iapId": "iap_q4n5w8v2",
+          "displayName": "Bag of Gems",
+          "gemAmount": 550,
+          "priceUsd": 4.99,
+          "bonusLabel": "+10%",
+          "productId": "com.mysticmotors.gems.550",
+          "sortOrder": 2
+        },
+        "iap_b6v1x9c3": {
+          "iapId": "iap_b6v1x9c3",
+          "displayName": "Box of Gems",
+          "gemAmount": 1200,
+          "priceUsd": 9.99,
+          "bonusLabel": "+20%",
+          "productId": "com.mysticmotors.gems.1200",
+          "sortOrder": 3
+        },
+        "iap_m2k8j4d5": {
+          "iapId": "iap_m2k8j4d5",
+          "displayName": "Chest of Gems",
+          "gemAmount": 2600,
+          "priceUsd": 19.99,
+          "bonusLabel": "+30%",
+          "productId": "com.mysticmotors.gems.2600",
+          "sortOrder": 4
+        },
+        "iap_z9c3v5b7": {
+          "iapId": "iap_z9c3v5b7",
+          "displayName": "Crate of Gems",
+          "gemAmount": 7000,
+          "priceUsd": 49.99,
+          "bonusLabel": "+40%",
+          "productId": "com.mysticmotors.gems.7000",
+          "sortOrder": 5
+        },
+        "iap_w4x6n8m2": {
+          "iapId": "iap_w4x6n8m2",
+          "displayName": "Vault of Gems",
+          "gemAmount": 15000,
+          "priceUsd": 99.99,
+          "bonusLabel": "+50%",
+          "productId": "com.mysticmotors.gems.15000",
+          "sortOrder": 6
+        },
+        "iap_r1t3y5u7": {
+          "iapId": "iap_r1t3y5u7",
+          "displayName": "Treasury of Gems",
+          "gemAmount": 32000,
+          "priceUsd": 199.99,
+          "bonusLabel": "+60%",
+          "productId": "com.mysticmotors.gems.32000",
+          "sortOrder": 7
+        }
       }
     }
   }

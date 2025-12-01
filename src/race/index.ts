@@ -7,6 +7,7 @@ import { getLevelInfo } from "../shared/xp.js";
 import { refreshFriendSnapshots } from "../Socials/updateSnapshots.js";
 import { grantInventoryRewards } from "../shared/inventoryAwards.js";
 import { maybeTriggerFlashSales } from "../triggers/flashSales.js";
+import { buildBotLoadout } from "../game-systems/botLoadoutHelper.js";
 
 const db = admin.firestore();
 
@@ -119,17 +120,18 @@ export const startRace = onCall({ enforceAppCheck: false, region: REGION }, asyn
 });
 
 export const generateBotLoadout = onCall({ region: REGION }, async (request) => {
-  const { trophyCount } = request.data;
-  if (typeof trophyCount !== "number") {
-    throw new HttpsError("invalid-argument", "trophyCount must be a number.");
+  const { trophyCount } = request.data ?? {};
+  if (typeof trophyCount !== "number" || trophyCount < 0) {
+    throw new HttpsError("invalid-argument", "trophyCount must be a non-negative number.");
   }
 
-  const carId = "bot_car";
-  const cosmetics = { wheels: "bot_wheels" };
-  const spellDeck = ["bot_spell1", "bot_spell2"];
-  const difficulty = { aiLevel: Math.min(10, Math.floor(trophyCount / 100)) };
-
-  return { carId, cosmetics, spellDeck, difficulty };
+  const loadout = await buildBotLoadout(trophyCount);
+  return {
+    carId: loadout.carId,
+    cosmetics: loadout.cosmetics,
+    spellDeck: loadout.spellDeck,
+    difficulty: loadout.difficulty,
+  };
 });
 
 export const recordRaceResult = onCall({ enforceAppCheck: false, region: REGION }, async (request) => {

@@ -483,6 +483,48 @@ Defines crate loot tables. Each record describes which SKU is granted when the c
 }
 ```
 
+#### `/GameData/v1/catalogs/GemPacksCatalog` (Singleton)
+
+Defines the real-money Gem packs that the IAP system recognizes. Each entry is keyed by an `iap_{crockford}` identifier (Crockford Base32, lowercase) so store receipts can be mapped deterministically.
+
+* **Document ID:** `GemPacksCatalog`
+* **Structure:**
+  * `packs` — record keyed by `iapId`.
+    * `iapId` — e.g., `iap_h72k9z3m`.
+    * `displayName` — UI label ("Sack of Gems").
+    * `gemAmount` — integer amount that will be granted.
+    * `priceUsd` — numeric price for reference/analytics.
+    * `bonusLabel` — optional badge such as `"+10%"`.
+    * `productId` — store-facing identifier (`com.mysticmotors.gems.100`).
+    * `sortOrder` — integer indicating the UI ordering (lowest pack = 1, highest = 7).
+
+**Example:**
+```jsonc
+{
+  "version": "iap.v1",
+  "packs": {
+    "iap_h72k9z3m": {
+      "iapId": "iap_h72k9z3m",
+      "displayName": "Sack of Gems",
+      "gemAmount": 100,
+      "priceUsd": 0.99,
+      "bonusLabel": null,
+      "productId": "com.mysticmotors.gems.100",
+      "sortOrder": 1
+    },
+    "iap_q4n5w8v2": {
+      "iapId": "iap_q4n5w8v2",
+      "displayName": "Bag of Gems",
+      "gemAmount": 550,
+      "priceUsd": 4.99,
+      "bonusLabel": "+10%",
+      "productId": "com.mysticmotors.gems.550",
+      "sortOrder": 2
+    }
+  }
+}
+```
+
 > **Note:** All live crates must supply `rarityWeights` and `poolsByRarity`. Legacy `{ loot, costs }` fields are ignored in the unified schema.
 
 #### `/GameData/v1/catalogs/RanksCatalog` (Singleton)
@@ -1123,5 +1165,3 @@ A scheduled Cloud Function (`socialPresenceMirrorLastSeen`) runs every ~10 minut
 ## Contracts Alignment (TODO)
 
 *   Review `FUNCTION_CONTRACTS.md` to ensure all field names (`activeSpellDeck`, `spellTokens`, etc.) are perfectly aligned with this schema. Any discrepancies should be flagged and resolved.
-
-

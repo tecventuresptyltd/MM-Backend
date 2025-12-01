@@ -27,7 +27,7 @@
 - ✅ .firebaserc - Project aliases
 - ✅ firestore.rules - Security rules
 - ✅ firestore.indexes.json - Database indexes
-- ✅ mystic-motors-sandbox-2831a79c5ae0.json - Service account key
+- ✅ mystic-motors-sandbox-9b64d57718a2.json - Service account key
 - ✅ tsconfig.json - TypeScript config
 - ✅ package.json - Dependencies and scripts
 - ✅ eslint.config.js - Code linting rules
@@ -117,7 +117,7 @@ This is a **complete standalone copy** that includes:
 ## ⚠️ Important Notes
 
 1. **Service Account Key**
-   - File: `mystic-motors-sandbox-2831a79c5ae0.json`
+   - File: `mystic-motors-sandbox-9b64d57718a2.json`
    - **Keep this secure - DO NOT commit to Git**
    - Required for local development and seeding
 

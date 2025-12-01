@@ -44,7 +44,7 @@ Atul-Final-Functions/
 ├── .firebaserc                 # Firebase project aliases
 ├── firestore.rules             # Firestore security rules
 ├── firestore.indexes.json      # Firestore indexes
-├── mystic-motors-sandbox-2831a79c5ae0.json  # Service account key
+├── mystic-motors-sandbox-9b64d57718a2.json  # Service account key
 └── README.md                   # This file
 ```
 
@@ -141,7 +141,7 @@ import * as admin from 'firebase-admin';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const serviceAccount = require('./mystic-motors-sandbox-2831a79c5ae0.json');
+const serviceAccount = require('./mystic-motors-sandbox-9b64d57718a2.json');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -240,7 +240,7 @@ firebase deploy --only firestore:rules
 ## 🔑 Environment & Authentication
 
 ### Service Account Key
-The file `mystic-motors-sandbox-2831a79c5ae0.json` is your service account key.
+The file `mystic-motors-sandbox-9b64d57718a2.json` is your service account key.
 - **DO NOT commit this to Git**
 - Keep it secure
 - Used for local development and seeding data

@@ -5,7 +5,7 @@
 
 import * as admin from 'firebase-admin';
 
-const serviceAccount = require('../mystic-motors-sandbox-2831a79c5ae0.json');
+const serviceAccount = require('../mystic-motors-sandbox-9b64d57718a2.json');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),

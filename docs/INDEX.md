@@ -122,7 +122,7 @@ For more details, see the [**Firestore Schema**](./FIRESTORE_SCHEMA.md#gamedata-
 To (re)seed catalogs to the sandbox project:
 ```
 cd backend-sandbox
-export GOOGLE_APPLICATION_CREDENTIALS="$(pwd)/mystic-motors-sandbox-2831a79c5ae0.json"
+export GOOGLE_APPLICATION_CREDENTIALS="$(pwd)/mystic-motors-sandbox-9b64d57718a2.json"
 export PROJECT_ID="mystic-motors-sandbox"
 node tools/seedFirestore.mjs seeds/gameDataCatalogs.fixed.json
 

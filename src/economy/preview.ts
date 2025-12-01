@@ -5,7 +5,12 @@ import { REGION } from "../shared/region.js";
 import { calculateGemConversionRate } from "./rates.js";
 
 const db = admin.firestore();
-const PREVIEW_PACKAGE_AMOUNTS = [100, 500];
+const PREVIEW_PACKAGES = [
+  { id: "pack_small", name: "Sack of Coin", gems: 10 },
+  { id: "pack_medium", name: "Chest of Coin", gems: 50 },
+  { id: "pack_large", name: "Crate of Coin", gems: 250 },
+  { id: "pack_xl", name: "Vault of Coin", gems: 500 },
+];
 
 export const getGemConversionPreview = onCall({ region: REGION }, async (request) => {
   const uid = request.auth?.uid;
@@ -19,7 +24,9 @@ export const getGemConversionPreview = onCall({ region: REGION }, async (request
   const ratePerGem = calculateGemConversionRate(trophies);
   const ratePerHundred = ratePerGem * 100;
 
-  const packages = PREVIEW_PACKAGE_AMOUNTS.map((gems) => ({
+  const packages = PREVIEW_PACKAGES.map(({ id, name, gems }) => ({
+    id,
+    name,
     gems,
     coins: gems * ratePerGem,
   }));

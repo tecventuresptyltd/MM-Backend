@@ -623,8 +623,10 @@ Notes:
   "rate": 1250,          // coins per 100 gems
   "trophies": 500,
   "packages": [
-    { "gems": 100, "coins": 1250 },
-    { "gems": 500, "coins": 6250 }
+    { "id": "pack_small", "name": "Sack of Coin", "gems": 10, "coins": 125 },
+    { "id": "pack_medium", "name": "Chest of Coin", "gems": 50, "coins": 625 },
+    { "id": "pack_large", "name": "Crate of Coin", "gems": 250, "coins": 3125 },
+    { "id": "pack_xl", "name": "Vault of Coin", "gems": 500, "coins": 6250 }
   ]
 }
 ```

@@ -25,11 +25,6 @@ firebase-debug.log
 firestore-debug.log
 firepit-log.txt
 
-# ===== SERVICE ACCOUNT KEYS (CRITICAL: Never commit!) =====
-*-service-account.json
-*-firebase-adminsdk-*.json
-mystic-motors-*-*.json
-
 # ===== ALLOWED JSON FILES =====
 !firebase.json
 !firestore.indexes.json

@@ -3,12 +3,35 @@ import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { REGION } from "../shared/region.js";
 import { checkIdempotency, createInProgressReceipt, completeOperation } from "../core/idempotency.js";
 import { getCarsCatalog, getSpellsCatalog, getRanksCatalog, getCarTuningConfig, getBotConfig, listSkusByFilter } from "../core/config.js";
-import { ItemSku } from "../shared/types.js";
+import { ItemSku, CarLevel } from "../shared/types.js";
 import { SeededRNG } from "./lib/random.js";
 import { resolveCarStats } from "./lib/stats.js";
 import * as crypto from "crypto";
 
 const db = admin.firestore();
+
+const resolveCarLevel = (car: Record<string, unknown> | undefined, targetLevel: number): Partial<CarLevel> | null => {
+  if (!car || typeof car !== "object") {
+    return null;
+  }
+  const levels = (car as { levels?: Record<string, CarLevel> }).levels;
+  if (!levels || typeof levels !== "object") {
+    return null;
+  }
+  const normalizedLevel = Math.max(0, Math.floor(Number.isFinite(targetLevel) ? targetLevel : 0));
+  const direct = levels[String(normalizedLevel)];
+  if (direct) {
+    return direct;
+  }
+  if (normalizedLevel > 0) {
+    const fallback = levels[String(normalizedLevel - 1)];
+    if (fallback) {
+      return fallback;
+    }
+  }
+  const firstAvailable = levels["0"] ?? Object.values(levels)[0];
+  return firstAvailable ?? null;
+};
 
 function hmacSign(payload: any): string {
   const secret = process.env.RACE_HMAC_SECRET || "sandbox-secret";
@@ -87,7 +110,8 @@ export const prepareRace = onCall({ region: REGION }, async (request) => {
     const playerCar = carsCatalog[carId];
     if (!playerCar) throw new HttpsError("failed-precondition", "Active car not found in catalog");
     const level = Number((garage.cars ?? {})[carId]?.upgradeLevel ?? 0);
-    const playerStats = resolveCarStats(playerCar as any, level, tuning, false);
+    const playerLevelData = resolveCarLevel(playerCar as any, level);
+    const playerStats = resolveCarStats(playerLevelData, tuning, false);
 
     const rawCosmetics = (loadout.cosmetics ?? {}) as Record<string, string | null>;
     const resolveCosmeticItemId = (slot: string): string | null =>
@@ -165,7 +189,8 @@ export const prepareRace = onCall({ region: REGION }, async (request) => {
       const t = Math.max(0, Math.min(7000, playerTrophies + delta));
       const botCarId = pickBotCarId(t);
       const botCar = carsCatalog[botCarId] || playerCar;
-      const botStats = resolveCarStats(botCar as any, 0, tuning, true);
+      const botLevelData = resolveCarLevel(botCar as any, 0);
+      const botStats = resolveCarStats(botLevelData, tuning, true);
 
       const rarityWeights = pickRarityBand(botConfig.cosmeticRarityWeights, t);
       const rarity = weightedChoice(rarityWeights as any, rng);

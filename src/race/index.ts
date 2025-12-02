@@ -2,12 +2,21 @@ import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { REGION } from "../shared/region.js";
-import { getRanksCatalog } from "../core/config.js";
 import { getLevelInfo } from "../shared/xp.js";
 import { refreshFriendSnapshots } from "../Socials/updateSnapshots.js";
 import { grantInventoryRewards } from "../shared/inventoryAwards.js";
 import { maybeTriggerFlashSales } from "../triggers/flashSales.js";
 import { buildBotLoadout } from "../game-systems/botLoadoutHelper.js";
+import {
+  DEFAULT_COIN_CONFIG,
+  DEFAULT_EXP_CONFIG,
+  DEFAULT_TROPHY_CONFIG,
+  RaceInputsWithPrededuction,
+  calculateLastPlaceDelta,
+  computeRaceRewardsWithPrededuction,
+  toMillis,
+} from "./economy.js";
+import { PlayerBoostersState } from "../shared/types.js";
 
 const db = admin.firestore();
 
@@ -81,6 +90,132 @@ const normaliseBotNames = (botNames: unknown): string[] => {
     .filter((name) => name.length > 0);
 };
 
+type LobbySnapshotEntry = {
+  rating: number;
+  participantId: string | null;
+};
+
+const TROPHY_CONFIG = DEFAULT_TROPHY_CONFIG;
+const COIN_CONFIG = DEFAULT_COIN_CONFIG;
+const EXP_CONFIG = DEFAULT_EXP_CONFIG;
+
+const coerceLobbyEntry = (entry: unknown): LobbySnapshotEntry => {
+  if (typeof entry === "number") {
+    return { rating: Math.round(entry), participantId: null };
+  }
+  if (typeof entry === "string" && entry.trim().length > 0) {
+    const parsed = Number(entry);
+    if (!Number.isNaN(parsed)) {
+      return { rating: Math.round(parsed), participantId: null };
+    }
+  }
+  if (typeof entry === "object" && entry !== null) {
+    const entity = entry as Record<string, unknown>;
+    const ratingSource =
+      entity.rating ??
+      entity.trophies ??
+      entity.mmr ??
+      entity.value ??
+      entity.score ??
+      0;
+    const ratingNumber = Number(ratingSource);
+    const participantId =
+      typeof entity.participantId === "string"
+        ? entity.participantId
+        : typeof entity.uid === "string"
+          ? entity.uid
+          : typeof entity.playerId === "string"
+            ? entity.playerId
+            : typeof entity.id === "string"
+              ? entity.id
+              : null;
+    return {
+      rating: Number.isFinite(ratingNumber) ? Math.round(ratingNumber) : 0,
+      participantId,
+    };
+  }
+  throw new HttpsError("invalid-argument", "Each lobbyRatings entry must be numeric or object-like.");
+};
+
+const normalizeLobbySnapshot = (raw: unknown, uid: string, playerIndex: number): LobbySnapshotEntry[] => {
+  if (!Array.isArray(raw) || raw.length === 0) {
+    throw new HttpsError("invalid-argument", "lobbyRatings must be a non-empty array.");
+  }
+  if (!Number.isInteger(playerIndex) || playerIndex < 0 || playerIndex >= raw.length) {
+    throw new HttpsError("invalid-argument", "playerIndex is out of range for lobbyRatings.");
+  }
+  const normalized = raw.map((entry) => coerceLobbyEntry(entry));
+  normalized[playerIndex] = {
+    rating: normalized[playerIndex].rating,
+    participantId: uid,
+  };
+  return normalized;
+};
+
+const buildFinishOrderIndexes = (
+  finishOrderInput: unknown,
+  snapshot: LobbySnapshotEntry[],
+  uid: string,
+  playerIndex: number,
+): number[] => {
+  const total = snapshot.length;
+  const participantIndexById = new Map<string, number>();
+  snapshot.forEach((entry, idx) => {
+    if (entry.participantId) {
+      participantIndexById.set(entry.participantId, idx);
+    }
+  });
+  participantIndexById.set(uid, playerIndex);
+
+  const resolved: number[] = [];
+  const seen = new Set<number>();
+  const pushIndex = (idx: number | null) => {
+    if (idx === null) return;
+    if (idx < 0 || idx >= total || seen.has(idx)) return;
+    resolved.push(idx);
+    seen.add(idx);
+  };
+
+  const tokens = Array.isArray(finishOrderInput) ? finishOrderInput : [];
+  tokens.forEach((token) => {
+    let idx: number | null = null;
+    if (typeof token === "number" && Number.isInteger(token)) {
+      idx = token;
+    } else if (typeof token === "string") {
+      if (participantIndexById.has(token)) {
+        idx = participantIndexById.get(token)!;
+      } else {
+        const parsed = Number(token);
+        if (Number.isInteger(parsed)) {
+          idx = parsed;
+        }
+      }
+    } else if (typeof token === "object" && token !== null) {
+      const record = token as Record<string, unknown>;
+      const candidate =
+        typeof record.participantId === "string"
+          ? record.participantId
+          : typeof record.uid === "string"
+            ? record.uid
+            : typeof record.id === "string"
+              ? record.id
+              : null;
+      if (typeof candidate === "string" && participantIndexById.has(candidate)) {
+        idx = participantIndexById.get(candidate)!;
+      }
+    }
+    pushIndex(idx);
+  });
+
+  for (let i = 0; i < total; i += 1) {
+    if (!seen.has(i)) {
+      resolved.push(i);
+      seen.add(i);
+    }
+  }
+  return resolved;
+};
+
 export const startRace = onCall({ enforceAppCheck: false, region: REGION }, async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
@@ -88,29 +223,42 @@ export const startRace = onCall({ enforceAppCheck: false, region: REGION }, asyn
   }
 
   const { lobbyRatings, playerIndex } = request.data;
-  if (!Array.isArray(lobbyRatings) || typeof playerIndex !== "number") {
-    throw new HttpsError("invalid-argument", "Invalid arguments provided.");
+  if (typeof playerIndex !== "number") {
+    throw new HttpsError("invalid-argument", "playerIndex must be a number.");
   }
 
+  const lobbySnapshot = normalizeLobbySnapshot(lobbyRatings, uid, playerIndex);
+  const ratingVector = lobbySnapshot.map((entry) => entry.rating);
+
   const raceId = db.collection("Races").doc().id;
-  const preDeductedTrophies = -5; // Simplified penalty
+  const preDeductedTrophies = calculateLastPlaceDelta(playerIndex, ratingVector, TROPHY_CONFIG);
 
   const result = await db.runTransaction(async (transaction) => {
     const profileRef = db.doc(`/Players/${uid}/Profile/Profile`);
-    
+    const timestamp = admin.firestore.FieldValue.serverTimestamp();
+
     transaction.update(profileRef, {
       trophies: admin.firestore.FieldValue.increment(preDeductedTrophies),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: timestamp,
     });
 
     const raceRef = db.doc(`/Races/${raceId}`);
     transaction.set(raceRef, {
       status: "pending",
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      lobbySnapshot: lobbySnapshot.map((entry) => ({
+        rating: entry.rating,
+        participantId: entry.participantId,
+      })),
     });
 
     const participantRef = db.doc(`/Races/${raceId}/Participants/${uid}`);
-    transaction.set(participantRef, { preDeductedTrophies });
+    transaction.set(participantRef, {
+      preDeductedTrophies,
+      playerIndex,
+      createdAt: timestamp,
+    });
 
     return { success: true, raceId, preDeductedTrophies };
   });
@@ -156,30 +304,94 @@ export const recordRaceResult = onCall({ enforceAppCheck: false, region: REGION 
 
     const economyRef = db.doc(`/Players/${uid}/Economy/Stats`);
     const profileRef = db.doc(`/Players/${uid}/Profile/Profile`);
-    const [economyDoc, profileDoc] = await transaction.getAll(economyRef, profileRef);
+    const participantRef = db.doc(`/Races/${raceId}/Participants/${uid}`);
+    const [economyDoc, profileDoc, participantDoc] = await transaction.getAll(
+      economyRef,
+      profileRef,
+      participantRef,
+    );
 
-    if (!economyDoc.exists || !profileDoc.exists) {
+    if (!economyDoc.exists || !profileDoc.exists || !participantDoc.exists) {
       throw new HttpsError("not-found", "Player data not found.");
     }
 
-    const playerPosition = finishOrder.indexOf(uid);
-    const isFirstPlace = playerPosition === 0;
-
     const profileData = profileDoc.data()!;
+    const participantData = participantDoc.data() ?? {};
+    const playerIndex = Number(participantData.playerIndex);
+    const lastPlaceDeltaApplied = Number(participantData.preDeductedTrophies ?? 0);
+    if (!Number.isInteger(playerIndex)) {
+      throw new HttpsError("failed-precondition", "Player index missing for race participant.");
+    }
 
-    // Simplified reward calculation based on rank
-    const ranksCatalog = await getRanksCatalog();
-    const trophies = Number(profileData.trophies || 0);
-    const playerRank = [...ranksCatalog].reverse().find((rank) => trophies >= rank.minMmr);
-    const trophiesGained = playerRank ? 20 - playerRank.minMmr / 100 : 10;
-    const coinsGained = playerRank ? 100 + playerRank.minMmr / 10 : 50;
-    const xpGained = playerRank ? 50 + playerRank.minMmr / 20 : 25;
-    
-    const newTrophies = (profileData.trophies || 0) + trophiesGained;
-    const newHighestTrophies = Math.max(profileData.highestTrophies || 0, newTrophies);
+    const lobbySnapshotRaw = raceDoc.data()?.lobbySnapshot;
+    if (!Array.isArray(lobbySnapshotRaw) || lobbySnapshotRaw.length === 0) {
+      throw new HttpsError("failed-precondition", "Race lobby snapshot missing.");
+    }
+    if (playerIndex < 0 || playerIndex >= lobbySnapshotRaw.length) {
+      throw new HttpsError("failed-precondition", "Player index is out of lobby snapshot range.");
+    }
+
+    const lobbySnapshot: LobbySnapshotEntry[] = lobbySnapshotRaw.map((entry: any, idx: number) => {
+      const ratingValue = Number(entry?.rating ?? 0);
+      const participantId =
+        typeof entry?.participantId === "string"
+          ? entry.participantId
+          : idx === playerIndex
+            ? uid
+            : null;
+      return {
+        rating: Number.isFinite(ratingValue) ? Math.round(ratingValue) : 0,
+        participantId,
+      };
+    });
+    lobbySnapshot[playerIndex] = {
+      rating: lobbySnapshot[playerIndex]?.rating ?? 0,
+      participantId: uid,
+    };
+
+    const ratingsVector = lobbySnapshot.map((entry) => entry.rating);
+    const finishOrderIndexes = buildFinishOrderIndexes(finishOrder, lobbySnapshot, uid, playerIndex);
+    const placeIndex = finishOrderIndexes.indexOf(playerIndex);
+    const resolvedPlaceIndex = placeIndex >= 0 ? placeIndex : finishOrderIndexes.length - 1;
+    const place = resolvedPlaceIndex + 1;
+    const totalPositions = ratingsVector.length;
+
+    if (totalPositions === 0) {
+      throw new HttpsError("failed-precondition", "Lobby snapshot is empty.");
+    }
+
+    const boostersState = (profileData.boosters ?? {}) as PlayerBoostersState;
+    const nowMs = Date.now();
+    const hasCoinBooster = toMillis(boostersState.coin?.activeUntil) > nowMs;
+    const hasExpBooster = toMillis(boostersState.exp?.activeUntil) > nowMs;
+
     const xpBefore = Number(profileData.exp ?? 0);
-    const xpAfter = xpBefore + xpGained;
     const beforeInfo = getLevelInfo(xpBefore);
+
+    const rewardInput: RaceInputsWithPrededuction = {
+      playerIndex,
+      finishOrder: finishOrderIndexes,
+      ratings: ratingsVector,
+      place,
+      totalPositions,
+      hasCoinBooster,
+      hasExpBooster,
+      lastPlaceDeltaApplied,
+      placeIndexForI: resolvedPlaceIndex,
+    };
+    const rewards = computeRaceRewardsWithPrededuction(
+      rewardInput,
+      TROPHY_CONFIG,
+      COIN_CONFIG,
+      EXP_CONFIG,
+    );
+
+    const coinsGained = rewards.coins;
+    const xpGained = rewards.exp;
+    const trophiesSettlement = rewards.trophiesSettlement;
+    const trophiesActual = rewards.trophiesActual;
+
+    const xpAfter = xpBefore + xpGained;
     const afterInfo = getLevelInfo(xpAfter);
     const levelsGained = afterInfo.level - beforeInfo.level;
 
@@ -196,9 +408,12 @@ export const recordRaceResult = onCall({ enforceAppCheck: false, region: REGION 
     }
     transaction.update(economyRef, economyUpdate);
 
+    const newTrophies = (profileData.trophies || 0) + trophiesSettlement;
+    const newHighestTrophies = Math.max(profileData.highestTrophies || 0, newTrophies);
+
     // Update Profile/Profile (trophies belong here)
     const profileUpdate: { [key: string]: number | admin.firestore.FieldValue } = {
-        trophies: admin.firestore.FieldValue.increment(trophiesGained),
+        trophies: admin.firestore.FieldValue.increment(trophiesSettlement),
         exp: xpAfter,
         level: afterInfo.level,
         expProgress: afterInfo.expInLevel,
@@ -209,7 +424,7 @@ export const recordRaceResult = onCall({ enforceAppCheck: false, region: REGION 
     };
     // Increment race counters
     profileUpdate.totalRaces = admin.firestore.FieldValue.increment(1);
-    if (isFirstPlace) {
+    if (place === 1) {
       profileUpdate.totalWins = admin.firestore.FieldValue.increment(1);
     }
     transaction.update(profileRef, profileUpdate);
@@ -219,7 +434,7 @@ export const recordRaceResult = onCall({ enforceAppCheck: false, region: REGION 
     return {
       success: true,
       rewards: {
-        trophies: trophiesGained,
+        trophies: trophiesActual,
         coins: coinsGained,
         xp: xpGained,
       },
@@ -231,6 +446,16 @@ export const recordRaceResult = onCall({ enforceAppCheck: false, region: REGION 
         expInLevelBefore: beforeInfo.expInLevel,
         expInLevelAfter: afterInfo.expInLevel,
         expToNextLevel: afterInfo.expToNext,
+      },
+      rank: {
+        old: rewards.oldRank,
+        new: rewards.newRank,
+        promoted: rewards.promoted,
+        demoted: rewards.demoted,
+      },
+      trophySettlement: {
+        applied: trophiesSettlement,
+        preDeducted: rewards.preDeductedLast,
       },
       drops: {
         player: drops.playerDrop,

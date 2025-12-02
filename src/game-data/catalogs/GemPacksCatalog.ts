@@ -17,7 +17,7 @@ const GEM_PACKS: GemPackMap = {
     gemAmount: 100,
     priceUsd: 0.99,
     bonusLabel: null,
-    productId: "com.mysticmotors.gems.100",
+    productId: "com.tecventures.mysticmotors.gems.sack",
     sortOrder: 1,
   },
   iap_q4n5w8v2: {
@@ -26,7 +26,7 @@ const GEM_PACKS: GemPackMap = {
     gemAmount: 550,
     priceUsd: 4.99,
     bonusLabel: "+10%",
-    productId: "com.mysticmotors.gems.550",
+    productId: "com.tecventures.mysticmotors.gems.bag",
     sortOrder: 2,
   },
   iap_b6v1x9c3: {
@@ -35,7 +35,7 @@ const GEM_PACKS: GemPackMap = {
     gemAmount: 1200,
     priceUsd: 9.99,
     bonusLabel: "+20%",
-    productId: "com.mysticmotors.gems.1200",
+    productId: "com.tecventures.mysticmotors.gems.box",
     sortOrder: 3,
   },
   iap_m2k8j4d5: {
@@ -44,7 +44,7 @@ const GEM_PACKS: GemPackMap = {
     gemAmount: 2600,
     priceUsd: 19.99,
     bonusLabel: "+30%",
-    productId: "com.mysticmotors.gems.2600",
+    productId: "com.tecventures.mysticmotors.gems.chest",
     sortOrder: 4,
   },
   iap_z9c3v5b7: {
@@ -53,7 +53,7 @@ const GEM_PACKS: GemPackMap = {
     gemAmount: 7000,
     priceUsd: 49.99,
     bonusLabel: "+40%",
-    productId: "com.mysticmotors.gems.7000",
+    productId: "com.tecventures.mysticmotors.gems.crate",
     sortOrder: 5,
   },
   iap_w4x6n8m2: {
@@ -62,7 +62,7 @@ const GEM_PACKS: GemPackMap = {
     gemAmount: 15000,
     priceUsd: 99.99,
     bonusLabel: "+50%",
-    productId: "com.mysticmotors.gems.15000",
+    productId: "com.tecventures.mysticmotors.gems.vault",
     sortOrder: 6,
   },
   iap_r1t3y5u7: {
@@ -71,7 +71,7 @@ const GEM_PACKS: GemPackMap = {
     gemAmount: 32000,
     priceUsd: 199.99,
     bonusLabel: "+60%",
-    productId: "com.mysticmotors.gems.32000",
+    productId: "com.tecventures.mysticmotors.gems.treasury",
     sortOrder: 7,
   },
 };

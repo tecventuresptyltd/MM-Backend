@@ -6,7 +6,6 @@ import {
   Rank,
   Spell,
   XpCurve,
-  Booster,
   CarTuningConfig,
 } from "../shared/types.js";
 import {
@@ -47,7 +46,6 @@ const DEFAULT_CATALOG_REFS: Record<string, FirebaseFirestore.DocumentReference> 
   RanksCatalog: catalogRoot.doc("RanksCatalog"),
   XpCurve: catalogRoot.doc("XpCurve"),
   CarsCatalog: catalogRoot.doc("CarsCatalog"),
-  BoostersCatalog: catalogRoot.doc("BoostersCatalog"),
 };
 
 interface GameConfig {
@@ -166,10 +164,6 @@ export const getRanksCatalog = async (): Promise<Rank[]> =>
 
 export const getXpCurveCatalog = async (): Promise<XpCurve> =>
   await getCatalog<XpCurve>("XpCurve");
-
-export const getBoostersCatalog = async (): Promise<Record<string, Booster>> =>
-  (await getCatalog<{ boosters: Record<string, Booster> }>("BoostersCatalog"))
-    .boosters;
 
 
 const CROCKFORD_ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";

@@ -4474,7 +4474,7 @@
               }
             },
             {
-              "skuId": "sku_amf7txny",
+              "skuId": "sku_tpt3379j8p",
               "displayName": "Coin Booster (24h)",
               "rarity": "special",
               "stackable": true,
@@ -4538,7 +4538,7 @@
               }
             },
             {
-              "skuId": "sku_07hw4ry3",
+              "skuId": "sku_9pnmmjpscv",
               "displayName": "EXP Booster (24h)",
               "rarity": "special",
               "stackable": true,
@@ -9718,7 +9718,7 @@
         "sku_amf7txny": {
           "skuId": "sku_amf7txny",
           "itemId": "bst_kcemzpr4",
-          "displayName": "Coin Booster (24h)",
+          "displayName": "Coin Booster (1h)",
           "category": "booster",
           "type": "booster",
           "rarity": "special",
@@ -9727,11 +9727,11 @@
           "subType": "coin",
           "purchasable": {
             "currency": "gems",
-            "amount": 1350
+            "amount": 150
           },
           "metadata": null,
-          "gemPrice": 1350,
-          "durationSeconds": 86400
+          "gemPrice": 150,
+          "durationSeconds": 3600
         },
         "sku_eqzbetwm": {
           "skuId": "sku_eqzbetwm",
@@ -9769,10 +9769,28 @@
           "gemPrice": 800,
           "durationSeconds": 43200
         },
+        "sku_tpt3379j8p": {
+          "skuId": "sku_tpt3379j8p",
+          "itemId": "bst_kcemzpr4",
+          "displayName": "Coin Booster (24h)",
+          "category": "booster",
+          "type": "booster",
+          "rarity": "special",
+          "stackable": true,
+          "variant": null,
+          "subType": "coin",
+          "purchasable": {
+            "currency": "gems",
+            "amount": 1350
+          },
+          "metadata": null,
+          "gemPrice": 1350,
+          "durationSeconds": 86400
+        },
         "sku_07hw4ry3": {
           "skuId": "sku_07hw4ry3",
           "itemId": "bst_hhhb8w5q",
-          "displayName": "EXP Booster (24h)",
+          "displayName": "EXP Booster (1h)",
           "category": "booster",
           "type": "booster",
           "rarity": "special",
@@ -9781,11 +9799,11 @@
           "subType": "exp",
           "purchasable": {
             "currency": "gems",
-            "amount": 800
+            "amount": 100
           },
           "metadata": null,
-          "gemPrice": 800,
-          "durationSeconds": 86400
+          "gemPrice": 100,
+          "durationSeconds": 3600
         },
         "sku_60fdgqkm": {
           "skuId": "sku_60fdgqkm",
@@ -9822,6 +9840,24 @@
           "metadata": null,
           "gemPrice": 500,
           "durationSeconds": 43200
+        },
+        "sku_9pnmmjpscv": {
+          "skuId": "sku_9pnmmjpscv",
+          "itemId": "bst_hhhb8w5q",
+          "displayName": "EXP Booster (24h)",
+          "category": "booster",
+          "type": "booster",
+          "rarity": "special",
+          "stackable": true,
+          "variant": null,
+          "subType": "exp",
+          "purchasable": {
+            "currency": "gems",
+            "amount": 800
+          },
+          "metadata": null,
+          "gemPrice": 800,
+          "durationSeconds": 86400
         }
       }
     }
@@ -16116,29 +16152,6 @@
           },
           "version": "v2025.10.24",
           "carId": "car_2n5hnes4"
-        }
-      }
-    }
-  },
-  {
-    "path": "/GameData/v1/catalogs/BoostersCatalog",
-    "data": {
-      "version": "v3-bootstrap",
-      "updatedAt": 1762566860531,
-      "boosters": {
-        "bst_COIN_1D": {
-          "boosterId": "bst_COIN_1D",
-          "displayName": "Coin Booster (1 Day)",
-          "subType": "coin",
-          "durationSeconds": 86400,
-          "price": 120
-        },
-        "bst_EXP_1H": {
-          "boosterId": "bst_EXP_1H",
-          "displayName": "XP Booster (1 Hour)",
-          "subType": "exp",
-          "durationSeconds": 3600,
-          "price": 60
         }
       }
     }

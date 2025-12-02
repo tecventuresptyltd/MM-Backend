@@ -810,6 +810,8 @@ When the SKU is coin-priced the response mirrors this shape with `currency: "coi
 
 **Purpose:** Processes a catalog offer that is currently surfaced to the player. The callable loads `/GameData/v1/catalogs/OffersCatalog`, resolves each entitlement to a concrete SKU (legacy `itemId` entitlements expand to the item’s primary variant), enforces stackability rules, validates that the requested `offerId` exists (and hasn’t expired) inside `/Players/{uid}/Offers/Active`, deducts the configured currency, grants the SKUs, updates the per-SKU docs and `_summary`, and persists an idempotent receipt.
 
+**Notes:** The request must send the canonical `offerId` from `OffersCatalog` / `ActiveOffers`; `productId` values are not accepted.
+
 **Input:**
 ```json
 {

@@ -119,7 +119,7 @@ Functions related to in-game currency and purchases.
 | `exchangeGemsForCoins` | Converts gems to coins at the server-authoritative rate. | HTTPS `onCall` |
 | `purchaseShopSku` | Generic shop entry point that debits currency and grants any SKU. | HTTPS `onCall` |
 | `activateBooster` | Consumes a booster SKU and updates active booster timers. | HTTPS `onCall` |
-| `purchaseOffer` | Grants the SKUs defined in a catalog offer bundle. | HTTPS `onCall` |
+| `purchaseOffer` | Grants the SKUs defined in a catalog offer bundle (input must use catalog `offerId`, not `productId`). | HTTPS `onCall` |
 | `claimRankUpReward` | Claims the one-time reward for reaching a new rank tier. | HTTPS `onCall` |
 | `getLeaderboard` | Retrieves a paginated leaderboard (trophies, wins, etc.). | HTTPS `onCall` |
 
@@ -200,7 +200,6 @@ The functions below load master data from the canonical catalog documents under 
 | `getFriends` | Returns the caller's confirmed friends using the cached snapshots stored in `/Social/Friends` (rehydrates only if missing). | HTTPS `onCall` |
 | `viewPlayerProfile` | Returns the public summary + stats + social metadata for any `uid`. | HTTPS `onCall` |
 | `socialPresenceMirrorLastSeen` | Scheduled job mirroring RTDB `/presence/lastSeen` into `/Players/{uid}/Social/Profile`. | Cloud Scheduler |
-
 
 
 

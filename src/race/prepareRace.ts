@@ -111,7 +111,7 @@ export const prepareRace = onCall({ region: REGION }, async (request) => {
     if (!playerCar) throw new HttpsError("failed-precondition", "Active car not found in catalog");
     const level = Number((garage.cars ?? {})[carId]?.upgradeLevel ?? 0);
     const playerLevelData = resolveCarLevel(playerCar as any, level);
-    const playerStats = resolveCarStats(playerLevelData, tuning, false);
+    const playerStats = resolveCarStats(playerCar as any, level, tuning, false);
 
     const rawCosmetics = (loadout.cosmetics ?? {}) as Record<string, string | null>;
     const resolveCosmeticItemId = (slot: string): string | null =>
@@ -190,7 +190,7 @@ export const prepareRace = onCall({ region: REGION }, async (request) => {
       const botCarId = pickBotCarId(t);
       const botCar = carsCatalog[botCarId] || playerCar;
       const botLevelData = resolveCarLevel(botCar as any, 0);
-      const botStats = resolveCarStats(botLevelData, tuning, true);
+      const botStats = resolveCarStats(botCar as any, 0, tuning, true);
 
       const rarityWeights = pickRarityBand(botConfig.cosmeticRarityWeights, t);
       const rarity = weightedChoice(rarityWeights as any, rng);

@@ -87,6 +87,33 @@ This document provides detailed contracts for each Cloud Function, including inp
 
 ---
 
+### `bindApple`
+
+**Purpose:** Binds an Apple Sign-In identity to the current authenticated user.
+
+**Input:**
+
+```json
+{
+  "opId": "string",
+  "identityToken": "string",
+  "nonce": "string (optional)",
+  "deviceAnchor": "string (optional, stored as reference only)"
+}
+```
+
+**Output:**
+
+*   **Success:** `{ "status": "ok" }`
+
+**Errors:** `INVALID_ARGUMENT`, `UNAUTHENTICATED` (invalid signature/audience/nonce/expiry), `ALREADY_EXISTS` (Apple sub or email linked to another user), `FAILED_PRECONDITION` (missing Apple audience env).
+
+**Side-effects:**
+* Reserves `/AccountsAppleSubs/{sub}` and `/AccountsEmails/{email}` (if present) for the caller.
+* Vacates any device anchors currently pointing to this uid and stores the anchor IDs as references on the player in `knownDeviceAnchors`.
+
+---
+
 ### `signupEmailPassword`
 
 **Purpose:** Creates a new user account with an email and password. If a `deviceAnchor` is provided, it is stored as a reference on the account but is not claimed for login.
@@ -137,6 +164,36 @@ This document provides detailed contracts for each Cloud Function, including inp
 **Errors:** `TOKEN_INVALID`, `already-exists` (message: `email-already-exists`)
 
 **Note:** Email reservation is a transactional step.
+
+---
+
+### `signupApple`
+
+**Purpose:** Creates or links an account using an Apple identity token (`identityToken` JWT from Sign in with Apple). If a `deviceAnchor` is provided, it is stored as a reference on the account but is not claimed for login.
+
+**Input:**
+
+```json
+{
+  "opId": "string",
+  "identityToken": "string",
+  "nonce": "string (optional; must match if provided)",
+  "deviceAnchor": "string (optional, stored as reference only)",
+  "platform": "ios|android|windows|mac|linux (optional)",
+  "appVersion": "string (optional)"
+}
+```
+
+**Output:**
+
+*   **Success:** `{ "status": "ok", "uid": "string", "customToken": "string" }`
+
+**Errors:** `INVALID_ARGUMENT`, `UNAUTHENTICATED` (invalid signature/audience/nonce/expiry), `ALREADY_EXISTS` (email linked elsewhere), `FAILED_PRECONDITION` (missing Apple audience env).
+
+**Notes:**
+* Requires `APPLE_AUDIENCE` (or `APPLE_CLIENT_ID`/`APPLE_SERVICE_ID`) env to validate the token audience.
+* Stores a stable mapping at `/AccountsAppleSubs/{sub}`; if the email is present it also reserves `/AccountsEmails/{normalizedEmail}` transactionally.
+* Runs the same bootstrap flow as other sign-ups via `initializeUserIfNeeded`, granting starter rewards and setting `authProviders` to include `apple`.
 
 ---
 

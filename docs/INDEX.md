@@ -40,6 +40,7 @@ This document is the central hub for all technical and architectural documentati
 *   **Direct Sign-Up:**
     *   `signupEmailPassword`: Creates a new user account with an email and password.
     *   `signupGoogle`: Creates a new user account using a Google ID token.
+    *   `signupApple`: Creates or links an account using an Apple identity token.
     *   [**Source Code**](../backend-sandbox/functions/src/auth/signupEmailPassword.ts)
     *   [**Test Suite**](../backend-sandbox/functions/test/auth.signup.test.ts)
 *   **Shop & Boosters:**

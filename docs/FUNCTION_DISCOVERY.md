@@ -13,8 +13,10 @@ These functions handle user authentication, session management, and account link
 | `ensureGuestSession` | Recovers a guest or provisions a new anonymous user via a device anchor. | HTTPS `onCall` |
 | `bindEmailPassword` | Upgrades the current guest to email+password credentials. | HTTPS `onCall` |
 | `bindGoogle` | Links the guest account to a Google provider. | HTTPS `onCall` |
+| `bindApple` | Links the current account to Apple Sign-In (identity token). | HTTPS `onCall` |
 | `signupEmailPassword` | Creates a brand-new account using email+password. | HTTPS `onCall` |
 | `signupGoogle` | Creates or links using a Google ID token. | HTTPS `onCall` |
+| `signupApple` | Creates or links using an Apple identity token (JWT from Sign in with Apple). | HTTPS `onCall` |
 | `checkEmailExists` | Lightweight existence check used by sign-up flows. | HTTPS `onCall` |
 | `initUser` | Idempotent safety-net that materialises the player bootstrap docs plus starter rewards. | HTTPS `onCall` |
 
@@ -200,7 +202,5 @@ The functions below load master data from the canonical catalog documents under 
 | `getFriends` | Returns the caller's confirmed friends using the cached snapshots stored in `/Social/Friends` (rehydrates only if missing). | HTTPS `onCall` |
 | `viewPlayerProfile` | Returns the public summary + stats + social metadata for any `uid`. | HTTPS `onCall` |
 | `socialPresenceMirrorLastSeen` | Scheduled job mirroring RTDB `/presence/lastSeen` into `/Players/{uid}/Social/Profile`. | Cloud Scheduler |
-
-
 
 

@@ -1389,7 +1389,8 @@ When the SKU is coin-priced the response mirrors this shape with `currency: "coi
 ```json
 {
   "opId": "string",
-  "referralCode": "string"
+  "referralCode": "string",
+  "deviceAnchor": "string"
 }
 ```
 
@@ -1415,6 +1416,7 @@ When the SKU is coin-priced the response mirrors this shape with `currency: "coi
 * `FAILED_PRECONDITION` (already referred, self-referral, circular referral, exhausted invitee claim)
 
 **Side-effects:**
+* Claims or creates `/AccountsDeviceAnchors/{deviceAnchor}` for the caller and marks it as redeemed.
 * Sets `/Players/{uid}/Profile/Profile.referredBy` once, updates both players’ `referralStats`.
 * Grants invitee reward SKUs and updates inventory summary.
 * Increments inviter progress in `/Players/{inviterUid}/Referrals/Progress`, awarding threshold rewards when crossed.

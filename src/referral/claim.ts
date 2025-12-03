@@ -58,22 +58,40 @@ const sanitizeString = (value: unknown): string => {
   return value.trim();
 };
 
-const ensureAnchorOwnership = (
-  snapshot: FirebaseFirestore.DocumentSnapshot,
+const claimAnchorForUser = (
+  transaction: FirebaseFirestore.Transaction,
+  anchorRef: FirebaseFirestore.DocumentReference,
+  anchorSnap: FirebaseFirestore.DocumentSnapshot,
   uid: string,
-): FirebaseFirestore.DocumentData => {
-  if (!snapshot.exists) {
-    throw new HttpsError("permission-denied", "device-anchor-missing");
-  }
-  const data = snapshot.data() ?? {};
+  timestamp: admin.firestore.FieldValue,
+): void => {
+  const data = anchorSnap.data() ?? {};
   const owner = typeof data.uid === "string" ? data.uid : "";
-  if (!owner || owner !== uid) {
-    throw new HttpsError("permission-denied", "device-anchor-unavailable");
-  }
+
   if (data.hasRedeemedReferral === true) {
     throw new HttpsError("permission-denied", "referral-already-redeemed");
   }
-  return data;
+
+  // Anchor missing or not tied to this uid: claim it for the caller so the referral
+  // flow can proceed while still tracking reuse on this device.
+  if (!anchorSnap.exists) {
+    transaction.set(
+      anchorRef,
+      { uid, createdAt: timestamp, lastSeenAt: timestamp },
+      { merge: true },
+    );
+    return;
+  }
+
+  if (!owner || owner !== uid) {
+    transaction.set(
+      anchorRef,
+      { uid, lastSeenAt: timestamp, reclaimedFrom: owner || null },
+      { merge: true },
+    );
+  } else {
+    transaction.set(anchorRef, { lastSeenAt: timestamp }, { merge: true });
+  }
 };
 
 const buildRewardSkuStates = async (
@@ -171,7 +189,7 @@ export const referralClaimReferralCode = onCall({ region: REGION }, async (rawRe
         throw new HttpsError("failed-precondition", "already-claimed");
       }
 
-      const anchorData = ensureAnchorOwnership(anchorSnap, uid);
+      claimAnchorForUser(transaction, anchorRef, anchorSnap, uid, timestamp);
 
       if (!codeSnap.exists) {
         throw new HttpsError("not-found", "referral-code-not-found");
@@ -227,12 +245,16 @@ export const referralClaimReferralCode = onCall({ region: REGION }, async (rawRe
         { merge: true },
       );
 
-      transaction.update(anchorRef, {
-        hasRedeemedReferral: true,
-        redeemedBy: uid,
-        redeemedAt: timestamp,
-        lastSeenAt: timestamp,
-      });
+      transaction.set(
+        anchorRef,
+        {
+          hasRedeemedReferral: true,
+          redeemedBy: uid,
+          redeemedAt: timestamp,
+          lastSeenAt: timestamp,
+        },
+        { merge: true },
+      );
 
       transaction.set(
         inviterProgressRef,

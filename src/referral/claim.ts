@@ -189,8 +189,6 @@ export const referralClaimReferralCode = onCall({ region: REGION }, async (rawRe
         throw new HttpsError("failed-precondition", "already-claimed");
       }
 
-      claimAnchorForUser(transaction, anchorRef, anchorSnap, uid, timestamp);
-
       if (!codeSnap.exists) {
         throw new HttpsError("not-found", "referral-code-not-found");
       }
@@ -230,6 +228,9 @@ export const referralClaimReferralCode = onCall({ region: REGION }, async (rawRe
       const cappedReward = INVITER_TIER_REWARDS[newSentTotal] ?? [];
 
       const inviterRewardPrep = await buildRewardSkuStates(transaction, inviterUid, cappedReward);
+
+      // All reads are complete above; writes begin below.
+      claimAnchorForUser(transaction, anchorRef, anchorSnap, uid, timestamp);
 
       transaction.update(claimantStatsRef, {
         gems: admin.firestore.FieldValue.increment(REFEREE_GEM_REWARD),

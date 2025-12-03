@@ -562,6 +562,7 @@ Output: `{ raceId, issuedAt, seed, laps, trackId, player: { uid, trophies, carId
 Notes:
 - Resolves car stats via `CarsCatalog.cars[carId].levels[level]` using value-vs-real model. Players use `CarTuningConfig.player`; bots use `CarTuningConfig.bot`.
 - Deterministic when `seed` is supplied; idempotent via `opId` receipt.
+- Bot display names are sampled without replacement from `/GameData/v1/config/BotNames`. When the pool is exhausted the function synthesizes deterministic fallback names so no two bots in a lobby ever share the same handle.
 
 ### `startRace`
 

@@ -177,14 +177,31 @@ export const prepareRace = onCall({ region: REGION }, async (request) => {
     const effectiveBotNamePool = botNamePool.length > 0 ? botNamePool : ["MysticBot"];
     let botNameDeck = rng.shuffle(effectiveBotNamePool);
     let botNameCursor = 0;
+    const usedBotNames = new Set<string>();
+    const fallbackBase = rng.int(1000, 9999);
     const nextBotName = (): string => {
-      if (botNameDeck.length === 0 || botNameCursor >= botNameDeck.length) {
-        botNameDeck = rng.shuffle(effectiveBotNamePool);
-        botNameCursor = 0;
+      if (effectiveBotNamePool.length === 0) {
+        const synthetic = `MysticBot_${fallbackBase}_${usedBotNames.size + 1}`;
+        usedBotNames.add(synthetic);
+        return synthetic;
       }
-      const candidate = botNameDeck[botNameCursor] ?? `BOT_${rng.int(1000, 9999)}`;
-      botNameCursor += 1;
-      return candidate;
+      let safety = effectiveBotNamePool.length * 2;
+      while (safety > 0) {
+        if (botNameDeck.length === 0 || botNameCursor >= botNameDeck.length) {
+          botNameDeck = rng.shuffle(effectiveBotNamePool);
+          botNameCursor = 0;
+        }
+        const candidate = botNameDeck[botNameCursor] ?? "";
+        botNameCursor += 1;
+        if (candidate && !usedBotNames.has(candidate)) {
+          usedBotNames.add(candidate);
+          return candidate;
+        }
+        safety -= 1;
+      }
+      const fallback = `MysticBot_${fallbackBase}_${usedBotNames.size + 1}`;
+      usedBotNames.add(fallback);
+      return fallback;
     };
 
     // Helper: pick bot car by thresholds

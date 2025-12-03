@@ -94,6 +94,20 @@ const claimAnchorForUser = (
   }
 };
 
+const parseAwardedThresholds = (raw: unknown): number[] => {
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+  const deduped = new Set<number>();
+  raw.forEach((value) => {
+    const num = Number(value);
+    if (Number.isFinite(num) && num > 0) {
+      deduped.add(Math.floor(num));
+    }
+  });
+  return Array.from(deduped).sort((a, b) => a - b);
+};
+
 const buildRewardSkuStates = async (
   transaction: FirebaseFirestore.Transaction,
   uid: string,
@@ -223,9 +237,24 @@ export const referralClaimReferralCode = onCall({ region: REGION }, async (rawRe
         throw new HttpsError("permission-denied", "device-anchor-linked-to-inviter");
       }
 
+      const awardedThresholds = parseAwardedThresholds(inviterProgressSnap.data()?.awardedThresholds);
+      const awardedSet = new Set(awardedThresholds);
+      const rewardThresholds = Object.keys(INVITER_TIER_REWARDS)
+        .map((key) => Number(key))
+        .filter((value) => Number.isFinite(value) && value > 0);
+
       const currentSentTotal = Number(inviterProgressSnap.data()?.sentTotal) || 0;
       const newSentTotal = currentSentTotal + 1;
       const cappedReward = INVITER_TIER_REWARDS[newSentTotal] ?? [];
+
+      const reachableThresholds = rewardThresholds.filter(
+        (threshold) => threshold <= newSentTotal && (INVITER_TIER_REWARDS[threshold]?.length ?? 0) > 0,
+      );
+      const newThresholdsAwarded = reachableThresholds.filter((threshold) => !awardedSet.has(threshold));
+      const shouldGrantCurrent = newThresholdsAwarded.includes(newSentTotal);
+      const updatedAwarded = Array.from(new Set([...awardedThresholds, ...reachableThresholds])).sort(
+        (a, b) => a - b,
+      );
 
       const inviterRewardPrep = await buildRewardSkuStates(transaction, inviterUid, cappedReward);
 
@@ -261,13 +290,14 @@ export const referralClaimReferralCode = onCall({ region: REGION }, async (rawRe
         inviterProgressRef,
         {
           sentTotal: newSentTotal,
+          awardedThresholds: updatedAwarded,
           updatedAt: timestamp,
         },
         { merge: true },
       );
 
       let inviterAwardSummary: Array<{ skuId: string; qty: number }> = [];
-      if (cappedReward.length && inviterRewardPrep.context) {
+      if (shouldGrantCurrent && cappedReward.length && inviterRewardPrep.context) {
         const awards = await awardReferralRewards(
           transaction,
           inviterUid,
@@ -285,6 +315,7 @@ export const referralClaimReferralCode = onCall({ region: REGION }, async (rawRe
         status: "ok",
         inviterUid,
         sentTotal: newSentTotal,
+        awardedThresholds: updatedAwarded,
         inviterRewardsGranted: inviterAwardSummary,
         refereeGemsGranted: REFEREE_GEM_REWARD,
       };

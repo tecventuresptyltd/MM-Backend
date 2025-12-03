@@ -109,13 +109,19 @@ export const getAppleAudienceFromEnv = (): string => {
   const audience =
     process.env.APPLE_AUDIENCE ||
     process.env.APPLE_CLIENT_ID ||
-    process.env.APPLE_SERVICE_ID;
-  if (!audience) {
-    throw new HttpsError(
-      "failed-precondition",
-      "APPLE_AUDIENCE (or APPLE_CLIENT_ID / APPLE_SERVICE_ID) env var must be set.",
+    process.env.APPLE_SERVICE_ID ||
+    "com.tecventures.mysticmotors"; // fallback to iOS bundle id
+
+  if (
+    !process.env.APPLE_AUDIENCE &&
+    !process.env.APPLE_CLIENT_ID &&
+    !process.env.APPLE_SERVICE_ID
+  ) {
+    console.warn(
+      "[appleVerify] APPLE_AUDIENCE / APPLE_CLIENT_ID / APPLE_SERVICE_ID env var not set; falling back to bundle id com.tecventures.mysticmotors",
     );
   }
+
   return audience;
 };
 

@@ -2,7 +2,14 @@ import * as admin from "firebase-admin";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { REGION } from "../shared/region.js";
 import { checkIdempotency, createInProgressReceipt, completeOperation } from "../core/idempotency.js";
-import { getCarsCatalog, getSpellsCatalog, getRanksCatalog, getCarTuningConfig, getBotConfig, listSkusByFilter } from "../core/config.js";
+import {
+  getCarsCatalog,
+  getSpellsCatalog,
+  getCarTuningConfig,
+  getBotConfig,
+  listSkusByFilter,
+  getBotNamesConfig,
+} from "../core/config.js";
 import { ItemSku, CarLevel } from "../shared/types.js";
 import { SeededRNG } from "./lib/random.js";
 import { resolveCarStats } from "./lib/stats.js";
@@ -95,14 +102,14 @@ export const prepareRace = onCall({ region: REGION }, async (request) => {
     const playerTrophies: number = typeof trophyHint === "number" ? trophyHint : Number(profile.trophies || 0);
 
     // Fetch catalogs (cached by config.ts)
-    const [carsCatalog, spellsCatalog, ranksCatalog, tuning, botConfig, wheelSkus, decalSkus] = await Promise.all([
+    const [carsCatalog, spellsCatalog, tuning, botConfig, wheelSkus, decalSkus, botNames] = await Promise.all([
       getCarsCatalog(),
       getSpellsCatalog(),
-      getRanksCatalog(),
       getCarTuningConfig(),
       getBotConfig(),
       listSkusByFilter({ category: "cosmetic", subType: "wheels" }),
       listSkusByFilter({ category: "cosmetic", subType: "decal" }),
+      getBotNamesConfig(),
     ]);
 
     // Resolve player car and stats
@@ -111,7 +118,7 @@ export const prepareRace = onCall({ region: REGION }, async (request) => {
     if (!playerCar) throw new HttpsError("failed-precondition", "Active car not found in catalog");
     const level = Number((garage.cars ?? {})[carId]?.upgradeLevel ?? 0);
     const playerLevelData = resolveCarLevel(playerCar as any, level);
-    const playerStats = resolveCarStats(playerCar as any, level, tuning, false);
+    const playerStats = resolveCarStats(playerLevelData, tuning, false);
 
     const rawCosmetics = (loadout.cosmetics ?? {}) as Record<string, string | null>;
     const resolveCosmeticItemId = (slot: string): string | null =>
@@ -164,6 +171,21 @@ export const prepareRace = onCall({ region: REGION }, async (request) => {
     // Seeded RNG
     const resolvedSeed = seed || `race:${uid}:${Date.now()}`;
     const rng = new SeededRNG(resolvedSeed);
+    const botNamePool = (Array.isArray(botNames) ? botNames : [])
+      .map((name) => (typeof name === "string" ? name.trim() : ""))
+      .filter((name) => name.length > 0);
+    const effectiveBotNamePool = botNamePool.length > 0 ? botNamePool : ["MysticBot"];
+    let botNameDeck = rng.shuffle(effectiveBotNamePool);
+    let botNameCursor = 0;
+    const nextBotName = (): string => {
+      if (botNameDeck.length === 0 || botNameCursor >= botNameDeck.length) {
+        botNameDeck = rng.shuffle(effectiveBotNamePool);
+        botNameCursor = 0;
+      }
+      const candidate = botNameDeck[botNameCursor] ?? `BOT_${rng.int(1000, 9999)}`;
+      botNameCursor += 1;
+      return candidate;
+    };
 
     // Helper: pick bot car by thresholds
     function pickBotCarId(tr: number): string {
@@ -184,39 +206,44 @@ export const prepareRace = onCall({ region: REGION }, async (request) => {
 
     // Build bots
     const bots = Array.from({ length: botCount }).map(() => {
-      // Sample bot trophies near player (±100 spread)
-      const delta = Math.floor(rng.float(-100, 100));
-      const t = Math.max(0, Math.min(7000, playerTrophies + delta));
-      const botCarId = pickBotCarId(t);
+      const botDisplayName = nextBotName();
+      const trophyOffset = rng.int(-100, 100);
+      const botTrophies = Math.max(0, playerTrophies + trophyOffset);
+      const normalizedTrophies = Math.max(0, Math.min(7000, botTrophies));
+      const botCarId = pickBotCarId(normalizedTrophies);
       const botCar = carsCatalog[botCarId] || playerCar;
       const botLevelData = resolveCarLevel(botCar as any, 0);
-      const botStats = resolveCarStats(botCar as any, 0, tuning, true);
+      const botStats = resolveCarStats(botLevelData, tuning, true);
 
-      const rarityWeights = pickRarityBand(botConfig.cosmeticRarityWeights, t);
+      const rarityWeights = pickRarityBand(botConfig.cosmeticRarityWeights, normalizedTrophies);
       const rarity = weightedChoice(rarityWeights as any, rng);
       const wheelsSku = pickSkuForRarity(wheelSkus, rarity);
       const decalSku = pickSkuForRarity(decalSkus, rarity);
 
       // Spells: sample two if available
       const allSpellIds = Object.keys(spellsCatalog || {});
-      const band = botConfig.spellLevelBands.find((b: any) => t >= b.minTrophies && t <= b.maxTrophies) || botConfig.spellLevelBands[0];
+      const band =
+        botConfig.spellLevelBands.find(
+          (b: any) => normalizedTrophies >= b.minTrophies && normalizedTrophies <= b.maxTrophies,
+        ) || botConfig.spellLevelBands[0];
       const botSpellCount = Math.min(2, allSpellIds.length);
-    const botSpells: Array<{ spellId: string; level: number; attrs: Record<string, unknown> }> = [];
-    for (let i = 0; i < botSpellCount; i++) {
-      const sid = rng.choice(allSpellIds);
-      if (!sid) {
-        continue;
+      const botSpells: Array<{ spellId: string; level: number; attrs: Record<string, unknown> }> = [];
+      for (let i = 0; i < botSpellCount; i += 1) {
+        const sid = rng.choice(allSpellIds);
+        if (!sid) {
+          continue;
+        }
+        const level = rng.int(band.minLevel, band.maxLevel);
+        botSpells.push({
+          spellId: sid,
+          level,
+          attrs: resolveSpellAttrs((spellsCatalog as any)[sid], level),
+        });
       }
-      const level = rng.int(band.minLevel, band.maxLevel);
-      botSpells.push({
-        spellId: sid,
-        level,
-        attrs: resolveSpellAttrs((spellsCatalog as any)[sid], level),
-      });
-    }
 
       return {
-        trophies: t,
+        displayName: botDisplayName,
+        trophies: botTrophies,
         carId: botCarId,
         carStats: { real: botStats.real, display: botStats.display },
         cosmetics: {

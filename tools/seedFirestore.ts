@@ -18,7 +18,9 @@ const db = admin.firestore();
 async function seedCatalogs() {
   console.log('🌱 Starting catalog seeding...\n');
 
-  const seedFile = path.join(__dirname, '..', 'seeds', 'Atul-Final-Seeds', 'gameDataCatalogs.v3.normalized.json');
+  const seedsRoot = path.join(__dirname, '..', 'seeds', 'Atul-Final-Seeds');
+  const seedFile = path.join(seedsRoot, 'gameDataCatalogs.v3.normalized.json');
+  const botNamesSeedFile = path.join(seedsRoot, 'BotNamesConfig.json');
   
   if (!fs.existsSync(seedFile)) {
     console.error('❌ Seed file not found:', seedFile);
@@ -26,6 +28,15 @@ async function seedCatalogs() {
   }
 
   const seedData = JSON.parse(fs.readFileSync(seedFile, 'utf-8'));
+
+  if (fs.existsSync(botNamesSeedFile)) {
+    const botNamesDoc = JSON.parse(fs.readFileSync(botNamesSeedFile, 'utf-8'));
+    if (Array.isArray(botNamesDoc)) {
+      seedData.push(...botNamesDoc);
+    } else if (botNamesDoc && typeof botNamesDoc === 'object') {
+      seedData.push(botNamesDoc);
+    }
+  }
 
   console.log(`📦 Found ${seedData.length} catalogs to seed\n`);
 

@@ -555,9 +555,9 @@ Input:
 { "opId": "string", "laps": 3, "botCount": 7, "seed": "optional", "trophyHint": 0, "trackId": "optional" }
 ```
 
-Reads (cold): CarsCatalog, SpellsCatalog, ItemSkusCatalog, RanksCatalog, BotConfig; Player: Profile/Profile, Loadouts/Active, Spells/Levels, Garage/Cars, SpellDecks/Decks.
+Reads (cold): CarsCatalog, SpellsCatalog, ItemSkusCatalog, BotNames (singleton), BotConfig, CarTuningConfig; Player: Profile/Profile, Loadouts/Active, Spells/Levels, Garage/Cars, SpellDecks/Decks.
 
-Output: `{ raceId, issuedAt, seed, laps, trackId, player: { uid, trophies, carId, carStats: { display, real }, cosmetics, spells, deckIndex }, bots: [...], proof: { hmac } }`. Cosmetic payloads include both `*SkuId` and `*ItemId` so the client can render legacy assets while operating on SKU inventory.
+Output: `{ raceId, issuedAt, seed, laps, trackId, player: { uid, trophies, carId, carStats: { display, real }, cosmetics, spells, deckIndex }, bots: [{ displayName, trophies, carId, carStats, cosmetics, spells }...], proof: { hmac } }`. Cosmetic payloads include both `*SkuId` and `*ItemId` so the client can render legacy assets while operating on SKU inventory. Bot display names are sampled from `/GameData/v1/config/BotNames.names[]` and trophies are clamped to `playerTrophies ± 100` (no negative trophies) before resolving rarities and spell bands.
 
 Notes:
 - Resolves car stats via `CarsCatalog.cars[carId].levels[level]` using value-vs-real model. Players use `CarTuningConfig.player`; bots use `CarTuningConfig.bot`.
@@ -565,20 +565,29 @@ Notes:
 
 ### `startRace`
 
-**Purpose:** To initialize a race and apply a pre-deduction penalty.
+**Purpose:** Initializes a race, persists the immutable lobby snapshot coming from `prepareRace`, and applies the pre-deduction penalty used by the Elo settlement.
 
 **Input:**
 ```json
 {
-  "lobbyRatings": ["number"],
-  "playerIndex": "number"
+  "lobbyRatings": [
+    { "rating": 1500, "participantId": "uid_player" },
+    { "rating": 1485, "participantId": "bot_Frost" },
+    "... up to botCount + player ..."
+  ],
+  "playerIndex": 0
 }
 ```
+`lobbyRatings` must mirror the order used by the client during `prepareRace` and include the player row at `playerIndex`. Each entry can be either a number (treated as `{ rating: value }`) or an object with `{ rating, participantId }`.
 
 **Output:**
-*   **Success:** `{ "success": true, "raceId": "string", "preDeductedTrophies": "number" }`
+*   **Success:** `{ "success": true, "raceId": "string", "preDeductedTrophies": -24 }`
 
 **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`
+
+**Side Effects:**
+* Persists `/Races/{raceId}` with `{ status: "pending", lobbySnapshot: [...], createdAt, updatedAt }`.
+* Writes `/Races/{raceId}/Participants/{uid}` with `{ playerIndex, preDeductedTrophies, createdAt }` so retries reuse the same deduction.
 
 ---
 
@@ -602,7 +611,7 @@ Notes:
 
 ### `recordRaceResult`
 
-**Purpose:** Settles a race and applies rewards. Recalculates XP using the shared progression helpers, writes `exp`, `level`, `expProgress`, and `expToNextLevel` to `Profile/Profile`, increments `spellTokens` on level-up, applies trophy/coin deltas, and rolls for end-of-race crate/key drops. Player drops are persisted to `/Players/{uid}/Inventory`, and optional bot rolls are returned for client display only. Once the transaction completes, the flash-sale helper inspects the player’s inventory to see whether a “missing key” or “missing crate” situation now applies.
+**Purpose:** Settles a race and applies rewards. The callable reloads the lobby snapshot recorded in `/Races/{raceId}`, feeds it plus the finish order into the Elo-style calculator from `src/race/economy.ts`, then writes the settlement deltas. XP progression still uses the shared helper; level-ups add spell tokens. End-of-race drops grant crates/keys immediately, and flash-sale triggers run afterward.
 
 **Input:**
 ```json
@@ -614,9 +623,22 @@ Notes:
 ```
 
 **Output:**
-*   **Success:** `{ "success": true, "rewards": { "trophies": "number", "coins": "number", "xp": "number" }, "xpProgress": { "xpBefore": "number", "xpAfter": "number", "levelBefore": "number", "levelAfter": "number", "expInLevelBefore": "number", "expInLevelAfter": "number", "expToNextLevel": "number" }, "drops": { "player": { "type": "string", "skuId": "string|null" }, "bots": [{ "bot": "Frost AI", "drop": { "type": "string", "skuId": "string|null" } }] } }`
+```jsonc
+{
+  "success": true,
+  "rewards": { "trophies": 12, "coins": 5400, "xp": 180 },
+  "xpProgress": { "...": "see existing contract" },
+  "rank": { "old": "Gold II", "new": "Gold III", "promoted": true, "demoted": false },
+  "trophySettlement": { "applied": 34, "preDeducted": -22 },
+  "drops": { "player": { "type": "rarecrate", "skuId": "sku_72wnqwtfmx" }, "bots": [ ... ] }
+}
+```
 
 **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `FAILED_PRECONDITION`, `NOT_FOUND`
+
+**Notes:**
+* `rewards.trophies` reflects the actual net result for the UI. `trophySettlement.applied` is what the server added back to profile trophies (pre-deduction already included).
+* `rank` gives the before/after labels so the client can animate promotions without re-reading Firestore.
 
 **Side Effects:**
 * After rewards finish, `maybeTriggerFlashSales` runs. Owning ≥ 1 Mythical Crate but 0 Mythical Keys queues `offer_zqcpwsbz` (`flash_missing_key`) for 15 minutes. The inverse (≥ 1 Mythical Key, 0 Mythical Crates) queues `offer_1aka0xdg`. Each trigger type respects the 72 hour cooldown tracked in `/Offers/History.lastTriggerAt`.

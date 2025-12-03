@@ -340,11 +340,30 @@ export async function getBotConfig(): Promise<BotConfig> {
   return data;
 }
 
+// --- Bot Names Loader (/GameData/v1/config/BotNames) ---
+let cachedBotNames: { data: string[]; lastFetched: number } | null = null;
+export async function getBotNamesConfig(): Promise<string[]> {
+  const now = Date.now();
+  if (cachedBotNames && now - cachedBotNames.lastFetched < CATALOG_CACHE_TTL_MS) {
+    return cachedBotNames.data;
+  }
+  const doc = await admin.firestore().doc("/GameData/v1/config/BotNames").get();
+  if (!doc.exists) {
+    throw new Error("BotNames config not found at /GameData/v1/config/BotNames");
+  }
+  const names = Array.isArray(doc.data()?.names)
+    ? (doc.data()?.names as unknown[]).map((name) => (typeof name === "string" ? name : "")).filter((name) => name.length > 0)
+    : [];
+  cachedBotNames = { data: names, lastFetched: now };
+  return names;
+}
+
 // Test-only helpers --------------------------------------------------------
 export function __resetCatalogCacheForTests(): void {
   catalogCache.clear();
   invalidateCatalogCache();
   cachedTuning = null;
   cachedBotCfg = null;
+  cachedBotNames = null;
   referralConfigCache = null;
 }

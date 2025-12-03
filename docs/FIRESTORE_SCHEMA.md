@@ -45,6 +45,7 @@ The schema is designed with the following principles to ensure performance, scal
   /catalogs/XpCurve (singleton)
   /config/CarTuningConfig (singleton)
   /config/BotConfig (singleton)
+  /config/BotNames (singleton)
   /config/ReferralConfig.v1 (singleton)
 /Players/{uid}
   /Profile/Profile (singleton)
@@ -153,6 +154,25 @@ Two cached leaderboard families keep read costs predictable:
 Both collections are write-only for Cloud Functions. Clients read these cached docs through the callables (`getGlobalLeaderboard`, `getClanLeaderboard`) or via the on-demand manual refresh callables added for QA. Keeping precomputed leaderboards in single documents avoids scanning hundreds of clan/player docs whenever the UI opens the leaderboard screens.
 
 ### Realtime Database - Chat Streams
+
+### `/Races/{raceId}`
+
+Server-authoritative record for each race session kicked off via `startRace`.
+
+* `status` *(string)* — `"pending"` when created by `startRace`, flips to `"settled"` once `recordRaceResult` finishes. Old/abandoned races may eventually be marked `"expired"`.
+* `lobbySnapshot` *(array)* — immutable copy of the ratings sent by the client, preserved as `{ rating: number, participantId?: string }` so the economy helpers can reference the original lobby even if the client disconnects.
+* `createdAt`, `updatedAt` *(timestamp)* — server timestamps from the start/settle transactions.
+* `seed?`, `laps?`, or other metadata may be stored in future expansions, but today only the fields above are required.
+
+#### `/Races/{raceId}/Participants/{uid}`
+
+One document per human participant; bots do not get entries.
+
+* `playerIndex` *(number)* — index inside `lobbySnapshot[]` for this player. Used to align finish orders with the stored ratings.
+* `preDeductedTrophies` *(number)* — negative offset applied during `startRace`. `recordRaceResult` reads this and adds it back when settling.
+* `createdAt` *(timestamp)* — mirrors the race document’s timestamp so support tooling can estimate age.
+
+`recordRaceResult` queries both the race doc and the participant doc inside a transaction. If either is missing or if `status !== "pending"`, the callable aborts with `failed-precondition`.
 
 * `/chat_messages/clans/{clanId}/{messageId}` captures every clan chat feed. Each node contains:
   * `u` - author UID (or `null` for system events)
@@ -288,6 +308,17 @@ Example: `/GameData/v1/config/BotConfig`
   "updatedAt": 0
 }
 ```
+
+#### `/GameData/v1/config/BotNames` (Singleton)
+
+Lightweight pool of bot handles used by `prepareRace`. Seeded from `BotNamesConfig.json`.
+
+*   **Document ID:** `BotNames`
+*   **Fields:**
+    * `names` *(array<string>)* — deduplicated list of bot usernames (1–32 chars, ASCII, stored lowercase/pascal as provided).
+    * `updatedAt` *(number | timestamp? optional)* — maintained by the seeder for auditing.
+
+Clients never read this doc directly; the callable fetches it via `getBotNamesConfig()` and caches the array for 60 s. Empty/malformed entries are removed when loaded so the generation loop always operates on trimmed strings.
 
 **Example: `/GameData/v1/catalogs/CarsCatalog`**
 ```jsonc

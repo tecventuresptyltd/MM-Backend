@@ -5,6 +5,7 @@ import { db } from "../shared/firestore";
 import { ensureOp } from "../shared/idempotency";
 import { normalizeEmail } from "../shared/normalize";
 import { getAppleAudienceFromEnv, verifyAppleIdentityToken } from "../shared/appleVerify";
+import { initializeUserIfNeeded } from "../shared/initializeUser";
 
 type BindAppleRequest = {
   opId?: unknown;
@@ -102,6 +103,12 @@ export const bindApple = onCall({ enforceAppCheck: false, region: "us-central1" 
   );
 
   await batch.commit();
+
+  await initializeUserIfNeeded(uid, ["apple"], {
+    isGuest: false,
+    email,
+    opId: opIdStr,
+  });
 
   // Vacate any device anchors currently pointing to this uid; store references on the player.
   try {

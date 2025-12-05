@@ -3,6 +3,7 @@ import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { db } from "../shared/firestore";
 import { verifyGoogleIdToken } from "../shared/auth";
 import { ensureOp } from "../shared/idempotency";
+import { initializeUserIfNeeded } from "../shared/initializeUser";
 
 export const bindGoogle = onCall({ enforceAppCheck: false, region: "us-central1" }, async (request) => {
   const { opId, idToken } = request.data;
@@ -55,6 +56,12 @@ export const bindGoogle = onCall({ enforceAppCheck: false, region: "us-central1"
   }, { merge: true });
 
   await batch.commit();
+
+  await initializeUserIfNeeded(uid, ["google"], {
+    isGuest: false,
+    email: googleEmail ?? null,
+    opId,
+  });
 
   // Vacate any device anchors currently pointing to this uid; store references on the player.
   try {

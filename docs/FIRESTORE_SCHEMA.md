@@ -1068,10 +1068,12 @@ Tracks linked authentication providers for a given user.
 **Example: `/AccountsProviders/someFirebaseUid`**
 ```json
 {
-  "providers": ["anonymous", "password"],
+  "providers": ["anonymous", "password", "google"],
   "lastLinkedAt": 1739942400000,
   "details": {
-    "password": { "email": "racer@example.com" }
+    "password": { "email": "racer@example.com" },
+    "google": { "email": "racer@example.com" },
+    "apple": { "sub": "apple-subject", "email": "racer@example.com" }
   }
 }
 ```

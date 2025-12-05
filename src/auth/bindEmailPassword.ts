@@ -1,6 +1,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
 import { normalizeEmail } from "../shared/normalize";
+import { initializeUserIfNeeded } from "../shared/initializeUser";
 
 export const bindEmailPassword = onCall({ region: "us-central1" }, async (request) => {
   const data = request.data ?? {};
@@ -66,6 +67,12 @@ export const bindEmailPassword = onCall({ region: "us-central1" }, async (reques
   // Guard idempotency: if email is already set to same value, updateUser is harmless.
   await admin.auth().updateUser(uid, { email });
   await admin.auth().updateUser(uid, { password });
+
+  await initializeUserIfNeeded(uid, ["password"], {
+    isGuest: false,
+    email,
+    opId,
+  });
 
   // Vacate any device anchors currently pointing to this uid; store references on the player.
   try {

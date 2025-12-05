@@ -59,6 +59,8 @@ This document provides detailed contracts for each Cloud Function, including inp
 **Errors:** `EMAIL_TAKEN`, `WEAK_PASSWORD`, `ALREADY_LINKED`
 
 **Side-effects:**
+* Sets `Players/{uid}` to `isGuest: false`, writes `email`, and updates `authProviders` to include `"password"`.
+* Updates `/AccountsProviders/{uid}` to include `"password"` in `providers`.
 * Vacates any device anchors currently pointing to this uid and stores the anchor IDs as references on the player in `knownDeviceAnchors`.
 
 ---
@@ -83,6 +85,8 @@ This document provides detailed contracts for each Cloud Function, including inp
 **Errors:** `TOKEN_INVALID`, `ALREADY_LINKED`, `EMAIL_TAKEN`
 
 **Side-effects:**
+* Sets `Players/{uid}` to `isGuest: false`, writes `email` (if present on the token), and updates `authProviders` to include `"google"`.
+* Updates `/AccountsProviders/{uid}` to include `"google"` in `providers` and stores provider metadata.
 * Vacates any device anchors currently pointing to this uid and stores the anchor IDs as references on the player in `knownDeviceAnchors`.
 
 ---
@@ -110,6 +114,8 @@ This document provides detailed contracts for each Cloud Function, including inp
 
 **Side-effects:**
 * Reserves `/AccountsAppleSubs/{sub}` and `/AccountsEmails/{email}` (if present) for the caller.
+* Sets `Players/{uid}` to `isGuest: false`, writes `email` (if present), and updates `authProviders` to include `"apple"`.
+* Updates `/AccountsProviders/{uid}` to include `"apple"` in `providers` and stores provider metadata.
 * Vacates any device anchors currently pointing to this uid and stores the anchor IDs as references on the player in `knownDeviceAnchors`.
 
 ---

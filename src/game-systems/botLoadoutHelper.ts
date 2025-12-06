@@ -1,4 +1,9 @@
-import { getCarsCatalog, getSpellsCatalog, getItemSkusCatalog } from "../core/config.js";
+import {
+  getBotConfig,
+  getCarsCatalog,
+  getSpellsCatalog,
+  getItemSkusCatalog,
+} from "../core/config.js";
 
 export interface GeneratedBotLoadout {
   carId: string;
@@ -34,6 +39,12 @@ const randomOf = <T>(arr: T[]): T | null => {
   const idx = Math.floor(Math.random() * arr.length);
   return arr[idx] ?? null;
 };
+
+const DEFAULT_TROPHY_BREAKS = [
+  0, 1400, 2000, 2600, 3200,
+  3800, 4400, 5000, 5600, 6000,
+  6300, 6600, 6800, 6900, 7000,
+];
 
 const ensureCatalogCaches = async (): Promise<void> => {
   if (!cachedCarIds) {
@@ -106,10 +117,47 @@ const buildSpellDeck = (): GeneratedBotLoadout["spellDeck"] => {
 export const buildBotLoadout = async (trophyCount: number): Promise<GeneratedBotLoadout> => {
   await ensureCatalogCaches();
 
-  const carId =
-    cachedCarIds && cachedCarIds.length > 0
-      ? cachedCarIds[Math.floor(Math.random() * cachedCarIds.length)]
-      : "car_default";
+  const botConfig = await getBotConfig().catch(() => null);
+
+  const pickCarId = (): string => {
+    const fallback =
+      cachedCarIds && cachedCarIds.length > 0
+        ? cachedCarIds[Math.floor(Math.random() * cachedCarIds.length)]
+        : "car_default";
+
+    const buildThresholds = (): Array<{ carId: string; trophies: number }> => {
+      if (botConfig && Array.isArray(botConfig.carUnlockThresholds) && botConfig.carUnlockThresholds.length > 0) {
+        return [...botConfig.carUnlockThresholds].filter(
+          (t) => t && typeof t.carId === "string" && typeof t.trophies === "number",
+        );
+      }
+      // Fallback: align cached carIds with default trophy breaks
+      const cars = cachedCarIds ? [...cachedCarIds].sort() : [];
+      return DEFAULT_TROPHY_BREAKS.slice(0, cars.length).map((trophies, idx) => ({
+        carId: cars[idx] ?? fallback,
+        trophies,
+      }));
+    };
+
+    const thresholds = buildThresholds();
+    if (thresholds.length === 0) {
+      return fallback;
+    }
+
+    thresholds.sort((a, b) => a.trophies - b.trophies);
+    const clampedTrophies = Math.max(0, Math.floor(trophyCount));
+    let idx = thresholds.findIndex((t) => clampedTrophies < t.trophies) - 1;
+    if (idx < 0) idx = thresholds.length - 1;
+    // ±1 variance for variety
+    const variance = Math.round(Math.random() * 2 - 1); // -1,0,1
+    idx = Math.max(0, Math.min(thresholds.length - 1, idx + variance));
+
+    const candidate = thresholds[idx]?.carId;
+    const exists = cachedCarIds?.includes(candidate ?? "") ?? false;
+    return exists ? (candidate as string) : fallback;
+  };
+
+  const carId = pickCarId();
 
   const cosmetics = pickCosmetics();
   const spellDeck = buildSpellDeck();

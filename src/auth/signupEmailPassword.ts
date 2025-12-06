@@ -5,6 +5,7 @@ import { REGION } from "../shared/region";
 import { normalizeEmail } from "../shared/normalize";
 import { initializeUserIfNeeded } from "../shared/initializeUser";
 import { assertSupportedAppVersion } from "../shared/appVersion";
+import { sendVerificationEmailAndRecord, VerificationSendResult } from "../shared/emailVerification";
 
 export const signupEmailPassword = onCall({ region: REGION }, async (request) => {
   const { opId, email, password, deviceAnchor, platform, appVersion } = request.data || {};
@@ -47,6 +48,10 @@ export const signupEmailPassword = onCall({ region: REGION }, async (request) =>
     }
 
     await initializeUserIfNeeded(user.uid, ['password'], { isGuest: false, email, authUser: user, opId });
+    let verification: VerificationSendResult | null = null;
+    if (!user.emailVerified) {
+      verification = await sendVerificationEmailAndRecord({ uid: user.uid, email });
+    }
     // Reference device anchor on the player if provided
     if (deviceAnchor) {
       await db.doc(`Players/${user.uid}`).set({
@@ -54,7 +59,14 @@ export const signupEmailPassword = onCall({ region: REGION }, async (request) =>
       }, { merge: true });
     }
     const customToken = await auth.createCustomToken(user.uid);
-    return { status: 'ok', uid: user.uid, customToken, idempotent: true };
+    return {
+      status: 'ok',
+      uid: user.uid,
+      customToken,
+      idempotent: true,
+      verificationEmailSent: !!verification,
+      verificationSentAt: verification?.sentAt.toDate().toISOString() ?? null,
+    };
   }
 
   try {
@@ -78,9 +90,20 @@ export const signupEmailPassword = onCall({ region: REGION }, async (request) =>
 
     await initializeUserIfNeeded(user.uid, ['password'], { isGuest: false, email, authUser: user, opId });
 
+    let verification: VerificationSendResult | null = null;
+    if (!user.emailVerified) {
+      verification = await sendVerificationEmailAndRecord({ uid: user.uid, email });
+    }
+
     // Return a custom token so client can sign in immediately
     const customToken = await auth.createCustomToken(user.uid);
-    return { status: 'ok', uid: user.uid, customToken };
+    return {
+      status: 'ok',
+      uid: user.uid,
+      customToken,
+      verificationEmailSent: !!verification,
+      verificationSentAt: verification?.sentAt.toDate().toISOString() ?? null,
+    };
   } catch (e) {
     // Clean up auth user if Firestore reservation failed
     if (createdNewUser) {

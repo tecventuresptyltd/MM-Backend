@@ -7,3 +7,4 @@ export * from "./signupEmailPassword";
 export * from "./signupGoogle";
 export * from "./signupApple";
 export * from "./checkEmailExists";
+export * from "./requestPasswordReset";

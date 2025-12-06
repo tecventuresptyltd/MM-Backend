@@ -54,11 +54,12 @@ This document provides detailed contracts for each Cloud Function, including inp
 
 **Output:**
 
-*   **Success:** `{ "status": "ok" }`
+*   **Success:** `{ "status": "ok", "verificationEmailSent": boolean, "verificationSentAt": "ISO timestamp or null" }`
 
 **Errors:** `EMAIL_TAKEN`, `WEAK_PASSWORD`, `ALREADY_LINKED`
 
 **Side-effects:**
+* If the Auth user is not already verified, generates an email verification link and records `Players/{uid}.emailVerification.lastSentAt`.
 * Sets `Players/{uid}` to `isGuest: false`, writes `email`, and updates `authProviders` to include `"password"`.
 * Updates `/AccountsProviders/{uid}` to include `"password"` in `providers`.
 * Vacates any device anchors currently pointing to this uid and stores the anchor IDs as references on the player in `knownDeviceAnchors`.
@@ -139,11 +140,37 @@ This document provides detailed contracts for each Cloud Function, including inp
 
 **Output:**
 
-*   **Success:** `{ "status": "ok", "uid": "string", "customToken": "string" }`
+*   **Success:** `{ "status": "ok", "uid": "string", "customToken": "string", "verificationEmailSent": boolean, "verificationSentAt": "ISO timestamp or null" }`
 
 **Errors:** `already-exists` (message: `email-already-exists`), `WEAK_PASSWORD`
 
 **Note:** Email reservation is a transactional step.
+**Side-effects:**
+* If the Auth user is not already verified, generates an email verification link and records `Players/{uid}.emailVerification.lastSentAt`.
+* If the normalized email exists, returns the last verification send time.
+
+---
+
+### `requestPasswordReset`
+
+**Purpose:** Sends a password reset email if the provided email is registered. Returns a generic response to avoid user enumeration.
+
+**Input:**
+
+```json
+{
+  "email": "string"
+}
+```
+
+**Output:**
+
+*   **Success:** `{ "status": "ok", "resetEmailSent": boolean, "resetSentAt": "ISO timestamp or null" }`
+
+**Errors:** `INVALID_ARGUMENT`
+
+**Side-effects:**
+* If the normalized email exists in `/AccountsEmails`, generates a password reset link, records `Players/{uid}.passwordReset.lastSentAt`, and returns a sent timestamp. If the email is unknown, returns success with `resetEmailSent: false` to prevent enumeration.
 
 ---
 

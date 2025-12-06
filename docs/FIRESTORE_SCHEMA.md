@@ -624,6 +624,13 @@ Defines the experience points required for each player level.
 
 Contains all data specific to a single player, identified by their Firebase Auth `uid`.
 
+**Identity fields on `/Players/{uid}` (root doc):**
+* `email` (string|null) — canonical email for the account, if any.
+* `authProviders` (string[]) — linked providers (e.g., `anonymous`, `password`, `google`, `apple`).
+* `isGuest` (boolean) — true if the account has not been upgraded.
+* `emailVerification.lastSentAt` (timestamp|null) — last time a verification email was sent by the backend (for UI display; source of truth for verification is the Auth `emailVerified` flag).
+* `passwordReset.lastSentAt` (timestamp|null) — last time a password reset email was sent by the backend.
+
 #### `/Players/{uid}/Profile/Profile` (Singleton)
 
 A consolidated document containing all UI-facing fields for the player's profile and HUD.

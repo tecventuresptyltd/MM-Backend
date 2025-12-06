@@ -2,6 +2,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
 import { normalizeEmail } from "../shared/normalize";
 import { initializeUserIfNeeded } from "../shared/initializeUser";
+import { sendVerificationEmailAndRecord, VerificationSendResult } from "../shared/emailVerification";
 
 export const bindEmailPassword = onCall({ region: "us-central1" }, async (request) => {
   const data = request.data ?? {};
@@ -68,6 +69,12 @@ export const bindEmailPassword = onCall({ region: "us-central1" }, async (reques
   await admin.auth().updateUser(uid, { email });
   await admin.auth().updateUser(uid, { password });
 
+  const authUser = await admin.auth().getUser(uid);
+  let verification: VerificationSendResult | null = null;
+  if (!authUser.emailVerified) {
+    verification = await sendVerificationEmailAndRecord({ uid, email });
+  }
+
   await initializeUserIfNeeded(uid, ["password"], {
     isGuest: false,
     email,
@@ -92,5 +99,9 @@ export const bindEmailPassword = onCall({ region: "us-central1" }, async (reques
     }
   } catch {}
 
-  return { status: "ok" };
+  return {
+    status: "ok",
+    verificationEmailSent: !!verification,
+    verificationSentAt: verification?.sentAt.toDate().toISOString() ?? null,
+  };
 });

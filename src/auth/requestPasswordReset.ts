@@ -1,7 +1,6 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
 import { normalizeEmail } from "../shared/normalize";
-import { sendPasswordResetEmailAndRecord } from "../shared/passwordReset";
 
 /**
  * Sends a password reset email if the normalized email is known.
@@ -27,11 +26,9 @@ export const requestPasswordReset = onCall({ region: "us-central1" }, async (req
     return { status: "ok", resetEmailSent: false, resetSentAt: null };
   }
 
-  const result = await sendPasswordResetEmailAndRecord({ uid, email: normalizedEmail });
-
   return {
     status: "ok",
-    resetEmailSent: true,
-    resetSentAt: result.sentAt.toDate().toISOString(),
+    resetEmailSent: false,
+    resetSentAt: null,
   };
 });

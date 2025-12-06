@@ -59,7 +59,7 @@ This document provides detailed contracts for each Cloud Function, including inp
 **Errors:** `EMAIL_TAKEN`, `WEAK_PASSWORD`, `ALREADY_LINKED`
 
 **Side-effects:**
-* If the Auth user is not already verified, generates an email verification link and records `Players/{uid}.emailVerification.lastSentAt`.
+* If the Auth user is not already verified, flags `verificationEmailSent: false` and returns `verificationSentAt: null` (clients must send the verification email themselves).
 * Sets `Players/{uid}` to `isGuest: false`, writes `email`, and updates `authProviders` to include `"password"`.
 * Updates `/AccountsProviders/{uid}` to include `"password"` in `providers`.
 * Vacates any device anchors currently pointing to this uid and stores the anchor IDs as references on the player in `knownDeviceAnchors`.
@@ -146,7 +146,7 @@ This document provides detailed contracts for each Cloud Function, including inp
 
 **Note:** Email reservation is a transactional step.
 **Side-effects:**
-* If the Auth user is not already verified, generates an email verification link and records `Players/{uid}.emailVerification.lastSentAt`.
+* If the Auth user is not already verified, flags `verificationEmailSent: false` and returns `verificationSentAt: null` (clients must send the verification email themselves).
 * If the normalized email exists, returns the last verification send time.
 
 ---
@@ -170,9 +170,30 @@ This document provides detailed contracts for each Cloud Function, including inp
 **Errors:** `INVALID_ARGUMENT`
 
 **Side-effects:**
-* If the normalized email exists in `/AccountsEmails`, generates a password reset link, records `Players/{uid}.passwordReset.lastSentAt`, and returns a sent timestamp. If the email is unknown, returns success with `resetEmailSent: false` to prevent enumeration.
+* If the normalized email exists in `/AccountsEmails`, returns success with `resetEmailSent: false` / `resetSentAt: null`. Clients are responsible for sending password reset emails directly using the Firebase client SDK. If the email is unknown, returns success with `resetEmailSent: false` to prevent enumeration.
 
 ---
+
+### `logEmailSend`
+
+**Purpose:** Records when the client sent an email (verification or password reset) for audit/UX display. Does not send the email.
+
+**Input:**
+
+```json
+{
+  "kind": "verification | reset"
+}
+```
+
+**Output:**
+
+*   **Success:** `{ "status": "ok", "recordedAt": "ISO timestamp" }`
+
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`
+
+**Side-effects:**
+* Writes `Players/{uid}.emailVerification.lastSentAt` when `kind = "verification"`, or `Players/{uid}.passwordReset.lastSentAt` when `kind = "reset"`, using `serverTimestamp`.
 
 ### `signupGoogle`
 

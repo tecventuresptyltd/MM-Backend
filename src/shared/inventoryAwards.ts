@@ -56,14 +56,23 @@ export const grantInventoryRewards = async (
   const inventoryCtx = resolveInventoryContext(uid);
   const summarySnap = await transaction.get(inventoryCtx.summaryRef);
   const summaryState = createTxInventorySummaryState(inventoryCtx.summaryRef, summarySnap);
+
+  // Preload all SKU docs before performing any writes to satisfy transaction ordering.
+  const skuRefs = normalised.map((grant) =>
+    inventoryCtx.inventoryCollection.doc(grant.skuId)
+  );
+  const skuSnaps = await Promise.all(skuRefs.map((ref) => transaction.get(ref)));
+  const skuStates = skuSnaps.map((snap, idx) =>
+    createTxSkuDocState(db, uid, normalised[idx].skuId, snap)
+  );
+
   const summaryDelta: Record<string, number> = {};
   const timestamp = options?.timestamp ?? admin.firestore.FieldValue.serverTimestamp();
   const results: InventoryGrantResult[] = [];
 
-  for (const grant of normalised) {
-    const skuRef = inventoryCtx.inventoryCollection.doc(grant.skuId);
-    const skuSnap = await transaction.get(skuRef);
-    const skuState = createTxSkuDocState(db, uid, grant.skuId, skuSnap);
+  for (let i = 0; i < normalised.length; i += 1) {
+    const grant = normalised[i];
+    const skuState = skuStates[i];
     const adjustment = await txIncSkuQty(transaction, db, uid, grant.skuId, grant.quantity, {
       state: skuState,
       timestamp,

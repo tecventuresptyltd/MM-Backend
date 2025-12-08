@@ -2,7 +2,7 @@ import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 
-import { getOffersCatalog, getRanksCatalog } from "../core/config.js";
+import { getOffersCatalog, getRanksCatalog, resolveSkuOrThrow } from "../core/config.js";
 import { checkIdempotency, createInProgressReceipt, completeOperation } from "../core/idempotency.js";
 import { grantInventoryRewards, InventoryGrantResult } from "../shared/inventoryAwards.js";
 import { calculateGemConversionRate } from "./rates.js";
@@ -106,6 +106,22 @@ export const claimRankUpReward = onCall(
       throw new HttpsError("invalid-argument", "rankId must be a string.");
     }
 
+    // Load catalog once and validate rank + reward SKUs before entering the transaction.
+    const ranksCatalog = await getRanksCatalog();
+    const rankGameData = ranksCatalog.find((rank) => rank.rankId === rankId);
+    if (!rankGameData) {
+      throw new HttpsError("not-found", `Rank game data not found for ${rankId}.`);
+    }
+    const inventoryRewards = Array.isArray(rankGameData.rewards.inventory)
+      ? rankGameData.rewards.inventory
+      : [];
+    try {
+      await Promise.all(inventoryRewards.map((grant) => resolveSkuOrThrow(grant.skuId)));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      throw new HttpsError("failed-precondition", `Invalid reward SKU: ${message}`);
+    }
+
     // Check for existing operation
     const existingResult = await checkIdempotency(uid, opId);
     if (existingResult !== null) {
@@ -119,50 +135,63 @@ export const claimRankUpReward = onCall(
 
     try {
       const result = await db.runTransaction(async (transaction) => {
+        // Reads first
         const playerProfileRef = db.doc(`/Players/${uid}/Profile/Profile`);
-        const playerProfileDoc = await transaction.get(playerProfileRef);
+        const playerProgressRef = db.doc(`/Players/${uid}/Progress/ClaimedRewards`);
+        const playerEconomyRef = db.doc(`/Players/${uid}/Economy/Stats`);
+
+        const [playerProfileDoc, playerProgressDoc, playerEconomyDoc] = await Promise.all([
+          transaction.get(playerProfileRef),
+          transaction.get(playerProgressRef),
+          transaction.get(playerEconomyRef),
+        ]);
+
         const profileData = playerProfileDoc.data();
-    
         if (!playerProfileDoc.exists || !profileData) {
           throw new HttpsError("not-found", "Player profile not found.");
         }
-    
-        const playerProgressRef = db.doc(`/Players/${uid}/Progress/ClaimedRewards`);
-        const playerProgressDoc = await transaction.get(playerProgressRef);
+
         const progressData = playerProgressDoc.data() || {};
-    
         if (progressData[rankId]) {
           throw new HttpsError("already-exists", "Rank reward already claimed.");
         }
-    
-        const ranksCatalog = await getRanksCatalog();
-        const rankGameData = ranksCatalog.find(rank => rank.rankId === rankId);
-    
-        if (!rankGameData) {
-          throw new HttpsError("not-found", "Rank game data not found in catalog.");
-        }
-    
+
         if ((profileData.trophies || 0) < rankGameData.minMmr) {
           throw new HttpsError("failed-precondition", "Player has not reached this rank yet.");
         }
 
-        const playerEconomyRef = db.doc(`/Players/${uid}/Economy/Stats`);
+        // Inventory writes (includes its own reads) happen before any other writes.
+        let inventoryGrants: InventoryGrantResult[] = [];
+        if (inventoryRewards.length > 0) {
+          inventoryGrants = await grantInventoryRewards(transaction, uid, inventoryRewards);
+        }
+
+        // Economy write(s)
+        if (!playerEconomyDoc.exists) {
+          transaction.set(
+            playerEconomyRef,
+            {
+              coins: 0,
+              gems: 0,
+              createdAt: admin.firestore.FieldValue.serverTimestamp(),
+              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            },
+            { merge: true },
+          );
+        }
         transaction.update(playerEconomyRef, {
           coins: admin.firestore.FieldValue.increment(rankGameData.rewards.coins || 0),
           gems: admin.firestore.FieldValue.increment(rankGameData.rewards.gems || 0),
         });
 
-        let inventoryGrants: InventoryGrantResult[] = [];
-        const inventoryRewards = Array.isArray(rankGameData.rewards.inventory)
-          ? rankGameData.rewards.inventory
-          : [];
-        if (inventoryRewards.length > 0) {
-          inventoryGrants = await grantInventoryRewards(transaction, uid, inventoryRewards);
-        }
-
-        transaction.set(playerProgressRef, {
-          [rankId]: true,
-        }, { merge: true });
+        // Mark reward claimed
+        transaction.set(
+          playerProgressRef,
+          {
+            [rankId]: true,
+          },
+          { merge: true },
+        );
 
         return { success: true, rewards: rankGameData.rewards, inventoryGrants };
       });

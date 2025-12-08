@@ -38,6 +38,38 @@ This document provides detailed contracts for each Cloud Function, including inp
 
 ---
 
+### `checkSession`
+
+**Purpose:** Read-only check to see if the uid appears online elsewhere within a recent TTL.
+
+**Input:**
+
+```json
+{
+  "deviceAnchor": "string (optional)",
+  "appVersion": "string (optional)"
+}
+```
+
+**Output:**
+
+```json
+{
+  "status": "ok",
+  "alreadyLoggedIn": true,
+  "lastSeen": 1712345678901,
+  "anchors": ["device_anchor_a", "device_anchor_b"]
+}
+```
+
+* `alreadyLoggedIn` is `true` if any other presence entry under `/presence/online/{uid}` is fresh (<= 5 minutes old) and, when `deviceAnchor` is provided, belongs to a different anchor.
+
+**Side-effects:** None (read-only; does not write presence or set onDisconnect).
+
+**Errors:** `UNAUTHENTICATED`, `FAILED_PRECONDITION` (app version check)
+
+---
+
 ### `bindEmailPassword`
 
 **Purpose:** Binds an email and password to the current guest account.

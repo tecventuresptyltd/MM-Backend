@@ -45,7 +45,6 @@ export {
   viewPlayerProfile,
   removeFriends,
   leaderboards,
-  // presenceMirrorLastSeen as socialPresenceMirrorLastSeen,
 } from "./Socials";
 export { getServerTime } from "./time/serverTime";
 export {

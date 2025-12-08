@@ -9,4 +9,4 @@ export * from "./signupApple";
 export * from "./checkEmailExists";
 export * from "./requestPasswordReset";
 export * from "./logEmailSend";
-export * from "./registerSession";
+export * from "./checkSession";

@@ -90,6 +90,7 @@ This backend provides serverless functions for:
 - `bindGoogle` - Bind Google account
 - `signupEmailPassword` - Email/password signup
 - `signupGoogle` - Google signup
+- `checkSession` - Read-only presence check for concurrent logins
 - `checkEmailExists` - Check if email is registered
 
 ### Economy

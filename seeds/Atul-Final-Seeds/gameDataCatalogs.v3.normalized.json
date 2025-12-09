@@ -16169,7 +16169,9 @@
             "en": "Unranked"
           },
           "minMmr": 0,
-          "rewards": {}
+          "rewards": {
+            "coins": 1000
+          }
         },
         {
           "rankId": "rank_bronze_1",
@@ -16179,6 +16181,7 @@
           },
           "minMmr": 250,
           "rewards": {
+            "coins": 2200,
             "gems": 100,
             "inventory": [
               {
@@ -16196,6 +16199,7 @@
           },
           "minMmr": 500,
           "rewards": {
+            "coins": 2500,
             "inventory": [
               {
                 "skuId": "sku_zz3twgp0wx",
@@ -16212,6 +16216,7 @@
           },
           "minMmr": 750,
           "rewards": {
+            "coins": 2800,
             "gems": 100,
             "inventory": [
               {
@@ -16229,6 +16234,7 @@
           },
           "minMmr": 1000,
           "rewards": {
+            "coins": 3100,
             "inventory": [
               {
                 "skuId": "sku_zz3twgp0wx",
@@ -16245,6 +16251,7 @@
           },
           "minMmr": 1250,
           "rewards": {
+            "coins": 3500,
             "gems": 150,
             "inventory": [
               {
@@ -16262,6 +16269,7 @@
           },
           "minMmr": 1500,
           "rewards": {
+            "coins": 3900,
             "inventory": [
               {
                 "skuId": "sku_72wnqwtfmx",
@@ -16278,6 +16286,7 @@
           },
           "minMmr": 1750,
           "rewards": {
+            "coins": 4300,
             "gems": 150,
             "inventory": [
               {
@@ -16295,6 +16304,7 @@
           },
           "minMmr": 2000,
           "rewards": {
+            "coins": 4800,
             "inventory": [
               {
                 "skuId": "sku_72wnqwtfmx",
@@ -16311,6 +16321,7 @@
           },
           "minMmr": 2250,
           "rewards": {
+            "coins": 5400,
             "gems": 200,
             "inventory": [
               {
@@ -16328,6 +16339,7 @@
           },
           "minMmr": 2500,
           "rewards": {
+            "coins": 6000,
             "inventory": [
               {
                 "skuId": "sku_e8e7jeba7v",
@@ -16344,6 +16356,7 @@
           },
           "minMmr": 2750,
           "rewards": {
+            "coins": 6700,
             "gems": 200,
             "inventory": [
               {
@@ -16361,6 +16374,7 @@
           },
           "minMmr": 3000,
           "rewards": {
+            "coins": 7500,
             "inventory": [
               {
                 "skuId": "sku_e8e7jeba7v",
@@ -16377,6 +16391,7 @@
           },
           "minMmr": 3250,
           "rewards": {
+            "coins": 8400,
             "gems": 300,
             "inventory": [
               {
@@ -16394,6 +16409,7 @@
           },
           "minMmr": 3500,
           "rewards": {
+            "coins": 9400,
             "inventory": [
               {
                 "skuId": "sku_n9hsc0wxxk",
@@ -16410,6 +16426,7 @@
           },
           "minMmr": 3750,
           "rewards": {
+            "coins": 10500,
             "gems": 300,
             "inventory": [
               {
@@ -16427,6 +16444,7 @@
           },
           "minMmr": 4000,
           "rewards": {
+            "coins": 11800,
             "inventory": [
               {
                 "skuId": "sku_n9hsc0wxxk",
@@ -16443,6 +16461,7 @@
           },
           "minMmr": 4250,
           "rewards": {
+            "coins": 13200,
             "gems": 350,
             "inventory": [
               {
@@ -16460,6 +16479,7 @@
           },
           "minMmr": 4500,
           "rewards": {
+            "coins": 14800,
             "inventory": [
               {
                 "skuId": "sku_n9hsc0wxxk",
@@ -16476,6 +16496,7 @@
           },
           "minMmr": 4750,
           "rewards": {
+            "coins": 16600,
             "gems": 400,
             "inventory": [
               {
@@ -16493,6 +16514,7 @@
           },
           "minMmr": 5000,
           "rewards": {
+            "coins": 18600,
             "inventory": [
               {
                 "skuId": "sku_n9hsc0wxxk",
@@ -16509,6 +16531,7 @@
           },
           "minMmr": 5250,
           "rewards": {
+            "coins": 20900,
             "gems": 450,
             "inventory": [
               {
@@ -16526,6 +16549,7 @@
           },
           "minMmr": 5500,
           "rewards": {
+            "coins": 23400,
             "inventory": [
               {
                 "skuId": "sku_kgkjadrd79",
@@ -16542,6 +16566,7 @@
           },
           "minMmr": 5750,
           "rewards": {
+            "coins": 26200,
             "gems": 500,
             "inventory": [
               {
@@ -16559,6 +16584,7 @@
           },
           "minMmr": 6000,
           "rewards": {
+            "coins": 29400,
             "inventory": [
               {
                 "skuId": "sku_n9hsc0wxxk",
@@ -16575,6 +16601,7 @@
           },
           "minMmr": 6250,
           "rewards": {
+            "coins": 32900,
             "gems": 500,
             "inventory": [
               {
@@ -16592,6 +16619,7 @@
           },
           "minMmr": 6500,
           "rewards": {
+            "coins": 36900,
             "inventory": [
               {
                 "skuId": "sku_kgkjadrd79",
@@ -16608,6 +16636,7 @@
           },
           "minMmr": 7000,
           "rewards": {
+            "coins": 41300,
             "gems": 750,
             "inventory": [
               {

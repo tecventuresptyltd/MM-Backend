@@ -14,6 +14,8 @@ import {
   RaceInputsWithPrededuction,
   calculateLastPlaceDelta,
   computeRaceRewardsWithPrededuction,
+  getRankForTrophies,
+  RANK_LABELS,
   toMillis,
 } from "./economy.js";
 import { PlayerBoostersState } from "../shared/types.js";
@@ -98,6 +100,16 @@ type LobbySnapshotEntry = {
 const TROPHY_CONFIG = DEFAULT_TROPHY_CONFIG;
 const COIN_CONFIG = DEFAULT_COIN_CONFIG;
 const EXP_CONFIG = DEFAULT_EXP_CONFIG;
+
+const sanitizeTrophyCount = (value: unknown): number => {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? Math.max(0, Math.floor(numeric)) : 0;
+};
+
+const rankIndex = (label: string): number => {
+  const idx = RANK_LABELS.indexOf(label);
+  return idx >= 0 ? idx : 0;
+};
 
 const coerceLobbyEntry = (entry: unknown): LobbySnapshotEntry => {
   if (typeof entry === "number") {
@@ -237,8 +249,18 @@ export const startRace = onCall({ enforceAppCheck: false, region: REGION }, asyn
     const profileRef = db.doc(`/Players/${uid}/Profile/Profile`);
     const timestamp = admin.firestore.FieldValue.serverTimestamp();
 
+    const profileSnap = await transaction.get(profileRef);
+    if (!profileSnap.exists) {
+      throw new HttpsError("failed-precondition", "Player profile not found.");
+    }
+    const currentTrophies = sanitizeTrophyCount(profileSnap.data()?.trophies);
+    const appliedPreDeduction =
+      // Never remove more trophies up front than the player currently has.
+      preDeductedTrophies < 0 ? Math.max(preDeductedTrophies, -currentTrophies) : preDeductedTrophies;
+    const trophiesAfterPreDeduct = Math.max(0, currentTrophies + appliedPreDeduction);
+
     transaction.update(profileRef, {
-      trophies: admin.firestore.FieldValue.increment(preDeductedTrophies),
+      trophies: trophiesAfterPreDeduct,
       updatedAt: timestamp,
     });
 
@@ -255,12 +277,12 @@ export const startRace = onCall({ enforceAppCheck: false, region: REGION }, asyn
 
     const participantRef = db.doc(`/Races/${raceId}/Participants/${uid}`);
     transaction.set(participantRef, {
-      preDeductedTrophies,
+      preDeductedTrophies: appliedPreDeduction,
       playerIndex,
       createdAt: timestamp,
     });
 
-    return { success: true, raceId, preDeductedTrophies };
+    return { success: true, raceId, preDeductedTrophies: appliedPreDeduction };
   });
 
   await refreshFriendSnapshots(uid);
@@ -318,7 +340,13 @@ export const recordRaceResult = onCall({ enforceAppCheck: false, region: REGION 
     const profileData = profileDoc.data()!;
     const participantData = participantDoc.data() ?? {};
     const playerIndex = Number(participantData.playerIndex);
-    const lastPlaceDeltaApplied = Number(participantData.preDeductedTrophies ?? 0);
+    const lastPlaceDeltaApplied = Number.isFinite(Number(participantData.preDeductedTrophies))
+      ? Math.floor(Number(participantData.preDeductedTrophies))
+      : 0;
+    const currentTrophies = Number.isFinite(Number(profileData.trophies))
+      ? Math.floor(Number(profileData.trophies))
+      : 0;
+    const trophiesBeforeRace = Math.max(0, currentTrophies - lastPlaceDeltaApplied);
     if (!Number.isInteger(playerIndex)) {
       throw new HttpsError("failed-precondition", "Player index missing for race participant.");
     }
@@ -388,12 +416,25 @@ export const recordRaceResult = onCall({ enforceAppCheck: false, region: REGION 
 
     const coinsGained = rewards.coins;
     const xpGained = rewards.exp;
-    const trophiesSettlement = rewards.trophiesSettlement;
-    const trophiesActual = rewards.trophiesActual;
+    const desiredTrophiesActual = rewards.trophiesActual;
+
+    // Apply a floor so trophy losses cannot push the player below zero (including pre-deducted losses).
+    const appliedActualTrophiesDelta = Math.max(desiredTrophiesActual, -trophiesBeforeRace);
+    const appliedTrophiesSettlement = appliedActualTrophiesDelta - lastPlaceDeltaApplied;
+    const trophiesAfterSettlement = Math.max(0, currentTrophies + appliedTrophiesSettlement);
+    const newHighestTrophies = Math.max(
+      sanitizeTrophyCount(profileData.highestTrophies),
+      trophiesAfterSettlement,
+    );
 
     const xpAfter = xpBefore + xpGained;
     const afterInfo = getLevelInfo(xpAfter);
     const levelsGained = afterInfo.level - beforeInfo.level;
+
+    const oldRankLabel = rewards.oldRank;
+    const newRankLabel = getRankForTrophies(trophiesAfterSettlement);
+    const promoted = rankIndex(newRankLabel) > rankIndex(oldRankLabel);
+    const demoted = rankIndex(newRankLabel) < rankIndex(oldRankLabel);
 
     // Resolve loot before any other writes to keep transaction read-before-write ordering valid.
     const drops = await resolveRaceDrops(transaction, uid, botDisplayNames);
@@ -408,19 +449,16 @@ export const recordRaceResult = onCall({ enforceAppCheck: false, region: REGION 
     }
     transaction.update(economyRef, economyUpdate);
 
-    const newTrophies = (profileData.trophies || 0) + trophiesSettlement;
-    const newHighestTrophies = Math.max(profileData.highestTrophies || 0, newTrophies);
-
     // Update Profile/Profile (trophies belong here)
     const profileUpdate: { [key: string]: number | admin.firestore.FieldValue } = {
-        trophies: admin.firestore.FieldValue.increment(trophiesSettlement),
-        exp: xpAfter,
-        level: afterInfo.level,
-        expProgress: afterInfo.expInLevel,
-        expToNextLevel: afterInfo.expToNext,
-        careerCoins: admin.firestore.FieldValue.increment(coinsGained),
-        highestTrophies: newHighestTrophies,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      trophies: trophiesAfterSettlement,
+      exp: xpAfter,
+      level: afterInfo.level,
+      expProgress: afterInfo.expInLevel,
+      expToNextLevel: afterInfo.expToNext,
+      careerCoins: admin.firestore.FieldValue.increment(coinsGained),
+      highestTrophies: newHighestTrophies,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
     // Increment race counters
     profileUpdate.totalRaces = admin.firestore.FieldValue.increment(1);
@@ -434,7 +472,7 @@ export const recordRaceResult = onCall({ enforceAppCheck: false, region: REGION 
     return {
       success: true,
       rewards: {
-        trophies: trophiesActual,
+        trophies: appliedActualTrophiesDelta,
         coins: coinsGained,
         xp: xpGained,
       },
@@ -448,14 +486,14 @@ export const recordRaceResult = onCall({ enforceAppCheck: false, region: REGION 
         expToNextLevel: afterInfo.expToNext,
       },
       rank: {
-        old: rewards.oldRank,
-        new: rewards.newRank,
-        promoted: rewards.promoted,
-        demoted: rewards.demoted,
+        old: oldRankLabel,
+        new: newRankLabel,
+        promoted,
+        demoted,
       },
       trophySettlement: {
-        applied: trophiesSettlement,
-        preDeducted: rewards.preDeductedLast,
+        applied: appliedTrophiesSettlement,
+        preDeducted: lastPlaceDeltaApplied,
       },
       drops: {
         player: drops.playerDrop,

@@ -86,11 +86,28 @@ describe("initializeUserIfNeeded", () => {
     expect(keyDoc.exists).toBe(true);
     expect(keyDoc.data()?.quantity ?? keyDoc.data()?.qty).toEqual(1);
 
+    const cosmetics = (loadoutDoc.data()?.cosmetics ?? {}) as Record<string, unknown>;
+    const defaultCosmeticSkuIds = [
+      cosmetics.wheelsSkuId,
+      cosmetics.decalSkuId,
+      cosmetics.spoilerSkuId,
+      cosmetics.boostSkuId,
+    ].filter((skuId): skuId is string => typeof skuId === "string" && skuId.trim().length > 0);
+
+    for (const skuId of defaultCosmeticSkuIds) {
+      const cosmeticDoc = await db.doc(`Players/${uid}/Inventory/${skuId}`).get();
+      expect(cosmeticDoc.exists).toBe(true);
+      expect(cosmeticDoc.data()?.quantity ?? cosmeticDoc.data()?.qty).toEqual(1);
+    }
+
     const summaryDoc = await db.doc(`Players/${uid}/Inventory/_summary`).get();
     expect(summaryDoc.exists).toBe(true);
     const totals = summaryDoc.data()?.totalsByCategory ?? {};
     expect(Number(totals.crate ?? 0)).toBeGreaterThanOrEqual(1);
     expect(Number(totals.key ?? 0)).toBeGreaterThanOrEqual(1);
+    expect(Number(totals.cosmetic ?? 0)).toBeGreaterThanOrEqual(
+      defaultCosmeticSkuIds.length,
+    );
 
     const receiptDoc = await db
       .doc(`Players/${uid}/Receipts/initializeUser.starterRewards`)

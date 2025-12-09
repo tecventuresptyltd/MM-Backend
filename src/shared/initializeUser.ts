@@ -3,7 +3,7 @@ import { HttpsError } from "firebase-functions/v2/https";
 import { loadStarterRewards } from "./starterRewards.js";
 import { loadStarterSpellIds } from "./catalogHelpers.js";
 import { resolveInventoryContext } from "./inventory.js";
-import { getReferralConfig } from "../core/config.js";
+import { getReferralConfig, resolveSkuOrThrow } from "../core/config.js";
 import { createDefaultReferralStats } from "../referral/constants.js";
 import {
   prepareReferralCodePlan,
@@ -103,12 +103,27 @@ const DEFAULT_GARAGE = (now: admin.firestore.FieldValue) => ({
   updatedAt: now,
 });
 
+const DEFAULT_COSMETIC_SKUS: Record<
+  "wheels" | "decal" | "spoiler" | "boost" | "underglow",
+  string | null
+> = {
+  wheels: "sku_7d5rvqx6",
+  decal: "sku_7ad7grzz",
+  spoiler: "sku_agyhv8pk",
+  boost: "sku_rwt6nbsq",
+  underglow: null,
+};
+
+const DEFAULT_COSMETIC_SKU_IDS = Object.values(DEFAULT_COSMETIC_SKUS).filter(
+  (skuId): skuId is string => typeof skuId === "string" && skuId.trim().length > 0,
+);
+
 const DEFAULT_LOADOUT_COSMETICS = {
-  wheelsSkuId: "sku_7d5rvqx6",
-  decalSkuId: "sku_7ad7grzz",
-  spoilerSkuId: "sku_agyhv8pk",
-  boostSkuId: "sku_rwt6nbsq",
-  underglowSkuId: null,
+  wheelsSkuId: DEFAULT_COSMETIC_SKUS.wheels,
+  decalSkuId: DEFAULT_COSMETIC_SKUS.decal,
+  spoilerSkuId: DEFAULT_COSMETIC_SKUS.spoiler,
+  boostSkuId: DEFAULT_COSMETIC_SKUS.boost,
+  underglowSkuId: DEFAULT_COSMETIC_SKUS.underglow,
 };
 
 const DEFAULT_LOADOUT = (now: admin.firestore.FieldValue) => ({
@@ -201,6 +216,9 @@ export async function waitForUserBootstrap(uid: string): Promise<Set<string>> {
     starterRewards.keySkuId
       ? db.doc(`Players/${uid}/Inventory/${starterRewards.keySkuId}`)
       : undefined,
+    ...DEFAULT_COSMETIC_SKU_IDS.map((skuId) =>
+      db.doc(`Players/${uid}/Inventory/${skuId}`),
+    ),
   ]);
 }
 
@@ -301,6 +319,23 @@ export async function initializeUserIfNeeded(
       throw new Error("Starter spell catalog must provide at least 5 unique spells.");
     }
 
+    const defaultCosmeticSkuMeta = await Promise.all(
+      DEFAULT_COSMETIC_SKU_IDS.map(async (skuId) => {
+        const sku = await resolveSkuOrThrow(skuId);
+        const itemId =
+          typeof sku.itemId === "string" && sku.itemId.trim().length > 0
+            ? sku.itemId.trim()
+            : null;
+        if (!itemId) {
+          throw new Error(`Default cosmetic SKU ${skuId} is missing itemId in catalog.`);
+        }
+        return { skuId, itemId };
+      }),
+    );
+    const defaultCosmeticItemIdMap = new Map(
+      defaultCosmeticSkuMeta.map(({ skuId, itemId }) => [skuId, itemId] as const),
+    );
+
     const crateRef = playerRef.collection("Inventory").doc(starterRewards.crateSkuId);
     const keyRef = playerRef.collection("Inventory").doc(starterRewards.keySkuId);
     const receiptRef = playerRef.collection("Receipts").doc(receiptId);
@@ -318,6 +353,9 @@ export async function initializeUserIfNeeded(
       db,
       async (tx) => {
         const timestamp = admin.firestore.FieldValue.serverTimestamp();
+        const cosmeticInventoryRefs = DEFAULT_COSMETIC_SKU_IDS.map((skuId) =>
+          playerRef.collection("Inventory").doc(skuId),
+        );
 
         const legacyItemsDocPromise = legacyItemsRef
           ? tx.get(legacyItemsRef)
@@ -326,24 +364,7 @@ export async function initializeUserIfNeeded(
           ? tx.get(legacyConsumablesRef)
           : Promise.resolve(null);
 
-        const [
-          playerDoc,
-          profileDoc,
-          economyDoc,
-          spellDecksDoc,
-          spellsDoc,
-          garageDoc,
-          loadoutDoc,
-          dailyDoc,
-          socialDoc,
-          progressDoc,
-          receiptDoc,
-          crateDoc,
-          keyDoc,
-          summaryDoc,
-          legacyItemsDoc,
-          legacyConsumablesDoc,
-        ] = await Promise.all([
+        const baseDocs = await Promise.all([
           tx.get(playerRef),
           tx.get(profileRef),
           tx.get(economyRef),
@@ -361,6 +382,27 @@ export async function initializeUserIfNeeded(
           legacyItemsDocPromise,
           legacyConsumablesDocPromise,
         ]);
+        const [
+          playerDoc,
+          profileDoc,
+          economyDoc,
+          spellDecksDoc,
+          spellsDoc,
+          garageDoc,
+          loadoutDoc,
+          dailyDoc,
+          socialDoc,
+          progressDoc,
+          receiptDoc,
+          crateDoc,
+          keyDoc,
+          summaryDoc,
+          legacyItemsDoc,
+          legacyConsumablesDoc,
+        ] = baseDocs;
+        const cosmeticDocs = await Promise.all(
+          cosmeticInventoryRefs.map((ref) => tx.get(ref)),
+        );
 
         const referralPlan = await prepareReferralCodePlan({
           transaction: tx,
@@ -401,6 +443,11 @@ export async function initializeUserIfNeeded(
             keyDoc,
           ),
           summaryState: createTxInventorySummaryState(summaryRef, summaryDoc),
+          defaultCosmetics: DEFAULT_COSMETIC_SKU_IDS.map((skuId, idx) => ({
+            skuId,
+            snapshot: cosmeticDocs[idx],
+            state: createTxSkuDocState(db, uid, skuId, cosmeticDocs[idx]),
+          })),
           referralPlan,
           legacy: useItemIdInventory
             ? {
@@ -437,15 +484,16 @@ export async function initializeUserIfNeeded(
             socialDoc,
             progressDoc,
             receiptDoc,
-          crateDoc,
-          keyDoc,
-        },
-        crateState,
-        keyState,
-        summaryState,
-        referralPlan,
-        legacy,
-      } = reads;
+            crateDoc,
+            keyDoc,
+          },
+          crateState,
+          keyState,
+          summaryState,
+          defaultCosmetics,
+          referralPlan,
+          legacy,
+        } = reads;
 
         // READS ABOVE, WRITES BELOW. DO NOT MOVE/ADD tx.get AFTER THIS LINE.
 
@@ -561,10 +609,19 @@ export async function initializeUserIfNeeded(
 
         ensureMetadata(crateRef, crateDoc, starterRewards.crateSkuId);
         ensureMetadata(keyRef, keyDoc, starterRewards.keySkuId);
+        defaultCosmetics.forEach(({ state, snapshot, skuId }) => {
+          ensureMetadata(state.ref, snapshot, skuId);
+        });
 
         let crateTotal = crateState.quantity;
         let keyTotal = keyState.quantity;
         const summaryChanges: Record<string, number> = {};
+        const cosmeticReceiptGrants: Array<{
+          skuId: string;
+          itemId: string | null;
+          quantity: number;
+          total: number;
+        }> = [];
 
         if (crateTotal < 1) {
           const adjustment = await txIncSkuQty(
@@ -594,12 +651,39 @@ export async function initializeUserIfNeeded(
             (summaryChanges[starterRewards.keySkuId] ?? 0) + 1;
         }
 
+        for (const cosmetic of defaultCosmetics) {
+          const ownedQuantity = Math.max(0, Number(cosmetic.state.quantity ?? 0));
+          if (ownedQuantity < 1) {
+            const adjustment = await txIncSkuQty(
+              tx,
+              db,
+              uid,
+              cosmetic.skuId,
+              1,
+              { state: cosmetic.state, timestamp, itemType: "cosmetic" },
+            );
+            summaryChanges[cosmetic.skuId] =
+              (summaryChanges[cosmetic.skuId] ?? 0) + 1;
+          }
+          cosmeticReceiptGrants.push({
+            skuId: cosmetic.skuId,
+            itemId: defaultCosmeticItemIdMap.get(cosmetic.skuId) ?? null,
+            quantity: 1,
+            total: cosmetic.state.quantity,
+          });
+        }
+
         if (Object.keys(summaryChanges).length > 0) {
           await txUpdateInventorySummary(tx, db, uid, summaryChanges, {
             state: summaryState,
             timestamp,
           });
         }
+
+        const cosmeticTotals = defaultCosmetics.map(({ skuId, state }) => ({
+          skuId,
+          quantity: Math.max(0, Number(state.quantity ?? 0)),
+        }));
 
         if (legacy) {
           const crateTotalLegacy = crateState.quantity;
@@ -611,6 +695,12 @@ export async function initializeUserIfNeeded(
             if (starterRewards.keyItemId) {
               itemCounts[starterRewards.keyItemId] = keyTotalLegacy;
             }
+            cosmeticTotals.forEach(({ skuId, quantity }) => {
+              const itemId = defaultCosmeticItemIdMap.get(skuId);
+              if (itemId) {
+                itemCounts[itemId] = quantity;
+              }
+            });
             tx.set(
               legacy.itemsRef,
               {
@@ -659,6 +749,7 @@ export async function initializeUserIfNeeded(
                     quantity: 1,
                     total: keyTotal,
                   },
+                  ...cosmeticReceiptGrants,
                 ],
               },
               createdAt: timestamp,

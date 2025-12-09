@@ -7,6 +7,7 @@ import {
   ensureCatalogsSeeded,
 } from "../helpers/cleanup.js";
 import { loadStarterRewards } from "../../src/shared/starterRewards";
+import { resolveSkuOrThrow } from "../../src/core/config";
 
 describe("initializeUserIfNeeded (itemId mode)", () => {
   const originalFlag = process.env.USE_ITEMID_V2;
@@ -48,6 +49,7 @@ describe("initializeUserIfNeeded (itemId mode)", () => {
     await initializeUserIfNeeded(uid, [], { isGuest: false, email: "v2@example.com" });
 
     const db = admin.firestore();
+    const loadoutDoc = await db.doc(`Players/${uid}/Loadouts/Active`).get();
     const itemsDoc = await db.doc(`Players/${uid}/Inventory/Items`).get();
     expect(itemsDoc.exists).toBe(true);
     const counts = (itemsDoc.data()?.counts ?? {}) as Record<string, unknown>;
@@ -58,11 +60,43 @@ describe("initializeUserIfNeeded (itemId mode)", () => {
     expect(Number(crateCount ?? 0)).toEqual(1);
     expect(Number(keyCount ?? 0)).toEqual(1);
 
+    const cosmetics = (loadoutDoc.data()?.cosmetics ?? {}) as Record<string, unknown>;
+    const defaultCosmeticSkuIds = [
+      cosmetics.wheelsSkuId,
+      cosmetics.decalSkuId,
+      cosmetics.spoilerSkuId,
+      cosmetics.boostSkuId,
+    ].filter((skuId): skuId is string => typeof skuId === "string" && skuId.trim().length > 0);
+
+    for (const skuId of defaultCosmeticSkuIds) {
+      const cosmeticDoc = await db.doc(`Players/${uid}/Inventory/${skuId}`).get();
+      expect(cosmeticDoc.exists).toBe(true);
+      expect(cosmeticDoc.data()?.quantity ?? cosmeticDoc.data()?.qty).toEqual(1);
+    }
+
+    const defaultCosmeticItemIds = (
+      await Promise.all(
+        defaultCosmeticSkuIds.map(async (skuId) => {
+          const sku = await resolveSkuOrThrow(skuId);
+          return typeof sku.itemId === "string" && sku.itemId.trim()
+            ? sku.itemId.trim()
+            : null;
+        }),
+      )
+    ).filter((itemId): itemId is string => Boolean(itemId));
+
+    defaultCosmeticItemIds.forEach((itemId) => {
+      expect(Number(counts[itemId] ?? 0)).toEqual(1);
+    });
+
     const summaryDoc = await db.doc(`Players/${uid}/Inventory/_summary`).get();
     expect(summaryDoc.exists).toBe(true);
     const totalsByCategory = summaryDoc.data()?.totalsByCategory ?? {};
     expect(Number(totalsByCategory.crate ?? 0)).toEqual(1);
     expect(Number(totalsByCategory.key ?? 0)).toEqual(1);
+    expect(Number(totalsByCategory.cosmetic ?? 0)).toBeGreaterThanOrEqual(
+      defaultCosmeticSkuIds.length,
+    );
 
     const legacyConsumables = await db.doc(`Players/${uid}/Inventory/Consumables`).get();
     expect(legacyConsumables.exists).toBe(false);

@@ -130,6 +130,12 @@ This backend provides serverless functions for:
 - Input validation on all endpoints
 - Idempotency support for critical operations
 
+## 🧹 Content Moderation
+
+- Chat messages, friend/clan requests, and clan names/descriptions are run through the profanity masker in `src/shared/profanity.ts`, which replaces Hindi and English bad words with asterisks while preserving message length.
+- Usernames are rejected if they contain profane terms.
+- The word list is centralized in `src/shared/profanityList.json` (sourced from chucknorris-io/swear-words across all languages) and normalizes common leetspeak/punctuation; extend it there to tighten or loosen coverage.
+
 ## 🚀 Deployment
 
 The project is configured for automatic deployment to Firebase Functions:

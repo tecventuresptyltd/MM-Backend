@@ -4,6 +4,7 @@ import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { callableOptions } from "../shared/callableOptions.js";
 import { checkIdempotency, createInProgressReceipt } from "../core/idempotency.js";
 import { runTransactionWithReceipt } from "../core/transactions.js";
+import { maskProfanity } from "../shared/profanity.js";
 import {
   ClanRole,
   PlayerProfileData,
@@ -63,7 +64,8 @@ const sanitizeRequestMessage = (value?: unknown): string | undefined => {
   if (trimmed.length === 0) {
     return undefined;
   }
-  return trimmed.slice(0, 200);
+  const clipped = trimmed.slice(0, 200);
+  return maskProfanity(clipped);
 };
 
 const buildAuthorFromProfile = (

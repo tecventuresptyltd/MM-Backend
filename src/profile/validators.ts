@@ -1,4 +1,5 @@
 import * as admin from "firebase-admin";
+import { containsProfanity } from "../shared/profanity.js";
 
 const db = admin.firestore();
 
@@ -42,6 +43,9 @@ export const checkUsername = async (username: string): Promise<boolean> => {
   }
  
   const usernameLower = trimmedUsername.toLowerCase();
+  if (containsProfanity(usernameLower)) {
+    return false;
+  }
  
   // Banned words check
   if (BANNED_WORDS.some(word => usernameLower.includes(word))) {

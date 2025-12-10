@@ -32,6 +32,7 @@ import {
   CLAN_CHAT_HISTORY_FETCH,
 } from "./chat.js";
 import { roomsCollection } from "../chat/rooms.js";
+import { maskProfanity } from "../shared/profanity.js";
 
 const { FieldValue } = admin.firestore;
 const CHAT_FETCH_LIMIT = 25;
@@ -185,7 +186,8 @@ const sanitizeMessage = (value?: unknown): string | undefined => {
   if (trimmed.length === 0) {
     return undefined;
   }
-  return trimmed.slice(0, 200);
+  const clipped = trimmed.slice(0, 200);
+  return maskProfanity(clipped);
 };
 
 const MAX_CHAT_LENGTH = 256;
@@ -202,7 +204,7 @@ const sanitizeChatText = (value?: unknown): string => {
   if (trimmed.length > MAX_CHAT_LENGTH) {
     throw new HttpsError("invalid-argument", `Message exceeds ${MAX_CHAT_LENGTH} characters.`);
   }
-  return trimmed;
+  return maskProfanity(trimmed);
 };
 
 const trimMessages = async (

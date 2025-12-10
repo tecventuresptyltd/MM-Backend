@@ -3,6 +3,7 @@ import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { callableOptions } from "../shared/callableOptions.js";
 import { checkIdempotency } from "../core/idempotency.js";
 import { runTransactionWithReceipt } from "../core/transactions.js";
+import { maskProfanity } from "../shared/profanity.js";
 import { generateRequestId } from "./id.js";
 import { playerProfileRef } from "./refs.js";
 import {
@@ -47,7 +48,8 @@ const sanitizeMessage = (value: unknown): string | undefined => {
   if (trimmed.length === 0) {
     return undefined;
   }
-  return trimmed.slice(0, MESSAGE_MAX);
+  const clipped = trimmed.slice(0, MESSAGE_MAX);
+  return maskProfanity(clipped);
 };
 
 const sanitizeFriendTargets = (raw: unknown): string[] => {

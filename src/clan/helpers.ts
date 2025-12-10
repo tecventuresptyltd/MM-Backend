@@ -2,6 +2,7 @@ import * as admin from "firebase-admin";
 import type { CallableRequest } from "firebase-functions/v2/https";
 import { HttpsError } from "firebase-functions/v2/https";
 import { db } from "../shared/firestore.js";
+import { maskProfanity } from "../shared/profanity.js";
 
 export type ClanType = "anyone can join" | "invite only" | "closed";
 export type ClanRole = "leader" | "coLeader" | "member";
@@ -97,7 +98,7 @@ export const sanitizeName = (value?: unknown): string => {
       `Clan name must be between ${MIN_CLAN_NAME_LENGTH} and ${MAX_CLAN_NAME_LENGTH} characters.`,
     );
   }
-  return trimmed;
+  return maskProfanity(trimmed);
 };
 
 export const sanitizeDescription = (value?: unknown): string => {
@@ -111,7 +112,7 @@ export const sanitizeDescription = (value?: unknown): string => {
   if (trimmed.length > MAX_CLAN_DESCRIPTION_LENGTH) {
     throw new Error(`Description must be under ${MAX_CLAN_DESCRIPTION_LENGTH} characters.`);
   }
-  return trimmed;
+  return maskProfanity(trimmed);
 };
 
 export const resolveClanType = (value?: unknown): ClanType => {

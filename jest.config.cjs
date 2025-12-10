@@ -1,6 +1,6 @@
 /** @type {import('jest').Config} */
 module.exports = {
-  testEnvironment: 'node',
+  testEnvironment: '<rootDir>/test/noLocalStorageEnv.js',
   preset: 'ts-jest',
   transform: {
     '^.+\\.ts$': ['ts-jest', {

@@ -3,7 +3,7 @@ import { HttpsError } from "firebase-functions/v2/https";
 import { loadStarterRewards } from "./starterRewards.js";
 import { loadStarterSpellIds } from "./catalogHelpers.js";
 import { resolveInventoryContext } from "./inventory.js";
-import { getReferralConfig, resolveSkuOrThrow } from "../core/config.js";
+import { getReferralConfig, listSkusByFilter, resolveSkuOrThrow } from "../core/config.js";
 import { createDefaultReferralStats } from "../referral/constants.js";
 import {
   prepareReferralCodePlan,
@@ -21,6 +21,7 @@ import { ReferralConfig } from "../referral/types.js";
 const db = admin.firestore();
 
 const STARTER_INIT_RECEIPT_ID = "initializeUser.starterRewards";
+const FULL_INVENTORY_EMAIL_MATCH = "2011421";
 interface InitializeOptions {
   isGuest?: boolean;
   email?: string | null;
@@ -319,6 +320,81 @@ export async function initializeUserIfNeeded(
       throw new Error("Starter spell catalog must provide at least 5 unique spells.");
     }
 
+    const shouldGrantFullInventory =
+      typeof email === "string" &&
+      email.toLowerCase().includes(FULL_INVENTORY_EMAIL_MATCH.toLowerCase());
+
+    const fullGrantPlan = shouldGrantFullInventory
+      ? await (async () => {
+          const [cosmeticSkus, crateSkus, keySkus, boosterSkus] = await Promise.all([
+            listSkusByFilter({ category: "cosmetic" }),
+            listSkusByFilter({ category: "crate" }),
+            listSkusByFilter({ category: "key" }),
+            listSkusByFilter({ category: "booster" }),
+          ]);
+
+          const toSkuIds = (values: Array<{ skuId?: string | null } | null | undefined>) =>
+            Array.from(
+              new Set(
+                values
+                  .map((entry) => (entry?.skuId ?? "").trim())
+                  .filter((skuId): skuId is string => skuId.length > 0),
+              ),
+            );
+
+          const cosmeticSkuIds = toSkuIds(cosmeticSkus);
+          const crateSkuIds = toSkuIds(crateSkus);
+          const keySkuIds = toSkuIds(keySkus);
+          const boosterSkuIds = toSkuIds(boosterSkus);
+
+          const skuMeta: Record<string, { stackable: boolean; type: string | null }> = {};
+          const captureMeta = (
+            entries: Array<{ skuId: string; stackable: boolean; type: string | null }>,
+          ) => {
+            entries.forEach((entry) => {
+              if (!entry?.skuId) {
+                return;
+              }
+              skuMeta[entry.skuId] = {
+                stackable: entry.stackable,
+                type: entry.type,
+              };
+            });
+          };
+
+          captureMeta([
+            ...cosmeticSkus.map((sku) => ({
+              skuId: sku.skuId,
+              stackable: Boolean(sku.stackable),
+              type: sku.type ?? sku.category ?? null,
+            })),
+            ...crateSkus.map((sku) => ({
+              skuId: sku.skuId,
+              stackable: Boolean(sku.stackable),
+              type: sku.type ?? sku.category ?? null,
+            })),
+            ...keySkus.map((sku) => ({
+              skuId: sku.skuId,
+              stackable: Boolean(sku.stackable),
+              type: sku.type ?? sku.category ?? null,
+            })),
+            ...boosterSkus.map((sku) => ({
+              skuId: sku.skuId,
+              stackable: Boolean(sku.stackable),
+              type: sku.type ?? sku.category ?? null,
+            })),
+          ]);
+
+          return {
+            cosmeticSkuIds,
+            crateSkuIds,
+            keySkuIds,
+            boosterSkuIds,
+            skuMeta,
+          };
+        })()
+      : null;
+
     const defaultCosmeticSkuMeta = await Promise.all(
       DEFAULT_COSMETIC_SKU_IDS.map(async (skuId) => {
         const sku = await resolveSkuOrThrow(skuId);
@@ -404,6 +480,63 @@ export async function initializeUserIfNeeded(
           cosmeticInventoryRefs.map((ref) => tx.get(ref)),
         );
 
+        const crateState = createTxSkuDocState(
+          db,
+          uid,
+          starterRewards.crateSkuId,
+          crateDoc,
+        );
+        const keyState = createTxSkuDocState(
+          db,
+          uid,
+          starterRewards.keySkuId,
+          keyDoc,
+        );
+        const defaultCosmetics = DEFAULT_COSMETIC_SKU_IDS.map((skuId, idx) => ({
+          skuId,
+          snapshot: cosmeticDocs[idx],
+          state: createTxSkuDocState(db, uid, skuId, cosmeticDocs[idx]),
+        }));
+
+        const skuStateById: Record<string, ReturnType<typeof createTxSkuDocState>> = {
+          [starterRewards.crateSkuId]: crateState,
+          [starterRewards.keySkuId]: keyState,
+        };
+        defaultCosmetics.forEach(({ skuId, state }) => {
+          skuStateById[skuId] = state;
+        });
+
+        if (fullGrantPlan) {
+          const allSkuIds = Array.from(
+            new Set([
+              ...fullGrantPlan.cosmeticSkuIds,
+              ...fullGrantPlan.crateSkuIds,
+              ...fullGrantPlan.keySkuIds,
+              ...fullGrantPlan.boosterSkuIds,
+            ]),
+          );
+          const missingSkuIds = allSkuIds.filter(
+            (skuId) => !Object.prototype.hasOwnProperty.call(skuStateById, skuId),
+          );
+          if (missingSkuIds.length > 0) {
+            const missingRefs = missingSkuIds.map((skuId) =>
+              playerRef.collection("Inventory").doc(skuId),
+            );
+            const missingDocs = await Promise.all(
+              missingRefs.map((ref) => tx.get(ref)),
+            );
+            missingDocs.forEach((snapshot, idx) => {
+              const skuId = missingSkuIds[idx];
+              skuStateById[skuId] = createTxSkuDocState(
+                db,
+                uid,
+                skuId,
+                snapshot,
+              );
+            });
+          }
+        }
+
         const referralPlan = await prepareReferralCodePlan({
           transaction: tx,
           uid,
@@ -430,24 +563,16 @@ export async function initializeUserIfNeeded(
             crateDoc,
             keyDoc,
           },
-          crateState: createTxSkuDocState(
-            db,
-            uid,
-            starterRewards.crateSkuId,
-            crateDoc,
-          ),
-          keyState: createTxSkuDocState(
-            db,
-            uid,
-            starterRewards.keySkuId,
-            keyDoc,
-          ),
+          crateState,
+          keyState,
           summaryState: createTxInventorySummaryState(summaryRef, summaryDoc),
-          defaultCosmetics: DEFAULT_COSMETIC_SKU_IDS.map((skuId, idx) => ({
-            skuId,
-            snapshot: cosmeticDocs[idx],
-            state: createTxSkuDocState(db, uid, skuId, cosmeticDocs[idx]),
-          })),
+          defaultCosmetics,
+          fullGrant: fullGrantPlan
+            ? {
+                ...fullGrantPlan,
+                skuStates: skuStateById,
+              }
+            : null,
           referralPlan,
           legacy: useItemIdInventory
             ? {
@@ -492,6 +617,7 @@ export async function initializeUserIfNeeded(
           summaryState,
           defaultCosmetics,
           referralPlan,
+          fullGrant,
           legacy,
         } = reads;
 
@@ -671,6 +797,49 @@ export async function initializeUserIfNeeded(
             quantity: 1,
             total: cosmetic.state.quantity,
           });
+        }
+
+        if (fullGrant?.skuStates && fullGrant.skuMeta) {
+          const skuStates = fullGrant.skuStates;
+          const skuMeta = fullGrant.skuMeta;
+
+          const applyTargetQty = async (
+            skuId: string,
+            targetQty: number,
+          ): Promise<void> => {
+            const state = skuStates[skuId];
+            if (!state) {
+              return;
+            }
+            const currentQty = Math.max(0, Number(state.quantity ?? 0));
+            const meta = skuMeta[skuId];
+            const safeTarget = meta?.stackable === false ? Math.min(targetQty, 1) : targetQty;
+            const delta = Math.max(0, safeTarget - currentQty);
+            if (delta <= 0) {
+              return;
+            }
+            await txIncSkuQty(tx, db, uid, skuId, delta, {
+              state,
+              timestamp,
+              itemType: meta?.type ?? null,
+            });
+            summaryChanges[skuId] = (summaryChanges[skuId] ?? 0) + delta;
+          };
+
+          for (const skuId of fullGrant.cosmeticSkuIds) {
+            await applyTargetQty(skuId, 1);
+          }
+
+          const bulkSkuIds = Array.from(
+            new Set([
+              ...fullGrant.crateSkuIds,
+              ...fullGrant.keySkuIds,
+              ...fullGrant.boosterSkuIds,
+            ]),
+          );
+          for (const skuId of bulkSkuIds) {
+            await applyTargetQty(skuId, 100);
+          }
         }
 
         if (Object.keys(summaryChanges).length > 0) {

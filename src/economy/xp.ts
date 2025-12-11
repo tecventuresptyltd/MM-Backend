@@ -83,6 +83,7 @@ export const grantXP = onCall({ enforceAppCheck: false, region: "us-central1" },
         level: afterInfo.level,
         expProgress: afterInfo.expInLevel,
         expToNextLevel: afterInfo.expToNext,
+        expProgressDisplay: `${afterInfo.expInLevel} / ${afterInfo.expToNext}`,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
     transaction.update(profileRef, profileUpdate);

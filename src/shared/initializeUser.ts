@@ -17,6 +17,7 @@ import {
 } from "../inventory/index.js";
 import { runReadThenWrite } from "../core/tx.js";
 import { ReferralConfig } from "../referral/types.js";
+import { getLevelInfo } from "./xp.js";
 
 const db = admin.firestore();
 
@@ -29,24 +30,30 @@ interface InitializeOptions {
   authUser?: admin.auth.UserRecord | null;
 }
 
-const DEFAULT_PROFILE = (displayName: string, now: admin.firestore.FieldValue) => ({
-  displayName,
-  avatarId: 1,
-  exp: 0,
-  level: 1,
-  trophies: 0,
-  highestTrophies: 0,
-  careerCoins: 0,
-  totalWins: 0,
-  totalRaces: 0,
-  dailyStreak: 0,
-  dailyCooldownUntil: null,
-  boosters: {},
-  referralCode: null as string | null,
-  referredBy: null,
-  referralStats: createDefaultReferralStats(),
-  updatedAt: now,
-});
+const DEFAULT_PROFILE = (displayName: string, now: admin.firestore.FieldValue) => {
+  const levelInfo = getLevelInfo(0);
+  return {
+    displayName,
+    avatarId: 1,
+    exp: 0,
+    level: 1,
+    expProgress: levelInfo.expInLevel,
+    expToNextLevel: levelInfo.expToNext,
+    expProgressDisplay: `${levelInfo.expInLevel} / ${levelInfo.expToNext}`,
+    trophies: 0,
+    highestTrophies: 0,
+    careerCoins: 0,
+    totalWins: 0,
+    totalRaces: 0,
+    dailyStreak: 0,
+    dailyCooldownUntil: null,
+    boosters: {},
+    referralCode: null as string | null,
+    referredBy: null,
+    referralStats: createDefaultReferralStats(),
+    updatedAt: now,
+  };
+};
 
 const DEFAULT_ECONOMY = (now: admin.firestore.FieldValue) => ({
   coins: 1000,

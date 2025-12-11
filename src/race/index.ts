@@ -450,12 +450,15 @@ export const recordRaceResult = onCall({ enforceAppCheck: false, region: REGION 
     transaction.update(economyRef, economyUpdate);
 
     // Update Profile/Profile (trophies belong here)
-    const profileUpdate: { [key: string]: number | admin.firestore.FieldValue } = {
+    const profileUpdate: {
+      [key: string]: number | admin.firestore.FieldValue | string;
+    } = {
       trophies: trophiesAfterSettlement,
       exp: xpAfter,
       level: afterInfo.level,
       expProgress: afterInfo.expInLevel,
       expToNextLevel: afterInfo.expToNext,
+      expProgressDisplay: `${afterInfo.expInLevel} / ${afterInfo.expToNext}`,
       careerCoins: admin.firestore.FieldValue.increment(coinsGained),
       highestTrophies: newHighestTrophies,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),

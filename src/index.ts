@@ -1,6 +1,14 @@
 import * as admin from "firebase-admin";
+import { setGlobalOptions } from "firebase-functions/v2";
 import { onCall } from "firebase-functions/v2/https";
-import "./shared/region";
+import { REGION } from "./shared/region";
+
+// Default to cold-start (minInstances = 0). Override via MIN_INSTANCES env when deploying.
+const MIN_INSTANCES = Number(process.env.MIN_INSTANCES ?? "0");
+setGlobalOptions({
+  region: REGION,
+  minInstances: Number.isFinite(MIN_INSTANCES) ? MIN_INSTANCES : 0,
+});
 
 // Initialize Firebase Admin SDK
 admin.initializeApp();

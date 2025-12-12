@@ -421,7 +421,7 @@ Stores every grantable SKU keyed by `skuId`. SKU entries carry the display metad
       "durationSeconds": 86400,
       "rarity": "special",
       "stackable": true,
-      "purchasable": { "currency": "gems", "amount": 120 },
+      "purchasable": { "currency": "gems", "amount": 960 },
       "displayName": "Coin Booster (1 Day)"
     }
   }

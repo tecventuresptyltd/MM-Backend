@@ -4437,7 +4437,7 @@
           "rarity": "special",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 150,
+          "gemPrice": 80,
           "durationSeconds": 3600,
           "subType": "coin",
           "variant": {
@@ -4450,7 +4450,7 @@
           "rarity": "special",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 450,
+          "gemPrice": 320,
           "durationSeconds": 21600,
           "subType": "coin",
           "variant": {
@@ -4463,7 +4463,7 @@
           "rarity": "special",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 800,
+          "gemPrice": 560,
           "durationSeconds": 43200,
           "subType": "coin",
           "variant": {
@@ -4476,7 +4476,7 @@
           "rarity": "special",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 1350,
+          "gemPrice": 960,
           "subType": "coin",
           "durationSeconds": 86400,
           "variant": {
@@ -4501,7 +4501,7 @@
           "rarity": "special",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 100,
+          "gemPrice": 60,
           "durationSeconds": 3600,
           "subType": "exp",
           "variant": {
@@ -4514,7 +4514,7 @@
           "rarity": "special",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 300,
+          "gemPrice": 240,
           "durationSeconds": 21600,
           "subType": "exp",
           "variant": {
@@ -4527,7 +4527,7 @@
           "rarity": "special",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 500,
+          "gemPrice": 420,
           "durationSeconds": 43200,
           "subType": "exp",
           "variant": {
@@ -4540,7 +4540,7 @@
           "rarity": "special",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 800,
+          "gemPrice": 720,
           "subType": "exp",
           "durationSeconds": 86400,
           "variant": {

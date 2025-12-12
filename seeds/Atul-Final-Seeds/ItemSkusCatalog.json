@@ -4180,10 +4180,10 @@
       "subType": "coin",
       "purchasable": {
         "currency": "gems",
-        "amount": 150
+        "amount": 80
       },
       "metadata": null,
-      "gemPrice": 150,
+      "gemPrice": 80,
       "durationSeconds": 3600
     },
     "sku_eqzbetwm": {
@@ -4198,10 +4198,10 @@
       "subType": "coin",
       "purchasable": {
         "currency": "gems",
-        "amount": 450
+        "amount": 320
       },
       "metadata": null,
-      "gemPrice": 450,
+      "gemPrice": 320,
       "durationSeconds": 21600
     },
     "sku_wkm0amtg": {
@@ -4216,10 +4216,10 @@
       "subType": "coin",
       "purchasable": {
         "currency": "gems",
-        "amount": 800
+        "amount": 560
       },
       "metadata": null,
-      "gemPrice": 800,
+      "gemPrice": 560,
       "durationSeconds": 43200
     },
     "sku_tpt3379j8p": {
@@ -4234,10 +4234,10 @@
       "subType": "coin",
       "purchasable": {
         "currency": "gems",
-        "amount": 1350
+        "amount": 960
       },
       "metadata": null,
-      "gemPrice": 1350,
+      "gemPrice": 960,
       "durationSeconds": 86400
     },
     "sku_07hw4ry3": {
@@ -4252,10 +4252,10 @@
       "subType": "exp",
       "purchasable": {
         "currency": "gems",
-        "amount": 100
+        "amount": 60
       },
       "metadata": null,
-      "gemPrice": 100,
+      "gemPrice": 60,
       "durationSeconds": 3600
     },
     "sku_60fdgqkm": {
@@ -4270,10 +4270,10 @@
       "subType": "exp",
       "purchasable": {
         "currency": "gems",
-        "amount": 300
+        "amount": 240
       },
       "metadata": null,
-      "gemPrice": 300,
+      "gemPrice": 240,
       "durationSeconds": 21600
     },
     "sku_nhh7jtda": {
@@ -4288,10 +4288,10 @@
       "subType": "exp",
       "purchasable": {
         "currency": "gems",
-        "amount": 500
+        "amount": 420
       },
       "metadata": null,
-      "gemPrice": 500,
+      "gemPrice": 420,
       "durationSeconds": 43200
     },
     "sku_9pnmmjpscv": {
@@ -4306,10 +4306,10 @@
       "subType": "exp",
       "purchasable": {
         "currency": "gems",
-        "amount": 800
+        "amount": 720
       },
       "metadata": null,
-      "gemPrice": 800,
+      "gemPrice": 720,
       "durationSeconds": 86400
     }
   }

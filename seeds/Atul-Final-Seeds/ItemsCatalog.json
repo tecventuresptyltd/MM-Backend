@@ -4284,7 +4284,7 @@
           "rarity": "rare",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 150
+          "gemPrice": 100
         }
       ]
     },
@@ -4303,7 +4303,7 @@
           "rarity": "exotic",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 300
+          "gemPrice": 175
         }
       ]
     },
@@ -4322,7 +4322,7 @@
           "rarity": "legendary",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 500
+          "gemPrice": 300
         }
       ]
     },
@@ -4341,7 +4341,7 @@
           "rarity": "mythical",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 750
+          "gemPrice": 500
         }
       ]
     },
@@ -4379,7 +4379,7 @@
           "rarity": "exotic",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 250
+          "gemPrice": 175
         }
       ]
     },
@@ -4398,7 +4398,7 @@
           "rarity": "legendary",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 400
+          "gemPrice": 300
         }
       ]
     },
@@ -4417,7 +4417,7 @@
           "rarity": "mythical",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 600
+          "gemPrice": 500
         }
       ]
     },

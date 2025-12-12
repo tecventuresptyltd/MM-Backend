@@ -4287,7 +4287,7 @@
               "rarity": "rare",
               "stackable": true,
               "purchasable": true,
-              "gemPrice": 150
+              "gemPrice": 100
             }
           ]
         },
@@ -4306,7 +4306,7 @@
               "rarity": "exotic",
               "stackable": true,
               "purchasable": true,
-              "gemPrice": 300
+              "gemPrice": 175
             }
           ]
         },
@@ -4325,7 +4325,7 @@
               "rarity": "legendary",
               "stackable": true,
               "purchasable": true,
-              "gemPrice": 500
+              "gemPrice": 300
             }
           ]
         },
@@ -4344,7 +4344,7 @@
               "rarity": "mythical",
               "stackable": true,
               "purchasable": true,
-              "gemPrice": 750
+              "gemPrice": 500
             }
           ]
         },
@@ -4382,7 +4382,7 @@
               "rarity": "exotic",
               "stackable": true,
               "purchasable": true,
-              "gemPrice": 250
+              "gemPrice": 175
             }
           ]
         },
@@ -4401,7 +4401,7 @@
               "rarity": "legendary",
               "stackable": true,
               "purchasable": true,
-              "gemPrice": 400
+              "gemPrice": 300
             }
           ]
         },
@@ -4420,7 +4420,7 @@
               "rarity": "mythical",
               "stackable": true,
               "purchasable": true,
-              "gemPrice": 600
+              "gemPrice": 500
             }
           ]
         },
@@ -9583,10 +9583,10 @@
           "subType": null,
           "purchasable": {
             "currency": "gems",
-            "amount": 150
+            "amount": 100
           },
           "metadata": null,
-          "gemPrice": 150,
+          "gemPrice": 100,
           "durationSeconds": null
         },
         "sku_e8e7jeba7v": {
@@ -9601,10 +9601,10 @@
           "subType": null,
           "purchasable": {
             "currency": "gems",
-            "amount": 300
+            "amount": 175
           },
           "metadata": null,
-          "gemPrice": 300,
+          "gemPrice": 175,
           "durationSeconds": null
         },
         "sku_n9hsc0wxxk": {
@@ -9619,10 +9619,10 @@
           "subType": null,
           "purchasable": {
             "currency": "gems",
-            "amount": 500
+            "amount": 300
           },
           "metadata": null,
-          "gemPrice": 500,
+          "gemPrice": 300,
           "durationSeconds": null
         },
         "sku_kgkjadrd79": {
@@ -9637,10 +9637,10 @@
           "subType": null,
           "purchasable": {
             "currency": "gems",
-            "amount": 750
+            "amount": 500
           },
           "metadata": null,
-          "gemPrice": 750,
+          "gemPrice": 500,
           "durationSeconds": null
         },
         "sku_p3yxnyhkpx": {
@@ -9673,10 +9673,10 @@
           "subType": null,
           "purchasable": {
             "currency": "gems",
-            "amount": 250
+            "amount": 175
           },
           "metadata": null,
-          "gemPrice": 250,
+          "gemPrice": 175,
           "durationSeconds": null
         },
         "sku_acxbr542j1": {
@@ -9691,10 +9691,10 @@
           "subType": null,
           "purchasable": {
             "currency": "gems",
-            "amount": 400
+            "amount": 300
           },
           "metadata": null,
-          "gemPrice": 400,
+          "gemPrice": 300,
           "durationSeconds": null
         },
         "sku_hq5ywspmr5": {
@@ -9709,10 +9709,10 @@
           "subType": null,
           "purchasable": {
             "currency": "gems",
-            "amount": 600
+            "amount": 500
           },
           "metadata": null,
-          "gemPrice": 600,
+          "gemPrice": 500,
           "durationSeconds": null
         },
         "sku_amf7txny": {

@@ -13,6 +13,7 @@ import {
 import { ItemSku, CarLevel } from "../shared/types.js";
 import { SeededRNG } from "./lib/random.js";
 import { resolveCarStats } from "./lib/stats.js";
+import { calculateLastPlaceDelta, DEFAULT_TROPHY_CONFIG } from "./economy.js";
 import * as crypto from "crypto";
 
 const db = admin.firestore();
@@ -271,6 +272,14 @@ export const prepareRace = onCall({ region: REGION }, async (request) => {
       };
     });
 
+    const lobbyRatings: number[] = [playerTrophies, ...bots.map((bot) => bot.trophies)];
+    const rawPreDeduct = calculateLastPlaceDelta(0, lobbyRatings, DEFAULT_TROPHY_CONFIG);
+    const normalizedPlayerTrophies = Math.max(
+      0,
+      Math.floor(Number.isFinite(playerTrophies) ? playerTrophies : 0),
+    );
+    const preDeductedTrophies = rawPreDeduct < 0 ? Math.max(rawPreDeduct, -normalizedPlayerTrophies) : rawPreDeduct;
+
     const raceId = `race_${Math.random().toString(36).slice(2, 10)}`;
     const issuedAt = Date.now();
     const payload = {
@@ -289,6 +298,7 @@ export const prepareRace = onCall({ region: REGION }, async (request) => {
         deckIndex,
       },
       bots,
+      preDeductedTrophies,
     };
     const proof = { hmac: hmacSign(payload) };
     const result = { ...payload, proof };

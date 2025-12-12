@@ -643,10 +643,11 @@ Input:
 
 Reads (cold): CarsCatalog, SpellsCatalog, ItemSkusCatalog, BotNames (singleton), BotConfig, CarTuningConfig; Player: Profile/Profile, Loadouts/Active, Spells/Levels, Garage/Cars, SpellDecks/Decks.
 
-Output: `{ raceId, issuedAt, seed, laps, trackId, player: { uid, trophies, carId, carStats: { display, real }, cosmetics, spells, deckIndex }, bots: [{ displayName, trophies, carId, carStats, cosmetics, spells }...], proof: { hmac } }`. Cosmetic payloads include both `*SkuId` and `*ItemId` so the client can render legacy assets while operating on SKU inventory. Bot display names are sampled from `/GameData/v1/config/BotNames.names[]` and trophies are clamped to `playerTrophies ± 100` (no negative trophies) before resolving rarities and spell bands.
+Output: `{ raceId, issuedAt, seed, laps, trackId, preDeductedTrophies, player: { uid, trophies, carId, carStats: { display, real }, cosmetics, spells, deckIndex }, bots: [{ displayName, trophies, carId, carStats, cosmetics, spells }...], proof: { hmac } }`. Cosmetic payloads include both `*SkuId` and `*ItemId` so the client can render legacy assets while operating on SKU inventory. Bot display names are sampled from `/GameData/v1/config/BotNames.names[]` and trophies are clamped to `playerTrophies ± 100` (no negative trophies) before resolving rarities and spell bands.
 
 Notes:
 - Resolves car stats via `CarsCatalog.cars[carId].levels[level]` using value-vs-real model. Players use `CarTuningConfig.player`; bots use `CarTuningConfig.bot`.
+- `preDeductedTrophies` mirrors the last-place penalty used by `startRace`, using the lobby `[player, ...bots]` with the player at index `0`, and is clamped so it never removes more trophies than the player currently holds.
 - Deterministic when `seed` is supplied; idempotent via `opId` receipt.
 - Bot display names are sampled without replacement from `/GameData/v1/config/BotNames`. When the pool is exhausted the function synthesizes deterministic fallback names so no two bots in a lobby ever share the same handle.
 

@@ -141,6 +141,8 @@ describe("race.prepareRace", () => {
     expect(res1.player.uid).toEqual(uid);
     expect(Array.isArray(res1.bots)).toBe(true);
     expect(res1.bots.length).toBe(3);
+    expect(Number.isInteger(res1.preDeductedTrophies)).toBe(true);
+    expect(res1.preDeductedTrophies).toBe(res2.preDeductedTrophies);
     expect(res1.player.carStats.real.topSpeed).toBeGreaterThan(0);
     // Determinism check on bot carIds and trophies
     const sig1 = res1.bots.map((b: any) => `${b.carId}:${b.trophies}`).join(";");

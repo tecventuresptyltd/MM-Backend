@@ -206,7 +206,11 @@ export const setSubscriptionFlag = onCall({ region: REGION }, async (request) =>
     }
 
     const profileData = profileSnap.exists ? profileSnap.data() ?? {} : {};
-    const subscriptions = (profileData.subscriptions ?? {}) as Record<string, boolean>;
+    const subscribedPlatforms = (
+      profileData.subscribedPlatforms ??
+      profileData.subscriptions ??
+      {}
+    ) as Record<string, boolean>;
     const rewarded = (profileData.subscriptionRewards ?? {}) as Record<string, boolean>;
     const alreadyRewarded = rewarded[key] === true;
     const willSubscribe = value === true;
@@ -219,12 +223,16 @@ export const setSubscriptionFlag = onCall({ region: REGION }, async (request) =>
       });
     }
 
+    const nextSubscribedPlatforms = { ...subscribedPlatforms, [key]: value };
+    const nextSubscriptionRewards =
+      gemsGranted > 0 ? { ...rewarded, [key]: true } : rewarded;
+
     const profileUpdate: Record<string, unknown> = {
-      [`subscriptions.${key}`]: value,
+      subscribedPlatforms: nextSubscribedPlatforms,
+      subscriptionRewards: nextSubscriptionRewards,
+      // Remove legacy mirror to keep shape clean.
+      subscriptions: admin.firestore.FieldValue.delete(),
     };
-    if (gemsGranted > 0) {
-      profileUpdate[`subscriptionRewards.${key}`] = true;
-    }
 
     transaction.set(profileRef, profileUpdate, { merge: true });
   });

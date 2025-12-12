@@ -138,7 +138,7 @@ These functions manage player preferences, starter rewards, and profile metadata
 | `setAgeYears` | Stores the derived birth year and 13+ compliance flag. | HTTPS `onCall` |
 | `getPlayerAge` | Reads the stored birth year and returns the computed age. | HTTPS `onCall` |
 | `setAvatar` | Updates the avatar ID on the profile singleton. | HTTPS `onCall` |
-| `setSubscriptionFlag` | Toggles social subscription flags (YouTube, Discord, etc.) and grants 25 gems the first time each platform is enabled. | HTTPS `onCall` |
+| `setSubscriptionFlag` | Toggles social subscription flags (YouTube, Discord, etc.), storing under `subscribedPlatforms.{key}`, and grants 25 gems the first time each platform is enabled. | HTTPS `onCall` |
 | `claimStarterOffer` | One-time grant of the starter crate/key bundle with idempotency. | HTTPS `onCall` |
 
 ---
@@ -202,4 +202,3 @@ The functions below load master data from the canonical catalog documents under 
 | `getFriends` | Returns the caller's confirmed friends using the cached snapshots stored in `/Social/Friends` (rehydrates only if missing). | HTTPS `onCall` |
 | `viewPlayerProfile` | Returns the public summary + stats + social metadata for any `uid`. | HTTPS `onCall` |
 | `socialPresenceMirrorLastSeen` | Scheduled job mirroring RTDB `/presence/lastSeen` into `/Players/{uid}/Social/Profile`. | Cloud Scheduler |
-

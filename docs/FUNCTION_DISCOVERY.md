@@ -165,6 +165,7 @@ Core functions for user initialization and game maintenance.
 | `getMaintenanceStatus` | Retrieves the current maintenance status of the game. | HTTPS `onCall` |
 | `claimMaintenanceReward` | Allows a player to claim a reward after a maintenance period. | HTTPS `onCall` |
 | `healthcheck` | A simple health check endpoint. | HTTPS Request |
+| `submitFeedback` | Saves an authenticated player's feedback text (and optional name) under `/Feedbacks`. | HTTPS `onCall` |
 
 ---
 

@@ -1118,6 +1118,8 @@ When the SKU is coin-priced the response mirrors this shape with `currency: "coi
 
 **Purpose:** Convenience wrapper around `purchaseShopSku` that resolves the crate/key SKUs from `/GameData/v1/catalogs/CratesCatalog` and forwards the purchase. Returns a crate/key specific payload (`opId`, `crateId`, `kind`, `skuId`, gem deltas) expected by the legacy garage UI. New flows may call `purchaseShopSku` directly when they already know the target `skuId`.
 
+**Garage pricing (gems per unit, catalog-driven):** Common 50, Rare 100, Exotic 175, Legendary 300, Mythical 500 for both crates and keys.
+
 **Input:**
 ```json
 {
@@ -1145,6 +1147,33 @@ When the SKU is coin-priced the response mirrors this shape with `currency: "coi
   ```
 
 **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `NOT_FOUND`, `FAILED_PRECONDITION`, `RESOURCE_EXHAUSTED`, `INTERNAL`
+
+
+---
+
+### `submitFeedback`
+
+**Purpose:** Stores a player-submitted feedback blob in a top-level `Feedbacks` collection for later review. Accepts arbitrary-length text (bounded by the Firestore 1 MB document limit) plus an optional display name.
+
+**Input:**
+```json
+{
+  "feedback": "string (required)",
+  "name": "string (optional)"
+}
+```
+
+**Output:**
+```json
+{ "success": true, "id": "auto-generated feedback doc id" }
+```
+
+**Behavior:**
+- Requires authentication; rejects empty or non-string payloads.
+- Trims whitespace and rejects inputs that would exceed the Firestore document size limit (~950 KB buffer applied).
+- Writes a document under `/Feedbacks/{feedbackId}` with `{ userId, name, feedback, createdAt }`.
+
+**Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `INTERNAL`
 
 
 ## Social & Leaderboards

@@ -439,7 +439,7 @@ This document provides detailed contracts for each Cloud Function, including inp
 
 ### `setSubscriptionFlag`
 
-**Purpose:** Sets the player's social media subscription preferences in `/Players/{uid}/Social/Subscriptions`.
+**Purpose:** Sets the player's social media subscription preferences in `/Players/{uid}/Profile/Profile`. Grants a one-time reward of **25 gems** the first time each platform is set to `true`.
 
 **Input:**
 
@@ -453,7 +453,7 @@ This document provides detailed contracts for each Cloud Function, including inp
 
 **Output:**
 
-*   **Success:** `{ "status": "ok" }`
+*   **Success:** `{ "status": "ok", "gemsGranted": 0 | 25 }` (25 when a platform is first enabled)
 
 **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`
 

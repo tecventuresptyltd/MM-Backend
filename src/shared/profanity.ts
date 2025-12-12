@@ -1,9 +1,17 @@
 import fs from "fs";
 import path from "path";
 
-const rawProfaneWords = JSON.parse(
-  fs.readFileSync(path.join(__dirname, "profanityList.json"), "utf8"),
-) as string[];
+const PROFANITY_PATHS = [
+  path.join(__dirname, "profanityList.json"), // built asset
+  path.join(__dirname, "../../src/shared/profanityList.json"), // fallback to source for local/dev
+];
+
+const profanityListPath = PROFANITY_PATHS.find((p) => fs.existsSync(p));
+if (!profanityListPath) {
+  throw new Error("profanityList.json not found alongside shared/profanity");
+}
+
+const rawProfaneWords = JSON.parse(fs.readFileSync(profanityListPath, "utf8")) as string[];
 
 const LEET_MAP: Record<string, string> = {
   "@": "a",

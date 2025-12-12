@@ -21,6 +21,7 @@ import { updateClanMemberSnapshot } from "../clan/helpers.js";
 import { refreshFriendSnapshots } from "../Socials/updateSnapshots.js";
 
 const db = admin.firestore();
+const SUBSCRIPTION_REWARD_GEMS = 25;
 
 export const checkUsernameAvailable = onCall({ region: REGION }, async (request) => {
   const { username } = request.data;
@@ -191,9 +192,44 @@ export const setSubscriptionFlag = onCall({ region: REGION }, async (request) =>
   }
 
   const profileRef = db.collection("Players").doc(uid).collection("Profile").doc("Profile");
-  await profileRef.set({ [`subscriptions.${key}`]: value }, { merge: true });
+  const economyRef = db.doc(`Players/${uid}/Economy/Stats`);
 
-  return { status: "ok" };
+  let gemsGranted = 0;
+  await db.runTransaction(async (transaction) => {
+    const [profileSnap, economySnap] = await Promise.all([
+      transaction.get(profileRef),
+      transaction.get(economyRef),
+    ]);
+
+    if (!economySnap.exists) {
+      throw new HttpsError("failed-precondition", "Player economy stats not found.");
+    }
+
+    const profileData = profileSnap.exists ? profileSnap.data() ?? {} : {};
+    const subscriptions = (profileData.subscriptions ?? {}) as Record<string, boolean>;
+    const rewarded = (profileData.subscriptionRewards ?? {}) as Record<string, boolean>;
+    const alreadyRewarded = rewarded[key] === true;
+    const willSubscribe = value === true;
+
+    if (willSubscribe && !alreadyRewarded) {
+      gemsGranted = SUBSCRIPTION_REWARD_GEMS;
+      transaction.update(economyRef, {
+        gems: admin.firestore.FieldValue.increment(SUBSCRIPTION_REWARD_GEMS),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+
+    const profileUpdate: Record<string, unknown> = {
+      [`subscriptions.${key}`]: value,
+    };
+    if (gemsGranted > 0) {
+      profileUpdate[`subscriptionRewards.${key}`] = true;
+    }
+
+    transaction.set(profileRef, profileUpdate, { merge: true });
+  });
+
+  return { status: "ok", gemsGranted };
 });
 export const claimStarterOffer = onCall({ region: REGION }, async (request) => {
   if (!request.auth) {

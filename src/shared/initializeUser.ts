@@ -308,7 +308,7 @@ export async function initializeUserIfNeeded(
         error instanceof Error ? error.message : error,
       );
       referralConfig = {
-        codeLength: 8,
+        codeLength: 6,
         alphabet: "0123456789ABCDEFGHJKMNPQRSTVWXYZ",
         maxClaimPerInvitee: 1,
         maxClaimsPerInviter: 1000,

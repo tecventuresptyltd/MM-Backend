@@ -251,13 +251,9 @@ export async function getReferralConfig(): Promise<ReferralConfig> {
 
   const data = snapshot.data() ?? {};
   const alphabet = normaliseAlphabet(data.alphabet, CROCKFORD_ALPHABET);
-  const codeLength = (() => {
-    const raw = toPositiveInteger(data.codeLength, 8);
-    if (raw < 6 || raw > 10) {
-      return Math.min(Math.max(raw, 6), 10);
-    }
-    return raw;
-  })();
+  // Enforce 6-character referral codes regardless of stored config
+  const raw = toPositiveInteger(data.codeLength, 6);
+  const codeLength = 6;
   if (codeLength > alphabet.length) {
     throw new Error(
       `ReferralConfig codeLength (${codeLength}) exceeds alphabet size (${alphabet.length}).`,

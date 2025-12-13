@@ -329,3 +329,31 @@ export const updateClanMemberSnapshot = async (
   }
   await clanMembersCollection(clanId).doc(uid).set(fields, { merge: true });
 };
+
+export const applyClanTrophyDelta = async (uid: string, trophyDelta: number) => {
+  if (!Number.isFinite(trophyDelta) || trophyDelta === 0) {
+    return;
+  }
+
+  await db.runTransaction(async (transaction) => {
+    const stateSnap = await transaction.get(playerClanStateRef(uid));
+    const clanId = stateSnap.data()?.clanId;
+    if (typeof clanId !== "string" || clanId.length === 0) {
+      return;
+    }
+
+    const memberRef = clanMembersCollection(clanId).doc(uid);
+    const memberSnap = await transaction.get(memberRef);
+    if (!memberSnap.exists) {
+      return;
+    }
+
+    transaction.update(clanRef(clanId), {
+      "stats.trophies": admin.firestore.FieldValue.increment(trophyDelta),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    transaction.update(memberRef, {
+      trophies: admin.firestore.FieldValue.increment(trophyDelta),
+    });
+  });
+};

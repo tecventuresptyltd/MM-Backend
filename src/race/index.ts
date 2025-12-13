@@ -7,6 +7,7 @@ import { refreshFriendSnapshots } from "../Socials/updateSnapshots.js";
 import { grantInventoryRewards } from "../shared/inventoryAwards.js";
 import { maybeTriggerFlashSales } from "../triggers/flashSales.js";
 import { buildBotLoadout } from "../game-systems/botLoadoutHelper.js";
+import { applyClanTrophyDelta } from "../clan/helpers.js";
 import {
   DEFAULT_COIN_CONFIG,
   DEFAULT_EXP_CONFIG,
@@ -509,6 +510,15 @@ export const recordRaceResult = onCall({ enforceAppCheck: false, region: REGION 
     await maybeTriggerFlashSales({ uid });
   } catch (error) {
     logger.warn("Flash sale trigger failed after race result", { uid, error });
+  }
+
+  const trophyDelta = Number(result.rewards?.trophies ?? 0);
+  if (Number.isFinite(trophyDelta) && trophyDelta !== 0) {
+    try {
+      await applyClanTrophyDelta(uid, trophyDelta);
+    } catch (error) {
+      logger.warn("Failed to apply clan trophy delta after race", { uid, raceId, trophyDelta, error });
+    }
   }
 
   await refreshFriendSnapshots(uid);

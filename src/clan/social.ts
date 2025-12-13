@@ -38,7 +38,7 @@ import { maskProfanity } from "../shared/profanity.js";
 const { FieldValue } = admin.firestore;
 const CHAT_FETCH_LIMIT = 25;
 const MAX_BOOKMARK_REFRESH_BATCH = 20;
-const DEFAULT_GLOBAL_ROOM_REGION = "global";
+const DEFAULT_GLOBAL_ROOM_REGION: string = "global_general";
 const GLOBAL_ROOM_WARMUP_TARGET = 20;
 const GLOBAL_ROOM_SOFT_CAP = 80;
 const GLOBAL_ROOM_HARD_CAP = 100;

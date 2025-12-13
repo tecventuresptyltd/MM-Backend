@@ -1,7 +1,7 @@
 import * as admin from "firebase-admin";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { db } from "../shared/firestore";
-import { verifyGoogleIdToken } from "../shared/auth";
+import { verifyGoogleIdToken } from "../shared/googleVerify";
 import { ensureOp } from "../shared/idempotency";
 import { initializeUserIfNeeded } from "../shared/initializeUser";
 
@@ -18,8 +18,9 @@ export const bindGoogle = onCall({ enforceAppCheck: false, region: "us-central1"
 
   await ensureOp(uid, opId);
 
-  const decodedToken = await verifyGoogleIdToken(idToken);
-  const googleEmail = decodedToken.email;
+  const { email: googleEmail } = await verifyGoogleIdToken(idToken).catch(() => {
+    throw new HttpsError("invalid-argument", "Invalid Google token.");
+  });
 
   if (googleEmail) {
     const normEmail = googleEmail.toLowerCase().trim();

@@ -128,7 +128,8 @@ const roomsQueryForRegion = (region: string) =>
   roomsCollection()
     .where("type", "==", "global")
     .where("region", "==", region)
-    .orderBy("connectedCount", "desc")
+    .where("isArchived", "==", false)
+    .orderBy("connectedCount", "asc")
     .limit(GLOBAL_ROOM_QUERY_LIMIT);
 
 const loadRoomCandidates = async (
@@ -900,8 +901,8 @@ export const assignGlobalChatRoom = onCall(callableOptions(), async (request) =>
     const profileData = profileSnap.data() ?? {};
     const storedRoomId =
       typeof profileData.assignedChatRoomId === "string" ? profileData.assignedChatRoomId : null;
-    const locationRegion = sanitizeRoomRegion(profileData.location);
-    const region = requestedRegion ?? locationRegion ?? DEFAULT_GLOBAL_ROOM_REGION;
+    // Force everyone into the same pool for high concurrency at launch
+    const region = "global_general";
 
     const attachToExisting = async (roomId: string | null): Promise<AssignGlobalChatRoomResponse | null> => {
       if (!roomId) {

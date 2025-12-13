@@ -1,5 +1,50 @@
 # Release Notes
 
+## 2025-12-13: Global Chat Bug Fixes & Region Merge
+
+This release fixes a critical bug in the global chat room assignment logic and implements a region merge strategy for launch.
+
+### Bug Fixes
+
+*   **Fixed "Ghost Room" Bug:** The `assignGlobalChatRoom` function was creating new rooms even when existing rooms had available capacity. This was caused by archived rooms consuming all query result slots and being filtered out after the query limit was applied.
+    *   **Solution:** Added `.where("isArchived", "==", false)` filter to the Firestore query to exclude archived rooms before the limit is applied.
+    *   **Impact:** Users will now properly fill rooms to 80 users before new rooms are created.
+
+### Breaking Changes
+
+*   **Region Merge:** All users are now assigned to the `"global_general"` region regardless of their location or the `region` parameter passed to `assignGlobalChatRoom`.
+    *   **Rationale:** Maximize concurrency and ensure high user density in chat rooms during launch.
+    *   **Client Impact:** The `region` parameter in `assignGlobalChatRoom` is now ignored. All responses will return `region: "global_general"`.
+    *   **Future:** May be regionalized post-launch based on user distribution and performance metrics.
+
+### Performance Improvements
+
+*   **Query Optimization:** Changed `assignGlobalChatRoom` query ordering from `DESC` to `ASC` on `connectedCount` field.
+    *   **Benefit:** Warmup rooms (<20 users) now appear first in query results, improving selection efficiency.
+
+### Index Updates
+
+*   **Required:** Updated Firestore composite index for `Rooms` collection to support the new query pattern:
+    ```json
+    {
+      "collectionId": "Rooms",
+      "fields": [
+        { "fieldPath": "type", "order": "ASCENDING" },
+        { "fieldPath": "region", "order": "ASCENDING" },
+        { "fieldPath": "isArchived", "order": "ASCENDING" },
+        { "fieldPath": "connectedCount", "order": "ASCENDING" }
+      ]
+    }
+    ```
+
+### Expected Behavior After Deployment
+
+*   **User 1-80:** All join `global_general_xxxxx` (count increases from 1 to 80)
+*   **User 81:** Creates `global_general_yyyyy` (count: 1) because first room hit softCap
+*   **Archived rooms:** Completely ignored by assignment logic, won't interfere with room selection
+
+---
+
 ## 2025-10-21: Player Data Refactor
 
 This release introduces significant breaking changes to the player data model in Firestore. Client-side code that reads player data must be updated to reflect the new structure.

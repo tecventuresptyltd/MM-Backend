@@ -2173,19 +2173,26 @@ This section documents all clan and chat-related Cloud Functions, with input, ou
 
 ### `assignGlobalChatRoom`
   **Purpose:** Sticky global chat assignment + load balancing. Runs a Firestore transaction that reuses the caller's previous room when possible, increments `Rooms/{roomId}.connectedCount`, updates `/Players/{uid}/Profile/Profile.assignedChatRoomId`, and creates a new room document if every candidate in the region has reached `hardCap`.
+  
+  **Recent Updates (Dec 2025):**
+  * Fixed critical "ghost room" bug: Query now filters `isArchived == false` to prevent archived rooms from hiding active rooms
+  * Region hardcoded to `"global_general"` for all users (launch strategy for maximum concurrency)
+  * Query optimization: Changed ordering to `connectedCount ASC` for faster warmup room discovery
+  
   **Input:**
   ```json
   {
-    "region": "string (optional, normalized server-side)"
+    "region": "string (optional, currently ignored - all users join global_general)"
   }
   ```
-  **Output:** `{ "roomId": "string", "region": "string", "connectedCount": 42, "softCap": 80, "hardCap": 100 }`
+  **Output:** `{ "roomId": "string", "region": "global_general", "connectedCount": 42, "softCap": 80, "hardCap": 100 }`
   **Errors:** `UNAUTHENTICATED`, `FAILED_PRECONDITION`
   
   Notes:
   * Clients call this once per session (or when opening the Global Chat tab) and cache the result for ~30 minutes.
   * The callable enforces sticky room ownership (the profile field is the source of truth) and keeps counts consistent with the RTDB offline trigger.
-  * Regions fall back to `"global"` automatically if the requested region has no active rooms.
+  * All users currently join the `"global_general"` region pool regardless of their location (may be regionalized post-launch).
+  * Water-filling algorithm prioritizes: (1) Warmup rooms <20 users, (2) Healthy rooms 20-79 users (picks fullest), (3) Overflow rooms 80-99 users.
   
   ---
   

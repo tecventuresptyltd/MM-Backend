@@ -1,7 +1,12 @@
 # Mystic Motors Global Chat Plan (RTDB Implementation)
 
-**Last Updated:** November 2025  
-**Status:** Implemented (ready for QA + live clients)
+**Last Updated:** December 13, 2025  
+**Status:** Implemented + Bug Fixes Applied (ready for QA + live clients)
+
+**Recent Changes (Dec 2025):**
+- Fixed critical "ghost room" bug where archived rooms prevented users from joining active rooms
+- Merged all regions into `global_general` for maximum concurrency at launch
+- Optimized query ordering for faster warmup room discovery
 
 This note documents the final design for global chat after the RTDB migration. It replaces the earlier brainstorm and should be treated as the source of truth for engineering + Unity implementation.
 
@@ -27,12 +32,14 @@ Callable Path: `assignGlobalChatRoom`
 2. The function runs a Firestore transaction:
    - Reads `/Players/{uid}/Profile/Profile` to check an existing `assignedChatRoomId`.
    - If the stored room is active, not archived, and below `hardCap`, reuse it and increment `connectedCount`.
-   - Otherwise, query `Rooms` within the preferred region (request payload > profile.location > `"global"`).
+   - Otherwise, query `Rooms` for the `global_general` region (all users are merged into a single pool for launch).
+     - **Query filters:** `type == "global"`, `region == "global_general"`, `isArchived == false`
+     - **Query ordering:** `connectedCount ASC` (finds warmup rooms faster)
    - Priority order:
-     1. **Warm-up rooms** (< 20 users) so empty rooms fill up first.
+     1. **Warm-up rooms** (< 20 users) so empty rooms fill up first (picks emptiest).
      2. **Healthy rooms** (< `softCap`, default 80) preferring the fullest one (packs players tightly).
-     3. **Overflow** (anything < `hardCap`, default 100).
-   - If no room matches, create a new doc (`roomId = {region}_{shortid}`) with sensible defaults: `{ region, type: "global", slowModeSeconds: 3, maxMessages: 200, connectedCount: 1 }`.
+     3. **Overflow** (anything < `hardCap`, default 100) (picks emptiest for load distribution).
+   - If no room matches, create a new doc (`roomId = global_general_{shortid}`) with sensible defaults: `{ region: "global_general", type: "global", slowModeSeconds: 3, maxMessages: 200, connectedCount: 1, isArchived: false }`.
    - The transaction updates both the room doc and the player profile (`assignedChatRoomId`).
 3. Returns `{ roomId, region, connectedCount, softCap, hardCap }` for client telemetry/logging.
 
@@ -48,7 +55,7 @@ Sticky assignment keeps conversations intact. When the Unity client reconnects, 
 | Field | Type | Notes |
 | --- | --- | --- |
 | `roomId` | string | Mirrors the document ID (`region_suffix`). |
-| `region` | string | Normalised lowercase (e.g., `global`, `us-east`). |
+| `region` | string | Currently hardcoded to `"global_general"` for all users (launch strategy). |
 | `type` | string | Always `"global"` for this flow (reserved for future `"system"`). |
 | `connectedCount` | number | Incremented on assignment; decremented via trigger. |
 | `softCap` | number | Preferred occupancy (default 80). |
@@ -113,7 +120,7 @@ All sensitive writes still flow through Cloud Functions; RTDB rules deny direct 
    ```csharp
    var assignPayload = new Dictionary<string, object>
    {
-       { "region", PlayerLocale.CurrentRegion } // optional
+       { "region", PlayerLocale.CurrentRegion } // NOTE: Currently ignored, all users join global_general
    };
    var assignResult = await Cf.CallFunctionAsync(cfEndpoints.AssignGlobalChatRoom, assignPayload);
    var roomId = assignResult["roomId"].ToString();

@@ -78,16 +78,16 @@ Realtime Database (RTDB):
 
 Firestore doc that tracks global chat rooms and their load-balancing metadata. Fields:
 
-* `roomId` *(string)* ? mirror of the doc ID (`{region}_{random}`).
-* `region` *(string)* ? normalized lowercase string (e.g. `global`, `us-east`).
-* `type` *(string)* ? `"global"` today, reserved for `"system"` rooms later.
-* `connectedCount` *(number)* ? incremented by `assignGlobalChatRoom`, decremented by the RTDB trigger when `/presence/online/{uid}` is removed.
-* `softCap` *(number)* ? preferred occupancy (default 80). Assignment prioritizes rooms below this threshold.
-* `hardCap` *(number)* ? absolute maximum (default 100). Rooms at this limit are skipped.
-* `slowModeSeconds` *(number)* ? per-user delay enforced by `sendGlobalChatMessage`.
-* `maxMessages` *(number)* ? used by the scheduled cleanup job when trimming RTDB history.
-* `isArchived` *(boolean)* ? prevents new assignments when moderators retire a room.
-* `createdAt`, `updatedAt`, `lastActivityAt` *(timestamp)* ? set by Cloud Functions.
+* `roomId` *(string)* – mirror of the doc ID (`{region}_{random}`).
+* `region` *(string)* – normalized lowercase string. **Currently hardcoded to `"global_general"` for all users (launch strategy for maximum concurrency).**
+* `type` *(string)* – `"global"` today, reserved for `"system"` rooms later.
+* `connectedCount` *(number)* – incremented by `assignGlobalChatRoom`, decremented by the RTDB trigger when `/presence/online/{uid}` is removed.
+* `softCap` *(number)* – preferred occupancy (default 80). Assignment prioritizes rooms below this threshold.
+* `hardCap` *(number)* – absolute maximum (default 100). Rooms at this limit are skipped.
+* `slowModeSeconds` *(number)* – per-user delay enforced by `sendGlobalChatMessage`.
+* `maxMessages` *(number)* – used by the scheduled cleanup job when trimming RTDB history.
+* `isArchived` *(boolean)* – prevents new assignments when moderators retire a room. **Critical: Query now filters `isArchived == false` to prevent archived rooms from hiding active rooms (Dec 2025 bug fix).**
+* `createdAt`, `updatedAt`, `lastActivityAt` *(timestamp)* – set by Cloud Functions.
 
 Messages for both global and clan chat live exclusively in RTDB (`/chat_messages/{streamId}/{messageId}`); there is no `Messages` subcollection under `/Rooms`.
 

@@ -112,7 +112,8 @@
       "fields": [
         { "fieldPath": "type", "order": "ASCENDING" },
         { "fieldPath": "region", "order": "ASCENDING" },
-        { "fieldPath": "connectedCount", "order": "DESCENDING" }
+        { "fieldPath": "isArchived", "order": "ASCENDING" },
+        { "fieldPath": "connectedCount", "order": "ASCENDING" }
       ]
     },
     {

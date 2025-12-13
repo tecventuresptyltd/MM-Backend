@@ -69,7 +69,7 @@ Singleton document that caches the “healthy clan” pool built by a scheduled 
 
 | Path | Description |
 | --- | --- |
-| `/Rooms/{roomId}` | Firestore doc that tracks metadata for each global room: `{ roomId, region, type, connectedCount, softCap, hardCap, slowModeSeconds, maxMessages, isArchived, createdAt, updatedAt, lastActivityAt }`. Cloud Functions mutate these fields; clients read them only via the callables. |
+| `/Rooms/{roomId}` | Firestore doc that tracks metadata for each global room: `{ roomId, region, type, connectedCount, softCap, hardCap, slowModeSeconds, maxMessages, isArchived, createdAt, updatedAt, lastActivityAt }`. Cloud Functions mutate these fields; clients read them only via the callables. **Dec 2025 update:** Query now filters `isArchived == false` to prevent archived rooms from hiding active rooms. All users currently join `region: "global_general"` for maximum concurrency at launch. |
 | `/Players/{uid}/Profile/Profile.assignedChatRoomId` | Sticky pointer set by `assignGlobalChatRoom`. Used by the callable to reuse a preferred room and by ops/debug tooling. |
 | `/chat_messages/clans/{clanId}/{messageId}` (Realtime Database) | Dedicated subtree for clan chat streams so they’re easy to inspect. Messages store `{ u, n, m, type, c, cid, cl, av, tr, role, op, ts, clientCreatedAt? }`. |
 | `/chat_messages/global/{roomId}/{messageId}` (Realtime Database) | Global chat rooms keyed by `roomId` using the same message payload. `cid` is populated when the sender belongs to a clan so the client can link to their clan card. |

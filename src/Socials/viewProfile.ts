@@ -5,6 +5,7 @@ import {
   playerLoadoutRef,
   playerSpellDecksRef,
 } from "./refs.js";
+import { fetchClanSummary } from "./summary.js";
 
 const sanitizeUid = (value: unknown): string => {
   if (typeof value !== "string" || value.trim().length === 0) {
@@ -69,11 +70,50 @@ export const viewPlayerProfile = onCall(
     const spellDecksData = spellDecksSnap.exists ? spellDecksSnap.data() ?? {} : null;
     const activeSpellDeck = resolveActiveDeck(loadoutData, spellDecksData);
 
+    const rawClanId = typeof profileData.clanId === "string" ? profileData.clanId.trim() : "";
+    const rawClanName =
+      typeof profileData.clanName === "string" ? profileData.clanName.trim() : "";
+    const rawClanBadge =
+      typeof profileData.clanBadge === "string" ? profileData.clanBadge.trim() : "";
+
+    let clanName: string | null = rawClanName || null;
+    let clanBadge: string | null = rawClanBadge || null;
+    let clan:
+      | {
+          clanId: string;
+          name: string | null;
+          badge: string | null;
+        }
+      | null = null;
+
+    if (rawClanId) {
+      if (!clanName || !clanBadge) {
+        const clanSummary = await fetchClanSummary(rawClanId);
+        if (clanSummary) {
+          clanName = clanName || clanSummary.name || null;
+          clanBadge = clanBadge || clanSummary.badge || null;
+        }
+      }
+      clan = {
+        clanId: rawClanId,
+        name: clanName ?? null,
+        badge: clanBadge ?? null,
+      };
+    }
+
+    const profileWithClan = {
+      ...profileData,
+      clanId: clan?.clanId ?? null,
+      clanName: clan?.name ?? clanName ?? null,
+      clanBadge: clan?.badge ?? clanBadge ?? null,
+    };
+
     return {
       ok: true,
       success: true,
       data: {
-        profile: profileData,
+        profile: profileWithClan,
+        clan,
         loadout: loadoutData,
         activeSpellDeck,
       },

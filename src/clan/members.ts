@@ -18,6 +18,7 @@ import {
   getPlayerProfile,
   playerClanInvitesRef,
   playerClanStateRef,
+  resolveClanBadge,
   resolveClanType,
   rolePriority,
   setPlayerClanState,
@@ -271,6 +272,7 @@ export const joinClan = onCall(callableOptions(), async (request) => {
       }
       const clanData = clanSnap.data() ?? {};
       const clanType = resolveClanType(clanData.type);
+      const clanBadge = resolveClanBadge(clanData.badge);
       if (clanType !== "anyone can join") {
         throw new HttpsError("failed-precondition", "Clan does not allow instant joins.");
       }
@@ -308,6 +310,7 @@ export const joinClan = onCall(callableOptions(), async (request) => {
       updatePlayerClanProfile(transaction, uid, {
         clanId,
         clanName: clanData.name ?? "Clan",
+        clanBadge,
       });
       setPlayerClanState(transaction, uid, {
         clanId,
@@ -1036,6 +1039,7 @@ export const acceptJoinRequest = onCall(callableOptions(), async (request) => {
       }
 
       const clanData = clanSnap.data() ?? {};
+      const clanBadge = resolveClanBadge(clanData.badge);
 
       const trophies = targetProfile.trophies ?? requestSnap.data()?.trophies ?? 0;
       transaction.set(targetMemberRef, {
@@ -1067,6 +1071,7 @@ export const acceptJoinRequest = onCall(callableOptions(), async (request) => {
       updatePlayerClanProfile(transaction, targetUid, {
         clanId,
         clanName: clanData.name ?? "Clan",
+        clanBadge,
       });
       setPlayerClanState(transaction, targetUid, {
         clanId,

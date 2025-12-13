@@ -49,6 +49,8 @@ export interface PlayerProfileSeed {
   totalWins?: number;
   totalRaces?: number;
   clanId?: string | null;
+   clanName?: string | null;
+   clanBadge?: string | null;
 }
 
 export interface SocialProfileDoc {

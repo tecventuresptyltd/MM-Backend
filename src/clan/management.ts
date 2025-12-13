@@ -146,6 +146,7 @@ export const createClan = onCall(callableOptions(), async (request) => {
       updatePlayerClanProfile(transaction, uid, {
         clanId,
         clanName: name,
+        clanBadge: badge,
       });
       setPlayerClanState(transaction, uid, {
         clanId,

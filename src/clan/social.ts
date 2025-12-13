@@ -15,6 +15,7 @@ import {
   playerClanInvitesRef,
   playerClanStateRef,
   playerProfileRef,
+  resolveClanBadge,
   setPlayerClanState,
   updatePlayerClanProfile,
   getPlayerProfile,
@@ -512,6 +513,7 @@ export const acceptClanInvite = onCall(callableOptions(), async (request) => {
         throw new HttpsError("failed-precondition", "No invite found for this clan.");
       }
       const clanData = clanSnap.data() ?? {};
+      const clanBadge = resolveClanBadge(clanData.badge);
       if (clanData.status && clanData.status !== "active") {
         throw new HttpsError("failed-precondition", "Clan is not accepting members.");
       }
@@ -548,6 +550,7 @@ export const acceptClanInvite = onCall(callableOptions(), async (request) => {
       updatePlayerClanProfile(transaction, uid, {
         clanId,
         clanName: clanData.name ?? "Clan",
+        clanBadge,
       });
       setPlayerClanState(transaction, uid, {
         clanId,

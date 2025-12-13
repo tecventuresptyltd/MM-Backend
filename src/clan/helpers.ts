@@ -17,6 +17,7 @@ export interface PlayerProfileData {
   trophies: number;
   clanId?: string | null;
   clanName?: string | null;
+  clanBadge?: string | null;
   language?: string | null;
   location?: string | null;
   assignedChatRoomId?: string | null;
@@ -193,6 +194,7 @@ export const getPlayerProfile = async (
       : Number(data.trophies) || 0,
     clanId: typeof data.clanId === "string" ? data.clanId : null,
     clanName: typeof data.clanName === "string" ? data.clanName : null,
+    clanBadge: typeof data.clanBadge === "string" ? data.clanBadge : null,
     language: typeof data.language === "string" ? data.language : null,
     location: typeof data.location === "string" ? data.location : null,
     assignedChatRoomId: typeof data.assignedChatRoomId === "string" ? data.assignedChatRoomId : null,
@@ -205,6 +207,7 @@ export const updatePlayerClanProfile = (
   payload: {
     clanId: string;
     clanName: string;
+    clanBadge?: string | null;
   },
 ) => {
   transaction.set(
@@ -212,6 +215,7 @@ export const updatePlayerClanProfile = (
     {
       clanId: payload.clanId,
       clanName: payload.clanName,
+      clanBadge: payload.clanBadge ?? null,
     },
     { merge: true },
   );
@@ -226,6 +230,7 @@ export const clearPlayerClanProfile = (
     {
       clanId: admin.firestore.FieldValue.delete(),
       clanName: admin.firestore.FieldValue.delete(),
+      clanBadge: admin.firestore.FieldValue.delete(),
     },
     { merge: true },
   );

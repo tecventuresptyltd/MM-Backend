@@ -699,7 +699,7 @@ Notes:
 
 ### `recordRaceResult`
 
-**Purpose:** Settles a race and applies rewards. The callable reloads the lobby snapshot recorded in `/Races/{raceId}`, feeds it plus the finish order into the Elo-style calculator from `src/race/economy.ts`, then writes the settlement deltas. XP progression still uses the shared helper; level-ups add spell tokens. End-of-race drops grant crates/keys immediately, and flash-sale triggers run afterward.
+**Purpose:** Settles a race and applies rewards. The callable reloads the lobby snapshot recorded in `/Races/{raceId}`, feeds it plus the finish order into the Elo-style calculator from `src/race/economy.ts`, then writes the settlement deltas. XP progression uses the "Infinite Leveling Power Curve" runtime formula from `src/shared/xp.ts`; level-ups add spell tokens. End-of-race drops grant crates/keys immediately, and flash-sale triggers run afterward.
 
 **Input:**
 ```json
@@ -737,7 +737,7 @@ Notes:
 
 ### `grantXP`
 
-**Purpose:** Grants XP to a player using the runtime XP progression formula (no Firestore lookups). The helper computes the active level, current progress, and XP required for the next level. On level-up the player earns spell tokens. The function writes the derived values to `/Players/{uid}/Profile/Profile` (`exp`, `level`, `expProgress`, `expToNextLevel`) and, when applicable, increments `spellTokens` in `/Players/{uid}/Economy/Stats`. Crossing the level‑5 or level‑10 thresholds also injects the cataloged level-up offers into `/Players/{uid}/Offers/Active.special`.
+**Purpose:** Grants XP to a player using the "Infinite Leveling Power Curve" runtime formula from `src/shared/xp.ts` (no Firestore lookups). The formula $C(L) = K \cdot ((L - 1 + s)^p - s^p)$ with $K=50.0$, $p=1.7$, $s=1.0$ supports infinite progression with polynomial scaling. The helper computes the active level (via O(1) analytic inverse), current progress, and XP required for the next level. On level-up the player earns spell tokens. The function writes the derived values to `/Players/{uid}/Profile/Profile` (`exp` as cumulative lifetime XP, `level`, `expProgress`, `expToNextLevel`) and, when applicable, increments `spellTokens` in `/Players/{uid}/Economy/Stats`. Crossing the level‑5 or level‑10 thresholds also injects the cataloged level-up offers into `/Players/{uid}/Offers/Active.special`.
 
 **Input:**
 ```json

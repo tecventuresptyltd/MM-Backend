@@ -30,7 +30,7 @@ This section details every planned function, its mapping from the legacy system,
 | :--- | :--- | :--- | :--- | :--- |
 | **`adjustCoins`** | `buyCoins` | `uid`, `opId`, `amount` | `coinsBefore`, `coinsAfter` | Reads `/Players/{uid}/Economy/Stats`, increments `coins`, writes receipt. |
 | **`adjustGems`** | `buyBooster` | `uid`, `opId`, `amount` | `gemsBefore`, `gemsAfter` | Reads `/Players/{uid}/Economy/Stats`, increments `gems`, writes receipt. |
-| **`grantXP`** | `finishRace` | `uid`, `opId`, `amount` | `xpBefore`, `xpAfter`, `levelAfter` | Uses the runtime XP progression helper (no catalog read), updates `xp`, `level`, and XP progress fields, grants spell tokens on level-up. |
+| **`grantXP`** | `finishRace` | `uid`, `opId`, `amount` | `xpBefore`, `xpAfter`, `levelAfter` | Uses the "Infinite Leveling Power Curve" runtime formula ($C(L) = K \cdot ((L - 1 + s)^p - s^p)$, $K=50$, $p=1.7$, $s=1$), updates `exp` (cumulative lifetime XP), `level`, and XP progress fields, grants spell tokens on level-up. |
 | **`exchangeGemsForCoins`** | `buyCoins` | `uid`, `opId`, `gemAmount` | `coinsGained`, `gemsSpent` | Reads `/Players/{uid}/Economy/Stats` & `/GameData/Economy/GemConversionCurve`, atomically adjusts balances. |
 | **`purchaseBooster`** | `buyBooster` | `uid`, `opId`, `boosterId` | `success` | Reads `/GameData/Boosters`, calls `adjustGems`, creates/updates `/Players/{uid}/Inventory/{boosterId}`. |
 | **`activateBooster`** | `activateBooster` | `uid`, `opId`, `boosterId` | `endTime` | Reads `/Players/{uid}/Inventory/{boosterId}` & `/Players/{uid}/Progression/Stats`, decrements inventory, updates `active...EndTime`. |

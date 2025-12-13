@@ -246,7 +246,7 @@ public class LevelData {
 - Crate types → `crt_xxxxxxxxxxxx`
 - Rank tiers → `rank_xxxxxxxxxxxx`  
 - Offers → `ofr_xxxxxxxxxxxx`
-- XP curves → `xp_xxxxxxxxxxxx`
+- ~~XP curves → `xp_xxxxxxxxxxxx`~~ (DEPRECATED - now calculated via runtime formula)
 
 ---
 

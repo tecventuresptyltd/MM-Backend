@@ -28,7 +28,7 @@ A seeding script (`tools/seedFirestore.js` can be adapted) must be run before ex
 - **Game Data**:
     - Pre-defined cars with known prices and upgrade curves (`/GameData/v1/Cars`).
     - Pre-defined crates with known reward pools (`/GameData/v1/Crates`).
-    - A valid XP Curve (`/GameData/XpCurve`).
+    - (Note: XP progression is calculated via runtime formula in `src/shared/xp.ts`, no Firestore catalog required)
 - **Clan Data**:
     - A pre-existing clan (`/Clans/{clanId}`) with `testUser_clan_leader` as the leader and `testUser_clan_member` as a member.
 
@@ -53,7 +53,7 @@ Unit tests should be written using a framework like Mocha or Jest and focus on i
 ### 3.2. Function-Specific Logic
 - **Economy Functions (`adjustCoins`, `adjustGems`, `grantXP`)**:
     - **Test Case**: Test the core logic of incrementing/decrementing values correctly.
-    - **Test Case**: Ensure `grantXP` correctly calculates level-ups based on a mock XP curve.
+    - **Test Case**: Ensure `grantXP` correctly calculates level-ups using the "Infinite Leveling Power Curve" runtime formula (e.g., verify Level 10 requires 2456 cumulative XP).
 - **Race Functions (`startRace`, `recordRaceResult`)**:
     - **Test Case**: Mock the `calculateLastPlacePenalty` and `calculateRewards` helpers to ensure the main functions apply the correct deltas.
 - **Garage Functions (`purchaseCar`, `upgradeCar`)**:

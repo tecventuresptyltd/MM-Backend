@@ -36,7 +36,7 @@ npm run convert:cars && \
 npm run convert:spells && \
 npm run convert:crates && \
 npm run convert:ranks && \
-npm run convert:xp && \
+# npm run convert:xp && \  # DEPRECATED - XP now calculated via runtime formula
 npm run convert:offers && \
 npm run convert:chat
 
@@ -52,6 +52,6 @@ npm run seed:cars && \
 npm run seed:spells && \
 npm run seed:crates && \
 npm run seed:ranks && \
-npm run seed:xp && \
+# npm run seed:xp && \  # DEPRECATED - XP now calculated via runtime formula
 npm run seed:offers && \
 npm run seed:chat

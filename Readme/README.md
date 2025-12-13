@@ -32,7 +32,7 @@ Atul-Final-Functions/
 │   ├── OffersCatalog.json
 │   ├── RanksCatalog.json
 │   ├── SpellsCatalog.json
-│   ├── XpCurve.json
+│   ├── XpCurve.json            # DEPRECATED - XP now calculated via runtime formula
 │   └── gameDataCatalogs.v3.normalized.json
 │
 ├── package.json                 # Node.js dependencies and scripts

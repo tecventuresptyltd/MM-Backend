@@ -596,28 +596,11 @@ Content rules
 }
 ```
 
-#### `/GameData/v1/catalogs/XpCurve` (Singleton)
+#### `/GameData/v1/catalogs/XpCurve` (DEPRECATED)
 
-Defines the experience points required for each player level.
+**Note:** XP progression is now calculated via runtime formula in `src/shared/xp.ts` using the "Infinite Leveling Power Curve" algorithm: $C(L) = K \cdot ((L - 1 + s)^p - s^p)$ with parameters $K=50.0$, $p=1.7$, $s=1.0$. No Firestore catalog lookup is required.
 
-*   **Document ID:** `XpCurve`
-
-**Example: `/GameData/v1/catalogs/XpCurve`**
-```jsonc
-// /GameData/v1/catalogs/XpCurve
-{
-  "curveId": "default",
-  "levels": {
-    "1": 0,
-    "2": 100,
-    "3": 250
-  },
-  "generated": true,
-  "version": "vYYYY.MM.DD",
-  "createdAt": 0,
-  "updatedAt": 0
-}
-```
+This catalog entry is **no longer used** and may be removed in future schema versions.
 
 
 ### `/Players/{uid}` (Player Data)

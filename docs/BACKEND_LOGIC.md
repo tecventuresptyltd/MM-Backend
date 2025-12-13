@@ -58,11 +58,11 @@
 - **Purpose**: Atomically grants a specified amount of XP to a player and handles level-ups.
 - **Logic**:
     1.  **Idempotency**: Performs the standard operation receipt check.
-    2.  **XP Progression Helper**: Uses the runtime XP progression formula (no Firestore catalog read) to resolve the current/next level and progress.
+    2.  **XP Progression Helper**: Uses the "Infinite Leveling Power Curve" runtime formula from `src/shared/xp.ts` (no Firestore catalog read). Formula: $C(L) = K \cdot ((L - 1 + s)^p - s^p)$ with $K=50.0$, $p=1.7$, $s=1.0$. Includes O(1) analytic inverse for fast level calculation.
     3.  **Transactional Update**: Runs a Firestore transaction to:
         - Read the player's `/Players/{uid}/Economy/Stats` and `/Players/{uid}/Profile/Profile` documents.
         - Calculate the `levelBefore`/`levelAfter`, per-level progress, and detect level-ups.
-        - Write the new `exp`, `level`, `expProgress`, and `expToNextLevel` fields to the profile.
+        - Write the new `exp` (cumulative lifetime XP), `level`, `expProgress`, and `expToNextLevel` fields to the profile.
         - Increment `spellTokens` in `/Economy/Stats` for each level gained.
     4.  **Response Payload**: Returns cumulative XP before/after, level info, and detailed progress deltas.
 

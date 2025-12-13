@@ -573,9 +573,11 @@ Each spell document in `/GameData/v1/Spells/{spellId}` follows this schema:
 ]
 ```
 
-### XP Curves Master Data
+### XP Curves Master Data (DEPRECATED)
 
-**File:** `seeds/xpCurve.json`
+**Status:** ⚠️ **DEPRECATED** - XP progression is now calculated via runtime formula in `src/shared/xp.ts` using the "Infinite Leveling Power Curve" algorithm. No Firestore seed data is required.
+
+**Legacy File:** `seeds/xpCurve.json` (no longer used)
 
 ```json
 [

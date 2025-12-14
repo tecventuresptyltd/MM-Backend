@@ -1,0 +1,58 @@
+{
+  "path": "/GameData/v1/config/BotConfig",
+  "data": {
+    "difficulty": {
+      "referenceTrophies": 7500,
+      "clampToBounds": true,
+      "maxSpeed": { "min": 60, "max": 120 },
+      "accel": { "min": 5, "max": 10 },
+      "boostTime": { "min": 0.8, "max": 3.0 },
+      "boostFreq": { "min": 2, "max": 10 },
+      "boostCd": { "min": 6, "max": 1.5 }
+    },
+    "carUnlockThresholds": [
+      { "carId": "car_h4ayzwf31g", "trophies": 0 },
+      { "carId": "car_2n5hnes4", "trophies": 1200 },
+      { "carId": "car_tuning_demo", "trophies": 2500 }
+    ],
+    "cosmeticRarityWeights": {
+      "0-999": { "common": 85, "rare": 14, "epic": 1, "legendary": 0 },
+      "1000-1999": { "common": 70, "rare": 22, "epic": 6, "legendary": 2 },
+      "2000-2999": { "common": 60, "rare": 25, "epic": 10, "legendary": 5 },
+      "3000-4999": { "common": 50, "rare": 30, "epic": 15, "legendary": 5 },
+      "5000-7000": { "common": 40, "rare": 35, "epic": 18, "legendary": 7 },
+      "7001-99999": { "common": 30, "rare": 35, "epic": 25, "legendary": 10 }
+    },
+    "spellLevelBands": [
+      {
+        "minTrophies": 0,
+        "maxTrophies": 999,
+        "minLevel": 1,
+        "maxLevel": 2,
+        "tierName": "Rookie"
+      },
+      {
+        "minTrophies": 1000,
+        "maxTrophies": 2499,
+        "minLevel": 2,
+        "maxLevel": 3,
+        "tierName": "Intermediate"
+      },
+      {
+        "minTrophies": 2500,
+        "maxTrophies": 4999,
+        "minLevel": 4,
+        "maxLevel": 5,
+        "tierName": "Advanced"
+      },
+      {
+        "minTrophies": 5000,
+        "maxTrophies": 99999,
+        "minLevel": 5,
+        "maxLevel": 5,
+        "tierName": "Champion"
+      }
+    ],
+    "updatedAt": 0
+  }
+}

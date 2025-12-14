@@ -21,6 +21,7 @@ async function seedCatalogs() {
   const seedsRoot = path.join(__dirname, '..', 'seeds', 'Atul-Final-Seeds');
   const seedFile = path.join(seedsRoot, 'gameDataCatalogs.v3.normalized.json');
   const botNamesSeedFile = path.join(seedsRoot, 'BotNamesConfig.json');
+  const botConfigSeedFile = path.join(seedsRoot, 'BotConfig.json');
   
   if (!fs.existsSync(seedFile)) {
     console.error('❌ Seed file not found:', seedFile);
@@ -29,12 +30,21 @@ async function seedCatalogs() {
 
   const seedData = JSON.parse(fs.readFileSync(seedFile, 'utf-8'));
 
+  // Add BotNamesConfig if it exists
   if (fs.existsSync(botNamesSeedFile)) {
     const botNamesDoc = JSON.parse(fs.readFileSync(botNamesSeedFile, 'utf-8'));
     if (Array.isArray(botNamesDoc)) {
       seedData.push(...botNamesDoc);
     } else if (botNamesDoc && typeof botNamesDoc === 'object') {
       seedData.push(botNamesDoc);
+    }
+  }
+
+  // Add BotConfig if it exists
+  if (fs.existsSync(botConfigSeedFile)) {
+    const botConfigDoc = JSON.parse(fs.readFileSync(botConfigSeedFile, 'utf-8'));
+    if (botConfigDoc && typeof botConfigDoc === 'object') {
+      seedData.push(botConfigDoc);
     }
   }
 

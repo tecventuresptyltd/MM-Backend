@@ -236,19 +236,17 @@ export const prepareRace = onCall({ region: REGION }, async (request) => {
       const wheelsSku = pickSkuForRarity(wheelSkus, rarity);
       const decalSku = pickSkuForRarity(decalSkus, rarity);
 
-      // Spells: sample two if available
+      // Spells: select 5 unique spells from catalog
       const allSpellIds = Object.keys(spellsCatalog || {});
       const band =
         botConfig.spellLevelBands.find(
           (b: any) => normalizedTrophies >= b.minTrophies && normalizedTrophies <= b.maxTrophies,
         ) || botConfig.spellLevelBands[0];
-      const botSpellCount = Math.min(2, allSpellIds.length);
+      const shuffledSpellIds = rng.shuffle([...allSpellIds]);
+      const botSpellCount = Math.min(5, shuffledSpellIds.length);
       const botSpells: Array<{ spellId: string; level: number; attrs: Record<string, unknown> }> = [];
       for (let i = 0; i < botSpellCount; i += 1) {
-        const sid = rng.choice(allSpellIds);
-        if (!sid) {
-          continue;
-        }
+        const sid = shuffledSpellIds[i];
         const level = rng.int(band.minLevel, band.maxLevel);
         botSpells.push({
           spellId: sid,

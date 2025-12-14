@@ -647,6 +647,12 @@ Output: `{ raceId, issuedAt, seed, laps, trackId, preDeductedTrophies, player: {
 
 Notes:
 - Resolves car stats via `CarsCatalog.cars[carId].levels[level]` using value-vs-real model. Players use `CarTuningConfig.player`; bots use `CarTuningConfig.bot`.
+- **Bot Spell Decks:** Each bot receives **5 unique spells** randomly selected from the entire `SpellsCatalog`. Spell levels are determined by trophy-based progression bands defined in `BotConfig.spellLevelBands`:
+  - **0-999 trophies:** Level 1-2 (Rookie)
+  - **1000-2499 trophies:** Level 2-3 (Intermediate)
+  - **2500-4999 trophies:** Level 4-5 (Advanced)
+  - **5000+ trophies:** Level 5 (Champion)
+- Spells are selected via shuffle (no duplicates), with levels randomly assigned within the band range for variety.
 - `preDeductedTrophies` mirrors the last-place penalty used by `startRace`, using the lobby `[player, ...bots]` with the player at index `0`, and is clamped so it never removes more trophies than the player currently holds.
 - Deterministic when `seed` is supplied; idempotent via `opId` receipt.
 - Bot display names are sampled without replacement from `/GameData/v1/config/BotNames`. When the pool is exhausted the function synthesizes deterministic fallback names so no two bots in a lobby ever share the same handle.

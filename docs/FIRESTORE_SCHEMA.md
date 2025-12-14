@@ -315,7 +315,10 @@ Example: `/GameData/v1/config/BotConfig`
     "0-999": { "common": 85, "rare": 14, "epic": 1, "legendary": 0 }
   },
   "spellLevelBands": [
-    { "minTrophies": 0, "maxTrophies": 999, "minLevel": 1, "maxLevel": 2 }
+    { "minTrophies": 0, "maxTrophies": 999, "minLevel": 1, "maxLevel": 2 },
+    { "minTrophies": 1000, "maxTrophies": 2499, "minLevel": 2, "maxLevel": 3 },
+    { "minTrophies": 2500, "maxTrophies": 4999, "minLevel": 4, "maxLevel": 5 },
+    { "minTrophies": 5000, "maxTrophies": 99999, "minLevel": 5, "maxLevel": 5 }
   ],
   "updatedAt": 0
 }

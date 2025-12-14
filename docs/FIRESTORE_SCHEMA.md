@@ -89,6 +89,18 @@ Firestore doc that tracks global chat rooms and their load-balancing metadata. F
 * `isArchived` *(boolean)* – prevents new assignments when moderators retire a room. **Critical: Query now filters `isArchived == false` to prevent archived rooms from hiding active rooms (Dec 2025 bug fix).**
 * `createdAt`, `updatedAt`, `lastActivityAt` *(timestamp)* – set by Cloud Functions.
 
+**Important Note (Dec 2025):** The `assignedChatRoomId` field has been **removed** from `/Players/{uid}/Profile/Profile`. Room assignments are now session-based only. The RTDB `/presence/online/{uid}` node is the **single source of truth** for which room a user is currently in.
+
+**🛑 CRITICAL Client Requirement:** Client MUST write `roomId` to `/presence/online/{uid}` after calling `assignGlobalChatRoom`. Example:
+```javascript
+const presencePayload = {
+  roomId: assignedRoomId,  // REQUIRED - from assignGlobalChatRoom response
+  clanId: userClanId,
+  lastSeen: serverTimestamp()
+};
+```
+If `roomId` is missing from presence, the disconnect trigger cannot decrement the room's `connectedCount`, causing room counts to drift.
+
 Messages for both global and clan chat live exclusively in RTDB (`/chat_messages/{streamId}/{messageId}`); there is no `Messages` subcollection under `/Rooms`.
 
 ### `/Clans` domain
@@ -655,7 +667,7 @@ A consolidated document containing all UI-facing fields for the player's profile
 
 Booster timers are surfaced through this document via the `boosters` map. Each entry is keyed by booster `subType` (for example `coin` or `exp`) and includes `activeUntil` (epoch milliseconds) and `stackedCount`, allowing the HUD to reflect stacked activations without additional reads.
 
-`assignedChatRoomId` *(string, optional)* now lives in this document as well. It is written exclusively by the backend (`assignGlobalChatRoom` + the RTDB offline trigger) so the server can reopen the same global bucket on reconnect. Clients read it for diagnostics only; the callable is the canonical way to fetch the current room.
+**Note (Dec 2025):** The `assignedChatRoomId` field has been **removed** from this document. Room assignments are now session-based only. Client manages `roomId` in session/memory storage and passes it via the `currentRoomId` parameter to `assignGlobalChatRoom`. The RTDB `/presence/online/{uid}` node is the single source of truth for which room a user is currently in.
 
 Referral metadata lives alongside other HUD fields:
 

@@ -1,12 +1,14 @@
 # Mystic Motors Global Chat Plan (RTDB Implementation)
 
-**Last Updated:** December 13, 2025  
+**Last Updated:** December 14, 2025  
 **Status:** Implemented + Bug Fixes Applied (ready for QA + live clients)
 
 **Recent Changes (Dec 2025):**
-- Fixed critical "ghost room" bug where archived rooms prevented users from joining active rooms
-- Merged all regions into `global_general` for maximum concurrency at launch
-- Optimized query ordering for faster warmup room discovery
+- **Dec 14:** Changed to session-based room assignment (removed profile persistence, added `currentRoomId` parameter)
+- **Dec 14:** Updated presence trigger to read `roomId` from RTDB presence data (critical for room count accuracy)
+- **Dec 13:** Fixed critical "ghost room" bug where archived rooms prevented users from joining active rooms
+- **Dec 13:** Merged all regions into `global_general` for maximum concurrency at launch
+- **Dec 13:** Optimized query ordering for faster warmup room discovery
 
 This note documents the final design for global chat after the RTDB migration. It replaces the earlier brainstorm and should be treated as the source of truth for engineering + Unity implementation.
 
@@ -16,11 +18,11 @@ This note documents the final design for global chat after the RTDB migration. I
 
 Mystic Motors now uses a hybrid architecture:
 
-1. **Firestore (`Rooms` collection + player profile fields):** Handles room assignment, load balancing, sticky routing, and authoritative user counts.
-2. **Realtime Database (`/chat_messages` + `/presence/online`):** Streams chat data with near-zero read cost, enforces read scopes via presence, and supports system message fan-out.
+1. **Firestore (`Rooms` collection):** Handles room assignment, load balancing, and authoritative user counts. Room assignments are session-based (no longer persisted to player profiles).
+2. **Realtime Database (`/chat_messages` + `/presence/online`):** Streams chat data with near-zero read cost, enforces read scopes via presence, and supports system message fan-out. The `/presence/online/{uid}` node is the single source of truth for which room a user is currently in.
 3. **Cloud Functions v2:** Provide the assign/send/get workflows, enforce slow mode and opId idempotency, and prune stale history.
 
-Clients never query `/Clans` or `/Rooms` directly for chat ??? the callable APIs hide the heavy reads and keep the Firestore bill predictable.
+Clients never query `/Clans` or `/Rooms` directly for chat — the callable APIs hide the heavy reads and keep the Firestore bill predictable.
 
 ---
 
@@ -28,10 +30,10 @@ Clients never query `/Clans` or `/Rooms` directly for chat ??? the callable APIs
 
 Callable Path: `assignGlobalChatRoom`
 
-1. The client calls this once per session (or when opening the Global Chat tab).
+1. The client calls this once per session (on app launch or when opening the Global Chat tab).
 2. The function runs a Firestore transaction:
-   - Reads `/Players/{uid}/Profile/Profile` to check an existing `assignedChatRoomId`.
-   - If the stored room is active, not archived, and below `hardCap`, reuse it and increment `connectedCount`.
+   - Checks if client passed `currentRoomId` parameter (for in-session stickiness).
+   - If the current room is active, not archived, correct region, and below `hardCap`, reuse it and increment `connectedCount`.
    - Otherwise, query `Rooms` for the `global_general` region (all users are merged into a single pool for launch).
      - **Query filters:** `type == "global"`, `region == "global_general"`, `isArchived == false`
      - **Query ordering:** `connectedCount ASC` (finds warmup rooms faster)
@@ -40,10 +42,10 @@ Callable Path: `assignGlobalChatRoom`
      2. **Healthy rooms** (< `softCap`, default 80) preferring the fullest one (packs players tightly).
      3. **Overflow** (anything < `hardCap`, default 100) (picks emptiest for load distribution).
    - If no room matches, create a new doc (`roomId = global_general_{shortid}`) with sensible defaults: `{ region: "global_general", type: "global", slowModeSeconds: 3, maxMessages: 200, connectedCount: 1, isArchived: false }`.
-   - The transaction updates both the room doc and the player profile (`assignedChatRoomId`).
+   - The transaction updates the room doc only (no profile persistence).
 3. Returns `{ roomId, region, connectedCount, softCap, hardCap }` for client telemetry/logging.
 
-Sticky assignment keeps conversations intact. When the Unity client reconnects, it reuses the room id and increments the counter again. The counter is decremented by the RTDB trigger described below.
+**Session-based assignment (Dec 2025):** Room assignments are no longer persisted to Firestore Profile. Each app launch triggers fresh assignment for optimal load balancing. Client manages `roomId` in session/memory storage and passes it back via `currentRoomId` parameter for in-session stability. The counter is decremented by the RTDB trigger when presence is removed.
 
 ---
 
@@ -65,8 +67,7 @@ Sticky assignment keeps conversations intact. When the Unity client reconnects, 
 | `isArchived` | boolean | When true, assignments skip this room. |
 | `createdAt`, `updatedAt`, `lastActivityAt` | timestamps | Set by Cloud Functions only. |
 
-**`/Players/{uid}/Profile/Profile.assignedChatRoomId`**
-Tracks the last assigned room so the server can reopen the same bucket and unity can attach to the correct RTDB path on boot.
+**Note (Dec 2025):** The `assignedChatRoomId` field has been **removed** from `/Players/{uid}/Profile/Profile`. Room assignments are now session-based only. Client manages `roomId` in session storage and passes it via `currentRoomId` parameter.
 
 ### Realtime Database
 
@@ -104,11 +105,11 @@ Clients must keep this presence node up to date (with `onDisconnect().remove()`)
 
 | Name | Type | Purpose |
 | --- | --- | --- |
-| `assignGlobalChatRoom` | Callable | Sticky room assignment + load balancing (see Section 2). |
+| `assignGlobalChatRoom` | Callable | Session-based room assignment + load balancing (see Section 2). Client passes optional `currentRoomId` for in-session stickiness. |
 | `sendGlobalChatMessage` | Callable | Requires `opId` + `roomId`, validates slow mode, reads player profile/clan snapshot, and pushes to `/chat_messages/global/{roomId}` with that metadata (including the clanId snapshot). |
-| `getGlobalChatMessages` | Callable | Fetches the last N RTDB entries (`min(request.limit, 25)`), sorts them oldest?newest, and records `lastVisitedGlobalChatAt`. Primarily for clients that can??Tt stream. |
+| `getGlobalChatMessages` | Callable | Fetches the last N RTDB entries (`min(request.limit, 25)`), sorts them oldest→newest, and records `lastVisitedGlobalChatAt`. Primarily for clients that can't stream. |
 | `cleanupChatHistory` | Scheduled | Runs every 24h, trimming clan channels to 30 days and global rooms to 24h. |
-| `onPresenceOffline` | RTDB Trigger | Fires when `/presence/online/{uid}` is deleted (disconnect). Reads `assignedChatRoomId` and decrements `Rooms/{roomId}.connectedCount` in a transaction (clamped >= 0). |
+| `onPresenceOffline` | RTDB Trigger | Fires when `/presence/online/{uid}` is deleted (disconnect). Reads `roomId` from the deleted presence data and decrements `Rooms/{roomId}.connectedCount` in a transaction (clamped >= 0). |
 
 All sensitive writes still flow through Cloud Functions; RTDB rules deny direct writes to `/chat_messages`.
 
@@ -130,9 +131,12 @@ All sensitive writes still flow through Cloud Functions; RTDB rules deny direct 
    var presenceRef = FirebaseDatabase.DefaultInstance
        .RootReference.Child("presence").Child("online").Child(CurrentUser.Uid);
 
+   // 🛑 CRITICAL: The payload MUST include 'roomId'
+   // This is the ONLY way the backend knows which room to decrement on disconnect
+   // Since we no longer persist assignedChatRoomId to Firestore Profile
    var presenceBody = new Dictionary<string, object>
    {
-       { "roomId", roomId },
+       { "roomId", roomId },  // <-- MUST MATCH the ID returned by assignGlobalChatRoom
        { "clanId", PlayerClanHolder.Instance.CurrentClanId ?? string.Empty },
        { "lastSeen", ServerTime.NowMillis }
    };
@@ -171,7 +175,7 @@ All sensitive writes still flow through Cloud Functions; RTDB rules deny direct 
    ```
 5. **Refreshing cached backlog** (optional): if the UI needs to hydrate 25 latest lines on boot, call `getGlobalChatMessages` once before attaching the listener.
 
-Because `assignGlobalChatRoom` increments the room counter, Unity should avoid spamming it. Cache the `{ roomId, updatedAt }` pair for ~30 minutes (or until the app is backgrounded) and reuse the same assignment unless the callable returns `permission-denied` or `failed-precondition`.
+**Session-based caching (Dec 2025):** Store `roomId` in session/memory storage only (NOT persistent storage). On first call in session, call `assignGlobalChatRoom({})`. On subsequent calls within same session, pass `assignGlobalChatRoom({ currentRoomId: cachedRoomId })` to maintain room stability. Clear cached `roomId` when app is backgrounded/closed to ensure fresh assignment on next launch.
 
 ---
 

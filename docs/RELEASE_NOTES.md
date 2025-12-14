@@ -1,5 +1,67 @@
 # Release Notes
 
+## 2025-12-14: Session-Based Room Assignment
+
+This release changes global chat room assignment from persistent (cross-session) to session-based, ensuring optimal load balancing on every app launch.
+
+### Breaking Changes
+
+*   **Removed Cross-Session Stickiness:** Backend no longer persists `assignedChatRoomId` to `/Players/{uid}/Profile/Profile`.
+    *   **Previous Behavior:** Users were "sticky" to their last assigned room across app restarts.
+    *   **New Behavior:** Each app launch triggers fresh room assignment using water-filling algorithm.
+    *   **Rationale:** Ensures optimal load balancing and prevents users from clustering in old rooms.
+
+*   **Added Session-Based Stickiness:** New optional `currentRoomId` parameter for in-session stability.
+    *   **Client Impact:** Client must manage `roomId` in session/memory storage (NOT persistent storage).
+    *   **First call (app launch):** `assignGlobalChatRoom({})` → Gets optimal room
+    *   **Subsequent calls (same session):** `assignGlobalChatRoom({ currentRoomId: roomId })` → Reuses same room
+    *   **App restart:** `assignGlobalChatRoom({})` → Gets fresh optimal assignment
+
+*   **🛑 CRITICAL - Presence Payload Required:** Client MUST write `roomId` to `/presence/online/{uid}`.
+    *   **Why:** This is now the ONLY way backend knows which room to decrement on disconnect.
+    *   **Example:**
+        ```javascript
+        const presencePayload = {
+          roomId: assignedRoomId,  // REQUIRED - from assignGlobalChatRoom response
+          clanId: userClanId,
+          lastSeen: serverTimestamp()
+        };
+        onDisconnect(presenceRef).remove();
+        set(presenceRef, presencePayload);
+        ```
+    *   **Impact if missing:** Room `connectedCount` will drift, causing incorrect load balancing.
+
+### Technical Changes
+
+*   **Function:** `assignGlobalChatRoom`
+    *   Removed `assignedChatRoomId` read from Firestore Profile
+    *   Removed `assignedChatRoomId` writes to Firestore Profile
+    *   Added `currentRoomId` optional parameter for in-session stickiness
+    *   Added region validation in `attachToExisting` to reject old-region rooms
+
+*   **Function:** `sendGlobalChatMessage`
+    *   Removed `assignedChatRoomId` validation check
+
+*   **Trigger:** `onPresenceOffline`
+    *   Changed to read `roomId` from RTDB presence data (instead of Firestore Profile)
+    *   No longer requires Firestore read on disconnect
+
+### Expected Behavior After Deployment
+
+*   **Users launching app:** Always get optimal room assignment (water-filling algorithm)
+*   **Users staying in app:** Remain in same room throughout session
+*   **2-3 concurrent users:** All consolidated into single `global_general` room
+*   **User disconnects:** Room count decrements correctly via presence trigger
+*   **App restarts:** May join different room than previous session (desired behavior)
+
+### Migration Notes
+
+*   **No data migration required:** Old `assignedChatRoomId` values in profiles are simply ignored
+*   **Client update required:** See breaking changes above
+*   **Testing:** Verify presence payload includes `roomId` before deploying to production
+
+---
+
 ## 2025-12-13: Global Chat Bug Fixes & Region Merge
 
 This release fixes a critical bug in the global chat room assignment logic and implements a region merge strategy for launch.

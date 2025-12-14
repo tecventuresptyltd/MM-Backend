@@ -2172,27 +2172,33 @@ This section documents all clan and chat-related Cloud Functions, with input, ou
 ---
 
 ### `assignGlobalChatRoom`
-  **Purpose:** Sticky global chat assignment + load balancing. Runs a Firestore transaction that reuses the caller's previous room when possible, increments `Rooms/{roomId}.connectedCount`, updates `/Players/{uid}/Profile/Profile.assignedChatRoomId`, and creates a new room document if every candidate in the region has reached `hardCap`.
+  **Purpose:** Sticky global chat assignment + load balancing. Runs a Firestore transaction that reuses the caller's current session room when possible (via `currentRoomId` parameter), increments `Rooms/{roomId}.connectedCount`, and creates a new room document if every candidate in the region has reached `hardCap`.
   
   **Recent Updates (Dec 2025):**
   * Fixed critical "ghost room" bug: Query now filters `isArchived == false` to prevent archived rooms from hiding active rooms
   * Region hardcoded to `"global_general"` for all users (launch strategy for maximum concurrency)
   * Query optimization: Changed ordering to `connectedCount ASC` for faster warmup room discovery
+  * **Removed cross-session stickiness:** No longer persists `assignedChatRoomId` to Firestore Profile
+  * **Added session-based stickiness:** Client can pass `currentRoomId` for in-session room reuse
   
   **Input:**
   ```json
   {
-    "region": "string (optional, currently ignored - all users join global_general)"
+    "region": "string (optional, currently ignored - all users join global_general)",
+    "currentRoomId": "string (optional, for in-session stickiness only - client manages this)"
   }
   ```
   **Output:** `{ "roomId": "string", "region": "global_general", "connectedCount": 42, "softCap": 80, "hardCap": 100 }`
   **Errors:** `UNAUTHENTICATED`, `FAILED_PRECONDITION`
   
   Notes:
-  * Clients call this once per session (or when opening the Global Chat tab) and cache the result for ~30 minutes.
-  * The callable enforces sticky room ownership (the profile field is the source of truth) and keeps counts consistent with the RTDB offline trigger.
+  * Clients call this once per session (on app launch or when opening Global Chat tab).
+  * Client should store `roomId` in **session/memory storage only** (NOT persistent storage like PlayerPrefs).
+  * On subsequent calls within same session, pass the `currentRoomId` to maintain room assignment.
+  * On app restart (new session), omit `currentRoomId` to get fresh optimal assignment.
   * All users currently join the `"global_general"` region pool regardless of their location (may be regionalized post-launch).
   * Water-filling algorithm prioritizes: (1) Warmup rooms <20 users, (2) Healthy rooms 20-79 users (picks fullest), (3) Overflow rooms 80-99 users.
+  * **🛑 CRITICAL:** Client MUST write the returned `roomId` to `/presence/online/{uid}` immediately. This is the ONLY way the backend can decrement room count on disconnect.
   
   ---
   

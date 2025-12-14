@@ -183,13 +183,14 @@ export const onPresenceOffline = onValueDeleted(
       return;
     }
     try {
-      const profileSnap = await playerProfileRef(uid).get();
-      const assignedRoomId = profileSnap.data()?.assignedChatRoomId;
-      if (typeof assignedRoomId !== "string" || assignedRoomId.length === 0) {
+      // Get roomId from the presence data that was just deleted
+      const presenceData = event.data.val();
+      const roomId = typeof presenceData?.roomId === "string" ? presenceData.roomId : null;
+      if (!roomId || roomId.length === 0) {
         return;
       }
       await admin.firestore().runTransaction(async (transaction) => {
-        const ref = roomRef(assignedRoomId);
+        const ref = roomRef(roomId);
         const snap = await transaction.get(ref);
         if (!snap.exists) {
           return;

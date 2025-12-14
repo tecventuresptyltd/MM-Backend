@@ -70,7 +70,7 @@ Singleton document that caches the “healthy clan” pool built by a scheduled 
 | Path | Description |
 | --- | --- |
 | `/Rooms/{roomId}` | Firestore doc that tracks metadata for each global room: `{ roomId, region, type, connectedCount, softCap, hardCap, slowModeSeconds, maxMessages, isArchived, createdAt, updatedAt, lastActivityAt }`. Cloud Functions mutate these fields; clients read them only via the callables. **Dec 2025 update:** Query now filters `isArchived == false` to prevent archived rooms from hiding active rooms. All users currently join `region: "global_general"` for maximum concurrency at launch. |
-| `/Players/{uid}/Profile/Profile.assignedChatRoomId` | Sticky pointer set by `assignGlobalChatRoom`. Used by the callable to reuse a preferred room and by ops/debug tooling. |
+| `/presence/online/{uid}` (Realtime Database) | **🛑 CRITICAL:** Client MUST write `{ roomId, clanId, lastSeen }` here after calling `assignGlobalChatRoom`. The `roomId` field is now the ONLY way the backend knows which room to decrement on disconnect (no longer stored in Firestore Profile). Missing `roomId` will cause room counts to drift. |
 | `/chat_messages/clans/{clanId}/{messageId}` (Realtime Database) | Dedicated subtree for clan chat streams so they’re easy to inspect. Messages store `{ u, n, m, type, c, cid, cl, av, tr, role, op, ts, clientCreatedAt? }`. |
 | `/chat_messages/global/{roomId}/{messageId}` (Realtime Database) | Global chat rooms keyed by `roomId` using the same message payload. `cid` is populated when the sender belongs to a clan so the client can link to their clan card. |
 | `/presence/online/{uid}` (Realtime Database) | Presence node set by the client that includes `{ roomId, clanId, lastSeen }`. RTDB security rules check this node to decide whether a user may read `/chat_messages/clans/*` or `/chat_messages/global/*`. |
@@ -163,8 +163,8 @@ After calling either function, the cached docs exist immediately and the schedul
 `Message` objects contain `{ messageId, roomId?, clanId?, authorUid, authorDisplayName, authorAvatarId, authorTrophies, authorClanName?, authorClanBadge?, type, text, clientCreatedAt?, createdAt, deleted, deletedReason }`.
 
 **Chat transport:**
-- Call ssignGlobalChatRoom when opening the global tab and cache the { roomId, updatedAt } pair for ~30 minutes to avoid redundant assignments.
-- Write /presence/online/{uid} with { roomId, clanId, lastSeen } and register onDisconnect().remove() before attaching listeners. RTDB rules only allow reads when this node matches the requested stream.
+- Call `assignGlobalChatRoom` when opening the global tab. Store `roomId` in session/memory only. Pass `currentRoomId` parameter on subsequent calls within same session for stability. Clear on app close to ensure fresh assignment on next launch.
+- Write `/presence/online/{uid}` with `{ roomId, clanId, lastSeen }` and register `onDisconnect().remove()` before attaching listeners. RTDB rules only allow reads when this node matches the requested stream.
 - Listen to /chat_messages/global/{roomId} or /chat_messages/clans/{clanId} with orderByChild(\"ts\").startAt(Date.now()) for zero-history streaming.
 - Post messages exclusively through the Cloud Functions (never client push) so slow mode, opId idempotency, and profile snapshots remain authoritative.
 - System events (join/leave/kick/promote) appear as 	ype: \"system\" rows in the clan stream immediately after their Firestore transactions succeed.

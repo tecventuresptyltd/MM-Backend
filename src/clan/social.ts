@@ -877,6 +877,7 @@ export const refreshClanInvites = onCall(callableOptions(), async (request) => {
 
 interface AssignGlobalChatRoomRequest {
   region?: string;
+  currentRoomId?: string; // For in-session stickiness only (client manages this)
 }
 
 interface AssignGlobalChatRoomResponse {
@@ -898,9 +899,11 @@ export const assignGlobalChatRoom = onCall(callableOptions(), async (request) =>
     if (!profileSnap.exists) {
       throw new HttpsError("failed-precondition", "Player profile not initialised.");
     }
-    const profileData = profileSnap.data() ?? {};
-    const storedRoomId =
-      typeof profileData.assignedChatRoomId === "string" ? profileData.assignedChatRoomId : null;
+    // Use currentRoomId from client for in-session stickiness (not persisted across sessions)
+    const currentRoomId =
+      typeof payload.currentRoomId === "string" && payload.currentRoomId.trim().length > 0
+        ? payload.currentRoomId.trim()
+        : null;
     // Force everyone into the same pool for high concurrency at launch
     const region = "global_general";
 
@@ -917,6 +920,11 @@ export const assignGlobalChatRoom = onCall(callableOptions(), async (request) =>
       if (data.type !== "global" || Boolean(data.isArchived)) {
         return null;
       }
+      // Reject rooms from different regions (e.g., old rooms before region merge)
+      const roomRegion = typeof data.region === "string" ? data.region : "";
+      if (roomRegion !== region) {
+        return null;
+      }
       const hardCap = Number.isFinite(data.hardCap) ? Number(data.hardCap) : GLOBAL_ROOM_HARD_CAP;
       const connectedCount = Number(data.connectedCount ?? 0);
       if (connectedCount >= hardCap) {
@@ -928,14 +936,7 @@ export const assignGlobalChatRoom = onCall(callableOptions(), async (request) =>
         updatedAt: FieldValue.serverTimestamp(),
         lastActivityAt: FieldValue.serverTimestamp(),
       });
-      transaction.set(
-        profileRef,
-        {
-          assignedChatRoomId: roomId,
-          updatedAt: FieldValue.serverTimestamp(),
-        },
-        { merge: true },
-      );
+      // Note: We no longer persist assignedChatRoomId to profile (client manages session state)
       return {
         roomId,
         region: typeof data.region === "string" ? data.region : region,
@@ -945,7 +946,8 @@ export const assignGlobalChatRoom = onCall(callableOptions(), async (request) =>
       };
     };
 
-    const reuseRoom = await attachToExisting(storedRoomId);
+    // Only reuse room if client passed currentRoomId (in-session stickiness)
+    const reuseRoom = await attachToExisting(currentRoomId);
     if (reuseRoom) {
       return reuseRoom;
     }
@@ -967,14 +969,7 @@ export const assignGlobalChatRoom = onCall(callableOptions(), async (request) =>
         updatedAt: FieldValue.serverTimestamp(),
         lastActivityAt: FieldValue.serverTimestamp(),
       });
-      transaction.set(
-        profileRef,
-        {
-          assignedChatRoomId: candidate.id,
-          updatedAt: FieldValue.serverTimestamp(),
-        },
-        { merge: true },
-      );
+      // Note: Client manages roomId in session state, no profile persistence needed
       return {
         roomId: candidate.id,
         region: candidate.region,
@@ -1001,14 +996,7 @@ export const assignGlobalChatRoom = onCall(callableOptions(), async (request) =>
       updatedAt: FieldValue.serverTimestamp(),
       lastActivityAt: FieldValue.serverTimestamp(),
     });
-    transaction.set(
-      profileRef,
-      {
-        assignedChatRoomId: newRoomId,
-        updatedAt: FieldValue.serverTimestamp(),
-      },
-      { merge: true },
-    );
+    // Note: Client manages roomId in session state, no profile persistence needed
     return {
       roomId: newRoomId,
       region: newRoomRegion,
@@ -1050,9 +1038,7 @@ export const sendGlobalChatMessage = onCall(callableOptions(), async (request) =
     throw new HttpsError("failed-precondition", "Player profile not initialised.");
   }
   const clanSummary = await fetchClanSummaryLite(profile.clanId);
-  if (profile.assignedChatRoomId && profile.assignedChatRoomId !== roomId) {
-    throw new HttpsError("failed-precondition", "Room mismatch. Call assignGlobalChatRoom first.");
-  }
+  // Note: We no longer validate assignedChatRoomId since client manages session state
   await createInProgressReceipt(uid, opId, "sendGlobalChatMessage");
   const now = FieldValue.serverTimestamp();
   const roomRef = roomsCollection().doc(roomId);

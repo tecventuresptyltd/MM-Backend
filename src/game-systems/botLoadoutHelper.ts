@@ -96,20 +96,31 @@ const pickCosmetics = (): GeneratedBotLoadout["cosmetics"] => {
   return cosmetics as GeneratedBotLoadout["cosmetics"];
 };
 
-const buildSpellDeck = (): GeneratedBotLoadout["spellDeck"] => {
+const buildSpellDeck = async (trophyCount: number): Promise<GeneratedBotLoadout["spellDeck"]> => {
   if (!cachedSpellIds || cachedSpellIds.length === 0) {
     return [];
   }
-  const deckSize = Math.min(2, cachedSpellIds.length);
+  
+  // Get bot config for spell level bands
+  const botConfig = await getBotConfig().catch(() => null);
+  const normalizedTrophies = Math.max(0, Math.min(7000, Math.floor(trophyCount)));
+  
+  // Find appropriate spell level band
+  const band = botConfig?.spellLevelBands?.find(
+    (b: any) => normalizedTrophies >= b.minTrophies && normalizedTrophies <= b.maxTrophies
+  ) || { minLevel: 1, maxLevel: 2 }; // Fallback to rookie tier
+  
+  const deckSize = Math.min(5, cachedSpellIds.length);
   const deck: Array<{ spellId: string; level: number }> = [];
-  const available = [...cachedSpellIds];
+  const shuffled = [...cachedSpellIds].sort(() => Math.random() - 0.5); // Shuffle
+  
   for (let i = 0; i < deckSize; i++) {
-    const pick = randomOf(available);
-    if (!pick) {
-      break;
-    }
-    deck.push({ spellId: pick, level: Math.max(1, Math.floor(Math.random() * 3) + 1) });
-    available.splice(available.indexOf(pick), 1);
+    const spellId = shuffled[i];
+    if (!spellId) break;
+    
+    // Random level within band range
+    const level = Math.floor(Math.random() * (band.maxLevel - band.minLevel + 1)) + band.minLevel;
+    deck.push({ spellId, level });
   }
   return deck;
 };
@@ -160,7 +171,7 @@ export const buildBotLoadout = async (trophyCount: number): Promise<GeneratedBot
   const carId = pickCarId();
 
   const cosmetics = pickCosmetics();
-  const spellDeck = buildSpellDeck();
+  const spellDeck = await buildSpellDeck(trophyCount);
   const aiLevel = Math.min(10, Math.max(1, Math.floor(trophyCount / 100) + 1));
 
   return {

@@ -687,7 +687,7 @@ Notes:
 
 ### `generateBotLoadout`
 
-**Purpose:** To generate a complete loadout for an AI opponent.
+**Purpose:** To generate a complete loadout for an AI opponent. This is a standalone callable function (separate from `prepareRace`) that can be used for testing or custom bot generation scenarios.
 
 **Input:**
 ```json
@@ -698,8 +698,18 @@ Notes:
 
 **Output:**
 *   **Success:** `{ "carId": "string", "cosmetics": {}, "spellDeck": [], "difficulty": {} }`
+  - `spellDeck`: Array of **5 unique spells** with levels determined by `BotConfig.spellLevelBands` based on trophy count (same progression as `prepareRace`)
+  - `cosmetics`: Randomly selected cosmetic SKUs for wheels, decals, spoilers, underglow, and boost
+  - `carId`: Selected from `BotConfig.carUnlockThresholds` with ±1 variance for variety
+  - `difficulty`: AI level calculated as `min(10, max(1, floor(trophyCount / 100) + 1))`
 
 **Errors:** `INVALID_ARGUMENT`
+
+**Note:** Uses the same 4-tier spell progression as `prepareRace`:
+- 0-999 trophies: Level 1-2
+- 1000-2499 trophies: Level 2-3
+- 2500-4999 trophies: Level 4-5
+- 5000+ trophies: Level 5
 
 ---
 

@@ -94,6 +94,8 @@ interface RarityPoolEntry {
 const isDefaultSku = (sku: ItemSku | undefined): boolean =>
   Boolean(sku?.displayName && sku.displayName.toLowerCase().includes("default"));
 
+const isCosmeticSku = (sku: ItemSku | undefined): boolean => sku?.type === "cosmetic";
+
 const extractRarityPoolEntries = (crate: CrateDefinition): RarityPoolEntry[] => {
   const weights = crate.rarityWeights ?? {};
   const pools = crate.poolsByRarity ?? {};
@@ -267,13 +269,22 @@ const pickFromCrate = async (
   const filteredEntries = rarityEntries
     .map((entry) => ({
       ...entry,
-      pool: entry.pool.filter((skuId) => !isDefaultSku(itemSkusCatalog[skuId])),
+      pool: entry.pool.filter((skuId) => {
+        const sku = itemSkusCatalog[skuId];
+        if (!sku) {
+          return false;
+        }
+        if (isDefaultSku(sku)) {
+          return false;
+        }
+        return isCosmeticSku(sku);
+      }),
     }))
     .filter((entry) => entry.pool.length > 0);
   if (filteredEntries.length === 0) {
     throw new HttpsError(
       "failed-precondition",
-      `Crate ${crate.crateId} has no rarity-weighted pools configured.`,
+      `Crate ${crate.crateId} has no cosmetic rarity-weighted pools configured.`,
     );
   }
   return pickFromRarityPools(crate, seed, filteredEntries);

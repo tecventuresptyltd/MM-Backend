@@ -1,5 +1,16 @@
 # Release Notes
 
+## 2025-12-15: Crate Rewards Cosmetic-Only Enforcement
+
+### Bug Fixes
+
+*   **openCrate guard:** Server now filters crate pools to cosmetic, non-default SKUs before rolling. If a crate lacks cosmetic entries, the call fails with `failed-precondition` instead of granting an invalid item.
+*   **Catalog cleanup:** Crate pools were scrubbed to remove crate/key/default SKUs in both `CratesCatalog.json` and `gameDataCatalogs.v3.normalized.json` so only cosmetics remain.
+
+### Deployment Notes
+
+*   Redeploy the `openCrate` function and publish the updated game data bundle (`gameDataCatalogs.v3.normalized.json`). Refresh any cached catalogs (Remote Config/CDN/app bundle) after publishing.
+
 ## 2025-12-14: Session-Based Room Assignment
 
 This release changes global chat room assignment from persistent (cross-session) to session-based, ensuring optimal load balancing on every app launch.

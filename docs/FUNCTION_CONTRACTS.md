@@ -715,22 +715,43 @@ Notes:
 
 ### `recordRaceResult`
 
-**Purpose:** Settles a race and applies rewards. The callable reloads the lobby snapshot recorded in `/Races/{raceId}`, feeds it plus the finish order into the Elo-style calculator from `src/race/economy.ts`, then writes the settlement deltas. XP progression uses the "Infinite Leveling Power Curve" runtime formula from `src/shared/xp.ts`; level-ups add spell tokens. End-of-race drops grant crates/keys immediately, and flash-sale triggers run afterward.
+**Purpose:** Settles a race and applies rewards using **Immediate Settlement** strategy. The callable reloads the lobby snapshot recorded in `/Races/{raceId}`, feeds it plus the finish order into the Elo-style calculator from `src/race/economy.ts`, then writes the settlement deltas. XP progression uses the "Infinite Leveling Power Curve" runtime formula from `src/shared/xp.ts`; level-ups add spell tokens. End-of-race drops grant crates/keys immediately, and flash-sale triggers run afterward.
+
+**Immediate Settlement Design:**
+* The server calculates rewards **as soon as a player finishes**, without waiting for slower players or bots to complete.
+* The Elo math uses the principle: "If an opponent isn't in the list of finishers before me, I assume I beat them" (Sij = 1).
+* The `finishOrder` array can be **partial** — it only needs to include players who finished **before** the calling player, plus the calling player themselves.
+* Any players not explicitly listed are auto-filled **after** the player's position, effectively treating them as "beaten by the player."
 
 **Input:**
 ```json
 {
   "raceId": "string",
-  "finishOrder": ["string"],
+  "finishOrder": ["string"], // Partial list: players who finished before you, then your UID
   "botNames": ["string"] // optional display names for bots
 }
 ```
+
+**FinishOrder Behavior:**
+* `finishOrder` can contain UIDs (strings), participant IDs, or numeric indices.
+* Players are processed in the order provided. Missing players are appended at the end in index order.
+* Example: `["uid_bot1", "uid_bot3", "uid_player"]` → Player finishes 3rd, bots 4-8 auto-filled after.
+* The player's position is derived as: `position = finishOrder.indexOf(playerUid) + 1`
+* **Important:** The server trusts the client-provided `finishOrder`. Sending only `[yourUid]` will result in 1st place rewards.
 
 **Output:**
 ```jsonc
 {
   "success": true,
-  "rewards": { "trophies": 12, "coins": 5400, "xp": 180 },
+  "rewards": {
+    "trophies": 12,
+    "coins": 5400,
+    "xp": 180,
+    "baseCoins": 2700,
+    "boosterCoins": 2700,
+    "baseXp": 90,
+    "boosterXp": 90
+  },
   "xpProgress": { "...": "see existing contract" },
   "rank": { "old": "Gold II", "new": "Gold III", "promoted": true, "demoted": false },
   "trophySettlement": { "applied": 34, "preDeducted": -22 },
@@ -741,8 +762,16 @@ Notes:
 **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `FAILED_PRECONDITION`, `NOT_FOUND`
 
 **Notes:**
+* **Immediate Settlement:** Rewards are calculated based on who finished before the player. Anyone not in `finishOrder` is assumed to have been beaten by the player.
 * `rewards.trophies` reflects the actual net result for the UI. `trophySettlement.applied` is what the server added back to profile trophies (pre-deduction already included).
+* `rewards.coins` and `rewards.xp` are the **total** values (base + booster). The breakdown fields allow the UI to display "Earned 2,700 Coins + 2,700 Bonus!" separately.
+* `baseCoins` and `baseXp` represent rewards calculated with no booster active (multiplier = 1).
+* `boosterCoins` and `boosterXp` represent the additional amount granted when a booster is active (multiplier = 2). These values are `0` when no booster is active.
+* Boosters are validated by checking `boosters.coin.activeUntil > Date.now()` and `boosters.exp.activeUntil > Date.now()` at race completion time (timestamp-based, not boolean flags).
+* Trophies are **never** affected by boosters—only coins and XP.
 * `rank` gives the before/after labels so the client can animate promotions without re-reading Firestore.
+* **Trophy Math:** Uses pairwise Elo calculation where Sij = 0 if opponent `j` finished before player `i`, else Sij = 1. This allows partial finish orders without requiring all players to complete the race.
+* **Coin/XP Math:** Position-based rewards use rank-specific caps multiplied by difficulty (based on average expected win probability) and booster multipliers.
 
 **Side Effects:**
 * After rewards finish, `maybeTriggerFlashSales` runs. Owning ≥ 1 Mythical Crate but 0 Mythical Keys queues `offer_zqcpwsbz` (`flash_missing_key`) for 15 minutes. The inverse (≥ 1 Mythical Key, 0 Mythical Crates) queues `offer_1aka0xdg`. Each trigger type respects the 72 hour cooldown tracked in `/Offers/History.lastTriggerAt`.

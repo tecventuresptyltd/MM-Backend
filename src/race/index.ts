@@ -479,6 +479,10 @@ export const recordRaceResult = onCall({ enforceAppCheck: false, region: REGION 
         trophies: appliedActualTrophiesDelta,
         coins: coinsGained,
         xp: xpGained,
+        baseCoins: rewards.baseCoins,
+        boosterCoins: rewards.boosterCoins,
+        baseXp: rewards.baseXp,
+        boosterXp: rewards.boosterXp,
       },
       xpProgress: {
         xpBefore,

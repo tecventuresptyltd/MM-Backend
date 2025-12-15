@@ -371,6 +371,10 @@ export interface RaceRewardsWithSettlement {
   trophiesSettlement: number;
   coins: number;
   exp: number;
+  baseCoins: number;
+  boosterCoins: number;
+  baseXp: number;
+  boosterXp: number;
   oldRank: string;
   newRank: string;
   promoted: boolean;
@@ -392,25 +396,26 @@ export const computeRaceRewardsWithPrededuction = (
   const oldTrophies = input.ratings[input.playerIndex] ?? 0;
   const oldRank = getRankForTrophies(oldTrophies);
 
+  // Calculate base coins (multiplier = 1)
+  const coinCfgBase: CoinConfig = {
+    ...coinCfg,
+    boosterMultiplier: 1,
+  };
+
+  const baseCoins = calculateCoins(
+    oldRank,
+    input.place,
+    input.ratings,
+    input.playerIndex,
+    coinCfgBase,
+    trophyCfg,
+  );
+
+  // Calculate total coins (with actual multiplier)
   const coinCfgLocal: CoinConfig = {
     ...coinCfg,
     boosterMultiplier: input.hasCoinBooster ? 2 : 1,
   };
-
-  const expCfgLocal: ExpConfig = {
-    ...expCfg,
-    rankPlaceCaps: expCfg.rankPlaceCaps ?? EXP_CAPS_BY_RANK,
-    boosterMultiplier: input.hasExpBooster ? 2 : 1,
-  };
-
-  const settlement = settleTrophiesAfterFinish(
-    input.playerIndex,
-    input.finishOrder,
-    input.ratings,
-    trophyCfg,
-    input.lastPlaceDeltaApplied,
-    input.placeIndexForI,
-  );
 
   const coins = calculateCoins(
     oldRank,
@@ -421,12 +426,47 @@ export const computeRaceRewardsWithPrededuction = (
     trophyCfg,
   );
 
+  const boosterCoins = coins - baseCoins;
+
+  // Calculate base XP (multiplier = 1)
+  const expCfgBase: ExpConfig = {
+    ...expCfg,
+    rankPlaceCaps: expCfg.rankPlaceCaps ?? EXP_CAPS_BY_RANK,
+    boosterMultiplier: 1,
+  };
+
+  const baseXp = calculateExp(
+    oldTrophies,
+    input.place,
+    input.totalPositions,
+    expCfgBase,
+    oldRank,
+  );
+
+  // Calculate total XP (with actual multiplier)
+  const expCfgLocal: ExpConfig = {
+    ...expCfg,
+    rankPlaceCaps: expCfg.rankPlaceCaps ?? EXP_CAPS_BY_RANK,
+    boosterMultiplier: input.hasExpBooster ? 2 : 1,
+  };
+
   const exp = calculateExp(
     oldTrophies,
     input.place,
     input.totalPositions,
     expCfgLocal,
     oldRank,
+  );
+
+  const boosterXp = exp - baseXp;
+
+  const settlement = settleTrophiesAfterFinish(
+    input.playerIndex,
+    input.finishOrder,
+    input.ratings,
+    trophyCfg,
+    input.lastPlaceDeltaApplied,
+    input.placeIndexForI,
   );
 
   const newTrophies = oldTrophies + settlement.settlementDelta;
@@ -437,6 +477,10 @@ export const computeRaceRewardsWithPrededuction = (
     trophiesSettlement: settlement.settlementDelta,
     coins,
     exp,
+    baseCoins,
+    boosterCoins,
+    baseXp,
+    boosterXp,
     oldRank,
     newRank,
     promoted: rankIndex(newRank) > rankIndex(oldRank),

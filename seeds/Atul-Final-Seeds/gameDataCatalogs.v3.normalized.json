@@ -13047,7 +13047,7 @@
               "boostPower": 1
             },
             "1": {
-              "priceCoins": 100,
+              "priceCoins": 80,
               "carRating": 105,
               "topSpeed": 1,
               "acceleration": 1.25,
@@ -13056,7 +13056,7 @@
               "boostPower": 1
             },
             "2": {
-              "priceCoins": 100,
+              "priceCoins": 85,
               "carRating": 110,
               "topSpeed": 1.25,
               "acceleration": 1.25,
@@ -13065,7 +13065,7 @@
               "boostPower": 1
             },
             "3": {
-              "priceCoins": 100,
+              "priceCoins": 90,
               "carRating": 115,
               "topSpeed": 1.25,
               "acceleration": 1.25,
@@ -13074,7 +13074,7 @@
               "boostPower": 1.25
             },
             "4": {
-              "priceCoins": 100,
+              "priceCoins": 95,
               "carRating": 120,
               "topSpeed": 1.25,
               "acceleration": 1.25,
@@ -13083,7 +13083,7 @@
               "boostPower": 1.25
             },
             "5": {
-              "priceCoins": 100,
+              "priceCoins": 105,
               "carRating": 125,
               "topSpeed": 1.25,
               "acceleration": 1.25,
@@ -13092,7 +13092,7 @@
               "boostPower": 1.25
             },
             "6": {
-              "priceCoins": 100,
+              "priceCoins": 110,
               "carRating": 130,
               "topSpeed": 1.25,
               "acceleration": 1.5,
@@ -13101,7 +13101,7 @@
               "boostPower": 1.25
             },
             "7": {
-              "priceCoins": 100,
+              "priceCoins": 115,
               "carRating": 135,
               "topSpeed": 1.5,
               "acceleration": 1.5,
@@ -13110,7 +13110,7 @@
               "boostPower": 1.25
             },
             "8": {
-              "priceCoins": 100,
+              "priceCoins": 120,
               "carRating": 140,
               "topSpeed": 1.5,
               "acceleration": 1.5,
@@ -13119,7 +13119,7 @@
               "boostPower": 1.5
             },
             "9": {
-              "priceCoins": 100,
+              "priceCoins": 125,
               "carRating": 145,
               "topSpeed": 1.5,
               "acceleration": 1.5,
@@ -13128,7 +13128,7 @@
               "boostPower": 1.5
             },
             "10": {
-              "priceCoins": 100,
+              "priceCoins": 130,
               "carRating": 150,
               "topSpeed": 1.5,
               "acceleration": 1.5,
@@ -13137,7 +13137,7 @@
               "boostPower": 1.5
             },
             "11": {
-              "priceCoins": 100,
+              "priceCoins": 135,
               "carRating": 155,
               "topSpeed": 1.5,
               "acceleration": 1.75,
@@ -13146,7 +13146,7 @@
               "boostPower": 1.5
             },
             "12": {
-              "priceCoins": 100,
+              "priceCoins": 140,
               "carRating": 160,
               "topSpeed": 1.75,
               "acceleration": 1.75,
@@ -13155,7 +13155,7 @@
               "boostPower": 1.5
             },
             "13": {
-              "priceCoins": 100,
+              "priceCoins": 145,
               "carRating": 165,
               "topSpeed": 1.75,
               "acceleration": 1.75,
@@ -13164,7 +13164,7 @@
               "boostPower": 1.75
             },
             "14": {
-              "priceCoins": 200,
+              "priceCoins": 150,
               "carRating": 170,
               "topSpeed": 1.75,
               "acceleration": 1.75,
@@ -13173,7 +13173,7 @@
               "boostPower": 1.75
             },
             "15": {
-              "priceCoins": 200,
+              "priceCoins": 155,
               "carRating": 175,
               "topSpeed": 1.75,
               "acceleration": 1.75,
@@ -13182,7 +13182,7 @@
               "boostPower": 1.75
             },
             "16": {
-              "priceCoins": 200,
+              "priceCoins": 160,
               "carRating": 180,
               "topSpeed": 1.75,
               "acceleration": 2,
@@ -13191,7 +13191,7 @@
               "boostPower": 1.75
             },
             "17": {
-              "priceCoins": 200,
+              "priceCoins": 165,
               "carRating": 185,
               "topSpeed": 2,
               "acceleration": 2,
@@ -13200,7 +13200,7 @@
               "boostPower": 1.75
             },
             "18": {
-              "priceCoins": 200,
+              "priceCoins": 170,
               "carRating": 190,
               "topSpeed": 2,
               "acceleration": 2,
@@ -13209,7 +13209,7 @@
               "boostPower": 2
             },
             "19": {
-              "priceCoins": 200,
+              "priceCoins": 175,
               "carRating": 195,
               "topSpeed": 2,
               "acceleration": 2,
@@ -13218,7 +13218,7 @@
               "boostPower": 2
             },
             "20": {
-              "priceCoins": 200,
+              "priceCoins": 185,
               "carRating": 200,
               "topSpeed": 2,
               "acceleration": 2,
@@ -13252,7 +13252,7 @@
               "boostPower": 2
             },
             "1": {
-              "priceCoins": 100,
+              "priceCoins": 145,
               "carRating": 205,
               "topSpeed": 2,
               "acceleration": 2.25,
@@ -13261,7 +13261,7 @@
               "boostPower": 2
             },
             "2": {
-              "priceCoins": 200,
+              "priceCoins": 155,
               "carRating": 210,
               "topSpeed": 2.25,
               "acceleration": 2.25,
@@ -13270,7 +13270,7 @@
               "boostPower": 2
             },
             "3": {
-              "priceCoins": 200,
+              "priceCoins": 165,
               "carRating": 215,
               "topSpeed": 2.25,
               "acceleration": 2.25,
@@ -13279,7 +13279,7 @@
               "boostPower": 2.25
             },
             "4": {
-              "priceCoins": 200,
+              "priceCoins": 175,
               "carRating": 220,
               "topSpeed": 2.25,
               "acceleration": 2.25,
@@ -13288,7 +13288,7 @@
               "boostPower": 2.25
             },
             "5": {
-              "priceCoins": 200,
+              "priceCoins": 185,
               "carRating": 225,
               "topSpeed": 2.25,
               "acceleration": 2.25,
@@ -13297,7 +13297,7 @@
               "boostPower": 2.25
             },
             "6": {
-              "priceCoins": 200,
+              "priceCoins": 195,
               "carRating": 230,
               "topSpeed": 2.25,
               "acceleration": 2.5,
@@ -13315,7 +13315,7 @@
               "boostPower": 2.25
             },
             "8": {
-              "priceCoins": 200,
+              "priceCoins": 210,
               "carRating": 240,
               "topSpeed": 2.5,
               "acceleration": 2.5,
@@ -13324,7 +13324,7 @@
               "boostPower": 2.5
             },
             "9": {
-              "priceCoins": 200,
+              "priceCoins": 220,
               "carRating": 245,
               "topSpeed": 2.5,
               "acceleration": 2.5,
@@ -13333,7 +13333,7 @@
               "boostPower": 2.5
             },
             "10": {
-              "priceCoins": 200,
+              "priceCoins": 230,
               "carRating": 250,
               "topSpeed": 2.5,
               "acceleration": 2.5,
@@ -13342,7 +13342,7 @@
               "boostPower": 2.5
             },
             "11": {
-              "priceCoins": 200,
+              "priceCoins": 240,
               "carRating": 255,
               "topSpeed": 2.5,
               "acceleration": 2.75,
@@ -13351,7 +13351,7 @@
               "boostPower": 2.5
             },
             "12": {
-              "priceCoins": 300,
+              "priceCoins": 250,
               "carRating": 260,
               "topSpeed": 2.75,
               "acceleration": 2.75,
@@ -13360,7 +13360,7 @@
               "boostPower": 2.5
             },
             "13": {
-              "priceCoins": 300,
+              "priceCoins": 260,
               "carRating": 265,
               "topSpeed": 2.75,
               "acceleration": 2.75,
@@ -13369,7 +13369,7 @@
               "boostPower": 2.75
             },
             "14": {
-              "priceCoins": 300,
+              "priceCoins": 270,
               "carRating": 270,
               "topSpeed": 2.75,
               "acceleration": 2.75,
@@ -13378,7 +13378,7 @@
               "boostPower": 2.75
             },
             "15": {
-              "priceCoins": 300,
+              "priceCoins": 280,
               "carRating": 275,
               "topSpeed": 2.75,
               "acceleration": 2.75,
@@ -13387,7 +13387,7 @@
               "boostPower": 2.75
             },
             "16": {
-              "priceCoins": 300,
+              "priceCoins": 290,
               "carRating": 280,
               "topSpeed": 2.75,
               "acceleration": 3,
@@ -13405,7 +13405,7 @@
               "boostPower": 2.75
             },
             "18": {
-              "priceCoins": 300,
+              "priceCoins": 310,
               "carRating": 290,
               "topSpeed": 3,
               "acceleration": 3,
@@ -13414,7 +13414,7 @@
               "boostPower": 3
             },
             "19": {
-              "priceCoins": 300,
+              "priceCoins": 320,
               "carRating": 295,
               "topSpeed": 3,
               "acceleration": 3,
@@ -13423,7 +13423,7 @@
               "boostPower": 3
             },
             "20": {
-              "priceCoins": 300,
+              "priceCoins": 330,
               "carRating": 300,
               "topSpeed": 3,
               "acceleration": 3,
@@ -13457,7 +13457,7 @@
               "boostPower": 3
             },
             "1": {
-              "priceCoins": 300,
+              "priceCoins": 260,
               "carRating": 305,
               "topSpeed": 3,
               "acceleration": 3.25,
@@ -13466,7 +13466,7 @@
               "boostPower": 3
             },
             "2": {
-              "priceCoins": 300,
+              "priceCoins": 280,
               "carRating": 310,
               "topSpeed": 3.25,
               "acceleration": 3.25,
@@ -13484,7 +13484,7 @@
               "boostPower": 3.25
             },
             "4": {
-              "priceCoins": 300,
+              "priceCoins": 320,
               "carRating": 320,
               "topSpeed": 3.25,
               "acceleration": 3.25,
@@ -13493,7 +13493,7 @@
               "boostPower": 3.25
             },
             "5": {
-              "priceCoins": 300,
+              "priceCoins": 330,
               "carRating": 325,
               "topSpeed": 3.25,
               "acceleration": 3.25,
@@ -13502,7 +13502,7 @@
               "boostPower": 3.25
             },
             "6": {
-              "priceCoins": 300,
+              "priceCoins": 350,
               "carRating": 330,
               "topSpeed": 3.25,
               "acceleration": 3.5,
@@ -13511,7 +13511,7 @@
               "boostPower": 3.25
             },
             "7": {
-              "priceCoins": 400,
+              "priceCoins": 370,
               "carRating": 335,
               "topSpeed": 3.5,
               "acceleration": 3.5,
@@ -13520,7 +13520,7 @@
               "boostPower": 3.25
             },
             "8": {
-              "priceCoins": 400,
+              "priceCoins": 380,
               "carRating": 340,
               "topSpeed": 3.5,
               "acceleration": 3.5,
@@ -13538,7 +13538,7 @@
               "boostPower": 3.5
             },
             "10": {
-              "priceCoins": 400,
+              "priceCoins": 420,
               "carRating": 350,
               "topSpeed": 3.5,
               "acceleration": 3.5,
@@ -13547,7 +13547,7 @@
               "boostPower": 3.5
             },
             "11": {
-              "priceCoins": 400,
+              "priceCoins": 440,
               "carRating": 355,
               "topSpeed": 3.5,
               "acceleration": 3.75,
@@ -13556,7 +13556,7 @@
               "boostPower": 3.5
             },
             "12": {
-              "priceCoins": 500,
+              "priceCoins": 450,
               "carRating": 360,
               "topSpeed": 3.75,
               "acceleration": 3.75,
@@ -13565,7 +13565,7 @@
               "boostPower": 3.5
             },
             "13": {
-              "priceCoins": 500,
+              "priceCoins": 470,
               "carRating": 365,
               "topSpeed": 3.75,
               "acceleration": 3.75,
@@ -13574,7 +13574,7 @@
               "boostPower": 3.75
             },
             "14": {
-              "priceCoins": 500,
+              "priceCoins": 490,
               "carRating": 370,
               "topSpeed": 3.75,
               "acceleration": 3.75,
@@ -13583,7 +13583,7 @@
               "boostPower": 3.75
             },
             "15": {
-              "priceCoins": 500,
+              "priceCoins": 510,
               "carRating": 375,
               "topSpeed": 3.75,
               "acceleration": 3.75,
@@ -13592,7 +13592,7 @@
               "boostPower": 3.75
             },
             "16": {
-              "priceCoins": 500,
+              "priceCoins": 520,
               "carRating": 380,
               "topSpeed": 3.75,
               "acceleration": 4,
@@ -13601,7 +13601,7 @@
               "boostPower": 3.75
             },
             "17": {
-              "priceCoins": 500,
+              "priceCoins": 540,
               "carRating": 385,
               "topSpeed": 4,
               "acceleration": 4,
@@ -13610,7 +13610,7 @@
               "boostPower": 3.75
             },
             "18": {
-              "priceCoins": 600,
+              "priceCoins": 560,
               "carRating": 390,
               "topSpeed": 4,
               "acceleration": 4,
@@ -13619,7 +13619,7 @@
               "boostPower": 4
             },
             "19": {
-              "priceCoins": 600,
+              "priceCoins": 570,
               "carRating": 395,
               "topSpeed": 4,
               "acceleration": 4,
@@ -13628,7 +13628,7 @@
               "boostPower": 4
             },
             "20": {
-              "priceCoins": 600,
+              "priceCoins": 590,
               "carRating": 400,
               "topSpeed": 4,
               "acceleration": 4,
@@ -13662,7 +13662,7 @@
               "boostPower": 4
             },
             "1": {
-              "priceCoins": 500,
+              "priceCoins": 470,
               "carRating": 405,
               "topSpeed": 4,
               "acceleration": 4.25,
@@ -13671,7 +13671,7 @@
               "boostPower": 4
             },
             "2": {
-              "priceCoins": 500,
+              "priceCoins": 510,
               "carRating": 410,
               "topSpeed": 4.25,
               "acceleration": 4.25,
@@ -13680,7 +13680,7 @@
               "boostPower": 4
             },
             "3": {
-              "priceCoins": 500,
+              "priceCoins": 540,
               "carRating": 415,
               "topSpeed": 4.25,
               "acceleration": 4.25,
@@ -13689,7 +13689,7 @@
               "boostPower": 4.25
             },
             "4": {
-              "priceCoins": 600,
+              "priceCoins": 570,
               "carRating": 420,
               "topSpeed": 4.25,
               "acceleration": 4.25,
@@ -13707,7 +13707,7 @@
               "boostPower": 4.25
             },
             "6": {
-              "priceCoins": 600,
+              "priceCoins": 630,
               "carRating": 430,
               "topSpeed": 4.25,
               "acceleration": 4.5,
@@ -13716,7 +13716,7 @@
               "boostPower": 4.25
             },
             "7": {
-              "priceCoins": 700,
+              "priceCoins": 660,
               "carRating": 435,
               "topSpeed": 4.5,
               "acceleration": 4.5,
@@ -13725,7 +13725,7 @@
               "boostPower": 4.25
             },
             "8": {
-              "priceCoins": 700,
+              "priceCoins": 690,
               "carRating": 440,
               "topSpeed": 4.5,
               "acceleration": 4.5,
@@ -13734,7 +13734,7 @@
               "boostPower": 4.5
             },
             "9": {
-              "priceCoins": 700,
+              "priceCoins": 720,
               "carRating": 445,
               "topSpeed": 4.5,
               "acceleration": 4.5,
@@ -13743,7 +13743,7 @@
               "boostPower": 4.5
             },
             "10": {
-              "priceCoins": 800,
+              "priceCoins": 750,
               "carRating": 450,
               "topSpeed": 4.5,
               "acceleration": 4.5,
@@ -13752,7 +13752,7 @@
               "boostPower": 4.5
             },
             "11": {
-              "priceCoins": 800,
+              "priceCoins": 790,
               "carRating": 455,
               "topSpeed": 4.5,
               "acceleration": 4.75,
@@ -13761,7 +13761,7 @@
               "boostPower": 4.5
             },
             "12": {
-              "priceCoins": 800,
+              "priceCoins": 820,
               "carRating": 460,
               "topSpeed": 4.75,
               "acceleration": 4.75,
@@ -13770,7 +13770,7 @@
               "boostPower": 4.5
             },
             "13": {
-              "priceCoins": 900,
+              "priceCoins": 850,
               "carRating": 465,
               "topSpeed": 4.75,
               "acceleration": 4.75,
@@ -13779,7 +13779,7 @@
               "boostPower": 4.75
             },
             "14": {
-              "priceCoins": 900,
+              "priceCoins": 880,
               "carRating": 470,
               "topSpeed": 4.75,
               "acceleration": 4.75,
@@ -13788,7 +13788,7 @@
               "boostPower": 4.75
             },
             "15": {
-              "priceCoins": 900,
+              "priceCoins": 910,
               "carRating": 475,
               "topSpeed": 4.75,
               "acceleration": 4.75,
@@ -13797,7 +13797,7 @@
               "boostPower": 4.75
             },
             "16": {
-              "priceCoins": 900,
+              "priceCoins": 940,
               "carRating": 480,
               "topSpeed": 4.75,
               "acceleration": 5,
@@ -13806,7 +13806,7 @@
               "boostPower": 4.75
             },
             "17": {
-              "priceCoins": 1000,
+              "priceCoins": 970,
               "carRating": 485,
               "topSpeed": 5,
               "acceleration": 5,
@@ -13867,7 +13867,7 @@
               "boostPower": 5
             },
             "1": {
-              "priceCoins": 800,
+              "priceCoins": 850,
               "carRating": 505,
               "topSpeed": 5,
               "acceleration": 5.25,
@@ -13876,7 +13876,7 @@
               "boostPower": 5
             },
             "2": {
-              "priceCoins": 900,
+              "priceCoins": 910,
               "carRating": 510,
               "topSpeed": 5.25,
               "acceleration": 5.25,
@@ -13885,7 +13885,7 @@
               "boostPower": 5
             },
             "3": {
-              "priceCoins": 900,
+              "priceCoins": 970,
               "carRating": 515,
               "topSpeed": 5.25,
               "acceleration": 5.25,
@@ -14011,7 +14011,7 @@
               "boostPower": 5.75
             },
             "17": {
-              "priceCoins": 1800,
+              "priceCoins": 1700,
               "carRating": 585,
               "topSpeed": 6,
               "acceleration": 6,
@@ -14171,7 +14171,7 @@
               "boostPower": 6.5
             },
             "12": {
-              "priceCoins": 2700,
+              "priceCoins": 2600,
               "carRating": 660,
               "topSpeed": 6.75,
               "acceleration": 6.75,
@@ -14180,7 +14180,7 @@
               "boostPower": 6.5
             },
             "13": {
-              "priceCoins": 2800,
+              "priceCoins": 2700,
               "carRating": 665,
               "topSpeed": 6.75,
               "acceleration": 6.75,
@@ -14189,7 +14189,7 @@
               "boostPower": 6.75
             },
             "14": {
-              "priceCoins": 2900,
+              "priceCoins": 2800,
               "carRating": 670,
               "topSpeed": 6.75,
               "acceleration": 6.75,
@@ -14198,7 +14198,7 @@
               "boostPower": 6.75
             },
             "15": {
-              "priceCoins": 3000,
+              "priceCoins": 2900,
               "carRating": 675,
               "topSpeed": 6.75,
               "acceleration": 6.75,
@@ -14207,7 +14207,7 @@
               "boostPower": 6.75
             },
             "16": {
-              "priceCoins": 3100,
+              "priceCoins": 3000,
               "carRating": 680,
               "topSpeed": 6.75,
               "acceleration": 7,
@@ -14216,7 +14216,7 @@
               "boostPower": 6.75
             },
             "17": {
-              "priceCoins": 3200,
+              "priceCoins": 3100,
               "carRating": 685,
               "topSpeed": 7,
               "acceleration": 7,
@@ -14225,7 +14225,7 @@
               "boostPower": 6.75
             },
             "18": {
-              "priceCoins": 3300,
+              "priceCoins": 3200,
               "carRating": 690,
               "topSpeed": 7,
               "acceleration": 7,
@@ -14234,7 +14234,7 @@
               "boostPower": 7
             },
             "19": {
-              "priceCoins": 3400,
+              "priceCoins": 3300,
               "carRating": 695,
               "topSpeed": 7,
               "acceleration": 7,
@@ -14277,7 +14277,7 @@
               "boostPower": 7
             },
             "1": {
-              "priceCoins": 2700,
+              "priceCoins": 2800,
               "carRating": 705,
               "topSpeed": 7,
               "acceleration": 7.25,
@@ -14322,7 +14322,7 @@
               "boostPower": 7.25
             },
             "6": {
-              "priceCoins": 3600,
+              "priceCoins": 3700,
               "carRating": 730,
               "topSpeed": 7.25,
               "acceleration": 7.5,
@@ -14331,7 +14331,7 @@
               "boostPower": 7.25
             },
             "7": {
-              "priceCoins": 3800,
+              "priceCoins": 3900,
               "carRating": 735,
               "topSpeed": 7.5,
               "acceleration": 7.5,
@@ -14385,7 +14385,7 @@
               "boostPower": 7.5
             },
             "13": {
-              "priceCoins": 5000,
+              "priceCoins": 4900,
               "carRating": 765,
               "topSpeed": 7.75,
               "acceleration": 7.75,
@@ -14394,7 +14394,7 @@
               "boostPower": 7.75
             },
             "14": {
-              "priceCoins": 5200,
+              "priceCoins": 5100,
               "carRating": 770,
               "topSpeed": 7.75,
               "acceleration": 7.75,
@@ -14430,7 +14430,7 @@
               "boostPower": 7.75
             },
             "18": {
-              "priceCoins": 5900,
+              "priceCoins": 5800,
               "carRating": 790,
               "topSpeed": 8,
               "acceleration": 8,
@@ -14439,7 +14439,7 @@
               "boostPower": 8
             },
             "19": {
-              "priceCoins": 6100,
+              "priceCoins": 6000,
               "carRating": 795,
               "topSpeed": 8,
               "acceleration": 8,
@@ -14448,7 +14448,7 @@
               "boostPower": 8
             },
             "20": {
-              "priceCoins": 6300,
+              "priceCoins": 6200,
               "carRating": 800,
               "topSpeed": 8,
               "acceleration": 8,
@@ -14482,7 +14482,7 @@
               "boostPower": 8
             },
             "1": {
-              "priceCoins": 4900,
+              "priceCoins": 5000,
               "carRating": 805,
               "topSpeed": 8,
               "acceleration": 8.25,
@@ -14491,7 +14491,7 @@
               "boostPower": 8
             },
             "2": {
-              "priceCoins": 5200,
+              "priceCoins": 5300,
               "carRating": 810,
               "topSpeed": 8.25,
               "acceleration": 8.25,
@@ -14500,7 +14500,7 @@
               "boostPower": 8
             },
             "3": {
-              "priceCoins": 5500,
+              "priceCoins": 5600,
               "carRating": 815,
               "topSpeed": 8.25,
               "acceleration": 8.25,
@@ -14509,7 +14509,7 @@
               "boostPower": 8.25
             },
             "4": {
-              "priceCoins": 5900,
+              "priceCoins": 6000,
               "carRating": 820,
               "topSpeed": 8.25,
               "acceleration": 8.25,
@@ -14518,7 +14518,7 @@
               "boostPower": 8.25
             },
             "5": {
-              "priceCoins": 6200,
+              "priceCoins": 6300,
               "carRating": 825,
               "topSpeed": 8.25,
               "acceleration": 8.25,
@@ -14545,7 +14545,7 @@
               "boostPower": 8.25
             },
             "8": {
-              "priceCoins": 7200,
+              "priceCoins": 7300,
               "carRating": 840,
               "topSpeed": 8.5,
               "acceleration": 8.5,
@@ -14572,7 +14572,7 @@
               "boostPower": 8.5
             },
             "11": {
-              "priceCoins": 8300,
+              "priceCoins": 8200,
               "carRating": 855,
               "topSpeed": 8.5,
               "acceleration": 8.75,
@@ -14599,7 +14599,7 @@
               "boostPower": 8.75
             },
             "14": {
-              "priceCoins": 9300,
+              "priceCoins": 9200,
               "carRating": 870,
               "topSpeed": 8.75,
               "acceleration": 8.75,
@@ -14608,7 +14608,7 @@
               "boostPower": 8.75
             },
             "15": {
-              "priceCoins": 9600,
+              "priceCoins": 9500,
               "carRating": 875,
               "topSpeed": 8.75,
               "acceleration": 8.75,
@@ -14626,7 +14626,7 @@
               "boostPower": 8.75
             },
             "17": {
-              "priceCoins": 10300,
+              "priceCoins": 10200,
               "carRating": 885,
               "topSpeed": 9,
               "acceleration": 9,
@@ -14635,7 +14635,7 @@
               "boostPower": 8.75
             },
             "18": {
-              "priceCoins": 10600,
+              "priceCoins": 10500,
               "carRating": 890,
               "topSpeed": 9,
               "acceleration": 9,
@@ -14644,7 +14644,7 @@
               "boostPower": 9
             },
             "19": {
-              "priceCoins": 11000,
+              "priceCoins": 10900,
               "carRating": 895,
               "topSpeed": 9,
               "acceleration": 9,
@@ -14653,7 +14653,7 @@
               "boostPower": 9
             },
             "20": {
-              "priceCoins": 11300,
+              "priceCoins": 11200,
               "carRating": 900,
               "topSpeed": 9,
               "acceleration": 9,
@@ -14687,7 +14687,7 @@
               "boostPower": 9
             },
             "1": {
-              "priceCoins": 8700,
+              "priceCoins": 9000,
               "carRating": 905,
               "topSpeed": 9,
               "acceleration": 9.25,
@@ -14696,7 +14696,7 @@
               "boostPower": 9
             },
             "2": {
-              "priceCoins": 9300,
+              "priceCoins": 9600,
               "carRating": 910,
               "topSpeed": 9.25,
               "acceleration": 9.25,
@@ -14705,7 +14705,7 @@
               "boostPower": 9
             },
             "3": {
-              "priceCoins": 10000,
+              "priceCoins": 10100,
               "carRating": 915,
               "topSpeed": 9.25,
               "acceleration": 9.25,
@@ -14714,7 +14714,7 @@
               "boostPower": 9.25
             },
             "4": {
-              "priceCoins": 10600,
+              "priceCoins": 10700,
               "carRating": 920,
               "topSpeed": 9.25,
               "acceleration": 9.25,
@@ -14723,7 +14723,7 @@
               "boostPower": 9.25
             },
             "5": {
-              "priceCoins": 11200,
+              "priceCoins": 11300,
               "carRating": 925,
               "topSpeed": 9.25,
               "acceleration": 9.25,
@@ -14732,7 +14732,7 @@
               "boostPower": 9.25
             },
             "6": {
-              "priceCoins": 11800,
+              "priceCoins": 11900,
               "carRating": 930,
               "topSpeed": 9.25,
               "acceleration": 9.5,
@@ -14741,7 +14741,7 @@
               "boostPower": 9.25
             },
             "7": {
-              "priceCoins": 12400,
+              "priceCoins": 12500,
               "carRating": 935,
               "topSpeed": 9.5,
               "acceleration": 9.5,
@@ -14750,7 +14750,7 @@
               "boostPower": 9.25
             },
             "8": {
-              "priceCoins": 13000,
+              "priceCoins": 13100,
               "carRating": 940,
               "topSpeed": 9.5,
               "acceleration": 9.5,
@@ -14759,7 +14759,7 @@
               "boostPower": 9.5
             },
             "9": {
-              "priceCoins": 13600,
+              "priceCoins": 13700,
               "carRating": 945,
               "topSpeed": 9.5,
               "acceleration": 9.5,
@@ -14768,7 +14768,7 @@
               "boostPower": 9.5
             },
             "10": {
-              "priceCoins": 14200,
+              "priceCoins": 14300,
               "carRating": 950,
               "topSpeed": 9.5,
               "acceleration": 9.5,
@@ -14777,7 +14777,7 @@
               "boostPower": 9.5
             },
             "11": {
-              "priceCoins": 14900,
+              "priceCoins": 14800,
               "carRating": 955,
               "topSpeed": 9.5,
               "acceleration": 9.75,
@@ -14786,7 +14786,7 @@
               "boostPower": 9.5
             },
             "12": {
-              "priceCoins": 15500,
+              "priceCoins": 15400,
               "carRating": 960,
               "topSpeed": 9.75,
               "acceleration": 9.75,
@@ -14795,7 +14795,7 @@
               "boostPower": 9.5
             },
             "13": {
-              "priceCoins": 16100,
+              "priceCoins": 16000,
               "carRating": 965,
               "topSpeed": 9.75,
               "acceleration": 9.75,
@@ -14804,7 +14804,7 @@
               "boostPower": 9.75
             },
             "14": {
-              "priceCoins": 16700,
+              "priceCoins": 16600,
               "carRating": 970,
               "topSpeed": 9.75,
               "acceleration": 9.75,
@@ -14813,7 +14813,7 @@
               "boostPower": 9.75
             },
             "15": {
-              "priceCoins": 17300,
+              "priceCoins": 17200,
               "carRating": 975,
               "topSpeed": 9.75,
               "acceleration": 9.75,
@@ -14822,7 +14822,7 @@
               "boostPower": 9.75
             },
             "16": {
-              "priceCoins": 17900,
+              "priceCoins": 17800,
               "carRating": 980,
               "topSpeed": 9.75,
               "acceleration": 10,
@@ -14831,7 +14831,7 @@
               "boostPower": 9.75
             },
             "17": {
-              "priceCoins": 18500,
+              "priceCoins": 18400,
               "carRating": 985,
               "topSpeed": 10,
               "acceleration": 10,
@@ -14840,7 +14840,7 @@
               "boostPower": 9.75
             },
             "18": {
-              "priceCoins": 19100,
+              "priceCoins": 18900,
               "carRating": 990,
               "topSpeed": 10,
               "acceleration": 10,
@@ -14849,7 +14849,7 @@
               "boostPower": 10
             },
             "19": {
-              "priceCoins": 19700,
+              "priceCoins": 19500,
               "carRating": 995,
               "topSpeed": 10,
               "acceleration": 10,
@@ -14858,7 +14858,7 @@
               "boostPower": 10
             },
             "20": {
-              "priceCoins": 20400,
+              "priceCoins": 20100,
               "carRating": 1000,
               "topSpeed": 10,
               "acceleration": 10,
@@ -14892,7 +14892,7 @@
               "boostPower": 10
             },
             "1": {
-              "priceCoins": 15700,
+              "priceCoins": 16100,
               "carRating": 1005,
               "topSpeed": 10,
               "acceleration": 10.25,
@@ -14901,7 +14901,7 @@
               "boostPower": 10
             },
             "2": {
-              "priceCoins": 16800,
+              "priceCoins": 17200,
               "carRating": 1010,
               "topSpeed": 10.25,
               "acceleration": 10.25,
@@ -14910,7 +14910,7 @@
               "boostPower": 10
             },
             "3": {
-              "priceCoins": 17900,
+              "priceCoins": 18300,
               "carRating": 1015,
               "topSpeed": 10.25,
               "acceleration": 10.25,
@@ -14919,7 +14919,7 @@
               "boostPower": 10.25
             },
             "4": {
-              "priceCoins": 19000,
+              "priceCoins": 19300,
               "carRating": 1020,
               "topSpeed": 10.25,
               "acceleration": 10.25,
@@ -14928,7 +14928,7 @@
               "boostPower": 10.25
             },
             "5": {
-              "priceCoins": 20100,
+              "priceCoins": 20400,
               "carRating": 1025,
               "topSpeed": 10.25,
               "acceleration": 10.25,
@@ -14937,7 +14937,7 @@
               "boostPower": 10.25
             },
             "6": {
-              "priceCoins": 21200,
+              "priceCoins": 21400,
               "carRating": 1030,
               "topSpeed": 10.25,
               "acceleration": 10.5,
@@ -14946,7 +14946,7 @@
               "boostPower": 10.25
             },
             "7": {
-              "priceCoins": 22300,
+              "priceCoins": 22500,
               "carRating": 1035,
               "topSpeed": 10.5,
               "acceleration": 10.5,
@@ -14955,7 +14955,7 @@
               "boostPower": 10.25
             },
             "8": {
-              "priceCoins": 23400,
+              "priceCoins": 23500,
               "carRating": 1040,
               "topSpeed": 10.5,
               "acceleration": 10.5,
@@ -14964,7 +14964,7 @@
               "boostPower": 10.5
             },
             "9": {
-              "priceCoins": 24500,
+              "priceCoins": 24600,
               "carRating": 1045,
               "topSpeed": 10.5,
               "acceleration": 10.5,
@@ -14973,7 +14973,7 @@
               "boostPower": 10.5
             },
             "10": {
-              "priceCoins": 25600,
+              "priceCoins": 25700,
               "carRating": 1050,
               "topSpeed": 10.5,
               "acceleration": 10.5,
@@ -15000,7 +15000,7 @@
               "boostPower": 10.5
             },
             "13": {
-              "priceCoins": 28900,
+              "priceCoins": 28800,
               "carRating": 1065,
               "topSpeed": 10.75,
               "acceleration": 10.75,
@@ -15009,7 +15009,7 @@
               "boostPower": 10.75
             },
             "14": {
-              "priceCoins": 30000,
+              "priceCoins": 29900,
               "carRating": 1070,
               "topSpeed": 10.75,
               "acceleration": 10.75,
@@ -15018,7 +15018,7 @@
               "boostPower": 10.75
             },
             "15": {
-              "priceCoins": 31100,
+              "priceCoins": 30900,
               "carRating": 1075,
               "topSpeed": 10.75,
               "acceleration": 10.75,
@@ -15027,7 +15027,7 @@
               "boostPower": 10.75
             },
             "16": {
-              "priceCoins": 32200,
+              "priceCoins": 32000,
               "carRating": 1080,
               "topSpeed": 10.75,
               "acceleration": 11,
@@ -15036,7 +15036,7 @@
               "boostPower": 10.75
             },
             "17": {
-              "priceCoins": 33300,
+              "priceCoins": 33000,
               "carRating": 1085,
               "topSpeed": 11,
               "acceleration": 11,
@@ -15045,7 +15045,7 @@
               "boostPower": 10.75
             },
             "18": {
-              "priceCoins": 34400,
+              "priceCoins": 34100,
               "carRating": 1090,
               "topSpeed": 11,
               "acceleration": 11,
@@ -15054,7 +15054,7 @@
               "boostPower": 11
             },
             "19": {
-              "priceCoins": 35500,
+              "priceCoins": 35200,
               "carRating": 1095,
               "topSpeed": 11,
               "acceleration": 11,
@@ -15063,7 +15063,7 @@
               "boostPower": 11
             },
             "20": {
-              "priceCoins": 36600,
+              "priceCoins": 36200,
               "carRating": 1100,
               "topSpeed": 11,
               "acceleration": 11,
@@ -15097,7 +15097,7 @@
               "boostPower": 11
             },
             "1": {
-              "priceCoins": 28300,
+              "priceCoins": 29100,
               "carRating": 1105,
               "topSpeed": 11,
               "acceleration": 11.25,
@@ -15106,7 +15106,7 @@
               "boostPower": 11
             },
             "2": {
-              "priceCoins": 30300,
+              "priceCoins": 31000,
               "carRating": 1110,
               "topSpeed": 11.25,
               "acceleration": 11.25,
@@ -15115,7 +15115,7 @@
               "boostPower": 11
             },
             "3": {
-              "priceCoins": 32300,
+              "priceCoins": 32900,
               "carRating": 1115,
               "topSpeed": 11.25,
               "acceleration": 11.25,
@@ -15124,7 +15124,7 @@
               "boostPower": 11.25
             },
             "4": {
-              "priceCoins": 34300,
+              "priceCoins": 34800,
               "carRating": 1120,
               "topSpeed": 11.25,
               "acceleration": 11.25,
@@ -15133,7 +15133,7 @@
               "boostPower": 11.25
             },
             "5": {
-              "priceCoins": 36200,
+              "priceCoins": 36700,
               "carRating": 1125,
               "topSpeed": 11.25,
               "acceleration": 11.25,
@@ -15142,7 +15142,7 @@
               "boostPower": 11.25
             },
             "6": {
-              "priceCoins": 38200,
+              "priceCoins": 38600,
               "carRating": 1130,
               "topSpeed": 11.25,
               "acceleration": 11.5,
@@ -15151,7 +15151,7 @@
               "boostPower": 11.25
             },
             "7": {
-              "priceCoins": 40200,
+              "priceCoins": 40500,
               "carRating": 1135,
               "topSpeed": 11.5,
               "acceleration": 11.5,
@@ -15160,7 +15160,7 @@
               "boostPower": 11.25
             },
             "8": {
-              "priceCoins": 42200,
+              "priceCoins": 42400,
               "carRating": 1140,
               "topSpeed": 11.5,
               "acceleration": 11.5,
@@ -15169,7 +15169,7 @@
               "boostPower": 11.5
             },
             "9": {
-              "priceCoins": 44200,
+              "priceCoins": 44300,
               "carRating": 1145,
               "topSpeed": 11.5,
               "acceleration": 11.5,
@@ -15178,7 +15178,7 @@
               "boostPower": 11.5
             },
             "10": {
-              "priceCoins": 46100,
+              "priceCoins": 46200,
               "carRating": 1150,
               "topSpeed": 11.5,
               "acceleration": 11.5,
@@ -15196,7 +15196,7 @@
               "boostPower": 11.5
             },
             "12": {
-              "priceCoins": 50100,
+              "priceCoins": 50000,
               "carRating": 1160,
               "topSpeed": 11.75,
               "acceleration": 11.75,
@@ -15205,7 +15205,7 @@
               "boostPower": 11.5
             },
             "13": {
-              "priceCoins": 52100,
+              "priceCoins": 51900,
               "carRating": 1165,
               "topSpeed": 11.75,
               "acceleration": 11.75,
@@ -15214,7 +15214,7 @@
               "boostPower": 11.75
             },
             "14": {
-              "priceCoins": 54100,
+              "priceCoins": 53800,
               "carRating": 1170,
               "topSpeed": 11.75,
               "acceleration": 11.75,
@@ -15223,7 +15223,7 @@
               "boostPower": 11.75
             },
             "15": {
-              "priceCoins": 56000,
+              "priceCoins": 55700,
               "carRating": 1175,
               "topSpeed": 11.75,
               "acceleration": 11.75,
@@ -15232,7 +15232,7 @@
               "boostPower": 11.75
             },
             "16": {
-              "priceCoins": 58000,
+              "priceCoins": 57600,
               "carRating": 1180,
               "topSpeed": 11.75,
               "acceleration": 12,
@@ -15241,7 +15241,7 @@
               "boostPower": 11.75
             },
             "17": {
-              "priceCoins": 60000,
+              "priceCoins": 59500,
               "carRating": 1185,
               "topSpeed": 12,
               "acceleration": 12,
@@ -15250,7 +15250,7 @@
               "boostPower": 11.75
             },
             "18": {
-              "priceCoins": 62000,
+              "priceCoins": 61400,
               "carRating": 1190,
               "topSpeed": 12,
               "acceleration": 12,
@@ -15259,7 +15259,7 @@
               "boostPower": 12
             },
             "19": {
-              "priceCoins": 64000,
+              "priceCoins": 63300,
               "carRating": 1195,
               "topSpeed": 12,
               "acceleration": 12,
@@ -15268,7 +15268,7 @@
               "boostPower": 12
             },
             "20": {
-              "priceCoins": 66000,
+              "priceCoins": 65200,
               "carRating": 1200,
               "topSpeed": 12,
               "acceleration": 12,
@@ -15302,7 +15302,7 @@
               "boostPower": 12
             },
             "1": {
-              "priceCoins": 51000,
+              "priceCoins": 52300,
               "carRating": 1205,
               "topSpeed": 12,
               "acceleration": 12.25,
@@ -15311,7 +15311,7 @@
               "boostPower": 12
             },
             "2": {
-              "priceCoins": 54500,
+              "priceCoins": 55700,
               "carRating": 1210,
               "topSpeed": 12.25,
               "acceleration": 12.25,
@@ -15320,7 +15320,7 @@
               "boostPower": 12
             },
             "3": {
-              "priceCoins": 58100,
+              "priceCoins": 59200,
               "carRating": 1215,
               "topSpeed": 12.25,
               "acceleration": 12.25,
@@ -15329,7 +15329,7 @@
               "boostPower": 12.25
             },
             "4": {
-              "priceCoins": 61700,
+              "priceCoins": 62600,
               "carRating": 1220,
               "topSpeed": 12.25,
               "acceleration": 12.25,
@@ -15338,7 +15338,7 @@
               "boostPower": 12.25
             },
             "5": {
-              "priceCoins": 65200,
+              "priceCoins": 66000,
               "carRating": 1225,
               "topSpeed": 12.25,
               "acceleration": 12.25,
@@ -15347,7 +15347,7 @@
               "boostPower": 12.25
             },
             "6": {
-              "priceCoins": 68800,
+              "priceCoins": 69400,
               "carRating": 1230,
               "topSpeed": 12.25,
               "acceleration": 12.5,
@@ -15356,7 +15356,7 @@
               "boostPower": 12.25
             },
             "7": {
-              "priceCoins": 72400,
+              "priceCoins": 72900,
               "carRating": 1235,
               "topSpeed": 12.5,
               "acceleration": 12.5,
@@ -15365,7 +15365,7 @@
               "boostPower": 12.25
             },
             "8": {
-              "priceCoins": 75900,
+              "priceCoins": 76300,
               "carRating": 1240,
               "topSpeed": 12.5,
               "acceleration": 12.5,
@@ -15374,7 +15374,7 @@
               "boostPower": 12.5
             },
             "9": {
-              "priceCoins": 79500,
+              "priceCoins": 79700,
               "carRating": 1245,
               "topSpeed": 12.5,
               "acceleration": 12.5,
@@ -15392,7 +15392,7 @@
               "boostPower": 12.5
             },
             "11": {
-              "priceCoins": 86600,
+              "priceCoins": 86500,
               "carRating": 1255,
               "topSpeed": 12.5,
               "acceleration": 12.75,
@@ -15401,7 +15401,7 @@
               "boostPower": 12.5
             },
             "12": {
-              "priceCoins": 90200,
+              "priceCoins": 90000,
               "carRating": 1260,
               "topSpeed": 12.75,
               "acceleration": 12.75,
@@ -15410,7 +15410,7 @@
               "boostPower": 12.5
             },
             "13": {
-              "priceCoins": 93800,
+              "priceCoins": 93400,
               "carRating": 1265,
               "topSpeed": 12.75,
               "acceleration": 12.75,
@@ -15419,7 +15419,7 @@
               "boostPower": 12.75
             },
             "14": {
-              "priceCoins": 97300,
+              "priceCoins": 96800,
               "carRating": 1270,
               "topSpeed": 12.75,
               "acceleration": 12.75,
@@ -15428,7 +15428,7 @@
               "boostPower": 12.75
             },
             "15": {
-              "priceCoins": 101000,
+              "priceCoins": 100000,
               "carRating": 1275,
               "topSpeed": 12.75,
               "acceleration": 12.75,
@@ -15446,7 +15446,7 @@
               "boostPower": 12.75
             },
             "17": {
-              "priceCoins": 108000,
+              "priceCoins": 107000,
               "carRating": 1285,
               "topSpeed": 13,
               "acceleration": 13,
@@ -15455,7 +15455,7 @@
               "boostPower": 12.75
             },
             "18": {
-              "priceCoins": 112000,
+              "priceCoins": 111000,
               "carRating": 1290,
               "topSpeed": 13,
               "acceleration": 13,
@@ -15464,7 +15464,7 @@
               "boostPower": 13
             },
             "19": {
-              "priceCoins": 115000,
+              "priceCoins": 114000,
               "carRating": 1295,
               "topSpeed": 13,
               "acceleration": 13,
@@ -15473,7 +15473,7 @@
               "boostPower": 13
             },
             "20": {
-              "priceCoins": 119000,
+              "priceCoins": 117000,
               "carRating": 1300,
               "topSpeed": 13,
               "acceleration": 13,
@@ -15507,7 +15507,7 @@
               "boostPower": 13
             },
             "1": {
-              "priceCoins": 91700,
+              "priceCoins": 94200,
               "carRating": 1305,
               "topSpeed": 13,
               "acceleration": 13.25,
@@ -15516,7 +15516,7 @@
               "boostPower": 13
             },
             "2": {
-              "priceCoins": 98100,
+              "priceCoins": 100000,
               "carRating": 1310,
               "topSpeed": 13.25,
               "acceleration": 13.25,
@@ -15525,7 +15525,7 @@
               "boostPower": 13
             },
             "3": {
-              "priceCoins": 105000,
+              "priceCoins": 106000,
               "carRating": 1315,
               "topSpeed": 13.25,
               "acceleration": 13.25,
@@ -15534,7 +15534,7 @@
               "boostPower": 13.25
             },
             "4": {
-              "priceCoins": 111000,
+              "priceCoins": 113000,
               "carRating": 1320,
               "topSpeed": 13.25,
               "acceleration": 13.25,
@@ -15543,7 +15543,7 @@
               "boostPower": 13.25
             },
             "5": {
-              "priceCoins": 117000,
+              "priceCoins": 119000,
               "carRating": 1325,
               "topSpeed": 13.25,
               "acceleration": 13.25,
@@ -15552,7 +15552,7 @@
               "boostPower": 13.25
             },
             "6": {
-              "priceCoins": 124000,
+              "priceCoins": 125000,
               "carRating": 1330,
               "topSpeed": 13.25,
               "acceleration": 13.5,
@@ -15561,7 +15561,7 @@
               "boostPower": 13.25
             },
             "7": {
-              "priceCoins": 130000,
+              "priceCoins": 131000,
               "carRating": 1335,
               "topSpeed": 13.5,
               "acceleration": 13.5,
@@ -15615,7 +15615,7 @@
               "boostPower": 13.5
             },
             "13": {
-              "priceCoins": 169000,
+              "priceCoins": 168000,
               "carRating": 1365,
               "topSpeed": 13.75,
               "acceleration": 13.75,
@@ -15624,7 +15624,7 @@
               "boostPower": 13.75
             },
             "14": {
-              "priceCoins": 175000,
+              "priceCoins": 174000,
               "carRating": 1370,
               "topSpeed": 13.75,
               "acceleration": 13.75,
@@ -15633,7 +15633,7 @@
               "boostPower": 13.75
             },
             "15": {
-              "priceCoins": 182000,
+              "priceCoins": 180000,
               "carRating": 1375,
               "topSpeed": 13.75,
               "acceleration": 13.75,
@@ -15642,7 +15642,7 @@
               "boostPower": 13.75
             },
             "16": {
-              "priceCoins": 188000,
+              "priceCoins": 187000,
               "carRating": 1380,
               "topSpeed": 13.75,
               "acceleration": 14,
@@ -15651,7 +15651,7 @@
               "boostPower": 13.75
             },
             "17": {
-              "priceCoins": 194000,
+              "priceCoins": 193000,
               "carRating": 1385,
               "topSpeed": 14,
               "acceleration": 14,
@@ -15660,7 +15660,7 @@
               "boostPower": 13.75
             },
             "18": {
-              "priceCoins": 201000,
+              "priceCoins": 199000,
               "carRating": 1390,
               "topSpeed": 14,
               "acceleration": 14,
@@ -15669,7 +15669,7 @@
               "boostPower": 14
             },
             "19": {
-              "priceCoins": 207000,
+              "priceCoins": 205000,
               "carRating": 1395,
               "topSpeed": 14,
               "acceleration": 14,
@@ -15678,7 +15678,7 @@
               "boostPower": 14
             },
             "20": {
-              "priceCoins": 214000,
+              "priceCoins": 211000,
               "carRating": 1400,
               "topSpeed": 14,
               "acceleration": 14,
@@ -15712,7 +15712,7 @@
               "boostPower": 14
             },
             "1": {
-              "priceCoins": 165000,
+              "priceCoins": 170000,
               "carRating": 1405,
               "topSpeed": 14,
               "acceleration": 14.25,
@@ -15721,7 +15721,7 @@
               "boostPower": 14
             },
             "2": {
-              "priceCoins": 177000,
+              "priceCoins": 181000,
               "carRating": 1410,
               "topSpeed": 14.25,
               "acceleration": 14.25,
@@ -15730,7 +15730,7 @@
               "boostPower": 14
             },
             "3": {
-              "priceCoins": 188000,
+              "priceCoins": 192000,
               "carRating": 1415,
               "topSpeed": 14.25,
               "acceleration": 14.25,
@@ -15739,7 +15739,7 @@
               "boostPower": 14.25
             },
             "4": {
-              "priceCoins": 200000,
+              "priceCoins": 203000,
               "carRating": 1420,
               "topSpeed": 14.25,
               "acceleration": 14.25,
@@ -15748,7 +15748,7 @@
               "boostPower": 14.25
             },
             "5": {
-              "priceCoins": 211000,
+              "priceCoins": 214000,
               "carRating": 1425,
               "topSpeed": 14.25,
               "acceleration": 14.25,
@@ -15757,7 +15757,7 @@
               "boostPower": 14.25
             },
             "6": {
-              "priceCoins": 223000,
+              "priceCoins": 225000,
               "carRating": 1430,
               "topSpeed": 14.25,
               "acceleration": 14.5,
@@ -15766,7 +15766,7 @@
               "boostPower": 14.25
             },
             "7": {
-              "priceCoins": 234000,
+              "priceCoins": 236000,
               "carRating": 1435,
               "topSpeed": 14.5,
               "acceleration": 14.5,
@@ -15775,7 +15775,7 @@
               "boostPower": 14.25
             },
             "8": {
-              "priceCoins": 246000,
+              "priceCoins": 247000,
               "carRating": 1440,
               "topSpeed": 14.5,
               "acceleration": 14.5,
@@ -15802,7 +15802,7 @@
               "boostPower": 14.5
             },
             "11": {
-              "priceCoins": 281000,
+              "priceCoins": 280000,
               "carRating": 1455,
               "topSpeed": 14.5,
               "acceleration": 14.75,
@@ -15811,7 +15811,7 @@
               "boostPower": 14.5
             },
             "12": {
-              "priceCoins": 292000,
+              "priceCoins": 291000,
               "carRating": 1460,
               "topSpeed": 14.75,
               "acceleration": 14.75,
@@ -15820,7 +15820,7 @@
               "boostPower": 14.5
             },
             "13": {
-              "priceCoins": 304000,
+              "priceCoins": 303000,
               "carRating": 1465,
               "topSpeed": 14.75,
               "acceleration": 14.75,
@@ -15829,7 +15829,7 @@
               "boostPower": 14.75
             },
             "14": {
-              "priceCoins": 315000,
+              "priceCoins": 314000,
               "carRating": 1470,
               "topSpeed": 14.75,
               "acceleration": 14.75,
@@ -15838,7 +15838,7 @@
               "boostPower": 14.75
             },
             "15": {
-              "priceCoins": 327000,
+              "priceCoins": 325000,
               "carRating": 1475,
               "topSpeed": 14.75,
               "acceleration": 14.75,
@@ -15847,7 +15847,7 @@
               "boostPower": 14.75
             },
             "16": {
-              "priceCoins": 338000,
+              "priceCoins": 336000,
               "carRating": 1480,
               "topSpeed": 14.75,
               "acceleration": 15,
@@ -15856,7 +15856,7 @@
               "boostPower": 14.75
             },
             "17": {
-              "priceCoins": 350000,
+              "priceCoins": 347000,
               "carRating": 1485,
               "topSpeed": 15,
               "acceleration": 15,
@@ -15865,7 +15865,7 @@
               "boostPower": 14.75
             },
             "18": {
-              "priceCoins": 362000,
+              "priceCoins": 358000,
               "carRating": 1490,
               "topSpeed": 15,
               "acceleration": 15,
@@ -15874,7 +15874,7 @@
               "boostPower": 15
             },
             "19": {
-              "priceCoins": 373000,
+              "priceCoins": 369000,
               "carRating": 1495,
               "topSpeed": 15,
               "acceleration": 15,
@@ -15883,7 +15883,7 @@
               "boostPower": 15
             },
             "20": {
-              "priceCoins": 385000,
+              "priceCoins": 380000,
               "carRating": 1500,
               "topSpeed": 15,
               "acceleration": 15,
@@ -15917,7 +15917,7 @@
               "boostPower": 15
             },
             "1": {
-              "priceCoins": 297000,
+              "priceCoins": 305000,
               "carRating": 1505,
               "topSpeed": 15,
               "acceleration": 15.25,
@@ -15926,7 +15926,7 @@
               "boostPower": 15
             },
             "2": {
-              "priceCoins": 318000,
+              "priceCoins": 325000,
               "carRating": 1510,
               "topSpeed": 15.25,
               "acceleration": 15.25,
@@ -15935,7 +15935,7 @@
               "boostPower": 15
             },
             "3": {
-              "priceCoins": 339000,
+              "priceCoins": 345000,
               "carRating": 1515,
               "topSpeed": 15.25,
               "acceleration": 15.25,
@@ -15944,7 +15944,7 @@
               "boostPower": 15.25
             },
             "4": {
-              "priceCoins": 360000,
+              "priceCoins": 365000,
               "carRating": 1520,
               "topSpeed": 15.25,
               "acceleration": 15.25,
@@ -15953,7 +15953,7 @@
               "boostPower": 15.25
             },
             "5": {
-              "priceCoins": 380000,
+              "priceCoins": 385000,
               "carRating": 1525,
               "topSpeed": 15.25,
               "acceleration": 15.25,
@@ -15962,7 +15962,7 @@
               "boostPower": 15.25
             },
             "6": {
-              "priceCoins": 401000,
+              "priceCoins": 405000,
               "carRating": 1530,
               "topSpeed": 15.25,
               "acceleration": 15.5,
@@ -15971,7 +15971,7 @@
               "boostPower": 15.25
             },
             "7": {
-              "priceCoins": 422000,
+              "priceCoins": 425000,
               "carRating": 1535,
               "topSpeed": 15.5,
               "acceleration": 15.5,
@@ -15980,7 +15980,7 @@
               "boostPower": 15.25
             },
             "8": {
-              "priceCoins": 443000,
+              "priceCoins": 445000,
               "carRating": 1540,
               "topSpeed": 15.5,
               "acceleration": 15.5,
@@ -15989,7 +15989,7 @@
               "boostPower": 15.5
             },
             "9": {
-              "priceCoins": 464000,
+              "priceCoins": 465000,
               "carRating": 1545,
               "topSpeed": 15.5,
               "acceleration": 15.5,
@@ -15998,7 +15998,7 @@
               "boostPower": 15.5
             },
             "10": {
-              "priceCoins": 484000,
+              "priceCoins": 485000,
               "carRating": 1550,
               "topSpeed": 15.5,
               "acceleration": 15.5,
@@ -16016,7 +16016,7 @@
               "boostPower": 15.5
             },
             "12": {
-              "priceCoins": 526000,
+              "priceCoins": 525000,
               "carRating": 1560,
               "topSpeed": 15.75,
               "acceleration": 15.75,
@@ -16025,7 +16025,7 @@
               "boostPower": 15.5
             },
             "13": {
-              "priceCoins": 547000,
+              "priceCoins": 545000,
               "carRating": 1565,
               "topSpeed": 15.75,
               "acceleration": 15.75,
@@ -16034,7 +16034,7 @@
               "boostPower": 15.75
             },
             "14": {
-              "priceCoins": 568000,
+              "priceCoins": 565000,
               "carRating": 1570,
               "topSpeed": 15.75,
               "acceleration": 15.75,
@@ -16043,7 +16043,7 @@
               "boostPower": 15.75
             },
             "15": {
-              "priceCoins": 588000,
+              "priceCoins": 585000,
               "carRating": 1575,
               "topSpeed": 15.75,
               "acceleration": 15.75,
@@ -16052,7 +16052,7 @@
               "boostPower": 15.75
             },
             "16": {
-              "priceCoins": 609000,
+              "priceCoins": 605000,
               "carRating": 1580,
               "topSpeed": 15.75,
               "acceleration": 16,
@@ -16061,7 +16061,7 @@
               "boostPower": 15.75
             },
             "17": {
-              "priceCoins": 630000,
+              "priceCoins": 625000,
               "carRating": 1585,
               "topSpeed": 16,
               "acceleration": 16,
@@ -16070,7 +16070,7 @@
               "boostPower": 15.75
             },
             "18": {
-              "priceCoins": 651000,
+              "priceCoins": 644000,
               "carRating": 1590,
               "topSpeed": 16,
               "acceleration": 16,
@@ -16079,7 +16079,7 @@
               "boostPower": 16
             },
             "19": {
-              "priceCoins": 672000,
+              "priceCoins": 664000,
               "carRating": 1595,
               "topSpeed": 16,
               "acceleration": 16,
@@ -16088,7 +16088,7 @@
               "boostPower": 16
             },
             "20": {
-              "priceCoins": 692000,
+              "priceCoins": 684000,
               "carRating": 1600,
               "topSpeed": 16,
               "acceleration": 16,

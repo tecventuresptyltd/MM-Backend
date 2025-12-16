@@ -1,5 +1,34 @@
 # Release Notes
 
+## 2025-12-16: Car Upgrade Pricing Rebalance
+
+### Economy Changes
+
+*   **Car upgrade pricing curve:** Replaced flat early-game pricing (15 levels at 100 coins) with progressive pricing formula that provides smoother economic progression.
+*   **New pricing rules:**
+    *   Prices < 200: Rounded to nearest 5 (e.g., 80, 85, 90, 95)
+    *   Prices 200-999: Rounded to nearest 10 (e.g., 260, 280, 300)
+    *   Prices ≥ 1000: Rounded to nearest 100 (existing logic)
+    *   Monotonicity enforced: Each level's price is always ≥ previous level
+*   **Impact:** Early-game car upgrades now feel more rewarding with incremental price increases. Example (Mitsabi Eon):
+    *   **Before:** Levels 1-15 were all 100 coins
+    *   **After:** Levels 1-5 are 80, 85, 90, 95, 105 coins (progressive increase)
+*   **Pricing formula:** Upgrade budgets calculated based on next car's base price using weighted distribution across 20 levels with linear slope (weight_k = 1 + 0.07 * k)
+
+### Data Changes
+
+*   **CarsCatalog.json:** Updated all `priceCoins` values for levels 1-20 across all 15 cars
+*   **gameDataCatalogs.v3.normalized.json:** Synchronized with updated CarsCatalog data
+*   **Fields preserved:** All `carRating`, `topSpeed`, `acceleration`, `handling`, `boostRegen`, `boostPower` values remain unchanged
+*   **Verification:** All 300 price entries (15 cars × 20 levels) validated for correct rounding and monotonicity across both files
+
+### Deployment Notes
+
+*   Run `npm run tools:seed-firestore` to publish the updated pricing to Firestore
+*   The seeding process reads from `gameDataCatalogs.v3.normalized.json` which now contains the updated prices
+*   No client changes required - pricing is server-authoritative
+*   Existing player-owned cars retain their current upgrade levels; only future upgrades use new pricing
+
 ## 2025-12-15: Crate Rewards Cosmetic-Only Enforcement
 
 ### Bug Fixes

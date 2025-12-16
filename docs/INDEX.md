@@ -4,6 +4,7 @@ This document is the central hub for all technical and architectural documentati
 *   **2025-10-19:** Deployed the new device-anchored guest account and binding flows to the sandbox environment.
 
 ### Recent Changes
+*   **2025-12-16:** Rebalanced car upgrade pricing with progressive formula (80, 85, 90... instead of flat 100) for smoother early-game economy. Updated all 300 price entries in `CarsCatalog.json` and synchronized to `gameDataCatalogs.v3.normalized.json` with smart rounding rules (<200: nearest 5, 200-999: nearest 10, ≥1000: nearest 100). See [**Release Notes**](./RELEASE_NOTES.md#2025-12-16-car-upgrade-pricing-rebalance) for formula details and impact.
 *   **2025-12-14:** Changed global chat room assignment from persistent to session-based. Removed `assignedChatRoomId` from Firestore Profile, added optional `currentRoomId` parameter for in-session stickiness. **🛑 CRITICAL:** Client must write `roomId` to `/presence/online/{uid}` presence payload. See [**Release Notes**](./RELEASE_NOTES.md#2025-12-14-session-based-room-assignment) for breaking changes and migration guide.
 *   **2025-12-13:** Fixed critical "ghost room" bug in `assignGlobalChatRoom` where archived rooms prevented users from joining active rooms. Added `.where("isArchived", "==", false)` filter and merged all users into `"global_general"` region for maximum concurrency at launch. Changed query ordering to ASC for faster warmup room discovery. See [**Release Notes**](./RELEASE_NOTES.md#2025-12-13-global-chat-bug-fixes--region-merge) and updated [**Function Contracts**](./FUNCTION_CONTRACTS.md#assignglobalchatroom).
 *   **2025-11-13:** Shipped the Social v3 stack (friends/requests/search/leaderboards/presence). See the new sections in [**Firestore Schema**](./FIRESTORE_SCHEMA.md#playersuid-socialprofile-singleton) and [**Function Contracts**](./FUNCTION_CONTRACTS.md#social--leaderboards).
@@ -117,7 +118,7 @@ For more details, see the [**Firestore Schema**](./FIRESTORE_SCHEMA.md#gamedata-
 ### Seed Files
 - `backend-sandbox/seeds/gameDataCatalogs.fixed.json` — canonical consolidated catalogs (Cars, Spells, Items, ItemSkus, Crates, Offers, Ranks, XpCurve):
   - Car and Spell IDs use `prefix_{crockford-base32}` (no embedded names).
-  - Cars include levels `0..20` with `priceCoins` sourced from `legacy-firebase-backend/json-files/Car_Progressions.json` and stats from `docs/migration/car_curve_config.json`.
+  - Cars include levels `0..20` with `priceCoins` calculated using progressive pricing formula (see [FIRESTORE_SCHEMA.md](./FIRESTORE_SCHEMA.md)) and stats from `docs/migration/car_curve_config.json`.
   - ItemSkus include `displayName` derived from the base Item display name plus variant color.
   - Crate entries now carry gem `costs` (crate/key) and matching SKUs so purchasing can be performed server-side.
 - Legacy per-document player seeds now live under `backend-sandbox/seeds/archive/players_*.json` for profile, economy, garage, inventory, decks, etc.

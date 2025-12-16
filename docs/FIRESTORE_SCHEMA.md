@@ -279,7 +279,11 @@ Consolidates all car definitions, stats, and upgrade paths into a single documen
 ID and level rules
 - Car IDs follow `car_{crockford-base32}` â€” no embedded names. Example: `car_h4ayzwf31g`.
 - Levels include a base `"0"` plus 20 upgrades up to `"20"`.
-- `priceCoins` for levels `1..20` is sourced from `legacy-firebase-backend/json-files/Car_Progressions.json` for the carâ€™s `displayName`.
+- `priceCoins` for levels `1..20` uses progressive pricing formula (2025-12-16 rebalance):
+  - Budget calculated based on next car's base price: `Budget = (0.8 * NextCarPrice) - CurrentCarPrice`
+  - Distributed across 20 levels using weighted linear slope: `weight_k = 1 + 0.07 * k`
+  - Rounding rules: <200 rounds to nearest 5, 200-999 to nearest 10, ≥1000 to nearest 100
+  - Monotonicity enforced: `price[level] >= price[level-1]`
 - Updated: per-level stats are split into display slider values and computed real physics values. Legacy fields (`speed`, `accel`, `handling`, any `*Multiplier`) are deprecated and must not be used by Cloud Functions.
 
 Per-level fields (authoritative):

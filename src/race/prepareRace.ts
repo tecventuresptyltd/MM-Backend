@@ -1,7 +1,7 @@
 import * as admin from "firebase-admin";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { REGION } from "../shared/region.js";
-import { checkIdempotency, createInProgressReceipt, completeOperation } from "../core/idempotency.js";
+import { checkIdempotency, createInProgressReceipt, completeOperation, sanitizeForFirestore } from "../core/idempotency.js";
 import {
   getCarsCatalog,
   getSpellsCatalog,
@@ -300,9 +300,10 @@ export const prepareRace = onCall({ region: REGION }, async (request) => {
     };
     const proof = { hmac: hmacSign(payload) };
     const result = { ...payload, proof };
+    const sanitisedResult = sanitizeForFirestore(result);
 
-    await completeOperation(uid, opId, result);
-    return result;
+    await completeOperation(uid, opId, sanitisedResult);
+    return sanitisedResult;
   } catch (e) {
     const err = e as Error;
     throw new HttpsError("internal", err.message, err);

@@ -1,45 +1,8 @@
 import * as admin from "firebase-admin";
-import { applyReceiptMetadata, ReceiptMetadata } from "./idempotency.js";
+import { applyReceiptMetadata, ReceiptMetadata, sanitizeForFirestore } from "./idempotency.js";
 import { runReadThenWrite } from "./tx.js";
 
 const db = admin.firestore();
-
-const isPlainObject = (value: unknown): value is Record<string, unknown> =>
-  typeof value === "object" &&
-  value !== null &&
-  !Array.isArray(value) &&
-  !(value instanceof Date) &&
-  !(value instanceof admin.firestore.FieldValue);
-
-const sanitizeForFirestore = (value: unknown): unknown => {
-  if (value === undefined) {
-    return undefined;
-  }
-  if (
-    value instanceof admin.firestore.FieldValue ||
-    value instanceof admin.firestore.Timestamp ||
-    value instanceof admin.firestore.GeoPoint
-  ) {
-    return value;
-  }
-  if (Array.isArray(value)) {
-    return value.map((item) => {
-      const sanitised = sanitizeForFirestore(item);
-      return sanitised === undefined ? null : sanitised;
-    });
-  }
-  if (isPlainObject(value)) {
-    const result: Record<string, unknown> = {};
-    for (const [key, nested] of Object.entries(value)) {
-      const sanitised = sanitizeForFirestore(nested);
-      if (sanitised !== undefined) {
-        result[key] = sanitised;
-      }
-    }
-    return result;
-  }
-  return value;
-};
 
 /**
  * A function that performs work within a Firestore transaction.

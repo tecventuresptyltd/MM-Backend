@@ -18,32 +18,71 @@ const resolveActiveDeck = (
   loadout: Record<string, unknown> | null,
   spellDecks: Record<string, unknown> | null,
 ) => {
-  const decksMap =
-    spellDecks && typeof spellDecks.decks === "object"
-      ? (spellDecks.decks as Record<string, unknown>)
-      : null;
+  const normalizeDeckKey = (value: unknown): string | null => {
+    if (typeof value === "number" && Number.isFinite(value) && value > 0) {
+      return String(Math.floor(value));
+    }
+    if (typeof value === "string" && value.trim().length > 0) {
+      const trimmed = value.trim();
+      const parsed = Number(trimmed);
+      return Number.isFinite(parsed) && parsed > 0 ? String(Math.floor(parsed)) : trimmed;
+    }
+    return null;
+  };
+
+  const buildDeckMap = (raw: unknown): Map<string, unknown> | null => {
+    if (!raw || typeof raw !== "object") {
+      return null;
+    }
+    const map = new Map<string, unknown>();
+    if (Array.isArray(raw)) {
+      raw.forEach((entry, idx) => {
+        map.set(String(idx + 1), entry);
+      });
+    } else {
+      Object.entries(raw as Record<string, unknown>).forEach(([key, value]) => {
+        map.set(String(key), value);
+      });
+    }
+    return map.size > 0 ? map : null;
+  };
+
+  const decksMap = buildDeckMap(spellDecks?.decks ?? null);
   if (!decksMap) {
     return null;
   }
-  const loadoutDeck = loadout?.activeSpellDeck;
-  const deckKeyRaw =
-    typeof loadoutDeck === "number" || typeof loadoutDeck === "string"
-      ? loadoutDeck
-      : spellDecks?.active;
-  const deckKey =
-    typeof deckKeyRaw === "number"
-      ? String(deckKeyRaw)
-      : typeof deckKeyRaw === "string"
-      ? deckKeyRaw
-      : null;
-  if (!deckKey || !(deckKey in decksMap)) {
+
+  const preferredKey = normalizeDeckKey(loadout?.activeSpellDeck);
+  const fallbackKey = normalizeDeckKey(spellDecks?.active);
+
+  const hasDeck = (key: string | null) => (key ? decksMap.has(key) : false);
+
+  let deckKey: string | null = null;
+  if (hasDeck(preferredKey)) {
+    deckKey = preferredKey;
+  } else if (hasDeck(fallbackKey)) {
+    deckKey = fallbackKey;
+  } else {
+    const firstNonEmpty = Array.from(decksMap.entries()).find(
+      ([, value]) => Array.isArray((value as any)?.spells) && (value as any).spells.some((id: unknown) => typeof id === "string" && id.length > 0),
+    );
+    deckKey = firstNonEmpty?.[0] ?? decksMap.keys().next().value ?? null;
+  }
+
+  if (!deckKey) {
     return null;
   }
-  const deck = decksMap[deckKey];
+
+  const deck = decksMap.get(deckKey);
   if (!deck || typeof deck !== "object") {
     return null;
   }
-  return { deckId: deckKey, deck };
+
+  const spells = Array.isArray((deck as any).spells)
+    ? (deck as any).spells.map((spell: unknown) => (typeof spell === "string" ? spell : ""))
+    : [];
+
+  return { deckId: deckKey, deck: { ...(deck as Record<string, unknown>), spells } };
 };
 
 export const viewPlayerProfile = onCall(

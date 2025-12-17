@@ -14,6 +14,7 @@ import {
   getFriendRequests,
 } from "../src/Socials";
 import { wipeFirestore, wipeAuth, seedMinimalPlayer } from "./helpers/cleanup";
+import { loadStarterSpellIds } from "../src/shared/catalogHelpers";
 
 const authFor = (uid: string) => ({
   auth: { uid, token: { firebase: { sign_in_provider: "anonymous" } } },
@@ -394,6 +395,68 @@ describe("social functions", () => {
       expect(response.data.profile.displayName).toEqual("Alice");
       expect(response.data.loadout.carId).toBeTruthy();
       expect(response.data.activeSpellDeck?.deckId).toBeTruthy();
+    });
+
+    it("falls back to spellDecks.active when loadout deck is missing", async () => {
+      const starterSpells = await loadStarterSpellIds();
+      const deckTwo = starterSpells.slice(0, 5).reverse();
+
+      const db = admin.firestore();
+      await db.doc(`Players/${alice}/SpellDecks/Decks`).set(
+        {
+          active: 2,
+          decks: {
+            "2": { name: "Alt", spells: deckTwo },
+          },
+        },
+        { merge: true },
+      );
+      await db.doc(`Players/${alice}/Loadouts/Active`).set(
+        { activeSpellDeck: 5 },
+        { merge: true },
+      );
+
+      const wrapped = wrapCallable(viewPlayerProfile);
+      const response = await wrapped({
+        data: { uid: alice },
+        ...authFor(bob),
+      });
+
+      expect(response.ok).toBe(true);
+      expect(response.data.activeSpellDeck.deckId).toEqual("2");
+      expect(response.data.activeSpellDeck.deck.spells).toEqual(deckTwo);
+    });
+
+    it("prefers the loadout deck when it exists", async () => {
+      const starterSpells = await loadStarterSpellIds();
+      const deckTwo = starterSpells.slice(0, 5);
+      const deckThree = starterSpells.slice(0, 5).reverse();
+
+      const db = admin.firestore();
+      await db.doc(`Players/${alice}/SpellDecks/Decks`).set(
+        {
+          active: 2,
+          decks: {
+            "2": { name: "Alt", spells: deckTwo },
+            "3": { name: "Third", spells: deckThree },
+          },
+        },
+        { merge: true },
+      );
+      await db.doc(`Players/${alice}/Loadouts/Active`).set(
+        { activeSpellDeck: 3 },
+        { merge: true },
+      );
+
+      const wrapped = wrapCallable(viewPlayerProfile);
+      const response = await wrapped({
+        data: { uid: alice },
+        ...authFor(bob),
+      });
+
+      expect(response.ok).toBe(true);
+      expect(response.data.activeSpellDeck.deckId).toEqual("3");
+      expect(response.data.activeSpellDeck.deck.spells).toEqual(deckThree);
     });
   });
 });

@@ -55,6 +55,8 @@ const DEFAULT_PROFILE = (displayName: string, now: admin.firestore.FieldValue) =
     referralCode: null as string | null,
     referredBy: null,
     referralStats: createDefaultReferralStats(),
+    bindingRewardClaimed: false,
+    bindingRewardGrantedAt: null as admin.firestore.FieldValue | null,
     updatedAt: now,
   };
 };

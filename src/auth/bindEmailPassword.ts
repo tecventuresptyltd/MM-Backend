@@ -2,6 +2,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
 import { normalizeEmail } from "../shared/normalize";
 import { initializeUserIfNeeded } from "../shared/initializeUser";
+import { maybeGrantBindingReward } from "./bindingRewards.js";
 
 export const bindEmailPassword = onCall({ region: "us-central1" }, async (request) => {
   const data = request.data ?? {};
@@ -18,27 +19,42 @@ export const bindEmailPassword = onCall({ region: "us-central1" }, async (reques
 
   const emailDoc = db.doc(`AccountsEmails/${norm}`);
   const playerDoc = db.doc(`Players/${uid}`);
+  const profileDoc = db.doc(`Players/${uid}/Profile/Profile`);
   const providersDoc = db.doc(`AccountsProviders/${uid}`);
 
   await db.runTransaction(async (tx) => {
-    // Ensure player exists
-    const playerSnap = await tx.get(playerDoc);
+    const [playerSnap, emailSnap, profileSnap] = await Promise.all([
+      tx.get(playerDoc),
+      tx.get(emailDoc),
+      tx.get(profileDoc),
+    ]);
+
     if (!playerSnap.exists) {
       throw new HttpsError("failed-precondition", "Player doc missing.");
     }
+    if (!profileSnap.exists) {
+      throw new HttpsError("failed-precondition", "Player profile missing.");
+    }
 
-    // Enforce uniqueness: read first, then create or reject
-    const emailSnap = await tx.get(emailDoc);
     if (emailSnap.exists) {
       const owner = (emailSnap.data() as { uid: string }).uid;
       if (owner !== uid) {
         throw new HttpsError("already-exists", "EMAIL_TAKEN");
       }
       // else: same owner -> idempotent OK (no-op)
-    } else {
+    }
+
+    const timestamp = admin.firestore.FieldValue.serverTimestamp();
+    await maybeGrantBindingReward(tx, uid, {
+      playerSnap,
+      profileSnap,
+      timestamp,
+    });
+
+    if (!emailSnap.exists) {
       tx.create(emailDoc, {
         uid,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        createdAt: timestamp,
       });
     }
 
@@ -48,7 +64,7 @@ export const bindEmailPassword = onCall({ region: "us-central1" }, async (reques
       {
         // This field is not defined in the schema, but we are leaving it for now.
         // providers: admin.firestore.FieldValue.arrayUnion('password'),
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        createdAt: timestamp,
       },
       { merge: true }
     );

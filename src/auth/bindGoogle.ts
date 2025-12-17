@@ -4,6 +4,7 @@ import { db } from "../shared/firestore";
 import { verifyGoogleIdToken } from "../shared/googleVerify";
 import { ensureOp } from "../shared/idempotency";
 import { initializeUserIfNeeded } from "../shared/initializeUser";
+import { maybeGrantBindingReward } from "./bindingRewards.js";
 
 export const bindGoogle = onCall({ enforceAppCheck: false, region: "us-central1" }, async (request) => {
   const { opId, idToken } = request.data;
@@ -22,41 +23,57 @@ export const bindGoogle = onCall({ enforceAppCheck: false, region: "us-central1"
     throw new HttpsError("invalid-argument", "Invalid Google token.");
   });
 
-  if (googleEmail) {
-    const normEmail = googleEmail.toLowerCase().trim();
-    const emailRef = db.doc(`AccountsEmails/${normEmail}`);
-    const emailDoc = await emailRef.get();
+  const normEmail = googleEmail ? googleEmail.toLowerCase().trim() : null;
+  const playerRef = db.doc(`Players/${uid}`);
+  const profileRef = db.doc(`Players/${uid}/Profile/Profile`);
+  const providersRef = db.doc(`AccountsProviders/${uid}`);
+  const emailRef = normEmail ? db.doc(`AccountsEmails/${normEmail}`) : null;
 
-    if (emailDoc.exists && emailDoc.data()!.uid !== uid) {
+  await db.runTransaction(async (tx) => {
+    const [playerSnap, profileSnap, emailSnap] = await Promise.all([
+      tx.get(playerRef),
+      tx.get(profileRef),
+      emailRef ? tx.get(emailRef) : Promise.resolve(null),
+    ]);
+
+    if (!playerSnap.exists) {
+      throw new HttpsError("failed-precondition", "Player doc missing.");
+    }
+    if (!profileSnap.exists) {
+      throw new HttpsError("failed-precondition", "Player profile missing.");
+    }
+
+    if (emailRef && emailSnap?.exists && emailSnap.data()?.uid !== uid) {
       throw new HttpsError("already-exists", "This email is already in use by another account.");
     }
-  }
 
-  const batch = db.batch();
-
-  if (googleEmail) {
-    const normEmail = googleEmail.toLowerCase().trim();
-    const emailRef = db.doc(`AccountsEmails/${normEmail}`);
-    batch.set(emailRef, {
-      uid,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    const timestamp = admin.firestore.FieldValue.serverTimestamp();
+    await maybeGrantBindingReward(tx, uid, {
+      playerSnap,
+      profileSnap,
+      timestamp,
     });
-  }
 
-  const playerRef = db.doc(`Players/${uid}`);
-  batch.update(playerRef, {
-    isGuest: false,
+    if (emailRef) {
+      tx.set(emailRef, {
+        uid,
+        createdAt: timestamp,
+      }, { merge: true });
+    }
+
+    tx.set(playerRef, { isGuest: false }, { merge: true });
+
+    tx.set(
+      providersRef,
+      {
+        google: { email: googleEmail },
+        providers: admin.firestore.FieldValue.arrayUnion("google"),
+        updatedAt: timestamp,
+        createdAt: timestamp,
+      },
+      { merge: true },
+    );
   });
-
-  const providersRef = db.doc(`AccountsProviders/${uid}`);
-  batch.set(providersRef, {
-    google: {
-      email: googleEmail,
-    },
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-  }, { merge: true });
-
-  await batch.commit();
 
   await initializeUserIfNeeded(uid, ["google"], {
     isGuest: false,

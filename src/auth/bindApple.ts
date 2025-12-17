@@ -6,6 +6,7 @@ import { ensureOp } from "../shared/idempotency";
 import { normalizeEmail } from "../shared/normalize";
 import { getAppleAudienceFromEnv, verifyAppleIdentityToken } from "../shared/appleVerify";
 import { initializeUserIfNeeded } from "../shared/initializeUser";
+import { maybeGrantBindingReward } from "./bindingRewards.js";
 
 type BindAppleRequest = {
   opId?: unknown;
@@ -43,66 +44,86 @@ export const bindApple = onCall({ enforceAppCheck: false, region: "us-central1" 
   const email = claims.email ? normalizeEmail(claims.email) : null;
 
   const appleSubRef = db.doc(`AccountsAppleSubs/${appleSub}`);
-  const subSnap = await appleSubRef.get();
-  if (subSnap.exists && (subSnap.data() ?? {}).uid !== uid) {
-    throw new HttpsError("already-exists", "Apple account is linked to another user.");
-  }
+  const playerRef = db.doc(`Players/${uid}`);
+  const providersRef = db.doc(`AccountsProviders/${uid}`);
+  const profileRef = db.doc(`Players/${uid}/Profile/Profile`);
+  const emailRef = email ? db.doc(`AccountsEmails/${email}`) : null;
 
-  if (email) {
-    const emailRef = db.doc(`AccountsEmails/${email}`);
-    const emailSnap = await emailRef.get();
-    if (emailSnap.exists && (emailSnap.data() ?? {}).uid !== uid) {
+  await db.runTransaction(async (tx) => {
+    const [playerSnap, profileSnap, subSnap, emailSnap] = await Promise.all([
+      tx.get(playerRef),
+      tx.get(profileRef),
+      tx.get(appleSubRef),
+      emailRef ? tx.get(emailRef) : Promise.resolve(null),
+    ]);
+
+    if (!playerSnap.exists) {
+      throw new HttpsError("failed-precondition", "Player doc missing.");
+    }
+    if (!profileSnap.exists) {
+      throw new HttpsError("failed-precondition", "Player profile missing.");
+    }
+
+    if (subSnap.exists && (subSnap.data() ?? {}).uid !== uid) {
+      throw new HttpsError("already-exists", "Apple account is linked to another user.");
+    }
+
+    if (emailRef && emailSnap?.exists && (emailSnap.data() ?? {}).uid !== uid) {
       throw new HttpsError("already-exists", "Email is already linked to another user.");
     }
-  }
 
-  const batch = db.batch();
+    const timestamp = admin.firestore.FieldValue.serverTimestamp();
+    await maybeGrantBindingReward(tx, uid, {
+      playerSnap,
+      profileSnap,
+      timestamp,
+    });
 
-  batch.set(appleSubRef, {
-    uid,
-    email: email ?? null,
-    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-  }, { merge: true });
-
-  if (email) {
-    const emailRef = db.doc(`AccountsEmails/${email}`);
-    batch.set(
-      emailRef,
+    tx.set(
+      appleSubRef,
       {
         uid,
-        provider: "apple",
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        email: email ?? null,
+        updatedAt: timestamp,
+        createdAt: timestamp,
       },
       { merge: true },
     );
-  }
 
-  const playerRef = db.doc(`Players/${uid}`);
-  batch.set(
-    playerRef,
-    {
-      isGuest: false,
-    },
-    { merge: true },
-  );
+    if (emailRef) {
+      tx.set(
+        emailRef,
+        {
+          uid,
+          provider: "apple",
+          createdAt: timestamp,
+        },
+        { merge: true },
+      );
+    }
 
-  const providersRef = db.doc(`AccountsProviders/${uid}`);
-  batch.set(
-    providersRef,
-    {
-      providers: admin.firestore.FieldValue.arrayUnion("apple"),
-      apple: {
-        sub: appleSub,
-        email,
+    tx.set(
+      playerRef,
+      {
+        isGuest: false,
       },
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    },
-    { merge: true },
-  );
+      { merge: true },
+    );
 
-  await batch.commit();
+    tx.set(
+      providersRef,
+      {
+        providers: admin.firestore.FieldValue.arrayUnion("apple"),
+        apple: {
+          sub: appleSub,
+          email,
+        },
+        updatedAt: timestamp,
+        createdAt: timestamp,
+      },
+      { merge: true },
+    );
+  });
 
   await initializeUserIfNeeded(uid, ["apple"], {
     isGuest: false,

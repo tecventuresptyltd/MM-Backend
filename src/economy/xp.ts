@@ -61,6 +61,8 @@ export const grantXP = onCall({ enforceAppCheck: false, region: "us-central1" },
 
     const beforeInfo = getLevelInfo(xpBefore);
     const afterInfo = getLevelInfo(xpAfter);
+    const beforeRequiredForNextLevel = beforeInfo.expInLevel + beforeInfo.expToNext;
+    const afterRequiredForNextLevel = afterInfo.expInLevel + afterInfo.expToNext;
     const levelsGained = afterInfo.level - beforeInfo.level;
     const leveledUp = levelsGained > 0;
 
@@ -82,8 +84,8 @@ export const grantXP = onCall({ enforceAppCheck: false, region: "us-central1" },
         exp: xpAfter,
         level: afterInfo.level,
         expProgress: afterInfo.expInLevel,
-        expToNextLevel: afterInfo.expToNext,
-        expProgressDisplay: `${afterInfo.expInLevel} / ${afterInfo.expToNext}`,
+        expToNextLevel: afterRequiredForNextLevel,
+        expProgressDisplay: `${afterInfo.expInLevel} / ${afterRequiredForNextLevel}`,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
     transaction.update(profileRef, profileUpdate);
@@ -122,11 +124,11 @@ export const grantXP = onCall({ enforceAppCheck: false, region: "us-central1" },
       expProgress: {
         before: {
           expInLevel: beforeInfo.expInLevel,
-          expToNextLevel: beforeInfo.expToNext,
+          expToNextLevel: beforeRequiredForNextLevel,
         },
         after: {
           expInLevel: afterInfo.expInLevel,
-          expToNextLevel: afterInfo.expToNext,
+          expToNextLevel: afterRequiredForNextLevel,
         },
       },
     };

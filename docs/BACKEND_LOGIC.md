@@ -62,7 +62,7 @@
     3.  **Transactional Update**: Runs a Firestore transaction to:
         - Read the player's `/Players/{uid}/Economy/Stats` and `/Players/{uid}/Profile/Profile` documents.
         - Calculate the `levelBefore`/`levelAfter`, per-level progress, and detect level-ups.
-        - Write the new `exp` (cumulative lifetime XP), `level`, `expProgress`, and `expToNextLevel` fields to the profile.
+        - Write the new `exp` (cumulative lifetime XP), `level`, `expProgress`, and `expToNextLevel` (total XP needed for the current level = progress + remaining) fields to the profile.
         - Increment `spellTokens` in `/Economy/Stats` for each level gained.
     4.  **Response Payload**: Returns cumulative XP before/after, level info, and detailed progress deltas.
 

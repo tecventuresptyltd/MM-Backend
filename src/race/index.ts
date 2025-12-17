@@ -180,52 +180,79 @@ const buildFinishOrderIndexes = (
   });
   participantIndexById.set(uid, playerIndex);
 
-  const resolved: number[] = [];
-  const seen = new Set<number>();
-  const pushIndex = (idx: number | null) => {
-    if (idx === null) return;
-    if (idx < 0 || idx >= total || seen.has(idx)) return;
-    resolved.push(idx);
-    seen.add(idx);
-  };
+  if (!Array.isArray(finishOrderInput) || finishOrderInput.length !== total) {
+    throw new HttpsError(
+      "invalid-argument",
+      "finishOrder must include every participant exactly once in final placement order.",
+    );
+  }
 
-  const tokens = Array.isArray(finishOrderInput) ? finishOrderInput : [];
-  tokens.forEach((token) => {
-    let idx: number | null = null;
+  const parseTokenToIndex = (token: unknown): number => {
     if (typeof token === "number" && Number.isInteger(token)) {
-      idx = token;
-    } else if (typeof token === "string") {
-      if (participantIndexById.has(token)) {
-        idx = participantIndexById.get(token)!;
-      } else {
-        const parsed = Number(token);
-        if (Number.isInteger(parsed)) {
-          idx = parsed;
-        }
+      return token;
+    }
+    if (typeof token === "string" && token.trim().length > 0) {
+      const byId = participantIndexById.get(token);
+      if (typeof byId === "number") {
+        return byId;
       }
-    } else if (typeof token === "object" && token !== null) {
+      const parsed = Number(token);
+      if (Number.isInteger(parsed)) {
+        return parsed;
+      }
+    }
+    if (typeof token === "object" && token !== null) {
       const record = token as Record<string, unknown>;
       const candidate =
         typeof record.participantId === "string"
           ? record.participantId
           : typeof record.uid === "string"
             ? record.uid
-            : typeof record.id === "string"
-              ? record.id
-              : null;
-      if (typeof candidate === "string" && participantIndexById.has(candidate)) {
-        idx = participantIndexById.get(candidate)!;
+            : typeof record.playerId === "string"
+              ? record.playerId
+              : typeof record.id === "string"
+                ? record.id
+                : null;
+      if (candidate) {
+        const byId = participantIndexById.get(candidate);
+        if (typeof byId === "number") {
+          return byId;
+        }
       }
     }
-    pushIndex(idx);
+    throw new HttpsError(
+      "invalid-argument",
+      "finishOrder entries must be participant indexes or ids from the lobby snapshot.",
+    );
+  };
+
+  const resolved: number[] = [];
+  const seen = new Set<number>();
+  finishOrderInput.forEach((token) => {
+    const idx = parseTokenToIndex(token);
+    if (idx < 0 || idx >= total) {
+      throw new HttpsError(
+        "invalid-argument",
+        `finishOrder contains an index outside lobby bounds (index ${idx}, size ${total}).`,
+      );
+    }
+    if (seen.has(idx)) {
+      throw new HttpsError(
+        "invalid-argument",
+        `finishOrder must not contain duplicates; participant index ${idx} was repeated.`,
+      );
+    }
+    resolved.push(idx);
+    seen.add(idx);
   });
 
-  for (let i = 0; i < total; i += 1) {
-    if (!seen.has(i)) {
-      resolved.push(i);
-      seen.add(i);
-    }
+  if (!seen.has(playerIndex)) {
+    throw new HttpsError(
+      "invalid-argument",
+      "finishOrder must include the calling player's participant entry.",
+    );
   }
+
   return resolved;
 };
 
@@ -431,6 +458,8 @@ export const recordRaceResult = onCall({ enforceAppCheck: false, region: REGION 
     const xpAfter = xpBefore + xpGained;
     const afterInfo = getLevelInfo(xpAfter);
     const levelsGained = afterInfo.level - beforeInfo.level;
+    const expRequiredForNextLevel = afterInfo.expInLevel + afterInfo.expToNext;
+    const expRequiredForNextLevelBefore = beforeInfo.expInLevel + beforeInfo.expToNext;
 
     const oldRankLabel = rewards.oldRank;
     const newRankLabel = getRankForTrophies(trophiesAfterSettlement);
@@ -458,8 +487,8 @@ export const recordRaceResult = onCall({ enforceAppCheck: false, region: REGION 
       exp: xpAfter,
       level: afterInfo.level,
       expProgress: afterInfo.expInLevel,
-      expToNextLevel: afterInfo.expToNext,
-      expProgressDisplay: `${afterInfo.expInLevel} / ${afterInfo.expToNext}`,
+      expToNextLevel: expRequiredForNextLevel,
+      expProgressDisplay: `${afterInfo.expInLevel} / ${expRequiredForNextLevel}`,
       careerCoins: admin.firestore.FieldValue.increment(coinsGained),
       highestTrophies: newHighestTrophies,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -491,7 +520,8 @@ export const recordRaceResult = onCall({ enforceAppCheck: false, region: REGION 
         levelAfter: afterInfo.level,
         expInLevelBefore: beforeInfo.expInLevel,
         expInLevelAfter: afterInfo.expInLevel,
-        expToNextLevel: afterInfo.expToNext,
+        expToNextLevelBefore: expRequiredForNextLevelBefore,
+        expToNextLevel: expRequiredForNextLevel,
       },
       rank: {
         old: oldRankLabel,

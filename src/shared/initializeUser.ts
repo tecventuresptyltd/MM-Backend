@@ -32,14 +32,15 @@ interface InitializeOptions {
 
 const DEFAULT_PROFILE = (displayName: string, now: admin.firestore.FieldValue) => {
   const levelInfo = getLevelInfo(0);
+  const expRequiredForNextLevel = levelInfo.expInLevel + levelInfo.expToNext;
   return {
     displayName,
     avatarId: 1,
     exp: 0,
     level: 1,
     expProgress: levelInfo.expInLevel,
-    expToNextLevel: levelInfo.expToNext,
-    expProgressDisplay: `${levelInfo.expInLevel} / ${levelInfo.expToNext}`,
+    expToNextLevel: expRequiredForNextLevel,
+    expProgressDisplay: `${levelInfo.expInLevel} / ${expRequiredForNextLevel}`,
     trophies: 0,
     highestTrophies: 0,
     careerCoins: 0,

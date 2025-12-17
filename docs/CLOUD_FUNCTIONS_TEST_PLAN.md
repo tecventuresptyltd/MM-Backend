@@ -578,7 +578,7 @@ The test suite for the direct sign-up functions (`signupEmailPassword` and `sign
 {
   "opId": "record-race-result-not-found-1",
   "raceId": "non-existent-race-id",
-  "finishOrder": ["player1-uid"]
+  "finishOrder": ["player1-uid", "player2-uid", "player3-uid", "player4-uid"]
 }
 ```
 **Expected Output:** Error: `NOT_FOUND`
@@ -591,7 +591,7 @@ The test suite for the direct sign-up functions (`signupEmailPassword` and `sign
 {
   "opId": "record-race-result-idempotency-1",
   "raceId": "idempotent-race-id",
-  "finishOrder": ["player1-uid", "player2-uid"]
+  "finishOrder": ["player1-uid", "player2-uid", "player3-uid", "player4-uid"]
 }
 ```
 **Steps:**

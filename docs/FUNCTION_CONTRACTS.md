@@ -717,27 +717,25 @@ Notes:
 
 **Purpose:** Settles a race and applies rewards using **Immediate Settlement** strategy. The callable reloads the lobby snapshot recorded in `/Races/{raceId}`, feeds it plus the finish order into the Elo-style calculator from `src/race/economy.ts`, then writes the settlement deltas. XP progression uses the "Infinite Leveling Power Curve" runtime formula from `src/shared/xp.ts`; level-ups add spell tokens. End-of-race drops grant crates/keys immediately, and flash-sale triggers run afterward.
 
-**Immediate Settlement Design:**
+**Immediate Settlement Design (validated ordering):**
 * The server calculates rewards **as soon as a player finishes**, without waiting for slower players or bots to complete.
-* The Elo math uses the principle: "If an opponent isn't in the list of finishers before me, I assume I beat them" (Sij = 1).
-* The `finishOrder` array can be **partial** — it only needs to include players who finished **before** the calling player, plus the calling player themselves.
-* Any players not explicitly listed are auto-filled **after** the player's position, effectively treating them as "beaten by the player."
+* `finishOrder` must list **every participant exactly once** in final placement order (UID/participantId/0-based index). Missing or duplicate entries are rejected.
+* The caller's own participant entry must be present; otherwise the callable fails.
 
 **Input:**
 ```json
 {
   "raceId": "string",
-  "finishOrder": ["string"], // Partial list: players who finished before you, then your UID
+  "finishOrder": ["string"], // Full list: every participant in placement order (UID/participantId/index)
   "botNames": ["string"] // optional display names for bots
 }
 ```
 
 **FinishOrder Behavior:**
-* `finishOrder` can contain UIDs (strings), participant IDs, or numeric indices.
-* Players are processed in the order provided. Missing players are appended at the end in index order.
-* Example: `["uid_bot1", "uid_bot3", "uid_player"]` → Player finishes 3rd, bots 4-8 auto-filled after.
+* `finishOrder` can contain UIDs (strings), participant IDs, or numeric indices; each must map to a lobby entry.
+* Length must equal the lobby size; any out-of-bounds index or duplicate entry throws `INVALID_ARGUMENT`.
+* Example: `["uid_bot1", "uid_bot3", "uid_player", 3]` → Player finishes 3rd out of 4.
 * The player's position is derived as: `position = finishOrder.indexOf(playerUid) + 1`
-* **Important:** The server trusts the client-provided `finishOrder`. Sending only `[yourUid]` will result in 1st place rewards.
 
 **Output:**
 ```jsonc
@@ -762,7 +760,7 @@ Notes:
 **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `FAILED_PRECONDITION`, `NOT_FOUND`
 
 **Notes:**
-* **Immediate Settlement:** Rewards are calculated based on who finished before the player. Anyone not in `finishOrder` is assumed to have been beaten by the player.
+* **Immediate Settlement:** Rewards are calculated as soon as the player finishes, but the finish order must be complete to avoid over-reporting wins.
 * `rewards.trophies` reflects the actual net result for the UI. `trophySettlement.applied` is what the server added back to profile trophies (pre-deduction already included).
 * `rewards.coins` and `rewards.xp` are the **total** values (base + booster). The breakdown fields allow the UI to display "Earned 2,700 Coins + 2,700 Bonus!" separately.
 * `baseCoins` and `baseXp` represent rewards calculated with no booster active (multiplier = 1).
@@ -770,7 +768,7 @@ Notes:
 * Boosters are validated by checking `boosters.coin.activeUntil > Date.now()` and `boosters.exp.activeUntil > Date.now()` at race completion time (timestamp-based, not boolean flags).
 * Trophies are **never** affected by boosters—only coins and XP.
 * `rank` gives the before/after labels so the client can animate promotions without re-reading Firestore.
-* **Trophy Math:** Uses pairwise Elo calculation where Sij = 0 if opponent `j` finished before player `i`, else Sij = 1. This allows partial finish orders without requiring all players to complete the race.
+* **Trophy Math:** Uses pairwise Elo calculation where Sij = 0 if opponent `j` finished before player `i`, else Sij = 1. The strict finish order requirement prevents gaps/duplication.
 * **Coin/XP Math:** Position-based rewards use rank-specific caps multiplied by difficulty (based on average expected win probability) and booster multipliers.
 
 **Side Effects:**
@@ -782,7 +780,7 @@ Notes:
 
 ### `grantXP`
 
-**Purpose:** Grants XP to a player using the "Infinite Leveling Power Curve" runtime formula from `src/shared/xp.ts` (no Firestore lookups). The formula $C(L) = K \cdot ((L - 1 + s)^p - s^p)$ with $K=50.0$, $p=1.7$, $s=1.0$ supports infinite progression with polynomial scaling. The helper computes the active level (via O(1) analytic inverse), current progress, and XP required for the next level. On level-up the player earns spell tokens. The function writes the derived values to `/Players/{uid}/Profile/Profile` (`exp` as cumulative lifetime XP, `level`, `expProgress`, `expToNextLevel`) and, when applicable, increments `spellTokens` in `/Players/{uid}/Economy/Stats`. Crossing the level‑5 or level‑10 thresholds also injects the cataloged level-up offers into `/Players/{uid}/Offers/Active.special`.
+**Purpose:** Grants XP to a player using the "Infinite Leveling Power Curve" runtime formula from `src/shared/xp.ts` (no Firestore lookups). The formula $C(L) = K \cdot ((L - 1 + s)^p - s^p)$ with $K=50.0$, $p=1.7$, $s=1.0$ supports infinite progression with polynomial scaling. The helper computes the active level (via O(1) analytic inverse), current progress, and total XP required to reach the next level. On level-up the player earns spell tokens. The function writes the derived values to `/Players/{uid}/Profile/Profile` (`exp` as cumulative lifetime XP, `level`, `expProgress`, `expToNextLevel = progress + required`) and, when applicable, increments `spellTokens` in `/Players/{uid}/Economy/Stats`. Crossing the level‑5 or level‑10 thresholds also injects the cataloged level-up offers into `/Players/{uid}/Offers/Active.special`.
 
 **Input:**
 ```json
@@ -794,7 +792,7 @@ Notes:
 ```
 
 **Output:**
-*   **Success:** `{ "success": true, "opId": "string", "xpBefore": "number", "xpAfter": "number", "levelBefore": "number", "levelAfter": "number", "leveledUp": "boolean", "expProgress": { "before": { "expInLevel": "number", "expToNextLevel": "number" }, "after": { "expInLevel": "number", "expToNextLevel": "number" } } }`
+*   **Success:** `{ "success": true, "opId": "string", "xpBefore": "number", "xpAfter": "number", "levelBefore": "number", "levelAfter": "number", "leveledUp": "boolean", "expProgress": { "before": { "expInLevel": "number", "expToNextLevel": "number" }, "after": { "expInLevel": "number", "expToNextLevel": "number" } } }` where `expToNextLevel` is the total XP needed for the next level (not the remaining gap).
 
 **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `NOT_FOUND`, `INTERNAL`
 

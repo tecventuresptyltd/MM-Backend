@@ -19,6 +19,7 @@ import {
   clearPlayerClanState,
   getPlayerProfile,
   isLeader,
+  playerProfileRef,
   playerClanStateRef,
   resolveClanBadge,
   resolveClanType,
@@ -234,6 +235,47 @@ const sanitizeUpdatePayload = (payload: UpdateClanSettingsRequest) => {
   return { updates, touched };
 };
 
+const syncClanIdentityToMemberProfiles = async (
+  clanId: string,
+  updates: Record<string, unknown>,
+) => {
+  const profilePatch: Record<string, string> = {};
+  if (typeof updates.name === "string") {
+    profilePatch.clanName = updates.name;
+  }
+  if (typeof updates.badge === "string") {
+    profilePatch.clanBadge = updates.badge;
+  }
+  if (Object.keys(profilePatch).length === 0) {
+    return;
+  }
+
+  const membersSnap = await clanMembersCollection(clanId).get();
+  if (membersSnap.empty) {
+    return;
+  }
+
+  let batch = db.batch();
+  let writes = 0;
+  const commitBatch = async () => {
+    if (writes === 0) {
+      return;
+    }
+    await batch.commit();
+    batch = db.batch();
+    writes = 0;
+  };
+
+  for (const doc of membersSnap.docs) {
+    batch.set(playerProfileRef(doc.id), profilePatch, { merge: true });
+    writes += 1;
+    if (writes >= 400) {
+      await commitBatch();
+    }
+  }
+  await commitBatch();
+};
+
 export const updateClanSettings = onCall(callableOptions(), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as UpdateClanSettingsRequest;
@@ -291,6 +333,10 @@ export const updateClanSettings = onCall(callableOptions(), async (request) => {
       return { clanId, updated: touched };
     },
   );
+
+  if (touched.some((field) => field === "badge" || field === "name")) {
+    await syncClanIdentityToMemberProfiles(clanId, updates);
+  }
 
   return result;
 });

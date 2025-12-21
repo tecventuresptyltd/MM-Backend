@@ -7,7 +7,9 @@ import { refreshFriendSnapshots } from "../Socials/updateSnapshots.js";
 import { grantInventoryRewards } from "../shared/inventoryAwards.js";
 import { maybeTriggerFlashSales } from "../triggers/flashSales.js";
 import { buildBotLoadout } from "../game-systems/botLoadoutHelper.js";
-import { applyClanTrophyDelta } from "../clan/helpers.js";
+import { applyClanTrophyDelta, playerClanStateRef } from "../clan/helpers.js";
+import { updatePlayerLeaderboardEntry } from "../Socials/liveLeaderboard.js";
+import { updateClanLeaderboardEntry } from "../clan/liveLeaderboard.js";
 import {
   DEFAULT_COIN_CONFIG,
   DEFAULT_EXP_CONFIG,
@@ -20,6 +22,7 @@ import {
   toMillis,
 } from "./economy.js";
 import { PlayerBoostersState } from "../shared/types.js";
+import { LeaderboardMetric } from "../Socials/types.js";
 
 const db = admin.firestore();
 
@@ -546,15 +549,58 @@ export const recordRaceResult = onCall({ enforceAppCheck: false, region: REGION 
     logger.warn("Flash sale trigger failed after race result", { uid, error });
   }
 
+  let clanIdForLiveUpdate: string | null = null;
   const trophyDelta = Number(result.rewards?.trophies ?? 0);
   if (Number.isFinite(trophyDelta) && trophyDelta !== 0) {
     try {
       await applyClanTrophyDelta(uid, trophyDelta);
+      const clanStateSnap = await playerClanStateRef(uid).get();
+      const clanId = clanStateSnap.data()?.clanId;
+      if (typeof clanId === "string" && clanId.length > 0) {
+        clanIdForLiveUpdate = clanId;
+      }
     } catch (error) {
       logger.warn("Failed to apply clan trophy delta after race", { uid, raceId, trophyDelta, error });
     }
   }
 
   await refreshFriendSnapshots(uid);
+
+  try {
+    const profileSnapshot = await db.doc(`/Players/${uid}/Profile/Profile`).get();
+    if (profileSnapshot.exists) {
+      const profileData = profileSnapshot.data() ?? {};
+      const flags = profileData.top100Flags ?? {};
+      const updates: Array<{ metric: LeaderboardMetric; value: number }> = [];
+      if (flags?.trophies === true) {
+        updates.push({ metric: "trophies", value: Number(profileData.trophies ?? 0) });
+      }
+      if (flags?.careerCoins === true) {
+        updates.push({ metric: "careerCoins", value: Number(profileData.careerCoins ?? 0) });
+      }
+      if (flags?.totalWins === true) {
+        updates.push({ metric: "totalWins", value: Number(profileData.totalWins ?? 0) });
+      }
+
+      if (updates.length > 0) {
+        await Promise.all(
+          updates.map(({ metric, value }) =>
+            updatePlayerLeaderboardEntry(metric, uid, Number.isFinite(value) ? value : 0),
+          ),
+        );
+      }
+    }
+  } catch (error) {
+    logger.warn("Failed to update player live leaderboard entry", { uid, raceId, error });
+  }
+
+  if (clanIdForLiveUpdate) {
+    try {
+      await updateClanLeaderboardEntry(clanIdForLiveUpdate);
+    } catch (error) {
+      logger.warn("Failed to update clan leaderboard live entry", { uid, raceId, clanId: clanIdForLiveUpdate, error });
+    }
+  }
+
   return result;
 });

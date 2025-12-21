@@ -1,4 +1,5 @@
 import * as admin from "firebase-admin";
+import * as logger from "firebase-functions/logger";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import type { CallableRequest } from "firebase-functions/v2/https";
 import { callableOptions } from "../shared/callableOptions.js";
@@ -32,9 +33,21 @@ import {
   updatePlayerClanProfile,
 } from "./helpers.js";
 import { pushClanSystemMessage } from "./chat.js";
+import { updateClanLeaderboardEntry } from "./liveLeaderboard.js";
 
 const db = admin.firestore();
 const { FieldValue } = admin.firestore;
+
+const refreshClanLeaderboardEntry = async (clanId: string) => {
+  if (!clanId) {
+    return;
+  }
+  try {
+    await updateClanLeaderboardEntry(clanId);
+  } catch (error) {
+    logger.warn("Failed to refresh clan leaderboard entry", { clanId, error });
+  }
+};
 
 const requireOpId = (raw?: unknown): string => {
   if (typeof raw !== "string" || raw.trim().length < 8) {
@@ -338,6 +351,10 @@ export const updateClanSettings = onCall(callableOptions(), async (request) => {
     await syncClanIdentityToMemberProfiles(clanId, updates);
   }
 
+  if (result.updated.length > 0) {
+    await refreshClanLeaderboardEntry(clanId);
+  }
+
   return result;
 });
 
@@ -402,6 +419,7 @@ export const deleteClan = onCall(callableOptions(), async (request) => {
   );
 
   await admin.firestore().recursiveDelete(clanDocRef);
+  await refreshClanLeaderboardEntry(payload.clanId);
   return result;
 });
 

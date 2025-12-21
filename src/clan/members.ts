@@ -1,4 +1,5 @@
 import * as admin from "firebase-admin";
+import * as logger from "firebase-functions/logger";
 import type { CallableRequest } from "firebase-functions/v2/https";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { callableOptions } from "../shared/callableOptions.js";
@@ -24,6 +25,7 @@ import {
   setPlayerClanState,
   updatePlayerClanProfile,
 } from "./helpers.js";
+import { updateClanLeaderboardEntry } from "./liveLeaderboard.js";
 import {
   PendingClanSystemMessage,
   SystemMessageAuthorSnapshot,
@@ -140,6 +142,17 @@ const previousRole = (role: ClanRole): ClanRole | null => {
     return null;
   }
   return ROLE_SEQUENCE[idx - 1];
+};
+
+const refreshClanLeaderboardEntry = async (clanId: string) => {
+  if (!clanId) {
+    return;
+  }
+  try {
+    await updateClanLeaderboardEntry(clanId);
+  } catch (error) {
+    logger.warn("Failed to refresh clan leaderboard entry", { clanId, error });
+  }
 };
 
 const ensureActorOutranksTarget = (actorRole: ClanRole, targetRole: ClanRole) => {
@@ -334,6 +347,7 @@ export const joinClan = onCall(callableOptions(), async (request) => {
   );
 
   await publishClanSystemMessages(result.systemMessages ?? []);
+  await refreshClanLeaderboardEntry(result.clanId);
   return { clanId: result.clanId };
 });
 
@@ -427,6 +441,7 @@ export const promoteClanMember = onCall(callableOptions(), async (request) => {
   );
 
   await publishClanSystemMessages(result.systemMessages ?? []);
+  await refreshClanLeaderboardEntry(result.clanId);
   return { clanId: result.clanId };
 });
 
@@ -519,6 +534,7 @@ export const demoteClanMember = onCall(callableOptions(), async (request) => {
   );
 
   await publishClanSystemMessages(result.systemMessages ?? []);
+  await refreshClanLeaderboardEntry(result.clanId);
   return { clanId: result.clanId };
 });
 
@@ -709,6 +725,7 @@ interface UpdateMemberTrophiesRequest {
 interface UpdateMemberTrophiesResponse {
   opId: string;
   updated: boolean;
+  clanId?: string;
 }
 
 export const updateMemberTrophies = onCall(callableOptions(), async (request) => {
@@ -752,9 +769,13 @@ export const updateMemberTrophies = onCall(callableOptions(), async (request) =>
         trophies: FieldValue.increment(trophyDelta),
       });
 
-      return { opId, updated: true };
+      return { opId, updated: true, clanId };
     },
   );
+
+  if (result.updated && result.clanId) {
+    await refreshClanLeaderboardEntry(result.clanId);
+  }
 
   return result;
 });
@@ -972,6 +993,7 @@ export const leaveClan = onCall(callableOptions(), async (request) => {
   if (result.deleted) {
     await deleteClanTree(result.clanId);
   }
+  await refreshClanLeaderboardEntry(result.clanId);
 
   return { clanId: result.clanId };
 });

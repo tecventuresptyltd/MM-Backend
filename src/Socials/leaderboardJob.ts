@@ -9,9 +9,11 @@ import {
   PlayerSummary,
 } from "./types.js";
 import { buildPlayerSummary } from "./summary.js";
+import * as admin from "firebase-admin";
 
 const PLAYER_PROFILE_BATCH = 50;
 const MAX_ENTRIES = 100;
+const FLAG_BATCH_WRITE_LIMIT = 450;
 
 type ProfileData = FirebaseFirestore.DocumentData;
 
@@ -136,11 +138,93 @@ const persistEntries = async (metric: LeaderboardMetric, entries: LeaderboardEnt
   });
 };
 
+const loadPreviousEntries = async (
+  metric: LeaderboardMetric,
+): Promise<LeaderboardEntry[]> => {
+  const snapshot = await leaderboardDocRef(metric).get();
+  if (!snapshot.exists) {
+    return [];
+  }
+  const data = snapshot.data() ?? {};
+  const entries = Array.isArray(data.top100) ? data.top100 : [];
+  return entries
+    .map((entry: any) => ({
+      uid: entry?.uid,
+      value: Number(entry?.value ?? 0),
+      rank: Number(entry?.rank ?? 0),
+      snapshot: entry?.snapshot,
+    }))
+    .filter((entry) => typeof entry.uid === "string" && entry.uid.length > 0);
+};
+
+const chunkArray = <T>(items: T[], size: number): T[][] => {
+  const result: T[][] = [];
+  for (let i = 0; i < items.length; i += size) {
+    result.push(items.slice(i, i + size));
+  }
+  return result;
+};
+
+const syncPlayerTop100Flags = async (
+  metric: LeaderboardMetric,
+  newEntries: LeaderboardEntry[],
+  previousEntries: LeaderboardEntry[],
+): Promise<void> => {
+  const newUids = new Set(newEntries.map((entry) => entry.uid));
+  const previousUids = new Set(previousEntries.map((entry) => entry.uid));
+  const affected = Array.from(new Set([...newUids, ...previousUids]));
+
+  if (affected.length === 0) {
+    return;
+  }
+
+  const batches = chunkArray(affected, PLAYER_PROFILE_BATCH);
+  for (const batchUids of batches) {
+    const refs = batchUids.map((uid) => playerProfileRef(uid));
+    const snapshots = await db.getAll(...refs);
+
+    const writes = chunkArray(
+      snapshots.map((snapshot, idx) => ({ snapshot, ref: refs[idx], uid: batchUids[idx] })),
+      FLAG_BATCH_WRITE_LIMIT,
+    );
+
+    for (const writeChunk of writes) {
+      const batch = db.batch();
+      writeChunk.forEach(({ snapshot, ref, uid }) => {
+        if (!snapshot.exists) {
+          return;
+        }
+        const data = snapshot.data() ?? {};
+        const rawFlags =
+          typeof data.top100Flags === "object" && data.top100Flags !== null ? data.top100Flags : {};
+        const top100Flags: Record<string, boolean> = {};
+        Object.keys(rawFlags).forEach((key) => {
+          top100Flags[key] = rawFlags[key] === true;
+        });
+        top100Flags[metric] = newUids.has(uid);
+        const isInTop100 = Object.values(top100Flags).some((value) => value === true);
+        batch.set(
+          ref,
+          {
+            top100Flags,
+            isInTop100,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          { merge: true },
+        );
+      });
+      await batch.commit();
+    }
+  }
+};
+
 export const refreshLeaderboards = async (): Promise<{ metrics: number }> => {
   const profiles = await fetchAllPlayerProfiles();
   for (const metric of Object.keys(LEADERBOARD_METRICS) as LeaderboardMetric[]) {
+    const previousEntries = await loadPreviousEntries(metric);
     const entries = await toLeaderboardEntries(metric, profiles);
     await persistEntries(metric, entries);
+    await syncPlayerTop100Flags(metric, entries, previousEntries);
     console.log(
       `[leaderboards.refreshAll] Updated metric=${metric} with ${entries.length} entries`,
     );

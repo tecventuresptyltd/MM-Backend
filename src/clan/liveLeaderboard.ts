@@ -55,11 +55,8 @@ export const updateClanLeaderboardEntry = async (clanId: string): Promise<void> 
       transaction.get(clanRef),
       transaction.get(leaderboardRef),
     ]);
-    if (!leaderboardSnap.exists) {
-      return;
-    }
 
-    const entries = normalizeEntries(leaderboardSnap.data()?.top);
+    const entries = leaderboardSnap.exists ? normalizeEntries(leaderboardSnap.data()?.top) : [];
 
     if (!clanSnap.exists) {
       const filtered = entries.filter((entry) => entry.clanId !== clanId);
@@ -78,27 +75,6 @@ export const updateClanLeaderboardEntry = async (clanId: string): Promise<void> 
     }
 
     const clanData = clanSnap.data() ?? {};
-    const isFlagged = clanData.isInTop100 === true;
-    const hasSpace = entries.length < CLAN_LEADERBOARD_LIMIT;
-    if (clanData.isInTop100 === false && !hasSpace) {
-      const filtered = entries.filter((entry) => entry.clanId !== clanId);
-      if (filtered.length === entries.length) {
-        return;
-      }
-      transaction.set(
-        leaderboardRef,
-        {
-          top: filtered,
-          updatedAt: Date.now(),
-        },
-        { merge: true },
-      );
-      return;
-    }
-    if (!isFlagged && !hasSpace) {
-      return;
-    }
-
     const updatedEntry = buildEntryFromClanDoc(clanId, clanData);
     const filtered = entries.filter((entry) => entry.clanId !== clanId);
     filtered.push(updatedEntry);
@@ -107,9 +83,9 @@ export const updateClanLeaderboardEntry = async (clanId: string): Promise<void> 
 
     transaction.set(
       leaderboardRef,
-      {
-        limit: CLAN_LEADERBOARD_LIMIT,
-        top,
+        {
+          limit: CLAN_LEADERBOARD_LIMIT,
+          top,
         updatedAt: Date.now(),
       },
       { merge: true },
@@ -117,7 +93,7 @@ export const updateClanLeaderboardEntry = async (clanId: string): Promise<void> 
     transaction.set(
       clanRef,
       {
-        isInTop100: true,
+        isInTop100: top.some((entry) => entry.clanId === clanId),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       },
       { merge: true },

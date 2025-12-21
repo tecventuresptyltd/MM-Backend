@@ -34,6 +34,7 @@ import {
 } from "./helpers.js";
 import { pushClanSystemMessage } from "./chat.js";
 import { updateClanLeaderboardEntry } from "./liveLeaderboard.js";
+import { refreshPlayerLeaderboardSnapshots } from "../Socials/liveLeaderboard.js";
 
 const db = admin.firestore();
 const { FieldValue } = admin.firestore;
@@ -46,6 +47,24 @@ const refreshClanLeaderboardEntry = async (clanId: string) => {
     await updateClanLeaderboardEntry(clanId);
   } catch (error) {
     logger.warn("Failed to refresh clan leaderboard entry", { clanId, error });
+  }
+};
+
+const refreshClanMembersGlobalLeaderboards = async (clanId: string) => {
+  if (!clanId) {
+    return;
+  }
+  try {
+    const membersSnapshot = await clanMembersCollection(clanId).get();
+    await Promise.all(
+      membersSnapshot.docs.map((doc) =>
+        refreshPlayerLeaderboardSnapshots(doc.id).catch((error) =>
+          logger.warn("Failed to refresh member global leaderboard snapshot", { clanId, uid: doc.id, error }),
+        ),
+      ),
+    );
+  } catch (error) {
+    logger.warn("Failed to refresh clan members global leaderboard snapshots", { clanId, error });
   }
 };
 
@@ -172,6 +191,16 @@ export const createClan = onCall(callableOptions(), async (request) => {
     },
   );
 
+  // If the leaderboard is empty or under capacity, fast-flag this clan for live updates.
+  let shouldFlagTop100 = false;
+  try {
+    const leaderboardSnap = await db.collection("ClanLeaderboard").doc("snapshot").get();
+    const top = Array.isArray(leaderboardSnap.data()?.top) ? leaderboardSnap.data()?.top : [];
+    shouldFlagTop100 = !leaderboardSnap.exists || top.length < 100;
+  } catch (error) {
+    // Ignore; fall back to updateClanLeaderboardEntry to decide.
+  }
+
   await pushClanSystemMessage(
     result.clanId,
     `${profile.displayName} founded ${result.name}`,
@@ -189,7 +218,11 @@ export const createClan = onCall(callableOptions(), async (request) => {
     },
   );
 
+  if (shouldFlagTop100) {
+    await clansCollection().doc(result.clanId).set({ isInTop100: true }, { merge: true });
+  }
   await refreshClanLeaderboardEntry(result.clanId);
+  await refreshPlayerLeaderboardSnapshots(uid);
   return loadClanDetails(result.clanId, uid);
 });
 
@@ -354,6 +387,7 @@ export const updateClanSettings = onCall(callableOptions(), async (request) => {
 
   if (result.updated.length > 0) {
     await refreshClanLeaderboardEntry(clanId);
+    await refreshClanMembersGlobalLeaderboards(clanId);
   }
 
   return result;

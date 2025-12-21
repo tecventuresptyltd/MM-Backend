@@ -31,6 +31,7 @@ import {
   SystemMessageAuthorSnapshot,
   publishClanSystemMessages,
 } from "./chat.js";
+import { refreshPlayerLeaderboardSnapshots } from "../Socials/liveLeaderboard.js";
 
 const { FieldValue } = admin.firestore;
 
@@ -613,6 +614,7 @@ export const transferClanLeadership = onCall(callableOptions(), async (request) 
   );
 
   await publishClanSystemMessages(result.systemMessages ?? []);
+  await refreshPlayerLeaderboardSnapshots(uid);
   return { clanId: result.clanId };
 });
 
@@ -714,6 +716,7 @@ export const kickClanMember = onCall(callableOptions(), async (request) => {
   );
 
   await publishClanSystemMessages(result.systemMessages ?? []);
+  await refreshPlayerLeaderboardSnapshots(uid);
   return { clanId: result.clanId };
 });
 
@@ -867,6 +870,7 @@ export const requestToJoinClan = onCall(callableOptions(), async (request) => {
   );
 
   await publishClanSystemMessages(result.systemMessages ?? []);
+  await refreshPlayerLeaderboardSnapshots(uid);
   return { clanId: result.clanId };
 });
 
@@ -994,6 +998,7 @@ export const leaveClan = onCall(callableOptions(), async (request) => {
     await deleteClanTree(result.clanId);
   }
   await refreshClanLeaderboardEntry(result.clanId);
+  await refreshPlayerLeaderboardSnapshots(uid);
 
   return { clanId: result.clanId };
 });

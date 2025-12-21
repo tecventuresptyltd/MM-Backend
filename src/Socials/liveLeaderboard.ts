@@ -48,11 +48,11 @@ export const updatePlayerLeaderboardEntry = async (
   const sanitizedValue = Number.isFinite(metricValue) ? metricValue : 0;
   await db.runTransaction(async (transaction) => {
     const leaderboardRef = leaderboardDocRef(metric);
-    const leaderboardSnap = await transaction.get(leaderboardRef);
-    if (!leaderboardSnap.exists) {
-      return;
-    }
-    const profileSnap = await transaction.get(playerProfileRef(uid));
+    const profileRef = playerProfileRef(uid);
+    const [leaderboardSnap, profileSnap] = await Promise.all([
+      transaction.get(leaderboardRef),
+      transaction.get(profileRef),
+    ]);
     if (!profileSnap.exists) {
       return;
     }
@@ -62,6 +62,43 @@ export const updatePlayerLeaderboardEntry = async (
     Object.keys(rawFlags).forEach((key) => {
       top100Flags[key] = rawFlags[key] === true;
     });
+
+    const summary = buildSummaryFromProfile(uid, profileData);
+    if (!summary) {
+      return;
+    }
+
+    if (!leaderboardSnap.exists) {
+      top100Flags[metric] = true;
+      const isInTop100 = Object.values(top100Flags).some((value) => value === true);
+      transaction.set(
+        profileRef,
+        {
+          top100Flags,
+          isInTop100,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true },
+      );
+      transaction.set(
+        leaderboardRef,
+        {
+          metric,
+          updatedAt: Date.now(),
+          top100: [
+            {
+              uid,
+              value: sanitizedValue,
+              rank: 1,
+              snapshot: summary,
+            },
+          ],
+        },
+        { merge: true },
+      );
+      return;
+    }
+
     const entries = normalizeEntries(leaderboardSnap.data()?.top100);
     const hasSpace = entries.length < MAX_ENTRIES;
     const isFlagged = top100Flags[metric] === true;
@@ -72,7 +109,7 @@ export const updatePlayerLeaderboardEntry = async (
       top100Flags[metric] = true;
       const isInTop100 = Object.values(top100Flags).some((value) => value === true);
       transaction.set(
-        playerProfileRef(uid),
+        profileRef,
         {
           top100Flags,
           isInTop100,
@@ -80,11 +117,6 @@ export const updatePlayerLeaderboardEntry = async (
         },
         { merge: true },
       );
-    }
-
-    const summary = buildSummaryFromProfile(uid, profileData);
-    if (!summary) {
-      return;
     }
 
     const filtered = entries.filter((entry) => entry.uid !== uid);
@@ -111,4 +143,26 @@ export const updatePlayerLeaderboardEntry = async (
       { merge: true },
     );
   });
+};
+
+export const refreshPlayerLeaderboardSnapshots = async (uid: string): Promise<void> => {
+  try {
+    const profileSnap = await playerProfileRef(uid).get();
+    if (!profileSnap.exists) {
+      return;
+    }
+    const profileData = profileSnap.data() ?? {};
+    const values: Record<LeaderboardMetric, number> = {
+      trophies: Number(profileData.trophies ?? 0),
+      careerCoins: Number(profileData.careerCoins ?? 0),
+      totalWins: Number(profileData.totalWins ?? 0),
+    };
+    await Promise.all(
+      (Object.keys(values) as LeaderboardMetric[]).map((metric) =>
+        updatePlayerLeaderboardEntry(metric, uid, Number.isFinite(values[metric]) ? values[metric] : 0),
+      ),
+    );
+  } catch (error) {
+    console.warn("[liveLeaderboard.refreshPlayerLeaderboardSnapshots] failed", { uid, error });
+  }
 };

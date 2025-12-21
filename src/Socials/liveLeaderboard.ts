@@ -1,3 +1,4 @@
+import * as admin from "firebase-admin";
 import { db } from "../shared/firestore.js";
 import { leaderboardDocRef, playerProfileRef } from "./refs.js";
 import { buildPlayerSummary } from "./summary.js";
@@ -56,12 +57,31 @@ export const updatePlayerLeaderboardEntry = async (
       return;
     }
     const profileData = profileSnap.data() ?? {};
-    const flags = profileData.top100Flags ?? {};
-    if (!flags || flags[metric] !== true) {
+    const rawFlags = profileData.top100Flags ?? {};
+    const top100Flags: Record<string, boolean> = {};
+    Object.keys(rawFlags).forEach((key) => {
+      top100Flags[key] = rawFlags[key] === true;
+    });
+    const entries = normalizeEntries(leaderboardSnap.data()?.top100);
+    const hasSpace = entries.length < MAX_ENTRIES;
+    const isFlagged = top100Flags[metric] === true;
+    if (!isFlagged && !hasSpace) {
       return;
     }
+    if (!isFlagged && hasSpace) {
+      top100Flags[metric] = true;
+      const isInTop100 = Object.values(top100Flags).some((value) => value === true);
+      transaction.set(
+        playerProfileRef(uid),
+        {
+          top100Flags,
+          isInTop100,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true },
+      );
+    }
 
-    const entries = normalizeEntries(leaderboardSnap.data()?.top100);
     const summary = buildSummaryFromProfile(uid, profileData);
     if (!summary) {
       return;

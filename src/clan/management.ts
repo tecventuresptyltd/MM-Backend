@@ -189,6 +189,7 @@ export const createClan = onCall(callableOptions(), async (request) => {
     },
   );
 
+  await refreshClanLeaderboardEntry(result.clanId);
   return loadClanDetails(result.clanId, uid);
 });
 

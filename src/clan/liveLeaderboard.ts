@@ -78,7 +78,9 @@ export const updateClanLeaderboardEntry = async (clanId: string): Promise<void> 
     }
 
     const clanData = clanSnap.data() ?? {};
-    if (clanData.isInTop100 === false) {
+    const isFlagged = clanData.isInTop100 === true;
+    const hasSpace = entries.length < CLAN_LEADERBOARD_LIMIT;
+    if (clanData.isInTop100 === false && !hasSpace) {
       const filtered = entries.filter((entry) => entry.clanId !== clanId);
       if (filtered.length === entries.length) {
         return;
@@ -93,7 +95,7 @@ export const updateClanLeaderboardEntry = async (clanId: string): Promise<void> 
       );
       return;
     }
-    if (clanData.isInTop100 !== true) {
+    if (!isFlagged && !hasSpace) {
       return;
     }
 
@@ -115,6 +117,7 @@ export const updateClanLeaderboardEntry = async (clanId: string): Promise<void> 
     transaction.set(
       clanRef,
       {
+        isInTop100: true,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       },
       { merge: true },

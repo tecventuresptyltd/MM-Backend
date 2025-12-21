@@ -1,4 +1,5 @@
 import * as admin from "firebase-admin";
+import * as logger from "firebase-functions/logger";
 import { db } from "../shared/firestore.js";
 import { clansCollection } from "./helpers.js";
 
@@ -48,55 +49,45 @@ const buildEntryFromClanDoc = (
 };
 
 export const updateClanLeaderboardEntry = async (clanId: string): Promise<void> => {
-  await db.runTransaction(async (transaction) => {
-    const clanRef = clansCollection().doc(clanId);
-    const leaderboardRef = db.collection("ClanLeaderboard").doc("snapshot");
-    const [clanSnap, leaderboardSnap] = await Promise.all([
-      transaction.get(clanRef),
-      transaction.get(leaderboardRef),
-    ]);
+  logger.info("[clan.liveLeaderboard] begin upsert", { clanId });
+  try {
+    const snapshot = await db
+      .collection("Clans")
+      .where("status", "==", "active")
+      .orderBy("stats.trophies", "desc")
+      .limit(CLAN_LEADERBOARD_LIMIT)
+      .get();
 
-    const entries = leaderboardSnap.exists ? normalizeEntries(leaderboardSnap.data()?.top) : [];
-
-    if (!clanSnap.exists) {
-      const filtered = entries.filter((entry) => entry.clanId !== clanId);
-      if (filtered.length === entries.length) {
-        return;
-      }
-      transaction.set(
-        leaderboardRef,
+    const top = snapshot.docs.map((doc) => buildEntryFromClanDoc(doc.id, doc.data() ?? {}));
+    await db
+      .collection("ClanLeaderboard")
+      .doc("snapshot")
+      .set(
         {
-          top: filtered,
+          limit: CLAN_LEADERBOARD_LIMIT,
+          top,
           updatedAt: Date.now(),
         },
         { merge: true },
       );
-      return;
-    }
-
-    const clanData = clanSnap.data() ?? {};
-    const updatedEntry = buildEntryFromClanDoc(clanId, clanData);
-    const filtered = entries.filter((entry) => entry.clanId !== clanId);
-    filtered.push(updatedEntry);
-    filtered.sort((a, b) => b.totalTrophies - a.totalTrophies);
-    const top = filtered.slice(0, CLAN_LEADERBOARD_LIMIT);
-
-    transaction.set(
-      leaderboardRef,
+    await clansCollection()
+      .doc(clanId)
+      .set(
         {
-          limit: CLAN_LEADERBOARD_LIMIT,
-          top,
-        updatedAt: Date.now(),
-      },
-      { merge: true },
-    );
-    transaction.set(
-      clanRef,
-      {
-        isInTop100: top.some((entry) => entry.clanId === clanId),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      },
-      { merge: true },
-    );
-  });
+          isInTop100: top.some((entry) => entry.clanId === clanId),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true },
+      );
+    logger.info("[clan.liveLeaderboard] upserted clan leaderboard entry", {
+      clanId,
+      topCount: top.length,
+    });
+  } catch (error) {
+    logger.error("Failed to refresh clan leaderboard entry", {
+      clanId,
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : null,
+    });
+  }
 };

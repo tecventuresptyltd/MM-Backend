@@ -3,6 +3,7 @@ import { ensureOp } from "../shared/idempotency";
 import { initializeUserIfNeeded, waitForUserBootstrap } from "../shared/initializeUser";
 import { REGION } from "../shared/region";
 import * as admin from "firebase-admin";
+import { refreshPlayerLeaderboardSnapshots } from "../Socials/liveLeaderboard.js";
 
 export const initUser = onCall({ enforceAppCheck: false, region: REGION }, async (request) => {
   const { opId } = request.data;
@@ -30,6 +31,12 @@ export const initUser = onCall({ enforceAppCheck: false, region: REGION }, async
       "internal",
       `User bootstrap incomplete. Missing documents: ${Array.from(remaining).join(", ")}`,
     );
+  }
+
+  try {
+    await refreshPlayerLeaderboardSnapshots(uid);
+  } catch (error) {
+    console.warn("[initUser] failed to refresh leaderboards", { uid, error });
   }
 
   return { ok: true };

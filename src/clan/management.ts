@@ -221,7 +221,19 @@ export const createClan = onCall(callableOptions(), async (request) => {
   if (shouldFlagTop100) {
     await clansCollection().doc(result.clanId).set({ isInTop100: true }, { merge: true });
   }
+  logger.info("[createClan] refreshing clan leaderboard", { clanId: result.clanId });
   await refreshClanLeaderboardEntry(result.clanId);
+  try {
+    const snapshot = await db.collection("ClanLeaderboard").doc("snapshot").get();
+    const top = Array.isArray(snapshot.data()?.top) ? snapshot.data()?.top : [];
+    const present = top.some((entry: any) => entry?.clanId === result.clanId);
+    if (!present) {
+      logger.warn("[createClan] clan not found in leaderboard after refresh, retrying", { clanId: result.clanId });
+      await refreshClanLeaderboardEntry(result.clanId);
+    }
+  } catch (error) {
+    logger.warn("Failed post-create clan leaderboard verification", { clanId: result.clanId, error });
+  }
   await refreshPlayerLeaderboardSnapshots(uid);
   return loadClanDetails(result.clanId, uid);
 });

@@ -18,6 +18,7 @@ import {
 import { runReadThenWrite } from "../core/tx.js";
 import { ReferralConfig } from "../referral/types.js";
 import { getLevelInfo } from "./xp.js";
+import { refreshPlayerLeaderboardSnapshots } from "../Socials/liveLeaderboard.js";
 
 const db = admin.firestore();
 
@@ -954,5 +955,14 @@ export async function initializeUserIfNeeded(
       `Failed to initialize user bootstrap for uid=${uid}`,
       err as Error,
     );
+  }
+
+  try {
+    await refreshPlayerLeaderboardSnapshots(uid);
+  } catch (error) {
+    console.warn("[initializeUserIfNeeded] failed to refresh leaderboards", {
+      uid,
+      error: error instanceof Error ? error.message : String(error),
+    });
   }
 }

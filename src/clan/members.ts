@@ -614,7 +614,6 @@ export const transferClanLeadership = onCall(callableOptions(), async (request) 
   );
 
   await publishClanSystemMessages(result.systemMessages ?? []);
-  await refreshPlayerLeaderboardSnapshots(uid);
   return { clanId: result.clanId };
 });
 
@@ -716,7 +715,6 @@ export const kickClanMember = onCall(callableOptions(), async (request) => {
   );
 
   await publishClanSystemMessages(result.systemMessages ?? []);
-  await refreshPlayerLeaderboardSnapshots(uid);
   return { clanId: result.clanId };
 });
 

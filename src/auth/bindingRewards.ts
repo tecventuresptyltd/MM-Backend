@@ -18,7 +18,7 @@ type BindingRewardOptions = {
 };
 
 /**
- * Grants the one-time binding reward (Legendary crate + key) to guest accounts.
+ * Grants the one-time binding reward (Legendary crate + key) on the first binding call.
  * Expects all necessary reads (player/profile) to be loaded before writes begin.
  */
 export const maybeGrantBindingReward = async (
@@ -41,12 +41,10 @@ export const maybeGrantBindingReward = async (
     throw new HttpsError("failed-precondition", "Player profile missing.");
   }
 
-  const playerData = playerSnap.data() ?? {};
   const profileData = profileSnap.data() ?? {};
-  const isGuest = playerData.isGuest === true;
   const alreadyClaimed = profileData[BINDING_REWARD_FIELD] === true;
 
-  if (!isGuest || alreadyClaimed) {
+  if (alreadyClaimed) {
     return { granted: false };
   }
 

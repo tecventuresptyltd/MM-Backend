@@ -10,3 +10,4 @@ export * from "./checkEmailExists";
 export * from "./requestPasswordReset";
 export * from "./logEmailSend";
 export * from "./checkSession";
+export * from "./claimBindingReward";

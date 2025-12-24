@@ -4,7 +4,6 @@ import { db } from "../shared/firestore";
 import { verifyGoogleIdToken } from "../shared/googleVerify";
 import { ensureOp } from "../shared/idempotency";
 import { initializeUserIfNeeded } from "../shared/initializeUser";
-import { maybeGrantBindingReward } from "./bindingRewards.js";
 
 export const bindGoogle = onCall({ enforceAppCheck: false, region: "us-central1" }, async (request) => {
   const { opId, idToken } = request.data;
@@ -48,11 +47,6 @@ export const bindGoogle = onCall({ enforceAppCheck: false, region: "us-central1"
     }
 
     const timestamp = admin.firestore.FieldValue.serverTimestamp();
-    await maybeGrantBindingReward(tx, uid, {
-      playerSnap,
-      profileSnap,
-      timestamp,
-    });
 
     if (emailRef) {
       tx.set(emailRef, {

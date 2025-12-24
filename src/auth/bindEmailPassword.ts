@@ -2,7 +2,6 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
 import { normalizeEmail } from "../shared/normalize";
 import { initializeUserIfNeeded } from "../shared/initializeUser";
-import { maybeGrantBindingReward } from "./bindingRewards.js";
 
 export const bindEmailPassword = onCall({ region: "us-central1" }, async (request) => {
   const data = request.data ?? {};
@@ -45,11 +44,6 @@ export const bindEmailPassword = onCall({ region: "us-central1" }, async (reques
     }
 
     const timestamp = admin.firestore.FieldValue.serverTimestamp();
-    await maybeGrantBindingReward(tx, uid, {
-      playerSnap,
-      profileSnap,
-      timestamp,
-    });
 
     if (!emailSnap.exists) {
       tx.create(emailDoc, {

@@ -6,7 +6,6 @@ import { ensureOp } from "../shared/idempotency";
 import { normalizeEmail } from "../shared/normalize";
 import { getAppleAudienceFromEnv, verifyAppleIdentityToken } from "../shared/appleVerify";
 import { initializeUserIfNeeded } from "../shared/initializeUser";
-import { maybeGrantBindingReward } from "./bindingRewards.js";
 
 type BindAppleRequest = {
   opId?: unknown;
@@ -73,11 +72,6 @@ export const bindApple = onCall({ enforceAppCheck: false, region: "us-central1" 
     }
 
     const timestamp = admin.firestore.FieldValue.serverTimestamp();
-    await maybeGrantBindingReward(tx, uid, {
-      playerSnap,
-      profileSnap,
-      timestamp,
-    });
 
     tx.set(
       appleSubRef,

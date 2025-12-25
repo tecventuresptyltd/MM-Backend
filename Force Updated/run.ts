@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import * as admin from "firebase-admin";
 import { runXpBackfill, type XpBackfillOptions } from "./jobs/xpBackfill.js";
+import { runUnderglowBackfill, type UnderglowBackfillOptions } from "./jobs/underglowBackfill.js";
 
 type CliArgs = {
   job: string;
@@ -69,24 +70,40 @@ const initAdmin = (projectId: string, serviceAccountPath?: string): FirebaseFire
 
 const main = async () => {
   const args = parseArgs(process.argv.slice(2));
-  if (!args.job || args.job !== "xp-backfill") {
-    console.error("Usage: npx tsx ForceUpdated/run.ts xp-backfill [options]");
+  const SUPPORTED = ["xp-backfill", "underglow-backfill"];
+  if (!args.job || !SUPPORTED.includes(args.job)) {
+    console.error('Usage: npx tsx "Force Updated/run.ts" <xp-backfill|underglow-backfill> [options]');
     process.exit(1);
   }
 
   const db = initAdmin(args.projectId, args.serviceAccountPath);
-  const opts: XpBackfillOptions = {
+  if (args.job === "xp-backfill") {
+    const opts: XpBackfillOptions = {
+      dryRun: args.dryRun,
+      batchSize: args.batchSize,
+      limit: args.limit,
+      verbose: args.verbose,
+      fixLevels: args.fixLevels,
+    };
+
+    console.log(
+      `[run] job=${args.job} project=${args.projectId} dryRun=${opts.dryRun} batch=${opts.batchSize} limit=${opts.limit} fixLevels=${opts.fixLevels}`,
+    );
+    await runXpBackfill(db, opts);
+    return;
+  }
+
+  const opts: UnderglowBackfillOptions = {
     dryRun: args.dryRun,
     batchSize: args.batchSize,
     limit: args.limit,
     verbose: args.verbose,
-    fixLevels: args.fixLevels,
   };
 
   console.log(
-    `[run] job=${args.job} project=${args.projectId} dryRun=${opts.dryRun} batch=${opts.batchSize} limit=${opts.limit} fixLevels=${opts.fixLevels}`,
+    `[run] job=${args.job} project=${args.projectId} dryRun=${opts.dryRun} batch=${opts.batchSize} limit=${opts.limit}`,
   );
-  await runXpBackfill(db, opts);
+  await runUnderglowBackfill(db, opts);
 };
 
 main().catch((err) => {

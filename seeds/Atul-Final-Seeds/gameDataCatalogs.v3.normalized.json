@@ -3311,6 +3311,46 @@
                 "color": "Blue"
               },
               "purchasable": false
+            },
+            {
+              "skuId": "sku_0fw2i0ag2",
+              "displayName": "GenesisGlow",
+              "stackable": true,
+              "rarity": "legendary",
+              "variant": {
+                "color": "Pink"
+              },
+              "purchasable": false
+            },
+            {
+              "skuId": "sku_z3xg8muts",
+              "displayName": "GenesisGlow",
+              "stackable": true,
+              "rarity": "legendary",
+              "variant": {
+                "color": "Orange"
+              },
+              "purchasable": false
+            },
+            {
+              "skuId": "sku_h0mektxnw",
+              "displayName": "GenesisGlow",
+              "stackable": true,
+              "rarity": "legendary",
+              "variant": {
+                "color": "Purple"
+              },
+              "purchasable": false
+            },
+            {
+              "skuId": "sku_4biqyhvoe",
+              "displayName": "GenesisGlow",
+              "stackable": true,
+              "rarity": "legendary",
+              "variant": {
+                "color": "Yellow"
+              },
+              "purchasable": false
             }
           ]
         },
@@ -4918,7 +4958,11 @@
           "sku_2v6tnwwgz8",
           "sku_s0zt9m2nay",
           "sku_4srnd7mqpc",
-          "sku_xkr4mzwakn"
+          "sku_xkr4mzwakn",
+          "sku_0fw2i0ag2",
+          "sku_z3xg8muts",
+          "sku_h0mektxnw",
+          "sku_4biqyhvoe"
         ],
         "family_item_fa4y1dwfr5": [
           "sku_1fsytkfyhx"
@@ -5408,7 +5452,11 @@
           "sku_2v6tnwwgz8",
           "sku_s0zt9m2nay",
           "sku_4srnd7mqpc",
-          "sku_xkr4mzwakn"
+          "sku_xkr4mzwakn",
+          "sku_0fw2i0ag2",
+          "sku_z3xg8muts",
+          "sku_h0mektxnw",
+          "sku_4biqyhvoe"
         ],
         "family_item_fa4y1dwfr5": [
           "sku_1fsytkfyhx"
@@ -8662,6 +8710,50 @@
           "variant": "Blue",
           "subType": "underglow"
         },
+        "sku_0fw2i0ag2": {
+          "skuId": "sku_0fw2i0ag2",
+          "itemId": "item_8p5vyda9p2",
+          "displayName": "GenesisGlow",
+          "category": "cosmetic",
+          "type": "cosmetic",
+          "rarity": "legendary",
+          "stackable": true,
+          "variant": "Pink",
+          "subType": "underglow"
+        },
+        "sku_z3xg8muts": {
+          "skuId": "sku_z3xg8muts",
+          "itemId": "item_8p5vyda9p2",
+          "displayName": "GenesisGlow",
+          "category": "cosmetic",
+          "type": "cosmetic",
+          "rarity": "legendary",
+          "stackable": true,
+          "variant": "Orange",
+          "subType": "underglow"
+        },
+        "sku_h0mektxnw": {
+          "skuId": "sku_h0mektxnw",
+          "itemId": "item_8p5vyda9p2",
+          "displayName": "GenesisGlow",
+          "category": "cosmetic",
+          "type": "cosmetic",
+          "rarity": "legendary",
+          "stackable": true,
+          "variant": "Purple",
+          "subType": "underglow"
+        },
+        "sku_4biqyhvoe": {
+          "skuId": "sku_4biqyhvoe",
+          "itemId": "item_8p5vyda9p2",
+          "displayName": "GenesisGlow",
+          "category": "cosmetic",
+          "type": "cosmetic",
+          "rarity": "legendary",
+          "stackable": true,
+          "variant": "Yellow",
+          "subType": "underglow"
+        },
         "sku_rwt6nbsq": {
           "skuId": "sku_rwt6nbsq",
           "itemId": "item_fa4y1dwfr5",
@@ -10187,6 +10279,10 @@
               "sku_x7qz9ns2",
               "sku_xjdm2p3j",
               "sku_xkr4mzwakn",
+              "sku_0fw2i0ag2",
+              "sku_z3xg8muts",
+              "sku_h0mektxnw",
+              "sku_4biqyhvoe",
               "sku_yc6sk5kn",
               "sku_ydj42h54",
               "sku_yjrvk1kj",
@@ -10569,6 +10665,10 @@
               "sku_x7qz9ns2",
               "sku_xjdm2p3j",
               "sku_xkr4mzwakn",
+              "sku_0fw2i0ag2",
+              "sku_z3xg8muts",
+              "sku_h0mektxnw",
+              "sku_4biqyhvoe",
               "sku_yc6sk5kn",
               "sku_ydj42h54",
               "sku_yjrvk1kj",
@@ -10951,6 +11051,10 @@
               "sku_x7qz9ns2",
               "sku_xjdm2p3j",
               "sku_xkr4mzwakn",
+              "sku_0fw2i0ag2",
+              "sku_z3xg8muts",
+              "sku_h0mektxnw",
+              "sku_4biqyhvoe",
               "sku_yc6sk5kn",
               "sku_ydj42h54",
               "sku_yjrvk1kj",
@@ -11333,6 +11437,10 @@
               "sku_x7qz9ns2",
               "sku_xjdm2p3j",
               "sku_xkr4mzwakn",
+              "sku_0fw2i0ag2",
+              "sku_z3xg8muts",
+              "sku_h0mektxnw",
+              "sku_4biqyhvoe",
               "sku_yc6sk5kn",
               "sku_ydj42h54",
               "sku_yjrvk1kj",
@@ -11715,6 +11823,10 @@
               "sku_x7qz9ns2",
               "sku_xjdm2p3j",
               "sku_xkr4mzwakn",
+              "sku_0fw2i0ag2",
+              "sku_z3xg8muts",
+              "sku_h0mektxnw",
+              "sku_4biqyhvoe",
               "sku_yc6sk5kn",
               "sku_ydj42h54",
               "sku_yjrvk1kj",

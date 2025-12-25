@@ -3308,6 +3308,46 @@
             "color": "Blue"
           },
           "purchasable": false
+        },
+        {
+          "skuId": "sku_0fw2i0ag2",
+          "displayName": "GenesisGlow",
+          "stackable": true,
+          "rarity": "legendary",
+          "variant": {
+            "color": "Pink"
+          },
+          "purchasable": false
+        },
+        {
+          "skuId": "sku_z3xg8muts",
+          "displayName": "GenesisGlow",
+          "stackable": true,
+          "rarity": "legendary",
+          "variant": {
+            "color": "Orange"
+          },
+          "purchasable": false
+        },
+        {
+          "skuId": "sku_h0mektxnw",
+          "displayName": "GenesisGlow",
+          "stackable": true,
+          "rarity": "legendary",
+          "variant": {
+            "color": "Purple"
+          },
+          "purchasable": false
+        },
+        {
+          "skuId": "sku_4biqyhvoe",
+          "displayName": "GenesisGlow",
+          "stackable": true,
+          "rarity": "legendary",
+          "variant": {
+            "color": "Yellow"
+          },
+          "purchasable": false
         }
       ]
     },

@@ -126,7 +126,7 @@ const DEFAULT_COSMETIC_SKUS: Record<
   decal: "sku_7ad7grzz",
   spoiler: "sku_agyhv8pk",
   boost: "sku_rwt6nbsq",
-  underglow: null,
+  underglow: "sku_z9tnvvdsrn",
 };
 
 const DEFAULT_COSMETIC_SKU_IDS = Object.values(DEFAULT_COSMETIC_SKUS).filter(

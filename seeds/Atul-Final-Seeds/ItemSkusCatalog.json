@@ -3115,6 +3115,50 @@
       "variant": "Blue",
       "subType": "underglow"
     },
+    "sku_0fw2i0ag2": {
+      "skuId": "sku_0fw2i0ag2",
+      "itemId": "item_8p5vyda9p2",
+      "displayName": "GenesisGlow",
+      "category": "cosmetic",
+      "type": "cosmetic",
+      "rarity": "legendary",
+      "stackable": true,
+      "variant": "Pink",
+      "subType": "underglow"
+    },
+    "sku_z3xg8muts": {
+      "skuId": "sku_z3xg8muts",
+      "itemId": "item_8p5vyda9p2",
+      "displayName": "GenesisGlow",
+      "category": "cosmetic",
+      "type": "cosmetic",
+      "rarity": "legendary",
+      "stackable": true,
+      "variant": "Orange",
+      "subType": "underglow"
+    },
+    "sku_h0mektxnw": {
+      "skuId": "sku_h0mektxnw",
+      "itemId": "item_8p5vyda9p2",
+      "displayName": "GenesisGlow",
+      "category": "cosmetic",
+      "type": "cosmetic",
+      "rarity": "legendary",
+      "stackable": true,
+      "variant": "Purple",
+      "subType": "underglow"
+    },
+    "sku_4biqyhvoe": {
+      "skuId": "sku_4biqyhvoe",
+      "itemId": "item_8p5vyda9p2",
+      "displayName": "GenesisGlow",
+      "category": "cosmetic",
+      "type": "cosmetic",
+      "rarity": "legendary",
+      "stackable": true,
+      "variant": "Yellow",
+      "subType": "underglow"
+    },
     "sku_rwt6nbsq": {
       "skuId": "sku_rwt6nbsq",
       "itemId": "item_fa4y1dwfr5",

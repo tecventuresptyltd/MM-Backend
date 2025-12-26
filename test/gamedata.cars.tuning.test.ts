@@ -32,13 +32,6 @@ describe("GameData Car Tuning Config and CarsCatalog mapping", () => {
         boostRegen: { min: 10, max: 4 },
         boostPower: { min: 10, max: 25 },
       },
-      bot: {
-        topSpeed: { min: 140, max: 340 },
-        acceleration: { min: 4.5, max: 9.5 },
-        handling: { min: 28, max: 44 },
-        boostRegen: { min: 11, max: 5 },
-        boostPower: { min: 8, max: 22 },
-      },
       updatedAt: 0,
     });
 

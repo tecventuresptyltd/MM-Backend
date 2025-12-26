@@ -2,8 +2,9 @@ import assert from "node:assert/strict";
 import path from "node:path";
 import fs from "node:fs";
 import { SeededRNG } from "../src/race/lib/random";
-import { resolveCarStats } from "../src/race/lib/stats";
+import { resolveCarStats, calculateBotStatsFromTrophies } from "../src/race/lib/stats";
 import type { CarLevel, CarTuningConfig, ItemSku } from "../src/shared/types";
+import type { BotConfig } from "../src/core/config";
 
 type CarCatalog = Record<string, { carId: string; levels: Record<string, CarLevel> }>;
 type SpellsCatalog = Record<string, any>;
@@ -18,43 +19,9 @@ const spellsCatalog = loadJson<{ spells: SpellsCatalog }>("seeds/Atul-Final-Seed
 const itemSkus = loadJson<{ skus: Record<string, ItemSku> }>("seeds/Atul-Final-Seeds/ItemSkusCatalog.json").skus;
 const botNamesConfig = loadJson<{ data: { names: string[] } }>("seeds/Atul-Final-Seeds/BotNamesConfig.json").data.names;
 
-const tuningConfig: CarTuningConfig = {
-  valueScale: { min: 1, max: 16, step: 1 },
-  player: {
-    topSpeed: { min: 90, max: 220 },
-    acceleration: { min: 8, max: 28 },
-    handling: { min: 5, max: 32 },
-    boostRegen: { min: 5, max: 25 },
-    boostPower: { min: 40, max: 120 },
-  },
-  bot: {
-    topSpeed: { min: 85, max: 215 },
-    acceleration: { min: 7, max: 26 },
-    handling: { min: 4, max: 30 },
-    boostRegen: { min: 5, max: 24 },
-    boostPower: { min: 36, max: 110 },
-  },
-  notes: "QA verification tuning",
-  updatedAt: Date.now(),
-};
-
-const botConfig = {
-  carUnlockThresholds: [
-    { carId: "car_h4ayzwf31g", trophies: 0 },
-    { carId: "car_2n5hnes4", trophies: 1200 },
-  ],
-  cosmeticRarityWeights: {
-    "0-999": { common: 85, rare: 14, epic: 1, legendary: 0 },
-    "1000-1999": { common: 70, rare: 22, epic: 6, legendary: 2 },
-    "2000-4000": { common: 55, rare: 30, epic: 10, legendary: 5 },
-  },
-  spellLevelBands: [
-    { minTrophies: 0, maxTrophies: 999, minLevel: 1, maxLevel: 2 },
-    { minTrophies: 1000, maxTrophies: 2499, minLevel: 2, maxLevel: 3 },
-    { minTrophies: 2500, maxTrophies: 4999, minLevel: 4, maxLevel: 5 },
-    { minTrophies: 5000, maxTrophies: 99999, minLevel: 5, maxLevel: 5 },
-  ],
-};
+// Load actual seed data
+const tuningConfig = loadJson<{ data: CarTuningConfig }>("seeds/Atul-Final-Seeds/CarTuningConfig.json").data;
+const botConfig = loadJson<{ data: BotConfig }>("seeds/Atul-Final-Seeds/BotConfig.json").data;
 
 const resolveCarLevel = (car: { levels: Record<string, CarLevel> }, targetLevel: number): CarLevel => {
   const normalized = Math.max(0, Math.floor(Number.isFinite(targetLevel) ? targetLevel : 0));
@@ -156,7 +123,7 @@ const bots = Array.from({ length: 7 }).map(() => {
   const botCarId = pickBotCarId(normalizedTrophies);
   const botCar = carsCatalog[botCarId] || playerCar;
   const botLevel = resolveCarLevel(botCar, 0);
-  const botStats = resolveCarStats(botLevel, tuningConfig, true);
+  const botStats = calculateBotStatsFromTrophies(normalizedTrophies, botConfig.statRanges, botLevel);
 
   const rarityWeights = pickRarityBand(botConfig.cosmeticRarityWeights, normalizedTrophies);
   const rarity = weightedChoice(rarityWeights as Record<string, number>, rng);

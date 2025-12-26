@@ -23,13 +23,6 @@ describe("race.prepareRace", () => {
         boostRegen: { min: 10, max: 4 },
         boostPower: { min: 10, max: 25 },
       },
-      bot: {
-        topSpeed: { min: 140, max: 340 },
-        acceleration: { min: 4.5, max: 9.5 },
-        handling: { min: 28, max: 44 },
-        boostRegen: { min: 11, max: 5 },
-        boostPower: { min: 8, max: 22 },
-      },
       updatedAt: 0,
     });
 
@@ -106,14 +99,12 @@ describe("race.prepareRace", () => {
 
     // Seed BotConfig
     await admin.firestore().doc("/GameData/v1/config/BotConfig").set({
-      difficulty: {
-        referenceTrophies: 7500,
-        clampToBounds: true,
-        maxSpeed: { min: 60, max: 120 },
-        accel: { min: 5, max: 10 },
-        boostTime: { min: 0.8, max: 3.0 },
-        boostFreq: { min: 2, max: 10 },
-        boostCd: { min: 6, max: 1.5 },
+      statRanges: {
+        topSpeed: { min: 140, max: 340 },
+        acceleration: { min: 4.5, max: 9.5 },
+        handling: { min: 28, max: 44 },
+        boostRegen: { min: 11, max: 5 },
+        boostPower: { min: 8, max: 22 },
       },
       carUnlockThresholds: [
         { carId: "car_h4ayzwf31g", trophies: 0 },

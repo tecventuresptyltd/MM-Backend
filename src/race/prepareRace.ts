@@ -12,7 +12,7 @@ import {
 } from "../core/config.js";
 import { ItemSku, CarLevel } from "../shared/types.js";
 import { SeededRNG } from "./lib/random.js";
-import { resolveCarStats } from "./lib/stats.js";
+import { resolveCarStats, calculateBotStatsFromTrophies } from "./lib/stats.js";
 import { calculateLastPlaceDelta, DEFAULT_TROPHY_CONFIG } from "./economy.js";
 import * as crypto from "crypto";
 
@@ -224,12 +224,22 @@ export const prepareRace = onCall({ region: REGION }, async (request) => {
     // Build bots
     const bots = Array.from({ length: botCount }).map(() => {
       const botDisplayName = nextBotName();
-      const trophyOffset = rng.int(-100, 100);
-      const botTrophies = Math.max(0, playerTrophies + trophyOffset);
+      
+      // Fixed trophy distribution: ensure equal distribution even at low trophy counts
+      const trophyRange = 100;
+      const minTrophies = Math.max(0, playerTrophies - trophyRange);
+      const maxTrophies = playerTrophies + trophyRange;
+      const botTrophies = rng.int(minTrophies, maxTrophies);
       const normalizedTrophies = Math.max(0, Math.min(7000, botTrophies));
+      
       const botCarId = pickBotCarId(normalizedTrophies);
       const botCar = carsCatalog[botCarId] || playerCar;
-      const botStats = resolveCarStats(botCar as any, 0, tuning, true);
+      
+      // Get car level data (using level 0 for display values only)
+      const botCarLevelData = resolveCarLevel(botCar, 0);
+      
+      // Calculate bot stats from trophy percentage using BotConfig.statRanges
+      const botStats = calculateBotStatsFromTrophies(normalizedTrophies, botConfig.statRanges, botCarLevelData);
 
       const rarityWeights = pickRarityBand(botConfig.cosmeticRarityWeights, normalizedTrophies);
       const rarity = weightedChoice(rarityWeights as any, rng);

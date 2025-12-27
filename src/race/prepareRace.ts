@@ -9,6 +9,7 @@ import {
   getBotConfig,
   listSkusByFilter,
   getBotNamesConfig,
+  getItemSkusCatalog,
 } from "../core/config.js";
 import { ItemSku, CarLevel } from "../shared/types.js";
 import { SeededRNG } from "./lib/random.js";
@@ -18,7 +19,30 @@ import * as crypto from "crypto";
 
 const db = admin.firestore();
 
-const resolveCarLevel = (car: Record<string, unknown> | undefined, targetLevel: number): Partial<CarLevel> | null => {
+type CosmeticSlot = "wheels" | "decal" | "spoiler" | "underglow" | "boost";
+
+const COSMETIC_SLOTS: CosmeticSlot[] = ["wheels", "decal", "spoiler", "underglow", "boost"];
+
+const DEFAULT_BOT_COSMETIC_SKUS: Record<CosmeticSlot, string> = {
+  wheels: "sku_7d5rvqx6",
+  decal: "sku_7ad7grzz",
+  spoiler: "sku_agyhv8pk",
+  boost: "sku_rwt6nbsq",
+  underglow: "sku_z9tnvvdsrn",
+};
+
+const COSMETIC_SLOT_FIELDS: Record<CosmeticSlot, { skuField: string; itemField: string }> = {
+  wheels: { skuField: "wheelsSkuId", itemField: "wheelsItemId" },
+  decal: { skuField: "decalSkuId", itemField: "decalItemId" },
+  spoiler: { skuField: "spoilerSkuId", itemField: "spoilerItemId" },
+  underglow: { skuField: "underglowSkuId", itemField: "underglowItemId" },
+  boost: { skuField: "boostSkuId", itemField: "boostItemId" },
+};
+
+const resolveCarLevel = (
+  car: { levels?: Record<string, CarLevel> } | null | undefined,
+  targetLevel: number,
+): Partial<CarLevel> | null => {
   if (!car || typeof car !== "object") {
     return null;
   }
@@ -103,14 +127,30 @@ export const prepareRace = onCall({ region: REGION }, async (request) => {
     const playerTrophies: number = typeof trophyHint === "number" ? trophyHint : Number(profile.trophies || 0);
 
     // Fetch catalogs (cached by config.ts)
-    const [carsCatalog, spellsCatalog, tuning, botConfig, wheelSkus, decalSkus, botNames] = await Promise.all([
+    const [
+      carsCatalog,
+      spellsCatalog,
+      tuning,
+      botConfig,
+      wheelSkus,
+      decalSkus,
+      spoilerSkus,
+      underglowSkus,
+      boostSkus,
+      botNames,
+      itemSkusCatalog,
+    ] = await Promise.all([
       getCarsCatalog(),
       getSpellsCatalog(),
       getCarTuningConfig(),
       getBotConfig(),
       listSkusByFilter({ category: "cosmetic", subType: "wheels" }),
       listSkusByFilter({ category: "cosmetic", subType: "decal" }),
+      listSkusByFilter({ category: "cosmetic", subType: "spoiler" }),
+      listSkusByFilter({ category: "cosmetic", subType: "underglow" }),
+      listSkusByFilter({ category: "cosmetic", subType: "boost" }),
       getBotNamesConfig(),
+      getItemSkusCatalog(),
     ]);
 
     // Resolve player car and stats
@@ -136,6 +176,59 @@ export const prepareRace = onCall({ region: REGION }, async (request) => {
       underglowSkuId: resolveCosmeticSkuId("underglow"),
       boostItemId: resolveCosmeticItemId("boost"),
       boostSkuId: resolveCosmeticSkuId("boost"),
+    };
+
+    const cosmeticPools: Record<CosmeticSlot, ItemSku[]> = {
+      wheels: wheelSkus,
+      decal: decalSkus,
+      spoiler: spoilerSkus,
+      underglow: underglowSkus,
+      boost: boostSkus,
+    };
+
+    const pickDefaultCosmetic = (slot: CosmeticSlot): { skuId: string; itemId: string } => {
+      const pool = cosmeticPools[slot] ?? [];
+      const expectedDefaultId = DEFAULT_BOT_COSMETIC_SKUS[slot];
+      const defaultFromPool =
+        pool.find((sku) => sku.skuId === expectedDefaultId) ||
+        pool.find((sku) => sku.rarity === "Default") ||
+        pool[0];
+      if (defaultFromPool) {
+        return { skuId: defaultFromPool.skuId, itemId: defaultFromPool.itemId };
+      }
+      if (expectedDefaultId && itemSkusCatalog[expectedDefaultId]) {
+        const sku = itemSkusCatalog[expectedDefaultId];
+        return { skuId: sku.skuId, itemId: sku.itemId };
+      }
+      const playerCosmeticsRecord = playerCosmetics as Record<string, string | null>;
+      const slotFields = COSMETIC_SLOT_FIELDS[slot];
+      const playerSkuId = playerCosmeticsRecord[slotFields.skuField];
+      const playerItemId = playerCosmeticsRecord[slotFields.itemField];
+      if (playerSkuId && playerItemId) {
+        return { skuId: playerSkuId, itemId: playerItemId };
+      }
+      return {
+        skuId: expectedDefaultId || `default_${slot}`,
+        itemId: expectedDefaultId || `default_${slot}`,
+      };
+    };
+
+    const fallbackBotCosmetics = COSMETIC_SLOTS.reduce<Record<CosmeticSlot, { skuId: string; itemId: string }>>(
+      (acc, slot) => {
+        acc[slot] = pickDefaultCosmetic(slot);
+        return acc;
+      },
+      {} as Record<CosmeticSlot, { skuId: string; itemId: string }>,
+    );
+
+    const pickBotCosmeticForSlot = (slot: CosmeticSlot, rarity: string): { skuId: string; itemId: string } => {
+      const pool = cosmeticPools[slot] ?? [];
+      const chosen = pool.length > 0 ? pickSkuForRarity(pool, rarity as ItemSku["rarity"]) : null;
+      const resolved = chosen ?? fallbackBotCosmetics[slot];
+      return {
+        skuId: resolved.skuId,
+        itemId: resolved.itemId,
+      };
     };
 
     // Resolve player spells
@@ -237,14 +330,22 @@ export const prepareRace = onCall({ region: REGION }, async (request) => {
       
       // Get car level data (using level 0 for display values only)
       const botCarLevelData = resolveCarLevel(botCar, 0);
-      
+
       // Calculate bot stats from trophy percentage using BotConfig.statRanges
-      const botStats = calculateBotStatsFromTrophies(normalizedTrophies, botConfig.statRanges, botCarLevelData);
+      const botStats = calculateBotStatsFromTrophies(
+        normalizedTrophies,
+        botConfig.statRanges,
+        botCarLevelData,
+        tuning,
+      );
 
       const rarityWeights = pickRarityBand(botConfig.cosmeticRarityWeights, normalizedTrophies);
       const rarity = weightedChoice(rarityWeights as any, rng);
-      const wheelsSku = pickSkuForRarity(wheelSkus, rarity);
-      const decalSku = pickSkuForRarity(decalSkus, rarity);
+      const wheelsCosmetic = pickBotCosmeticForSlot("wheels", rarity);
+      const decalCosmetic = pickBotCosmeticForSlot("decal", rarity);
+      const spoilerCosmetic = pickBotCosmeticForSlot("spoiler", rarity);
+      const underglowCosmetic = pickBotCosmeticForSlot("underglow", rarity);
+      const boostCosmetic = pickBotCosmeticForSlot("boost", rarity);
 
       // Spells: select 5 unique spells from catalog
       const allSpellIds = Object.keys(spellsCatalog || {});
@@ -271,10 +372,16 @@ export const prepareRace = onCall({ region: REGION }, async (request) => {
         carId: botCarId,
         carStats: { real: botStats.real, display: botStats.display },
         cosmetics: {
-          wheelsItemId: wheelsSku?.itemId ?? null,
-          wheelsSkuId: wheelsSku?.skuId ?? null,
-          decalItemId: decalSku?.itemId ?? null,
-          decalSkuId: decalSku?.skuId ?? null,
+          wheelsItemId: wheelsCosmetic.itemId,
+          wheelsSkuId: wheelsCosmetic.skuId,
+          decalItemId: decalCosmetic.itemId,
+          decalSkuId: decalCosmetic.skuId,
+          spoilerItemId: spoilerCosmetic.itemId,
+          spoilerSkuId: spoilerCosmetic.skuId,
+          underglowItemId: underglowCosmetic.itemId,
+          underglowSkuId: underglowCosmetic.skuId,
+          boostItemId: boostCosmetic.itemId,
+          boostSkuId: boostCosmetic.skuId,
         },
         spells: botSpells,
       };

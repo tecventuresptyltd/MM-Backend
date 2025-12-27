@@ -55,6 +55,13 @@ export interface CarTuningConfig {
     boostRegen: StatRange;
     boostPower: StatRange;
   };
+  bot?: {
+    topSpeed: StatRange;
+    acceleration: StatRange;
+    handling: StatRange;
+    boostRegen: StatRange;
+    boostPower: StatRange;
+  };
   notes?: string;
   updatedAt: number;
 }

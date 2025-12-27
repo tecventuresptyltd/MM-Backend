@@ -123,7 +123,7 @@ const bots = Array.from({ length: 7 }).map(() => {
   const botCarId = pickBotCarId(normalizedTrophies);
   const botCar = carsCatalog[botCarId] || playerCar;
   const botLevel = resolveCarLevel(botCar, 0);
-  const botStats = calculateBotStatsFromTrophies(normalizedTrophies, botConfig.statRanges, botLevel);
+  const botStats = calculateBotStatsFromTrophies(normalizedTrophies, botConfig.statRanges, botLevel, tuningConfig);
 
   const rarityWeights = pickRarityBand(botConfig.cosmeticRarityWeights, normalizedTrophies);
   const rarity = weightedChoice(rarityWeights as Record<string, number>, rng);

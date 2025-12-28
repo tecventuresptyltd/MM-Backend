@@ -185,6 +185,14 @@ export const prepareRace = onCall({ region: REGION }, async (request) => {
     const level = Number((garage.cars ?? {})[carId]?.upgradeLevel ?? 0);
     const playerCarLevelData = resolveCarLevel(playerCar, level);
     const playerStats = resolveCarStats(playerCarLevelData, tuning, false);
+    
+    // Debug logging for player stats
+    console.log('[prepareRace] Player Stats Debug:');
+    console.log(`  Car ID: ${carId}, Level: ${level}`);
+    console.log(`  Car Level Data:`, playerCarLevelData);
+    console.log(`  Tuning Config:`, { valueScale: tuning.valueScale, player: tuning.player });
+    console.log(`  Display Stats:`, playerStats.display);
+    console.log(`  Real Stats:`, playerStats.real);
 
     const rawCosmetics = (loadout.cosmetics ?? {}) as Record<string, string | null>;
     const resolveCosmeticItemId = (slot: string): string | null =>
@@ -360,7 +368,12 @@ export const prepareRace = onCall({ region: REGION }, async (request) => {
       // Calculate bot stats from trophy percentage using BotConfig.statRanges
       const botStats = calculateBotStatsFromTrophies(
         normalizedTrophies,
-        botConfig.statRanges,
+        {
+          aiSpeed: { min: aiDifficultyConfig.minSpeed, max: aiDifficultyConfig.maxSpeed },
+          aiBoostPower: { min: aiDifficultyConfig.boostPowerMin, max: aiDifficultyConfig.boostPowerMax },
+          aiAcceleration: { min: aiDifficultyConfig.minAcceleration, max: aiDifficultyConfig.maxAcceleration },
+          endGameDifficulty: aiDifficultyConfig.endGameDifficulty
+        },
         botCarLevelData,
       );
 

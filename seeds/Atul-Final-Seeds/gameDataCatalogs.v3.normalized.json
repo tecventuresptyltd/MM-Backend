@@ -12996,7 +12996,7 @@
           "displayName": "Power Out",
           "type": "TargetLock",
           "description": "Emits a screech that disables boosts and spells of everyone in the map for a period of time.",
-          "requiredLevel": 25,
+          "requiredLevel": -1,
           "isUnlocked": false,
           "attributes": [
             {
@@ -13049,7 +13049,7 @@
           "displayName": "Sky Reaper",
           "type": "TargetLock",
           "description": "Lazer beam blasts player one, stunning them for a period of time",
-          "requiredLevel": 35,
+          "requiredLevel": -1,
           "isUnlocked": false,
           "attributes": [
             {

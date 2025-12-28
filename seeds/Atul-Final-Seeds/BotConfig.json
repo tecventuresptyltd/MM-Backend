@@ -2,23 +2,119 @@
   "path": "/GameData/v1/config/BotConfig",
   "data": {
     "statRanges": {
-      "aiSpeed": { "min": 100, "max": 800 },
-      "aiBoostPower": { "min": 0.10, "max": 0.30 },
-      "aiAcceleration": { "min": 8, "max": 15 },
+      "aiSpeed": {
+        "min": 100,
+        "max": 800
+      },
+      "aiBoostPower": {
+        "min": 0.10,
+        "max": 0.30
+      },
+      "aiAcceleration": {
+        "min": 8,
+        "max": 15
+      },
       "endGameDifficulty": 100
     },
     "carUnlockThresholds": [
-      { "carId": "car_h4ayzwf31g", "trophies": 0 },
-      { "carId": "car_2n5hnes4", "trophies": 1200 },
-      { "carId": "car_tuning_demo", "trophies": 2500 }
+      {
+        "carId": "car_h4ayzwf31g",
+        "trophies": 0
+      },
+      {
+        "carId": "car_1wp1gr2p",
+        "trophies": 500
+      },
+      {
+        "carId": "car_4bbp20vv",
+        "trophies": 1000
+      },
+      {
+        "carId": "car_3n27817s",
+        "trophies": 1500
+      },
+      {
+        "carId": "car_xtm9htbs",
+        "trophies": 2000
+      },
+      {
+        "carId": "car_a9x2mkp3",
+        "trophies": 2500
+      },
+      {
+        "carId": "car_jh5tqxqk",
+        "trophies": 3000
+      },
+      {
+        "carId": "car_0yhea29t",
+        "trophies": 3500
+      },
+      {
+        "carId": "car_p4n7mm2z",
+        "trophies": 4000
+      },
+      {
+        "carId": "car_8m8qttmy",
+        "trophies": 4500
+      },
+      {
+        "carId": "car_rqjrt91b",
+        "trophies": 5000
+      },
+      {
+        "carId": "car_kztq00ve",
+        "trophies": 5500
+      },
+      {
+        "carId": "car_d2ap3yms",
+        "trophies": 6000
+      },
+      {
+        "carId": "car_enmdcw5t",
+        "trophies": 6500
+      },
+      {
+        "carId": "car_2n5hnes4",
+        "trophies": 7000
+      }
     ],
     "cosmeticRarityWeights": {
-      "0-999": { "common": 85, "rare": 14, "epic": 1, "legendary": 0 },
-      "1000-1999": { "common": 70, "rare": 22, "epic": 6, "legendary": 2 },
-      "2000-2999": { "common": 60, "rare": 25, "epic": 10, "legendary": 5 },
-      "3000-4999": { "common": 50, "rare": 30, "epic": 15, "legendary": 5 },
-      "5000-7000": { "common": 40, "rare": 35, "epic": 18, "legendary": 7 },
-      "7001-99999": { "common": 30, "rare": 35, "epic": 25, "legendary": 10 }
+      "0-999": {
+        "common": 85,
+        "rare": 14,
+        "epic": 1,
+        "legendary": 0
+      },
+      "1000-1999": {
+        "common": 70,
+        "rare": 22,
+        "epic": 6,
+        "legendary": 2
+      },
+      "2000-2999": {
+        "common": 60,
+        "rare": 25,
+        "epic": 10,
+        "legendary": 5
+      },
+      "3000-4999": {
+        "common": 50,
+        "rare": 30,
+        "epic": 15,
+        "legendary": 5
+      },
+      "5000-7000": {
+        "common": 40,
+        "rare": 35,
+        "epic": 18,
+        "legendary": 7
+      },
+      "7001-99999": {
+        "common": 30,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 10
+      }
     },
     "spellLevelBands": [
       {

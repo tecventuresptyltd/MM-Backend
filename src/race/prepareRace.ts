@@ -153,12 +153,38 @@ export const prepareRace = onCall({ region: REGION }, async (request) => {
       getItemSkusCatalog(),
     ]);
 
+    // Extract AI difficulty configuration from BotConfig.statRanges
+    const aiDifficultyConfig = {
+      minSpeed: botConfig.statRanges?.aiSpeed?.min ?? 100,
+      maxSpeed: botConfig.statRanges?.aiSpeed?.max ?? 800,
+      boostPowerMin: botConfig.statRanges?.aiBoostPower?.min ?? 0.10,
+      boostPowerMax: botConfig.statRanges?.aiBoostPower?.max ?? 0.30,
+      endGameDifficulty: botConfig.statRanges?.endGameDifficulty ?? 60,
+      minAcceleration: botConfig.statRanges?.aiAcceleration?.min ?? 8,
+      maxAcceleration: botConfig.statRanges?.aiAcceleration?.max ?? 13
+    };
+
+    // Warn if using fallbacks (indicates BotConfig seed may not be deployed)
+    if (!botConfig.statRanges?.aiSpeed) {
+      console.warn('[prepareRace] BotConfig missing aiSpeed field, using defaults');
+    }
+    if (!botConfig.statRanges?.aiBoostPower) {
+      console.warn('[prepareRace] BotConfig missing aiBoostPower field, using defaults');
+    }
+    if (!botConfig.statRanges?.aiAcceleration) {
+      console.warn('[prepareRace] BotConfig missing aiAcceleration field, using defaults');
+    }
+    if (botConfig.statRanges?.endGameDifficulty === undefined) {
+      console.warn('[prepareRace] BotConfig missing endGameDifficulty field, using default (60)');
+    }
+
     // Resolve player car and stats
     const carId: string = loadout.carId || Object.keys(carsCatalog)[0];
     const playerCar = carsCatalog[carId];
     if (!playerCar) throw new HttpsError("failed-precondition", "Active car not found in catalog");
     const level = Number((garage.cars ?? {})[carId]?.upgradeLevel ?? 0);
-    const playerStats = resolveCarStats(playerCar as any, level, tuning, false);
+    const playerCarLevelData = resolveCarLevel(playerCar, level);
+    const playerStats = resolveCarStats(playerCarLevelData, tuning, false);
 
     const rawCosmetics = (loadout.cosmetics ?? {}) as Record<string, string | null>;
     const resolveCosmeticItemId = (slot: string): string | null =>
@@ -336,8 +362,36 @@ export const prepareRace = onCall({ region: REGION }, async (request) => {
         normalizedTrophies,
         botConfig.statRanges,
         botCarLevelData,
-        tuning,
       );
+
+      // ==========================================
+      // AI DIFFICULTY SYSTEM
+      // ==========================================
+      // Calculate aiLevel as percentage (0-100) based on normalized trophies
+      const trophyPercentage = normalizedTrophies / 7000;
+      (botStats.real as any).aiLevel = Math.round((trophyPercentage * 100) * 100) / 100;
+
+      // Add performanceRanges from BotConfig for Unity's AI controller
+      (botStats.real as any).performanceRanges = {
+        minSpeed: aiDifficultyConfig.minSpeed,
+        maxSpeed: aiDifficultyConfig.maxSpeed,
+        boostPowerMin: aiDifficultyConfig.boostPowerMin,
+        boostPowerMax: aiDifficultyConfig.boostPowerMax,
+        endGameDifficulty: aiDifficultyConfig.endGameDifficulty,
+        minAcceleration: aiDifficultyConfig.minAcceleration,
+        maxAcceleration: aiDifficultyConfig.maxAcceleration
+      };
+
+      // Validation: ensure aiLevel is valid
+      if (typeof (botStats.real as any).aiLevel !== 'number' || !Number.isFinite((botStats.real as any).aiLevel)) {
+        console.error(`[prepareRace] Invalid aiLevel for bot ${botDisplayName}:`, (botStats.real as any).aiLevel);
+        (botStats.real as any).aiLevel = 0; // Safe fallback
+      }
+      if ((botStats.real as any).aiLevel < 0) {
+        console.warn(`[prepareRace] Negative aiLevel for bot ${botDisplayName}, clamping to 0`);
+        (botStats.real as any).aiLevel = 0;
+      }
+      // ==========================================
 
       const rarityWeights = pickRarityBand(botConfig.cosmeticRarityWeights, normalizedTrophies);
       const rarity = weightedChoice(rarityWeights as any, rng);
@@ -386,6 +440,13 @@ export const prepareRace = onCall({ region: REGION }, async (request) => {
         spells: botSpells,
       };
     });
+
+    // Final validation: log summary of bot AI difficulty values
+    console.log('[prepareRace] Bot generation complete - AI Difficulty Summary:');
+    console.log(`  Total bots: ${bots.length}`);
+    console.log(`  All have aiLevel: ${bots.every(b => typeof (b.carStats?.real as any)?.aiLevel === 'number')}`);
+    console.log(`  All have performanceRanges: ${bots.every(b => !!(b.carStats?.real as any)?.performanceRanges)}`);
+    console.log(`  Sample aiLevels: [${bots.slice(0, 3).map(b => (b.carStats.real as any).aiLevel).join(', ')}]`);
 
     const lobbyRatings: number[] = [playerTrophies, ...bots.map((bot) => bot.trophies)];
     const rawPreDeduct = calculateLastPlaceDelta(0, lobbyRatings, DEFAULT_TROPHY_CONFIG);

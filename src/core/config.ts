@@ -322,6 +322,10 @@ export type BotConfig = {
     handling: { min: number; max: number };
     boostRegen: { min: number; max: number };
     boostPower: { min: number; max: number };
+    aiSpeed?: { min: number; max: number };
+    aiBoostPower?: { min: number; max: number };
+    aiAcceleration?: { min: number; max: number };
+    endGameDifficulty?: number;
   };
   carUnlockThresholds: Array<{ carId: string; trophies: number }>;
   cosmeticRarityWeights: Record<string, Record<string, number>>;

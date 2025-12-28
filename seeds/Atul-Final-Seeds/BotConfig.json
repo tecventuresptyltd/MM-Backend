@@ -6,7 +6,11 @@
       "acceleration": { "min": 4.5, "max": 9.5 },
       "handling": { "min": 28, "max": 44 },
       "boostRegen": { "min": 11, "max": 5 },
-      "boostPower": { "min": 8, "max": 22 }
+      "boostPower": { "min": 8, "max": 22 },
+      "aiSpeed": { "min": 100, "max": 800 },
+      "aiBoostPower": { "min": 0.10, "max": 0.30 },
+      "aiAcceleration": { "min": 8, "max": 13 },
+      "endGameDifficulty": 60
     },
     "carUnlockThresholds": [
       { "carId": "car_h4ayzwf31g", "trophies": 0 },

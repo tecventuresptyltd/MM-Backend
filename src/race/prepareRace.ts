@@ -159,9 +159,9 @@ export const prepareRace = onCall({ region: REGION }, async (request) => {
       maxSpeed: botConfig.statRanges?.aiSpeed?.max ?? 800,
       boostPowerMin: botConfig.statRanges?.aiBoostPower?.min ?? 0.10,
       boostPowerMax: botConfig.statRanges?.aiBoostPower?.max ?? 0.30,
-      endGameDifficulty: botConfig.statRanges?.endGameDifficulty ?? 60,
+      endGameDifficulty: botConfig.statRanges?.endGameDifficulty ?? 100,
       minAcceleration: botConfig.statRanges?.aiAcceleration?.min ?? 8,
-      maxAcceleration: botConfig.statRanges?.aiAcceleration?.max ?? 13
+      maxAcceleration: botConfig.statRanges?.aiAcceleration?.max ?? 15
     };
 
     // Warn if using fallbacks (indicates BotConfig seed may not be deployed)
@@ -175,7 +175,7 @@ export const prepareRace = onCall({ region: REGION }, async (request) => {
       console.warn('[prepareRace] BotConfig missing aiAcceleration field, using defaults');
     }
     if (botConfig.statRanges?.endGameDifficulty === undefined) {
-      console.warn('[prepareRace] BotConfig missing endGameDifficulty field, using default (60)');
+      console.warn('[prepareRace] BotConfig missing endGameDifficulty field, using default (100)');
     }
 
     // Resolve player car and stats

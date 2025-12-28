@@ -9,8 +9,8 @@
       "boostPower": { "min": 8, "max": 22 },
       "aiSpeed": { "min": 100, "max": 800 },
       "aiBoostPower": { "min": 0.10, "max": 0.30 },
-      "aiAcceleration": { "min": 8, "max": 13 },
-      "endGameDifficulty": 60
+      "aiAcceleration": { "min": 8, "max": 15 },
+      "endGameDifficulty": 100
     },
     "carUnlockThresholds": [
       { "carId": "car_h4ayzwf31g", "trophies": 0 },

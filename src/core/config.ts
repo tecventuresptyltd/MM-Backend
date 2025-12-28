@@ -317,15 +317,10 @@ export async function getCarTuningConfig(): Promise<CarTuningConfig> {
 // --- BotConfig Loader (/GameData/v1/BotConfig) ---
 export type BotConfig = {
   statRanges: {
-    topSpeed: { min: number; max: number };
-    acceleration: { min: number; max: number };
-    handling: { min: number; max: number };
-    boostRegen: { min: number; max: number };
-    boostPower: { min: number; max: number };
-    aiSpeed?: { min: number; max: number };
-    aiBoostPower?: { min: number; max: number };
-    aiAcceleration?: { min: number; max: number };
-    endGameDifficulty?: number;
+    aiSpeed: { min: number; max: number };
+    aiBoostPower: { min: number; max: number };
+    aiAcceleration: { min: number; max: number };
+    endGameDifficulty: number;
   };
   carUnlockThresholds: Array<{ carId: string; trophies: number }>;
   cosmeticRarityWeights: Record<string, Record<string, number>>;

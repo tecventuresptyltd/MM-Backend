@@ -325,6 +325,7 @@ export type BotConfig = {
   carUnlockThresholds: Array<{ carId: string; trophies: number }>;
   cosmeticRarityWeights: Record<string, Record<string, number>>;
   spellLevelBands: Array<{ minTrophies: number; maxTrophies: number; minLevel: number; maxLevel: number }>;
+  excludedSpells?: string[];
   updatedAt: number;
 };
 

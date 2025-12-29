@@ -185,7 +185,7 @@ export const prepareRace = onCall({ region: REGION }, async (request) => {
     const level = Number((garage.cars ?? {})[carId]?.upgradeLevel ?? 0);
     const playerCarLevelData = resolveCarLevel(playerCar, level);
     const playerStats = resolveCarStats(playerCarLevelData, tuning, false);
-    
+
     // Debug logging for player stats
     console.log('[prepareRace] Player Stats Debug:');
     console.log(`  Car ID: ${carId}, Level: ${level}`);
@@ -351,17 +351,17 @@ export const prepareRace = onCall({ region: REGION }, async (request) => {
     // Build bots
     const bots = Array.from({ length: botCount }).map(() => {
       const botDisplayName = nextBotName();
-      
+
       // Fixed trophy distribution: ensure equal distribution even at low trophy counts
       const trophyRange = 100;
       const minTrophies = Math.max(0, playerTrophies - trophyRange);
       const maxTrophies = playerTrophies + trophyRange;
       const botTrophies = rng.int(minTrophies, maxTrophies);
       const normalizedTrophies = Math.max(0, Math.min(7000, botTrophies));
-      
+
       const botCarId = pickBotCarId(normalizedTrophies);
       const botCar = carsCatalog[botCarId] || playerCar;
-      
+
       // Get car level data (using level 0 for display values only)
       const botCarLevelData = resolveCarLevel(botCar, 0);
 
@@ -414,8 +414,9 @@ export const prepareRace = onCall({ region: REGION }, async (request) => {
       const underglowCosmetic = pickBotCosmeticForSlot("underglow", rarity);
       const boostCosmetic = pickBotCosmeticForSlot("boost", rarity);
 
-      // Spells: select 5 unique spells from catalog
-      const allSpellIds = Object.keys(spellsCatalog || {});
+      // Spells: select 5 unique spells from catalog, excluding unimplemented spells
+      const excludedSpells = new Set(botConfig.excludedSpells || []);
+      const allSpellIds = Object.keys(spellsCatalog || {}).filter(id => !excludedSpells.has(id));
       const band =
         botConfig.spellLevelBands.find(
           (b: any) => normalizedTrophies >= b.minTrophies && normalizedTrophies <= b.maxTrophies,

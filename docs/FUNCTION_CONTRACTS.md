@@ -647,11 +647,12 @@ Output: `{ raceId, issuedAt, seed, laps, trackId, preDeductedTrophies, player: {
 
 Notes:
 - Resolves car stats via `CarsCatalog.cars[carId].levels[level]` using value-vs-real model. Players use `CarTuningConfig.player`; bots use `CarTuningConfig.bot`.
-- **Bot Spell Decks:** Each bot receives **5 unique spells** randomly selected from the entire `SpellsCatalog`. Spell levels are determined by trophy-based progression bands defined in `BotConfig.spellLevelBands`:
+- **Bot Spell Decks:** Each bot receives **5 unique spells** randomly selected from the `SpellsCatalog`, **excluding spells listed in `BotConfig.excludedSpells`**. This allows unimplemented or unstable spells to be hidden from bots while remaining available for player unlocking. Spell levels are determined by trophy-based progression bands defined in `BotConfig.spellLevelBands`:
   - **0-999 trophies:** Level 1-2 (Rookie)
   - **1000-2499 trophies:** Level 2-3 (Intermediate)
   - **2500-4999 trophies:** Level 4-5 (Advanced)
   - **5000+ trophies:** Level 5 (Champion)
+- **Excluded Spells (Dec 2025):** The following spells are currently excluded from bot spell pools via `BotConfig.excludedSpells`: Crimson Crush, Phantom Mirage, Sky Reaper, God Hammer, Power Out. These will be re-enabled when Unity implementations are complete.
 - Spells are selected via shuffle (no duplicates), with levels randomly assigned within the band range for variety.
 - `preDeductedTrophies` mirrors the last-place penalty used by `startRace`, using the lobby `[player, ...bots]` with the player at index `0`, and is clamped so it never removes more trophies than the player currently holds.
 - Deterministic when `seed` is supplied; idempotent via `opId` receipt.

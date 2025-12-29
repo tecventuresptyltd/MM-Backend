@@ -146,6 +146,13 @@
         "tierName": "Champion"
       }
     ],
+    "excludedSpells": [
+      "spell_11pe1m2e",
+      "spell_f74x59gz",
+      "spell_zdgrp9zk",
+      "spell_th5ek2kw",
+      "spell_0tk74qn8"
+    ],
     "updatedAt": 0
   }
 }

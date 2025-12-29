@@ -11935,7 +11935,7 @@
               "quantity": 1
             }
           ],
-          "price": 0.99,
+          "price": 1,
           "originalPrice": 11,
           "currency": "USD",
           "startAt": 1761228851445,
@@ -11984,7 +11984,7 @@
               "quantity": 1
             }
           ],
-          "price": 0.99,
+          "price": 1,
           "originalPrice": 10,
           "currency": "USD",
           "startAt": 1761228851445,
@@ -12043,7 +12043,7 @@
               "quantity": 1
             }
           ],
-          "price": 1.99,
+          "price": 2,
           "originalPrice": 16,
           "currency": "USD",
           "startAt": 1761228851445,
@@ -12102,7 +12102,7 @@
               "quantity": 1
             }
           ],
-          "price": 2.99,
+          "price": 3,
           "originalPrice": 21,
           "currency": "USD",
           "startAt": 1761228851445,
@@ -12166,8 +12166,8 @@
               "quantity": 1
             }
           ],
-          "price": 0.99,
-          "originalPrice": 21,
+          "price": 1.5,
+          "originalPrice": 12,
           "currency": "USD",
           "startAt": 1761228851445,
           "endAt": 1755386400000,
@@ -12225,7 +12225,7 @@
               "quantity": 1
             }
           ],
-          "price": 4.99,
+          "price": 5,
           "originalPrice": 35,
           "currency": "USD",
           "startAt": 1761228851445,
@@ -12294,7 +12294,7 @@
               "quantity": 1
             }
           ],
-          "price": 9.99,
+          "price": 10,
           "originalPrice": 50,
           "currency": "USD",
           "startAt": 1761228851445,
@@ -12363,7 +12363,7 @@
               "quantity": 2
             }
           ],
-          "price": 19.99,
+          "price": 20,
           "originalPrice": 80,
           "currency": "USD",
           "startAt": 1761228851445,
@@ -12432,7 +12432,7 @@
               "quantity": 5
             }
           ],
-          "price": 49.99,
+          "price": 50,
           "originalPrice": 80,
           "currency": "USD",
           "startAt": 1761228851445,
@@ -12501,7 +12501,7 @@
               "quantity": 1
             }
           ],
-          "price": 2.99,
+          "price": 3,
           "originalPrice": 45,
           "currency": "USD",
           "startAt": 1761228851445,
@@ -12570,7 +12570,7 @@
               "quantity": 1
             }
           ],
-          "price": 4.99,
+          "price": 5,
           "originalPrice": 60,
           "currency": "USD",
           "startAt": 1761228851445,
@@ -12599,7 +12599,7 @@
               "quantity": 1
             }
           ],
-          "price": 0.99,
+          "price": 1,
           "originalPrice": 15,
           "currency": "USD",
           "startAt": 1761228851445,
@@ -12628,7 +12628,7 @@
               "quantity": 1
             }
           ],
-          "price": 0.99,
+          "price": 1,
           "originalPrice": 15,
           "currency": "USD",
           "startAt": 1761228851445,

@@ -39,6 +39,15 @@ const COSMETIC_SLOT_FIELDS: Record<CosmeticSlot, { skuField: string; itemField: 
   boost: { skuField: "boostSkuId", itemField: "boostItemId" },
 };
 
+// Safety net: keep unimplemented spells out of bot loadouts even if BotConfig is stale
+const FALLBACK_EXCLUDED_SPELL_IDS = [
+  "spell_11pe1m2e", // Crimson Crush
+  "spell_f74x59gz", // Phantom Mirage
+  "spell_zdgrp9zk", // Sky Reaper
+  "spell_th5ek2kw", // God Hammer
+  "spell_0tk74qn8", // Power Out
+] as const;
+
 const resolveCarLevel = (
   car: { levels?: Record<string, CarLevel> } | null | undefined,
   targetLevel: number,
@@ -415,7 +424,10 @@ export const prepareRace = onCall({ region: REGION }, async (request) => {
       const boostCosmetic = pickBotCosmeticForSlot("boost", rarity);
 
       // Spells: select 5 unique spells from catalog, excluding unimplemented spells
-      const excludedSpells = new Set(botConfig.excludedSpells || []);
+      const excludedSpells = new Set([
+        ...FALLBACK_EXCLUDED_SPELL_IDS,
+        ...(botConfig.excludedSpells || []),
+      ]);
       const allSpellIds = Object.keys(spellsCatalog || {}).filter(id => !excludedSpells.has(id));
       const band =
         botConfig.spellLevelBands.find(

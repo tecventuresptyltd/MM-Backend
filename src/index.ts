@@ -34,6 +34,9 @@ export { prepareRace } from "./race/prepareRace";
 export { submitFeedback } from "./feedback";
 export * from "./clan";
 export { getMaintenanceStatus, claimMaintenanceReward } from "./game-systems/maintenance";
+export { setMaintenanceMode } from "./game-systems/adminMaintenance";
+export { setMinimumVersion, getMinimumVersion } from "./game-systems/adminVersion";
+export { searchGameUsers, setGameAdminStatus, getGameAdmins } from "./game-systems/adminGameUsers";
 export { healthcheck } from "./health/healthcheck";
 export * from "./profile";
 export {

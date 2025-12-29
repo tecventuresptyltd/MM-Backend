@@ -340,73 +340,73 @@ export async function initializeUserIfNeeded(
 
     const fullGrantPlan = shouldGrantFullInventory
       ? await (async () => {
-          const [cosmeticSkus, crateSkus, keySkus, boosterSkus] = await Promise.all([
-            listSkusByFilter({ category: "cosmetic" }),
-            listSkusByFilter({ category: "crate" }),
-            listSkusByFilter({ category: "key" }),
-            listSkusByFilter({ category: "booster" }),
-          ]);
+        const [cosmeticSkus, crateSkus, keySkus, boosterSkus] = await Promise.all([
+          listSkusByFilter({ category: "cosmetic" }),
+          listSkusByFilter({ category: "crate" }),
+          listSkusByFilter({ category: "key" }),
+          listSkusByFilter({ category: "booster" }),
+        ]);
 
-          const toSkuIds = (values: Array<{ skuId?: string | null } | null | undefined>) =>
-            Array.from(
-              new Set(
-                values
-                  .map((entry) => (entry?.skuId ?? "").trim())
-                  .filter((skuId): skuId is string => skuId.length > 0),
-              ),
-            );
+        const toSkuIds = (values: Array<{ skuId?: string | null } | null | undefined>) =>
+          Array.from(
+            new Set(
+              values
+                .map((entry) => (entry?.skuId ?? "").trim())
+                .filter((skuId): skuId is string => skuId.length > 0),
+            ),
+          );
 
-          const cosmeticSkuIds = toSkuIds(cosmeticSkus);
-          const crateSkuIds = toSkuIds(crateSkus);
-          const keySkuIds = toSkuIds(keySkus);
-          const boosterSkuIds = toSkuIds(boosterSkus);
+        const cosmeticSkuIds = toSkuIds(cosmeticSkus);
+        const crateSkuIds = toSkuIds(crateSkus);
+        const keySkuIds = toSkuIds(keySkus);
+        const boosterSkuIds = toSkuIds(boosterSkus);
 
-          const skuMeta: Record<string, { stackable: boolean; type: string | null }> = {};
-          const captureMeta = (
-            entries: Array<{ skuId: string; stackable: boolean; type: string | null }>,
-          ) => {
-            entries.forEach((entry) => {
-              if (!entry?.skuId) {
-                return;
-              }
-              skuMeta[entry.skuId] = {
-                stackable: entry.stackable,
-                type: entry.type,
-              };
-            });
-          };
+        const skuMeta: Record<string, { stackable: boolean; type: string | null }> = {};
+        const captureMeta = (
+          entries: Array<{ skuId: string; stackable: boolean; type: string | null }>,
+        ) => {
+          entries.forEach((entry) => {
+            if (!entry?.skuId) {
+              return;
+            }
+            skuMeta[entry.skuId] = {
+              stackable: entry.stackable,
+              type: entry.type,
+            };
+          });
+        };
 
-          captureMeta([
-            ...cosmeticSkus.map((sku) => ({
-              skuId: sku.skuId,
-              stackable: Boolean(sku.stackable),
-              type: sku.type ?? sku.category ?? null,
-            })),
-            ...crateSkus.map((sku) => ({
-              skuId: sku.skuId,
-              stackable: Boolean(sku.stackable),
-              type: sku.type ?? sku.category ?? null,
-            })),
-            ...keySkus.map((sku) => ({
-              skuId: sku.skuId,
-              stackable: Boolean(sku.stackable),
-              type: sku.type ?? sku.category ?? null,
-            })),
-            ...boosterSkus.map((sku) => ({
-              skuId: sku.skuId,
-              stackable: Boolean(sku.stackable),
-              type: sku.type ?? sku.category ?? null,
-            })),
-          ]);
+        captureMeta([
+          ...cosmeticSkus.map((sku) => ({
+            skuId: sku.skuId,
+            stackable: Boolean(sku.stackable),
+            type: sku.type ?? sku.category ?? null,
+          })),
+          ...crateSkus.map((sku) => ({
+            skuId: sku.skuId,
+            stackable: Boolean(sku.stackable),
+            type: sku.type ?? sku.category ?? null,
+          })),
+          ...keySkus.map((sku) => ({
+            skuId: sku.skuId,
+            stackable: Boolean(sku.stackable),
+            type: sku.type ?? sku.category ?? null,
+          })),
+          ...boosterSkus.map((sku) => ({
+            skuId: sku.skuId,
+            stackable: Boolean(sku.stackable),
+            type: sku.type ?? sku.category ?? null,
+          })),
+        ]);
 
-          return {
-            cosmeticSkuIds,
-            crateSkuIds,
-            keySkuIds,
-            boosterSkuIds,
-            skuMeta,
-          };
-        })()
+        return {
+          cosmeticSkuIds,
+          crateSkuIds,
+          keySkuIds,
+          boosterSkuIds,
+          skuMeta,
+        };
+      })()
       : null;
 
     const defaultCosmeticSkuMeta = await Promise.all(
@@ -583,28 +583,28 @@ export async function initializeUserIfNeeded(
           defaultCosmetics,
           fullGrant: fullGrantPlan
             ? {
-                ...fullGrantPlan,
-                skuStates: skuStateById,
-              }
+              ...fullGrantPlan,
+              skuStates: skuStateById,
+            }
             : null,
           referralPlan,
           legacy: useItemIdInventory
             ? {
-                itemsRef: legacyItemsRef,
-                itemsCounts:
-                  (legacyItemsDoc?.exists
-                    ? ((legacyItemsDoc.data() ?? {}) as { counts?: Record<string, number> })
-                        .counts
-                    : undefined) ?? {},
-                consumablesRef:
-                  legacyConsumablesDoc?.exists === true ? legacyConsumablesRef : null,
-                consumableCounts:
-                  legacyConsumablesDoc?.exists === true
-                    ? ((legacyConsumablesDoc?.data() ?? {}) as {
-                        counts?: Record<string, number>;
-                      }).counts ?? {}
-                    : {},
-              }
+              itemsRef: legacyItemsRef,
+              itemsCounts:
+                (legacyItemsDoc?.exists
+                  ? ((legacyItemsDoc.data() ?? {}) as { counts?: Record<string, number> })
+                    .counts
+                  : undefined) ?? {},
+              consumablesRef:
+                legacyConsumablesDoc?.exists === true ? legacyConsumablesRef : null,
+              consumableCounts:
+                legacyConsumablesDoc?.exists === true
+                  ? ((legacyConsumablesDoc?.data() ?? {}) as {
+                    counts?: Record<string, number>;
+                  }).counts ?? {}
+                  : {},
+            }
             : null,
         };
       },
@@ -642,6 +642,7 @@ export async function initializeUserIfNeeded(
           email,
           authProviders: Array.from(providerSet),
           isGuest: inferredGuest,
+          isGameAdmin: false, // Default to non-admin
         };
 
         if (!playerDoc.exists) {

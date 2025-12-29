@@ -1,5 +1,6 @@
 {
   "projects": {
-    "sandbox": "mystic-motors-sandbox"
+    "sandbox": "mystic-motors-sandbox",
+    "prod": "mystic-motors-prod"
   }
 }

@@ -115,7 +115,7 @@
   },
   "database": [
     {
-      "instance": "mystic-motors-sandbox-default-rtdb",
+      "instance": "mystic-motors-prod-default-rtdb",
       "rules": "database.rules.json"
     }
   ],

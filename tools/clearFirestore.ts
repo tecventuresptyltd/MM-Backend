@@ -12,11 +12,11 @@
 
 import * as admin from 'firebase-admin';
 
-const serviceAccount = require('../mystic-motors-sandbox-9b64d57718a2.json');
+const serviceAccount = require('../mystic-motors-prod-c0cee3ade8a4.json');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  projectId: 'mystic-motors-sandbox'
+  projectId: 'mystic-motors-prod'
 });
 
 const db = admin.firestore();

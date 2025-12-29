@@ -119,3 +119,71 @@ export const getMinimumVersion = onCall({ region: REGION }, async (request) => {
         updatedBy: data?.updatedBy,
     } as GetMinimumVersionResponse;
 });
+
+// --- Check App Version (Public - for game clients) ---
+
+interface CheckAppVersionRequest {
+    clientVersion: string;
+}
+
+interface CheckAppVersionResponse {
+    updateRequired: boolean;
+    minimumVersion: string;
+    clientVersion: string;
+}
+
+/**
+ * Public function for game clients to check if they need to update
+ * No authentication required - anyone can call this
+ */
+export const checkAppVersion = onCall({ region: REGION }, async (request) => {
+    const { clientVersion } = request.data as CheckAppVersionRequest;
+
+    if (!clientVersion || typeof clientVersion !== "string") {
+        throw new HttpsError("invalid-argument", "clientVersion is required and must be a string.");
+    }
+
+    // Validate version format
+    if (!validateVersionFormat(clientVersion)) {
+        throw new HttpsError(
+            "invalid-argument",
+            "clientVersion must be in format X.Y.Z (e.g., '1.2.3')."
+        );
+    }
+
+    // Get minimum version from Firestore
+    const versionRef = db.doc("/GameConfig/appVersion");
+    const versionDoc = await versionRef.get();
+
+    let minimumVersion = process.env.MIN_SUPPORTED_APP_VERSION || "1.0.0";
+    if (versionDoc.exists) {
+        minimumVersion = versionDoc.data()?.minimumVersion || minimumVersion;
+    }
+
+    // Compare versions
+    const updateRequired = !isVersionAtLeast(clientVersion, minimumVersion);
+
+    return {
+        updateRequired,
+        minimumVersion,
+        clientVersion,
+    } as CheckAppVersionResponse;
+});
+
+/**
+ * Helper function to compare version strings
+ * Returns true if current >= minimum, false otherwise
+ */
+function isVersionAtLeast(current: string, minimum: string): boolean {
+    const currentParts = current.split(".").map(Number);
+    const minimumParts = minimum.split(".").map(Number);
+
+    const length = Math.max(currentParts.length, minimumParts.length);
+    for (let i = 0; i < length; i++) {
+        const currentValue = currentParts[i] || 0;
+        const minimumValue = minimumParts[i] || 0;
+        if (currentValue > minimumValue) return true;
+        if (currentValue < minimumValue) return false;
+    }
+    return true;
+}

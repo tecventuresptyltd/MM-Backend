@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import AuthGuard from "@/components/AuthGuard";
+import PageHeader from "@/components/PageHeader";
 import { callFunction } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -16,6 +17,8 @@ export default function MaintenancePage() {
     const [rewardGems, setRewardGems] = useState(100);
     const [immediate, setImmediate] = useState(true); // Default to immediate activation
     const [delayMinutes, setDelayMinutes] = useState(15); // Default to 15 minutes
+    const [durationHours, setDurationHours] = useState(0); // Duration hours
+    const [durationMinutes, setDurationMinutes] = useState(30); // Duration minutes (default 30min)
     const [countdown, setCountdown] = useState<string>(""); // Countdown timer display
     const [runningTimer, setRunningTimer] = useState<string>(""); // Running timer (how long active)
     const [maintenanceHistory, setMaintenanceHistory] = useState<any[]>([]);
@@ -150,6 +153,11 @@ export default function MaintenancePage() {
                     payload.delayMinutes = delayMinutes;
                 }
             }
+                // Calculate total duration in minutes
+                const totalDurationMinutes = (durationHours * 60) + durationMinutes;
+                if (totalDurationMinutes > 0) {
+                    payload.durationMinutes = totalDurationMinutes;
+                }
 
             const response = await callFunction("setMaintenanceMode", payload);
 
@@ -178,37 +186,10 @@ export default function MaintenancePage() {
     return (
         <AuthGuard>
             <div className="min-h-screen bg-gray-50">
-                {/* Header */}
-                <header className="bg-white shadow-sm border-b">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                        <div className="flex items-center">
-                            <button
-                                onClick={() => router.push("/")}
-                                className="mr-4 p-2 hover:bg-gray-100 rounded-lg transition"
-                            >
-                                <svg
-                                    className="w-6 h-6 text-gray-600"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M15 19l-7-7 7-7"
-                                    />
-                                </svg>
-                            </button>
-                            <h1 className="text-2xl font-bold text-gray-900">
-                                Maintenance Mode Control
-                            </h1>
-                        </div>
-                    </div>
-                </header>
+                <PageHeader title="Maintenance Mode Control" />
 
                 {/* Main Content */}
-                <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
                     {success && (
                         <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
                             {success}
@@ -447,6 +428,44 @@ export default function MaintenancePage() {
                                     </select>
                                     <p className="text-sm text-gray-500 mt-1">
                                         Players will be warned immediately and kicked after this delay
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Duration - Always show when enabling */}
+                            {enabled && (
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Maintenance Duration
+                                    </label>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-xs text-gray-600 mb-1">Hours</label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                max="24"
+                                                value={durationHours}
+                                                onChange={(e) => setDurationHours(Number(e.target.value))}
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                                placeholder="0"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs text-gray-600 mb-1">Minutes</label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                max="59"
+                                                value={durationMinutes}
+                                                onChange={(e) => setDurationMinutes(Number(e.target.value))}
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                                placeholder="30"
+                                            />
+                                        </div>
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-2">
+                                        Optional: How long maintenance will last (shown to players as countdown)
                                     </p>
                                 </div>
                             )}

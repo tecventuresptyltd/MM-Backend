@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import AuthGuard from "@/components/AuthGuard";
+import PageHeader from "@/components/PageHeader";
 import { callFunction } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -103,37 +104,10 @@ export default function VersionPage() {
     return (
         <AuthGuard>
             <div className="min-h-screen bg-gray-50">
-                {/* Header */}
-                <header className="bg-white shadow-sm border-b">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                        <div className="flex items-center">
-                            <button
-                                onClick={() => router.push("/")}
-                                className="mr-4 p-2 hover:bg-gray-100 rounded-lg transition"
-                            >
-                                <svg
-                                    className="w-6 h-6 text-gray-600"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M15 19l-7-7 7-7"
-                                    />
-                                </svg>
-                            </button>
-                            <h1 className="text-2xl font-bold text-gray-900">
-                                Version Control
-                            </h1>
-                        </div>
-                    </div>
-                </header>
+                <PageHeader title="Version Control" />
 
                 {/* Main Content */}
-                <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
                     {success && (
                         <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
                             {success}

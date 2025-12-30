@@ -16,20 +16,39 @@
  */
 
 import * as admin from "firebase-admin";
-import * as logger from "firebase-functions/logger";
-import {
-    clansCollection,
-    clanMembersCollection,
-    playerProfileRef,
-    recalculateClanTotalTrophies,
-} from "../src/clan/helpers.js";
 
-// Initialize Firebase Admin
-if (!admin.apps.length) {
-    admin.initializeApp();
-}
+// Initialize Firebase Admin with production credentials
+const serviceAccount = require("../backend-production-mystic-motors-prod.json");
+
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    projectId: "mystic-motors-prod",
+});
 
 const db = admin.firestore();
+
+// Inline helper functions to avoid import order issues
+const clansCollection = () => db.collection("Clans");
+const clanMembersCollection = (clanId: string) => clansCollection().doc(clanId).collection("Members");
+const playerProfileRef = (uid: string) => db.doc(`/Players/${uid}/Profile/Profile`);
+
+async function recalculateClanTotalTrophies(clanId: string): Promise<number> {
+    const membersSnap = await clanMembersCollection(clanId).get();
+    let total = 0;
+    membersSnap.forEach((doc) => {
+        const data = doc.data();
+        if (typeof data.trophies === "number" && Number.isFinite(data.trophies)) {
+            total += data.trophies;
+        }
+    });
+
+    await db.doc(`/Clans/${clanId}`).update({
+        "stats.trophies": total,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return total;
+}
 
 interface SyncStats {
     clansProcessed: number;

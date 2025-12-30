@@ -6,6 +6,8 @@ import { getLevelInfo } from "../shared/xp.js";
 import { refreshFriendSnapshots } from "../Socials/updateSnapshots.js";
 import { grantInventoryRewards } from "../shared/inventoryAwards.js";
 import { maybeTriggerFlashSales } from "../triggers/flashSales.js";
+import { maybeGenerateStarterOffer } from "../shop/offers.js";
+import { STARTER_RACE_THRESHOLD } from "../shop/offerState.js";
 import { buildBotLoadout } from "../game-systems/botLoadoutHelper.js";
 import { applyClanTrophyDelta, playerClanStateRef, clanMembersCollection, clanRef } from "../clan/helpers.js";
 import { updatePlayerLeaderboardEntry } from "../Socials/liveLeaderboard.js";
@@ -572,6 +574,17 @@ export const recordRaceResult = onCall({ enforceAppCheck: false, region: REGION 
     await maybeTriggerFlashSales({ uid });
   } catch (error) {
     logger.warn("Flash sale trigger failed after race result", { uid, error });
+  }
+
+  // Check for starter offer eligibility after race completion
+  try {
+    const profileForOffer = await db.doc(`/Players/${uid}/Profile/Profile`).get();
+    const totalRaces = Number(profileForOffer.data()?.totalRaces ?? 0);
+    if (totalRaces >= STARTER_RACE_THRESHOLD) {
+      await maybeGenerateStarterOffer(uid);
+    }
+  } catch (error) {
+    logger.warn("Starter offer trigger failed after race result", { uid, error });
   }
 
   let clanIdForLiveUpdate: string | null = null;

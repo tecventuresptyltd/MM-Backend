@@ -265,6 +265,7 @@ export interface ActiveStarterOffer {
   expiresAt: number;
 }
 
+/** @deprecated Use MainOfferState instead */
 export interface ActiveDailyOfferState {
   offerId: string | null;
   tier: number;
@@ -282,14 +283,64 @@ export interface ActiveSpecialOffer {
   offerId: string;
   triggerType: SpecialOfferTriggerType;
   expiresAt: number;
+  metadata?: { level?: number };
 }
 
+/**
+ * State of the main rotating offer slot.
+ * States: 'active' (offer visible), 'cooldown' (12h wait after expiry),
+ * 'purchase_delay' (30min wait after IAP purchase)
+ */
+export type MainOfferState = 'active' | 'cooldown' | 'purchase_delay';
+
+/**
+ * Main offer slot in the redesigned offer flow.
+ * Replaces separate starter/daily handling with unified slot.
+ */
+export interface MainOffer {
+  offerId: string;
+  offerType: number;
+  expiresAt: number;
+  tier: number;
+  state: MainOfferState;
+  /** When next offer becomes available (used in cooldown/purchase_delay states) */
+  nextOfferAt?: number;
+  /** True if this is a starter offer */
+  isStarter?: boolean;
+}
+
+/**
+ * Backend-only state for tracking offer flow progression.
+ * Stored at Players/{uid}/Offers/State
+ */
+export interface OfferFlowState {
+  starterEligible: boolean;
+  starterShown: boolean;
+  starterPurchased: boolean;
+  tier: number;
+  lastOfferExpiredAt?: number;
+  lastOfferPurchasedAt?: number;
+  offersPurchased: string[];
+  totalIapPurchases: number;
+  updatedAt: number;
+}
+
+/**
+ * Client-facing active offers document.
+ * Stored at Players/{uid}/Offers/Active
+ */
 export interface ActiveOffers {
+  /** @deprecated Use main instead - kept for backward compatibility */
   starter?: ActiveStarterOffer;
-  daily: ActiveDailyOfferState;
+  /** @deprecated Use main instead - kept for backward compatibility */
+  daily?: ActiveDailyOfferState;
+  /** New unified main offer slot */
+  main?: MainOffer;
+  /** Independent stackable offers (milestones, flash sales) */
   special: ActiveSpecialOffer[];
   updatedAt?: number;
 }
+
 
 export interface Rank {
   rankId: string;

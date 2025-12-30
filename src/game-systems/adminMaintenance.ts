@@ -88,6 +88,7 @@ export const setMaintenanceMode = onCall({ region: REGION }, async (request) => 
     const maintenanceData: any = {
         maintenance: maintenance === false ? false : (immediate !== false),  // Respect incoming value, only use immediate logic if enabling
         rewardGems: rewardGems || 100,  // Always set gems (will auto-credit when maintenance ends)
+        rewardAvailable: maintenance,  // FIX: Set to true when enabling, false when disabling
         activeHistoryId: maintenance ? activeHistoryId : admin.firestore.FieldValue.delete(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedBy: uid,
@@ -160,6 +161,58 @@ export const setMaintenanceMode = onCall({ region: REGION }, async (request) => 
                     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
                 });
             }
+
+            // Grant unseen rewards to all players when maintenance ends
+            const maintenanceId = currentData.activeHistoryId;
+            const gemsToGrant = currentData.rewardGems || 100;
+
+            // Get all players (in production, use pagination for large player bases)
+            const playersSnapshot = await db.collection("Players").get();
+
+            // Use batched writes for efficiency (max 500 per batch)
+            const batchSize = 500;
+            let batch = db.batch();
+            let operationCount = 0;
+
+            for (const playerDoc of playersSnapshot.docs) {
+                const playerId = playerDoc.id;
+
+                // Add to unseen rewards
+                const unseenRef = db.doc(`Players/${playerId}/Maintenance/UnseenRewards`);
+                batch.set(
+                    unseenRef,
+                    {
+                        unseenRewards: admin.firestore.FieldValue.arrayUnion({
+                            maintenanceId,
+                            gems: gemsToGrant,
+                            timestamp,
+                        }),
+                        totalUnseen: admin.firestore.FieldValue.increment(1),
+                        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                    },
+                    { merge: true }
+                );
+
+                // Grant gems immediately
+                const statsRef = db.doc(`Players/${playerId}/Economy/Stats`);
+                batch.update(statsRef, {
+                    gems: admin.firestore.FieldValue.increment(gemsToGrant),
+                });
+
+                operationCount += 2; // unseenRewards + stats update
+
+                // Commit batch every 250 operations (500 writes / 2 ops per player)
+                if (operationCount >= 500) {
+                    await batch.commit();
+                    batch = db.batch();
+                    operationCount = 0;
+                }
+            }
+
+            // Commit remaining operations
+            if (operationCount > 0) {
+                await batch.commit();
+            }
         }
 
         // Clear the active history ID
@@ -172,7 +225,7 @@ export const setMaintenanceMode = onCall({ region: REGION }, async (request) => 
         success: true,
         maintenance: {
             maintenance: immediate !== false,  // Only true if immediate
-            activeHistoryId: activeHistoryId || undefined,            rewardGems: rewardGems || 100,
+            activeHistoryId: activeHistoryId || undefined, rewardGems: rewardGems || 100,
             updatedAt: timestamp,
             updatedBy: uid,
         },

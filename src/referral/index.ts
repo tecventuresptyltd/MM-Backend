@@ -8,6 +8,8 @@ import { ensureReferralCode, normaliseReferralCode } from "./codes.js";
 import { REFERRAL_CODE_REGISTRY_COLLECTION } from "./constants.js";
 
 export { referralClaimReferralCode } from "./claim.js";
+export { acknowledgeReferralRewards } from "./acknowledge.js";
+
 
 type AuthedRequest = {
   auth: {
@@ -87,8 +89,8 @@ export const referralDebugLookup = onCall({ region: REGION }, async (rawRequest)
   const millis = createdAt instanceof admin.firestore.Timestamp
     ? createdAt.toMillis()
     : typeof createdAt === "number"
-    ? createdAt
-    : null;
+      ? createdAt
+      : null;
   return {
     referralCode: normalizedCode,
     uid: data.uid ?? null,

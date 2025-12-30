@@ -40,3 +40,17 @@ export interface ReferralEventDoc {
   deviceHash?: string | null;
   ipHash?: string | null;
 }
+
+export interface UnseenReferralReward {
+  eventId: string;           // Reference to event in /Referrals/Events
+  inviteeUid: string;        // Who redeemed the code
+  tier: number;              // Which tier threshold was reached
+  rewards: ReferralSkuReward[];
+  timestamp: FirebaseFirestore.FieldValue | number;
+}
+
+export interface UnseenRewardsDoc {
+  unseenRewards: UnseenReferralReward[];
+  totalUnseenRewards: number;
+  updatedAt: FirebaseFirestore.FieldValue | number;
+}

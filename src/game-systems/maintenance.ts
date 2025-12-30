@@ -21,6 +21,20 @@ export const getMaintenanceStatus = onCall({ region: REGION }, async () => {
 
 // --- Claim Maintenance Reward ---
 
+/**
+ * @deprecated This function is deprecated in favor of the new unseen rewards pattern.
+ * 
+ * **For new clients:**
+ * - Listen to `/Players/{uid}/Maintenance/UnseenRewards` via Firestore
+ * - Gems are granted automatically when maintenance ends
+ * - Call `acknowledgeMaintenanceRewards()` to dismiss the notification popup
+ * 
+ * **This function is kept for backwards compatibility with older clients.**
+ * 
+ * @see acknowledgeMaintenanceRewards for the new pattern
+ * @deprecated Will be removed after all clients migrate to unseen rewards (est. Feb 2025)
+ */
+
 interface ClaimMaintenanceRewardRequest {
   opId: string;
 }
@@ -28,6 +42,7 @@ interface ClaimMaintenanceRewardRequest {
 interface ClaimMaintenanceRewardResponse {
   success: boolean;
   opId: string;
+  gemsGranted: number;
 }
 
 export const claimMaintenanceReward = onCall({ region: REGION }, async (request) => {
@@ -64,23 +79,36 @@ export const claimMaintenanceReward = onCall({ region: REGION }, async (request)
         if (!playerStatsDoc.exists) {
           throw new HttpsError("not-found", "Player stats not found.");
         }
-        if (!maintenanceDoc.exists || !maintenanceDoc.data()!.rewardAvailable) {
+
+        const maintenanceData = maintenanceDoc.data()!;
+
+        if (!maintenanceDoc.exists || !maintenanceData.rewardAvailable) {
           throw new HttpsError("failed-precondition", "No maintenance reward available.");
         }
 
+        // CRITICAL FIX: Use activeHistoryId instead of maintenanceDoc.id
+        // This allows players to claim rewards for each unique maintenance event
+        const activeHistoryId = maintenanceData.activeHistoryId;
+        if (!activeHistoryId) {
+          throw new HttpsError("failed-precondition", "No active maintenance session.");
+        }
+
         const playerStats = playerStatsDoc.data()!;
-        if (playerStats.claimedMaintenanceRewards?.includes(maintenanceDoc.id)) {
+        if (playerStats.claimedMaintenanceRewards?.includes(activeHistoryId)) {
           throw new HttpsError("failed-precondition", "Reward already claimed.");
         }
 
+        const gemsGranted = maintenanceData.rewardGems || 100;
+
         transaction.update(playerStatsRef, {
-          gems: admin.firestore.FieldValue.increment(maintenanceDoc.data()!.rewardGems || 100),
-          claimedMaintenanceRewards: admin.firestore.FieldValue.arrayUnion(maintenanceDoc.id),
+          gems: admin.firestore.FieldValue.increment(gemsGranted),
+          claimedMaintenanceRewards: admin.firestore.FieldValue.arrayUnion(activeHistoryId),
         });
 
         return {
           success: true,
           opId,
+          gemsGranted,
         };
       }
     );

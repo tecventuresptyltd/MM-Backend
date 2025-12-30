@@ -309,6 +309,30 @@ export const referralClaimReferralCode = onCall({ region: REGION }, async (rawRe
           skuId: award.skuId,
           qty: award.qty,
         }));
+
+        // Track unseen reward for the inviter so they can be notified
+        const unseenRewardsRef = db.doc(`Players/${inviterUid}/Referrals/UnseenRewards`);
+        const unseenSnap = await transaction.get(unseenRewardsRef);
+
+        const currentUnseen = unseenSnap.exists ? unseenSnap.data()?.unseenRewards || [] : [];
+
+        const newUnseenEntry = {
+          eventId: `reward-${opId}`,
+          inviteeUid: uid,
+          tier: newSentTotal,
+          rewards: inviterAwardSummary,
+          timestamp,
+        };
+
+        transaction.set(
+          unseenRewardsRef,
+          {
+            unseenRewards: [...currentUnseen, newUnseenEntry],
+            totalUnseenRewards: currentUnseen.length + 1,
+            updatedAt: timestamp,
+          },
+          { merge: true }
+        );
       }
 
       return {

@@ -67,6 +67,12 @@ service cloud.firestore {
         allow read: if isSelf(uid);
         allow write: if false;
       }
+
+      // Referrals are server-authoritative (codes, progress, events, notifications).
+      match /Referrals/{docId=**} {
+        allow read: if isSelf(uid);
+        allow write: if false;
+      }
       
       // Other subcollections are readable by the user but not writable.
       match /{path=**} {

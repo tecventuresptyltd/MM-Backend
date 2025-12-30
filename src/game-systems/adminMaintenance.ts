@@ -88,7 +88,7 @@ export const setMaintenanceMode = onCall({ region: REGION }, async (request) => 
         : null;
 
     const maintenanceData: any = {
-        maintenance: immediate !== false,  // true for immediate, false for scheduled
+        maintenance: maintenance === false ? false : (immediate !== false),  // Respect incoming value, only use immediate logic if enabling
         rewardAvailable: rewardAvailable || false,
         rewardGems: rewardGems || 100,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),

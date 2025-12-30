@@ -141,10 +141,13 @@ export default function MaintenancePage() {
         try {
             // Build the request payload
             const payload: any = {
-                maintenance,
+                maintenance: Boolean(maintenance), // Explicit boolean conversion
                 rewardAvailable,
                 rewardGems: Number(rewardGems),
             };
+
+            console.log('[DEBUG] Payload before sending:', payload);
+            console.log('[DEBUG] maintenance value:', maintenance, 'type:', typeof maintenance);
 
             // Only include immediate and delayMinutes when ENABLING maintenance
             if (maintenance) {
@@ -153,11 +156,11 @@ export default function MaintenancePage() {
                     payload.delayMinutes = delayMinutes;
                 }
             }
-                // Calculate total duration in minutes
-                const totalDurationMinutes = (durationHours * 60) + durationMinutes;
-                if (totalDurationMinutes > 0) {
-                    payload.durationMinutes = totalDurationMinutes;
-                }
+            // Calculate total duration in minutes
+            const totalDurationMinutes = (durationHours * 60) + durationMinutes;
+            if (totalDurationMinutes > 0) {
+                payload.durationMinutes = totalDurationMinutes;
+            }
 
             const response = await callFunction("setMaintenanceMode", payload);
 
@@ -300,13 +303,13 @@ export default function MaintenancePage() {
                                                 setSuccess("");
 
                                                 try {
-                                                    console.log("[EMERGENCY] Calling setMaintenanceMode with enabled:false");
-                                                    const result = await callFunction("setMaintenanceMode", {
-                                                        enabled: false,
-                                                        rewardAvailable,
-                                                        rewardGems: Number(rewardGems),
+                                                    console.log("[EMERGENCY] Calling setMaintenanceMode with maintenance:false");
+                                                    const emergencyResponse = await callFunction("setMaintenanceMode", {
+                                                        maintenance: false,  // Changed from 'enabled'
+                                                        rewardAvailable: false,
+                                                        rewardGems: 0,
                                                     });
-                                                    console.log("[EMERGENCY] Cloud function returned:", result);
+                                                    console.log("[EMERGENCY] Cloud function returned:", emergencyResponse);
 
                                                     setMaintenance(false);
                                                     setSuccess("Maintenance mode disabled. Players can now access the game.");

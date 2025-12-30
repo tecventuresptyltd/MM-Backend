@@ -143,7 +143,27 @@ const processPlayerTransition = async (
             const activeOffers = normaliseActiveOffers(activeSnap.data());
             const flowState = normaliseOfferFlowState(stateSnap.data());
 
-            // Verify the transition is still valid
+            // For purchase_delay_end: main offer was deleted on purchase, create new one
+            if (transition.transitionType === "purchase_delay_end") {
+                // Generate new tier offer
+                const newOffer = createTierOffer(tier, ladderIndex, now);
+                const prunedSpecial = pruneExpiredSpecialOffers(activeOffers.special, now);
+
+                writeActiveOffersV2(transaction, uid, {
+                    main: newOffer,
+                    special: prunedSpecial,
+                }, now);
+
+                writeOfferFlowState(transaction, uid, {
+                    tier,
+                }, now);
+
+                // Delete queue entry inside transaction for atomicity
+                transaction.delete(queueRef);
+                return;
+            }
+
+            // For other transitions: verify main still exists and matches state
             const main = activeOffers.main;
             if (!main) {
                 // Delete stale queue entry
@@ -153,11 +173,6 @@ const processPlayerTransition = async (
 
             // Only proceed if state matches expected transition type
             if (transition.transitionType === "cooldown_end" && main.state !== "cooldown") {
-                // State changed, delete stale queue entry
-                transaction.delete(queueRef);
-                return;
-            }
-            if (transition.transitionType === "purchase_delay_end" && main.state !== "purchase_delay") {
                 // State changed, delete stale queue entry
                 transaction.delete(queueRef);
                 return;

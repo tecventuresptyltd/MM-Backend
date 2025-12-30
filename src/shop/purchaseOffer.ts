@@ -324,11 +324,18 @@ const ensureActiveOfferUpdate = (
     return { slot: "special", special: filtered };
   }
 
-  // For main slot IAP purchases, calculate tier progression
+  // For main slot purchases, ALWAYS create state transition
+  // This prevents duplicate purchases while preserving tier progression for IAP only
   let mainUpdate: MainOfferUpdate | undefined;
-  if ((slot.kind === "main" || slot.kind === "starter" || slot.kind === "daily") && isIapPurchase) {
+  if (slot.kind === "main" || slot.kind === "starter" || slot.kind === "daily") {
     const currentTier = state.main?.tier ?? flowState.tier ?? 0;
-    const newTier = resolveNextTierOnPurchase(currentTier);
+
+    // Only advance tier if this is an IAP purchase (ladder progression)
+    // Non-IAP purchases keep same tier but still get 30-min delay
+    const newTier = isIapPurchase
+      ? resolveNextTierOnPurchase(currentTier)
+      : currentTier;
+
     mainUpdate = {
       newTier,
       nextOfferAt: now + POST_PURCHASE_DELAY_MS,
@@ -616,6 +623,18 @@ export const purchaseOffer = onCall({ region: REGION }, async (request) => {
         });
       }
 
+      // CRITICAL: Re-verify offer is still active to prevent race condition
+      // This guards against simultaneous purchase attempts
+      const currentActiveSnap = await transaction.get(reads.activeRef);
+      const currentActiveData = normaliseActiveOffers(currentActiveSnap.data());
+
+      if (currentActiveData.main?.state !== "active" || currentActiveData.main?.offerId !== offerId) {
+        throw new HttpsError(
+          "failed-precondition",
+          "This offer is no longer available for purchase."
+        );
+      }
+
       // Update active offers document
       const activePayload: FirebaseFirestore.UpdateData<FirebaseFirestore.DocumentData> = {
         updatedAt: reads.activeUpdatedAt,
@@ -623,10 +642,9 @@ export const purchaseOffer = onCall({ region: REGION }, async (request) => {
 
       // Handle main slot update for new format
       if (reads.activeUpdate.mainUpdate) {
-        const mu = reads.activeUpdate.mainUpdate;
-        activePayload["main.state"] = "purchase_delay";
-        activePayload["main.nextOfferAt"] = mu.nextOfferAt;
-        activePayload["main.tier"] = mu.newTier;
+        // For IAP purchases: REMOVE the offer completely (one-time purchase)
+        // Scheduler will create new offer (next tier) after 30min delay
+        activePayload.main = admin.firestore.FieldValue.delete();
         // Clear legacy fields
         activePayload.starter = admin.firestore.FieldValue.delete();
         activePayload.daily = admin.firestore.FieldValue.delete();
@@ -634,8 +652,8 @@ export const purchaseOffer = onCall({ region: REGION }, async (request) => {
         // Handle legacy format updates
         switch (reads.activeUpdate.slot) {
           case "main":
-            // Non-IAP main purchase - just mark as purchased (legacy behavior)
-            activePayload["main.state"] = "active";
+            // Non-IAP main purchase - remove offer
+            activePayload.main = admin.firestore.FieldValue.delete();
             break;
           case "daily":
             activePayload["daily.isPurchased"] = true;

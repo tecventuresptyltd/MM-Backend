@@ -212,6 +212,7 @@ export async function waitForUserBootstrap(uid: string): Promise<Set<string>> {
   const socialRef = playerRef.collection("Social").doc("Profile");
   const progressRef = playerRef.collection("Progress").doc("Initial");
   const maintenanceRef = playerRef.collection("Maintenance").doc("UnseenRewards");
+  const referralsUnseenRef = playerRef.collection("Referrals").doc("UnseenRewards");
 
   const inventoryCtx = resolveInventoryContext(uid);
   const starterRewards = await loadStarterRewards();
@@ -469,6 +470,7 @@ export async function initializeUserIfNeeded(
           tx.get(socialRef),
           tx.get(progressRef),
           tx.get(maintenanceRef),
+          tx.get(referralsUnseenRef),
           tx.get(receiptRef),
           tx.get(crateRef),
           tx.get(keyRef),
@@ -488,6 +490,7 @@ export async function initializeUserIfNeeded(
           socialDoc,
           progressDoc,
           maintenanceDoc,
+          referralsUnseenDoc,
           receiptDoc,
           crateDoc,
           keyDoc,
@@ -738,6 +741,14 @@ export async function initializeUserIfNeeded(
         if (!maintenanceDoc.exists) {
           tx.set(
             maintenanceRef,
+            { unseenRewards: [], totalUnseen: 0, updatedAt: timestamp },
+            { merge: false },
+          );
+        }
+
+        if (!referralsUnseenDoc.exists) {
+          tx.set(
+            referralsUnseenRef,
             { unseenRewards: [], totalUnseen: 0, updatedAt: timestamp },
             { merge: false },
           );

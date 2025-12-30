@@ -6,6 +6,7 @@ import { ensureOp } from "../shared/idempotency";
 import { normalizeEmail } from "../shared/normalize";
 import { getAppleAudienceFromEnv, verifyAppleIdentityToken } from "../shared/appleVerify";
 import { initializeUserIfNeeded } from "../shared/initializeUser";
+import { isProduction } from "../shared/environment.js";
 
 type BindAppleRequest = {
   opId?: unknown;
@@ -21,7 +22,7 @@ const ensureString = (value: unknown, field: string): string => {
   return value.trim();
 };
 
-export const bindApple = onCall({ enforceAppCheck: false, region: "us-central1" }, async (request) => {
+export const bindApple = onCall({ enforceAppCheck: isProduction(), region: "us-central1" }, async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "User must be authenticated.");

@@ -12,7 +12,7 @@ export default function MaintenancePage() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [currentStatus, setCurrentStatus] = useState<any>(null);
-    const [enabled, setEnabled] = useState(false);
+    const [maintenance, setMaintenance] = useState(false);
     const [rewardAvailable, setRewardAvailable] = useState(false);
     const [rewardGems, setRewardGems] = useState(100);
     const [immediate, setImmediate] = useState(true); // Default to immediate activation
@@ -108,7 +108,7 @@ export default function MaintenancePage() {
             if (maintenanceDoc.exists()) {
                 const data = maintenanceDoc.data();
                 setCurrentStatus(data);
-                setEnabled(data.maintenance || data.enabled || false);
+                setMaintenance(data.maintenance || data.enabled || false);
                 setRewardAvailable(data.rewardAvailable || false);
                 setRewardGems(data.rewardGems || 100);
                 if (data.delayMinutes) {
@@ -141,13 +141,13 @@ export default function MaintenancePage() {
         try {
             // Build the request payload
             const payload: any = {
-                enabled,
+                maintenance,
                 rewardAvailable,
                 rewardGems: Number(rewardGems),
             };
 
             // Only include immediate and delayMinutes when ENABLING maintenance
-            if (enabled) {
+            if (maintenance) {
                 payload.immediate = immediate;
                 if (!immediate) {
                     payload.delayMinutes = delayMinutes;
@@ -161,9 +161,9 @@ export default function MaintenancePage() {
 
             const response = await callFunction("setMaintenanceMode", payload);
 
-            if (enabled && !immediate) {
+            if (maintenance && !immediate) {
                 setSuccess(`Maintenance break scheduled for ${delayMinutes} minutes from now. Players will receive a warning.`);
-            } else if (enabled) {
+            } else if (maintenance) {
                 setSuccess("Maintenance mode activated immediately!");
             } else {
                 setSuccess("Maintenance mode disabled. Players can now access the game.");
@@ -308,7 +308,7 @@ export default function MaintenancePage() {
                                                     });
                                                     console.log("[EMERGENCY] Cloud function returned:", result);
 
-                                                    setEnabled(false);
+                                                    setMaintenance(false);
                                                     setSuccess("Maintenance mode disabled. Players can now access the game.");
 
                                                     console.log("[EMERGENCY] Reloading status and history...");
@@ -356,19 +356,19 @@ export default function MaintenancePage() {
                                 </div>
                                 <button
                                     type="button"
-                                    onClick={() => setEnabled(!enabled)}
-                                    className={`relative inline-flex h-8 w-14 items-center rounded-full transition ${enabled ? "bg-blue-600" : "bg-gray-300"
+                                    onClick={() => setMaintenance(!maintenance)}
+                                    className={`relative inline-flex h-8 w-14 items-center rounded-full transition ${maintenance ? "bg-blue-600" : "bg-gray-300"
                                         }`}
                                 >
                                     <span
-                                        className={`inline-block h-6 w-6 transform rounded-full bg-white transition ${enabled ? "translate-x-7" : "translate-x-1"
+                                        className={`inline-block h-6 w-6 transform rounded-full bg-white transition ${maintenance ? "translate-x-7" : "translate-x-1"
                                             }`}
                                     />
                                 </button>
                             </div>
 
                             {/* Activation Timing - Only show when enabling maintenance */}
-                            {enabled && (
+                            {maintenance && (
                                 <div className="p-4 bg-gray-50 rounded-lg">
                                     <label className="font-medium text-gray-900 block mb-3">
                                         Activation Timing
@@ -408,7 +408,7 @@ export default function MaintenancePage() {
                             )}
 
                             {/* Delay Minutes Selector - Only show when scheduled maintenance */}
-                            {enabled && !immediate && (
+                            {maintenance && !immediate && (
                                 <div>
                                     <label htmlFor="delayMinutes" className="block text-sm font-medium text-gray-700 mb-2">
                                         Delay Duration
@@ -433,7 +433,7 @@ export default function MaintenancePage() {
                             )}
 
                             {/* Duration - Always show when enabling */}
-                            {enabled && (
+                            {maintenance && (
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
                                         Maintenance Duration

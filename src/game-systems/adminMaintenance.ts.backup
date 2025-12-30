@@ -8,8 +8,9 @@ const db = admin.firestore();
 // --- Set Maintenance Mode ---
 
 interface SetMaintenanceModeRequest {
-    maintenance: boolean;
-    rewardGems?: number;  // Gems to auto-credit to all players (default: 100)
+    maintenance: boolean;  // Changed from 'enabled'
+    rewardAvailable?: boolean;
+    rewardGems?: number;
     immediate?: boolean; // If true, activate immediately. If false, schedule with delay
     delayMinutes?: number; // Number of minutes to delay (if not immediate). Default: 15
     durationMinutes?: number; // How long maintenance will last (in minutes)
@@ -18,13 +19,13 @@ interface SetMaintenanceModeRequest {
 interface SetMaintenanceModeResponse {
     success: boolean;
     maintenance: {
-        maintenance: boolean;
+        maintenance: boolean;  // Changed from 'enabled'
+        rewardAvailable?: boolean;
         rewardGems?: number;
         scheduledMaintenanceTime?: number; // Timestamp when maintenance will be enforced
         delayMinutes?: number; // Number of minutes until enforcement
-        durationMinutes?: number;
-        maintenanceEndTime?: number;
-        activeHistoryId?: string; // ID for tracking this maintenance session
+        durationMinutes?: number; // NEW: Duration in minutes
+        maintenanceEndTime?: number; // NEW: When maintenance will end
         updatedAt: number;
         updatedBy: string;
     };
@@ -40,10 +41,14 @@ export const setMaintenanceMode = onCall({ region: REGION }, async (request) => 
     // Verify admin privileges
     await assertIsAdmin(uid);
 
-    const { maintenance, rewardGems, immediate, delayMinutes, durationMinutes } = request.data as SetMaintenanceModeRequest;
+    const { maintenance, rewardAvailable, rewardGems, immediate, delayMinutes, durationMinutes } = request.data as SetMaintenanceModeRequest;
 
     if (typeof maintenance !== "boolean") {
         throw new HttpsError("invalid-argument", "maintenance must be a boolean.");
+    }
+
+    if (rewardAvailable !== undefined && typeof rewardAvailable !== "boolean") {
+        throw new HttpsError("invalid-argument", "rewardAvailable must be a boolean.");
     }
 
     if (rewardGems !== undefined && (typeof rewardGems !== "number" || rewardGems < 0)) {
@@ -82,13 +87,10 @@ export const setMaintenanceMode = onCall({ region: REGION }, async (request) => 
         ? maintenanceStartTime! + (durationMinutes * 60 * 1000)
         : null;
 
-    // Create unique ID for this maintenance session (for reward tracking)
-    const activeHistoryId = maintenance ? db.collection("MaintenanceHistory").doc().id : null;
-
     const maintenanceData: any = {
         maintenance: maintenance === false ? false : (immediate !== false),  // Respect incoming value, only use immediate logic if enabling
-        rewardGems: rewardGems || 100,  // Always set gems (will auto-credit when maintenance ends)
-        activeHistoryId: maintenance ? activeHistoryId : admin.firestore.FieldValue.delete(),
+        rewardAvailable: rewardAvailable || false,
+        rewardGems: rewardGems || 100,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedBy: uid,
     };
@@ -172,7 +174,8 @@ export const setMaintenanceMode = onCall({ region: REGION }, async (request) => 
         success: true,
         maintenance: {
             maintenance: immediate !== false,  // Only true if immediate
-            activeHistoryId: activeHistoryId || undefined,            rewardGems: rewardGems || 100,
+            rewardAvailable: rewardAvailable || false,
+            rewardGems: rewardGems || 100,
             updatedAt: timestamp,
             updatedBy: uid,
         },

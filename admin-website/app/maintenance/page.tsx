@@ -13,7 +13,7 @@ export default function MaintenancePage() {
     const [loading, setLoading] = useState(false);
     const [currentStatus, setCurrentStatus] = useState<any>(null);
     const [maintenance, setMaintenance] = useState(false);
-    const [rewardAvailable, setRewardAvailable] = useState(false);
+    // rewardAvailable removed - rewards are now auto-credited
     const [rewardGems, setRewardGems] = useState(100);
     const [immediate, setImmediate] = useState(true); // Default to immediate activation
     const [delayMinutes, setDelayMinutes] = useState(1); // Default to 1 minute (minimum)
@@ -29,6 +29,42 @@ export default function MaintenancePage() {
     useEffect(() => {
         loadCurrentStatus();
         loadMaintenanceHistory();
+    }, []);
+
+    // Real-time listener for maintenance status changes
+    useEffect(() => {
+        const setupRealtimeListener = async () => {
+            const { onSnapshot } = await import("firebase/firestore");
+            const maintenanceRef = doc(db, "GameConfig", "maintenance");
+
+            const unsubscribe = onSnapshot(maintenanceRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.data();
+                    console.log("[Real-time] Maintenance status updated:", data);
+
+                    // Update all state automatically
+                    setCurrentStatus(data);
+                    setMaintenance(data.maintenance || false);
+                    setRewardGems(data.rewardGems || 100);
+
+                    if (data.delayMinutes && data.delayMinutes >= 1) {
+                        setDelayMinutes(data.delayMinutes);
+                    }
+                }
+            }, (error) => {
+                console.error("[Real-time] Error listening to maintenance status:", error);
+            });
+
+            return unsubscribe;
+        };
+
+        let unsubscribe: (() => void) | undefined;
+        setupRealtimeListener().then(unsub => { unsubscribe = unsub; });
+
+        // Cleanup
+        return () => {
+            if (unsubscribe) unsubscribe();
+        };
     }, []);
 
     // Countdown timer effect (before maintenance activates)
@@ -109,9 +145,8 @@ export default function MaintenancePage() {
                 const data = maintenanceDoc.data();
                 setCurrentStatus(data);
                 setMaintenance(data.maintenance || data.enabled || false);
-                setRewardAvailable(data.rewardAvailable || false);
                 setRewardGems(data.rewardGems || 100);
-                if (data.delayMinutes) {
+                if (data.delayMinutes && data.delayMinutes >= 1) {
                     setDelayMinutes(data.delayMinutes);
                 }
             }
@@ -120,14 +155,28 @@ export default function MaintenancePage() {
         }
     };
 
-    const loadMaintenanceHistory = async () => {
+    const loadMaintenanceHistory = async (loadMore = false) => {
         try {
-            const { collection, query, orderBy, limit, getDocs } = await import("firebase/firestore");
+            const { collection, query, orderBy, limit, getDocs, startAfter } = await import("firebase/firestore");
             const historyRef = collection(db, "MaintenanceHistory");
-            const q = query(historyRef, orderBy("startedAt", "desc"), limit(10));
+
+            let q;
+            if (loadMore && maintenanceHistory.length > 0) {
+                // Get the last document for pagination
+                const lastDoc = maintenanceHistory[maintenanceHistory.length - 1];
+                q = query(historyRef, orderBy("startedAt", "desc"), startAfter(lastDoc.startedAt), limit(10));
+            } else {
+                q = query(historyRef, orderBy("startedAt", "desc"), limit(10));
+            }
+
             const snapshot = await getDocs(q);
             const history = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setMaintenanceHistory(history);
+
+            if (loadMore) {
+                setMaintenanceHistory([...maintenanceHistory, ...history]);
+            } else {
+                setMaintenanceHistory(history);
+            }
         } catch (err) {
             console.error("Error loading maintenance history:", err);
         }
@@ -142,7 +191,6 @@ export default function MaintenancePage() {
             // Build the request payload
             const payload: any = {
                 maintenance: Boolean(maintenance), // Explicit boolean conversion
-                rewardAvailable,
                 rewardGems: Number(rewardGems),
             };
 
@@ -245,12 +293,6 @@ export default function MaintenancePage() {
                                     </span>
                                 </div>
                                 <div>
-                                    <span className="text-blue-700 font-medium">Reward Available:</span>
-                                    <span className="ml-2 text-blue-900">
-                                        {currentStatus.rewardAvailable ? "Yes" : "No"}
-                                    </span>
-                                </div>
-                                <div>
                                     <span className="text-blue-700 font-medium">Reward Gems:</span>
                                     <span className="ml-2 text-blue-900">
                                         {currentStatus.rewardGems || 0}
@@ -306,7 +348,6 @@ export default function MaintenancePage() {
                                                     console.log("[EMERGENCY] Calling setMaintenanceMode with maintenance:false");
                                                     const emergencyResponse = await callFunction("setMaintenanceMode", {
                                                         maintenance: false,  // Changed from 'enabled'
-                                                        rewardAvailable: false,
                                                         rewardGems: 0,
                                                     });
                                                     console.log("[EMERGENCY] Cloud function returned:", emergencyResponse);
@@ -475,18 +516,6 @@ export default function MaintenancePage() {
                             )}
 
                             {/* Reward Available */}
-                            <div className="flex items-center">
-                                <input
-                                    id="rewardAvailable"
-                                    type="checkbox"
-                                    checked={rewardAvailable}
-                                    onChange={(e) => setRewardAvailable(e.target.checked)}
-                                    className="h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                                />
-                                <label htmlFor="rewardAvailable" className="ml-3 text-sm font-medium text-gray-700">
-                                    Make reward available to players
-                                </label>
-                            </div>
 
                             {/* Reward Gems */}
                             <div>
@@ -533,6 +562,7 @@ export default function MaintenancePage() {
                                             <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Started</th>
                                             <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Ended</th>
                                             <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Duration</th>
+                                            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Gems Rewarded</th>
                                             <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Type</th>
                                         </tr>
                                     </thead>
@@ -569,6 +599,11 @@ export default function MaintenancePage() {
                                                             {durationText}
                                                         </span>
                                                     </td>
+                                                    <td className="py-3 px-4 text-sm">
+                                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                            {event.rewardGems || 100} gems
+                                                        </span>
+                                                    </td>
                                                     <td className="py-3 px-4 text-sm text-gray-900">
                                                         {typeText}
                                                     </td>
@@ -577,6 +612,16 @@ export default function MaintenancePage() {
                                         })}
                                     </tbody>
                                 </table>
+
+                                {/* Load More Button */}
+                                <div className="mt-6 text-center">
+                                    <button
+                                        onClick={() => loadMaintenanceHistory(true)}
+                                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                                    >
+                                        Load More
+                                    </button>
+                                </div>
                             </div>
                         )}
                     </div>

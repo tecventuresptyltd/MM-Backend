@@ -4,3 +4,4 @@ export { purchaseOffer } from "./purchaseOffer.js";
 export { getDailyOffers } from "./offers.js";
 export { verifyIapPurchase } from "./iap.js";
 export { offerTransitionJob } from "./offerScheduler.js";
+export { offerSafetyNetJob, runOfferSafetyNet } from "./offerSafetyNet.js";

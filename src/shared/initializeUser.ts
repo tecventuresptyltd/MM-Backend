@@ -211,6 +211,7 @@ export async function waitForUserBootstrap(uid: string): Promise<Set<string>> {
   const dailyRef = playerRef.collection("Daily").doc("Status");
   const socialRef = playerRef.collection("Social").doc("Profile");
   const progressRef = playerRef.collection("Progress").doc("Initial");
+  const maintenanceRef = playerRef.collection("Maintenance").doc("UnseenRewards");
 
   const inventoryCtx = resolveInventoryContext(uid);
   const starterRewards = await loadStarterRewards();
@@ -226,6 +227,7 @@ export async function waitForUserBootstrap(uid: string): Promise<Set<string>> {
     dailyRef,
     socialRef,
     progressRef,
+    maintenanceRef,
     inventoryCtx.summaryRef,
     db.doc(`Players/${uid}/Inventory/${starterRewards.crateSkuId}`),
     starterRewards.keySkuId
@@ -253,6 +255,7 @@ export async function initializeUserIfNeeded(
   const dailyRef = playerRef.collection("Daily").doc("Status");
   const socialRef = playerRef.collection("Social").doc("Profile");
   const progressRef = playerRef.collection("Progress").doc("Initial");
+  const maintenanceRef = playerRef.collection("Maintenance").doc("UnseenRewards");
   const inventoryCtx = resolveInventoryContext(uid);
   const receiptId = opts?.opId ?? STARTER_INIT_RECEIPT_ID;
 
@@ -465,6 +468,7 @@ export async function initializeUserIfNeeded(
           tx.get(dailyRef),
           tx.get(socialRef),
           tx.get(progressRef),
+          tx.get(maintenanceRef),
           tx.get(receiptRef),
           tx.get(crateRef),
           tx.get(keyRef),
@@ -483,6 +487,7 @@ export async function initializeUserIfNeeded(
           dailyDoc,
           socialDoc,
           progressDoc,
+          maintenanceDoc,
           receiptDoc,
           crateDoc,
           keyDoc,
@@ -573,6 +578,7 @@ export async function initializeUserIfNeeded(
             dailyDoc,
             socialDoc,
             progressDoc,
+            maintenanceDoc,
             receiptDoc,
             crateDoc,
             keyDoc,
@@ -622,6 +628,7 @@ export async function initializeUserIfNeeded(
             dailyDoc,
             socialDoc,
             progressDoc,
+            maintenanceDoc,
             receiptDoc,
             crateDoc,
             keyDoc,
@@ -724,6 +731,14 @@ export async function initializeUserIfNeeded(
           tx.set(
             progressRef,
             { tutorialComplete: false, updatedAt: timestamp },
+            { merge: false },
+          );
+        }
+
+        if (!maintenanceDoc.exists) {
+          tx.set(
+            maintenanceRef,
+            { unseenRewards: [], totalUnseen: 0, updatedAt: timestamp },
             { merge: false },
           );
         }

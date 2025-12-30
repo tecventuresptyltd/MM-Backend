@@ -1,80 +1,102 @@
 import * as admin from "firebase-admin";
-import { onCall } from "firebase-functions/v2/https";
-import { onDocumentWritten } from "firebase-functions/v2/firestore";
-import { REGION } from "../shared/region";
+import * as logger from "firebase-functions/logger";
 
 const db = admin.firestore();
 
 /**
- * Background trigger: When maintenance ends, automatically credit all players
- * Triggered by changes to /GameConfig/maintenance document
+ * Shared function to distribute maintenance rewards when maintenance ends.
+ * Called by both setMaintenanceMode and activateScheduledMaintenance.
  */
-export const creditPlayersOnMaintenanceEnd = onDocumentWritten({
-    document: "/GameConfig/maintenance",
-    region: REGION,
-}, async (event) => {
+export async function distributeMaintenanceRewards(
+    maintenanceId: string,
+    gemsToGrant: number,
+    endedBy: string,
+    timestamp: number
+): Promise<{ playersRewarded: number }> {
+    logger.info("[distributeMaintenanceRewards] Starting distribution", {
+        maintenanceId,
+        gemsToGrant,
+        endedBy,
+    });
+
+    // Update maintenance history
+    const historyRef = db.doc(`MaintenanceHistory/${maintenanceId}`);
+    const historyDoc = await historyRef.get();
+
+    if (historyDoc.exists) {
+        const historyData = historyDoc.data();
+        const startedAt = historyData?.startedAt || timestamp;
+        const duration = timestamp - startedAt;
+
+        logger.info("[distributeMaintenanceRewards] Updating history with endedAt");
+
+        try {
+            await historyRef.update({
+                endedAt: timestamp,
+                endedBy,
+                duration,
+                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
+
+            logger.info("[distributeMaintenanceRewards] History updated successfully");
+        } catch (error) {
+            logger.error("[distributeMaintenanceRewards] Failed to update history:", error);
+            throw error;
+        }
+    } else {
+        logger.warn(
+            "[distributeMaintenanceRewards] History document does not exist:",
+            maintenanceId
+        );
+    }
+
+    // Get all players
+    const playersSnapshot = await db.collection("Players").get();
+
+    logger.info(
+        `[distributeMaintenanceRewards] Distributing rewards to ${playersSnapshot.size} players`
+    );
+
+    // Use batched writes for efficiency (max 500 per batch)
+    let batch = db.batch();
+    let operationCount = 0;
+    let rewardedCount = 0;
+
     try {
-        const beforeData = event.data?.before.data();
-        const afterData = event.data?.after.data();
-
-        // Check if maintenance just ended (was true, now false)
-        const maintenanceEnded = beforeData?.maintenance === true && afterData?.maintenance === false;
-
-        if (!maintenanceEnded) {
-            console.log("Maintenance status unchanged or not ending, skipping credit");
-            return;
-        }
-
-        const rewardGems = afterData?.rewardGems || 100;
-        const maintenanceId = afterData?.activeHistoryId || beforeData?.activeHistoryId;
-
-        if (!maintenanceId) {
-            console.error("No maintenance ID found, cannot track rewards");
-            return;
-        }
-
-        console.log(`Maintenance ended. Crediting all players ${rewardGems} gems (maintenanceId: ${maintenanceId})`);
-
-        // Get all players
-        const playersSnapshot = await db.collection("Players").get();
-
-        if (playersSnapshot.empty) {
-            console.log("No players found to credit");
-            return;
-        }
-
-        // Process in batches of 500 (Firestore batch limit)
-        const batchSize = 500;
-        let batch = db.batch();
-        let operationCount = 0;
-        let totalCredited = 0;
-
         for (const playerDoc of playersSnapshot.docs) {
             const playerId = playerDoc.id;
-            const playerRef = db.doc(`/Players/${playerId}`);
-            const currentBalance = playerDoc.data().balance || 0;
 
-            // Update player balance
-            batch.update(playerRef, {
-                balance: currentBalance + rewardGems,
+            // Add to unseen rewards
+            const unseenRef = db.doc(`Players/${playerId}/Maintenance/UnseenRewards`);
+            batch.set(
+                unseenRef,
+                {
+                    unseenRewards: admin.firestore.FieldValue.arrayUnion({
+                        maintenanceId,
+                        gems: gemsToGrant,
+                        timestamp,
+                    }),
+                    totalUnseen: admin.firestore.FieldValue.increment(1),
+                    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                },
+                { merge: true }
+            );
+
+            // Grant gems immediately
+            const statsRef = db.doc(`Players/${playerId}/Economy/Stats`);
+            batch.update(statsRef, {
+                gems: admin.firestore.FieldValue.increment(gemsToGrant),
             });
 
-            // Create reward tracking entry
-            const rewardRef = db.doc(`/Players/${playerId}/maintenanceRewards/${maintenanceId}`);
-            batch.set(rewardRef, {
-                gems: rewardGems,
-                timestamp: admin.firestore.FieldValue.serverTimestamp(),
-                seen: false,
-                credited: true,
-            });
+            operationCount += 2; // unseenRewards + stats update
+            rewardedCount++;
 
-            operationCount += 2; // Two operations per player
-            totalCredited++;
-
-            // Commit batch every 250 players (500 operations)
-            if (operationCount >= batchSize) {
+            // Commit batch every 250 operations (500 writes / 2 ops per player)
+            if (operationCount >= 500) {
                 await batch.commit();
-                console.log(`Credited ${totalCredited} players so far...`);
+                logger.info(
+                    `[distributeMaintenanceRewards] Batch committed: ${rewardedCount} players rewarded so far`
+                );
                 batch = db.batch();
                 operationCount = 0;
             }
@@ -85,105 +107,13 @@ export const creditPlayersOnMaintenanceEnd = onDocumentWritten({
             await batch.commit();
         }
 
-        console.log(`✅ Successfully credited ${totalCredited} players with ${rewardGems} gems each`);
+        logger.info(
+            `[distributeMaintenanceRewards] Rewards distributed to ${rewardedCount} players successfully`
+        );
 
+        return { playersRewarded: rewardedCount };
     } catch (error) {
-        console.error("Error in creditPlayersOnMaintenanceEnd:", error);
+        logger.error("[distributeMaintenanceRewards] Error during reward distribution:", error);
         throw error;
     }
-});
-
-/**
- * Callable function: Get unseen maintenance rewards for a player
- * Returns total gems and list of rewards they haven't viewed yet
- */
-export const getUnseenMaintenanceRewards = onCall({
-    region: REGION,
-}, async (request) => {
-    try {
-        const uid = request.auth?.uid;
-
-        if (!uid) {
-            throw new Error("Authentication required");
-        }
-
-        // Query unseen rewards
-        const rewardsSnapshot = await db.collection(`/Players/${uid}/maintenanceRewards`)
-            .where("seen", "==", false)
-            .orderBy("timestamp", "desc")
-            .get();
-
-        if (rewardsSnapshot.empty) {
-            return {
-                totalGems: 0,
-                count: 0,
-                rewards: [],
-            };
-        }
-
-        let totalGems = 0;
-        const rewards: any[] = [];
-
-        rewardsSnapshot.forEach((doc) => {
-            const data = doc.data();
-            totalGems += data.gems || 0;
-            rewards.push({
-                maintenanceId: doc.id,
-                gems: data.gems,
-                timestamp: data.timestamp?.toMillis() || 0,
-            });
-        });
-
-        return {
-            totalGems,
-            count: rewards.length,
-            rewards,
-        };
-
-    } catch (error) {
-        console.error("Error in getUnseenMaintenanceRewards:", error);
-        throw error;
-    }
-});
-
-/**
- * Callable function: Mark maintenance rewards as seen
- * Call this after showing the notification popup to the player
- */
-export const markMaintenanceRewardsSeen = onCall({
-    region: REGION,
-}, async (request) => {
-    try {
-        const uid = request.auth?.uid;
-        const { maintenanceIds } = request.data;
-
-        if (!uid) {
-            throw new Error("Authentication required");
-        }
-
-        if (!maintenanceIds || !Array.isArray(maintenanceIds)) {
-            throw new Error("maintenanceIds array required");
-        }
-
-        // Update all specified rewards to seen: true
-        const batch = db.batch();
-
-        for (const maintenanceId of maintenanceIds) {
-            const rewardRef = db.doc(`/Players/${uid}/maintenanceRewards/${maintenanceId}`);
-            batch.update(rewardRef, { seen: true });
-        }
-
-        await batch.commit();
-
-        console.log(`Marked ${maintenanceIds.length} rewards as seen for player ${uid}`);
-
-        return {
-            success: true,
-            markedCount: maintenanceIds.length,
-        };
-
-    } catch (error) {
-        console.error("Error in markMaintenanceRewardsSeen:", error);
-        throw error;
-    }
-});
+}

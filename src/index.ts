@@ -25,7 +25,7 @@ export { getGemConversionPreview } from "./economy/preview.js";
 export { adjustCoins } from "./economy/coins";
 export { adjustGems } from "./economy/gems";
 export { grantXP } from "./economy/xp";
-export { purchaseShopSku, activateBooster, purchaseOffer, getDailyOffers, verifyIapPurchase, offerTransitionJob } from "./shop";
+export { purchaseShopSku, activateBooster, purchaseOffer, getDailyOffers, verifyIapPurchase, offerTransitionJob, offerSafetyNetJob, runOfferSafetyNet } from "./shop";
 export { purchaseCar, upgradeCar, equipCosmetic, purchaseCrateItem, grantItem } from "./garage";
 export { openCrate } from "./crates";
 export { upgradeSpell, setLoadout, equipCosmetics, setSpellDeck, selectActiveSpellDeck } from "./spells";

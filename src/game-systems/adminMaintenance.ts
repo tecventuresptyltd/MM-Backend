@@ -142,77 +142,114 @@ export const setMaintenanceMode = onCall({ region: REGION }, async (request) => 
         maintenanceData.activeHistoryId = historyRef.id;
     } else {
         // Ending maintenance - update the active history entry
+        console.log("[setMaintenanceMode] Entering maintenance END logic");
+
         const currentMaintenanceDoc = await maintenanceRef.get();
         const currentData = currentMaintenanceDoc.data();
+
+        console.log("[setMaintenanceMode] Current maintenance data:", {
+            exists: currentMaintenanceDoc.exists,
+            activeHistoryId: currentData?.activeHistoryId,
+        });
 
         if (currentData?.activeHistoryId) {
             const historyRef = db.collection("/MaintenanceHistory").doc(currentData.activeHistoryId);
             const historyDoc = await historyRef.get();
+
+            console.log("[setMaintenanceMode] History document:", {
+                id: currentData.activeHistoryId,
+                exists: historyDoc.exists,
+            });
 
             if (historyDoc.exists) {
                 const historyData = historyDoc.data();
                 const startedAt = historyData?.startedAt || timestamp;
                 const duration = timestamp - startedAt;
 
-                await historyRef.update({
-                    endedAt: timestamp,
-                    endedBy: uid,
-                    duration,
-                    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-                });
+                console.log("[setMaintenanceMode] Updating history with endedAt");
+
+                try {
+                    await historyRef.update({
+                        endedAt: timestamp,
+                        endedBy: uid,
+                        duration,
+                        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                    });
+
+                    console.log("[setMaintenanceMode] History updated successfully");
+                } catch (error) {
+                    console.error("[setMaintenanceMode] Failed to update history:", error);
+                    throw error;
+                }
+            } else {
+                console.warn("[setMaintenanceMode] History document does not exist:", currentData.activeHistoryId);
             }
 
             // Grant unseen rewards to all players when maintenance ends
             const maintenanceId = currentData.activeHistoryId;
             const gemsToGrant = currentData.rewardGems || 100;
 
-            // Get all players (in production, use pagination for large player bases)
+            // Get all players
             const playersSnapshot = await db.collection("Players").get();
+
+            console.log(`[setMaintenanceMode] Distributing rewards to ${playersSnapshot.size} players`);
 
             // Use batched writes for efficiency (max 500 per batch)
             const batchSize = 500;
             let batch = db.batch();
             let operationCount = 0;
+            let rewardedCount = 0;
 
-            for (const playerDoc of playersSnapshot.docs) {
-                const playerId = playerDoc.id;
+            try {
+                for (const playerDoc of playersSnapshot.docs) {
+                    const playerId = playerDoc.id;
 
-                // Add to unseen rewards
-                const unseenRef = db.doc(`Players/${playerId}/Maintenance/UnseenRewards`);
-                batch.set(
-                    unseenRef,
-                    {
-                        unseenRewards: admin.firestore.FieldValue.arrayUnion({
-                            maintenanceId,
-                            gems: gemsToGrant,
-                            timestamp,
-                        }),
-                        totalUnseen: admin.firestore.FieldValue.increment(1),
-                        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-                    },
-                    { merge: true }
-                );
+                    // Add to unseen rewards
+                    const unseenRef = db.doc(`Players/${playerId}/Maintenance/UnseenRewards`);
+                    batch.set(
+                        unseenRef,
+                        {
+                            unseenRewards: admin.firestore.FieldValue.arrayUnion({
+                                maintenanceId,
+                                gems: gemsToGrant,
+                                timestamp,
+                            }),
+                            totalUnseen: admin.firestore.FieldValue.increment(1),
+                            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                        },
+                        { merge: true }
+                    );
 
-                // Grant gems immediately
-                const statsRef = db.doc(`Players/${playerId}/Economy/Stats`);
-                batch.update(statsRef, {
-                    gems: admin.firestore.FieldValue.increment(gemsToGrant),
-                });
+                    // Grant gems immediately
+                    const statsRef = db.doc(`Players/${playerId}/Economy/Stats`);
+                    batch.update(statsRef, {
+                        gems: admin.firestore.FieldValue.increment(gemsToGrant),
+                    });
 
-                operationCount += 2; // unseenRewards + stats update
+                    operationCount += 2; // unseenRewards + stats update
+                    rewardedCount++;
 
-                // Commit batch every 250 operations (500 writes / 2 ops per player)
-                if (operationCount >= 500) {
-                    await batch.commit();
-                    batch = db.batch();
-                    operationCount = 0;
+                    // Commit batch every 250 operations (500 writes / 2 ops per player)
+                    if (operationCount >= 500) {
+                        await batch.commit();
+                        console.log(`[setMaintenanceMode] Batch committed: ${rewardedCount} players rewarded so far`);
+                        batch = db.batch();
+                        operationCount = 0;
+                    }
                 }
-            }
 
-            // Commit remaining operations
-            if (operationCount > 0) {
-                await batch.commit();
+                // Commit remaining operations
+                if (operationCount > 0) {
+                    await batch.commit();
+                }
+
+                console.log(`[setMaintenanceMode] Rewards distributed to ${rewardedCount} players successfully`);
+            } catch (error) {
+                console.error("[setMaintenanceMode] Error during reward distribution:", error);
+                throw error;
             }
+        } else {
+            console.warn("[setMaintenanceMode] No activeHistoryId found, skipping history update and reward distribution");
         }
 
         // Clear the active history ID

@@ -33,11 +33,36 @@ export const activateScheduledMaintenance = onSchedule({
         if (maintenanceActive && maintenanceEndTime && now >= maintenanceEndTime) {
             console.log(`Ending maintenance (ended at ${maintenanceEndTime}, now is ${now})`);
 
+            const activeHistoryId = data?.activeHistoryId;
+            const gemsToGrant = data?.rewardGems || 100;
+
+            // Distribute rewards before turning off maintenance
+            if (activeHistoryId) {
+                console.log(`Distributing maintenance rewards for session ${activeHistoryId}`);
+
+                const { distributeMaintenanceRewards } = await import("./maintenanceRewards.js");
+
+                try {
+                    const result = await distributeMaintenanceRewards(
+                        activeHistoryId,
+                        gemsToGrant,
+                        "system-scheduled-end",
+                        now
+                    );
+
+                    console.log(`Rewards distributed to ${result.playersRewarded} players`);
+                } catch (error) {
+                    console.error("Failed to distribute rewards:", error);
+                    // Continue to turn off maintenance even if reward distribution fails
+                }
+            }
+
             await maintenanceRef.update({
                 maintenance: false,
                 maintenanceEndTime: admin.firestore.FieldValue.delete(),
                 durationMinutes: admin.firestore.FieldValue.delete(),
                 startedAt: admin.firestore.FieldValue.delete(),
+                activeHistoryId: admin.firestore.FieldValue.delete(), // Clear the history ID
                 updatedAt: admin.firestore.FieldValue.serverTimestamp(),
             });
 

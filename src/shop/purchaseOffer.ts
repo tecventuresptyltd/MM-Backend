@@ -1,4 +1,5 @@
 import * as admin from "firebase-admin";
+import * as logger from "firebase-functions/logger";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 
 import {
@@ -16,6 +17,8 @@ import {
   ItemSku,
   ActiveOffers,
   ActiveSpecialOffer,
+  MainOffer,
+  OfferFlowState,
 } from "../shared/types.js";
 import {
   incSkuQtyTx,
@@ -27,13 +30,25 @@ import {
 import { resolveInventoryContext } from "../shared/inventory.js";
 import {
   activeOffersRef,
+  offerStateRef,
   normaliseActiveOffers,
+  normaliseOfferFlowState,
   pruneExpiredSpecialOffers,
+  POST_PURCHASE_DELAY_MS,
+  resolveNextTierOnPurchase,
+  MAX_TIER,
 } from "./offerState.js";
+import { scheduleOfferTransition, cancelScheduledTransition } from "./offerScheduler.js";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────────────────────────────────────
 
 interface PurchaseOfferRequest {
   opId: unknown;
   offerId: unknown;
+  /** If true, this is an IAP-verified purchase that affects ladder progression */
+  isIapPurchase?: boolean;
 }
 
 interface GrantSummary {
@@ -56,6 +71,10 @@ interface PurchaseOfferResult {
     gems?: number;
     coins?: number;
   };
+  /** New tier after this purchase (if ladder progression occurred) */
+  newTier?: number;
+  /** When next offer will be available (if in purchase_delay) */
+  nextOfferAt?: number;
 }
 
 interface ResolvedSkuEntitlement {
@@ -66,25 +85,34 @@ interface ResolvedSkuEntitlement {
 
 type GrantPlan =
   | {
-      kind: "currency";
-      summary: GrantSummary;
-    }
+    kind: "currency";
+    summary: GrantSummary;
+  }
   | {
-      kind: "sku";
-      sku: ItemSku;
-      quantity: number;
-      entitlementType: OfferEntitlement["type"];
-      context: TxSkuMutationContext;
-    };
+    kind: "sku";
+    sku: ItemSku;
+    quantity: number;
+    entitlementType: OfferEntitlement["type"];
+    context: TxSkuMutationContext;
+  };
 
 type ActiveOfferSlot =
+  | { kind: "main" }
   | { kind: "daily" }
   | { kind: "starter" }
   | { kind: "special"; index: number };
 
+interface MainOfferUpdate {
+  newTier: number;
+  nextOfferAt: number;
+  isStarter: boolean;
+}
+
 interface ActiveOfferUpdate {
   slot: ActiveOfferSlot["kind"];
   special?: ActiveSpecialOffer[];
+  /** New main offer update for IAP purchases */
+  mainUpdate?: MainOfferUpdate;
 }
 
 interface PurchaseOfferReadState {
@@ -100,19 +128,35 @@ interface PurchaseOfferReadState {
   grantPlans: GrantPlan[];
   summaryState: TxInventorySummaryState;
   activeRef: FirebaseFirestore.DocumentReference;
+  stateRef: FirebaseFirestore.DocumentReference;
   activeUpdate: ActiveOfferUpdate;
   activeUpdatedAt: number;
+  flowState: OfferFlowState;
+  isIapPurchase: boolean;
+  offerId: string;
 }
 
-const ensureOfferRequest = (request: PurchaseOfferRequest): { opId: string; offerId: string } => {
-  const { opId, offerId } = request;
+// ─────────────────────────────────────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+const ensureOfferRequest = (request: PurchaseOfferRequest): {
+  opId: string;
+  offerId: string;
+  isIapPurchase: boolean;
+} => {
+  const { opId, offerId, isIapPurchase } = request;
   if (typeof opId !== "string" || !opId.trim()) {
     throw new HttpsError("invalid-argument", "opId must be a non-empty string.");
   }
   if (typeof offerId !== "string" || !offerId.trim()) {
     throw new HttpsError("invalid-argument", "offerId must be a non-empty string.");
   }
-  return { opId: opId.trim(), offerId: offerId.trim() };
+  return {
+    opId: opId.trim(),
+    offerId: offerId.trim(),
+    isIapPurchase: Boolean(isIapPurchase),
+  };
 };
 
 const ensureOffer = async (offerId: string): Promise<Offer> => {
@@ -128,6 +172,23 @@ const ensureOffer = async (offerId: string): Promise<Offer> => {
     );
   }
   return offer;
+};
+
+/**
+ * Check if an offer is an IAP offer based on its configuration.
+ * IAP offers have a productId (for app stores) and use USD currency.
+ */
+const isIapOffer = (offer: Offer): boolean => {
+  return Boolean(offer.productId) && offer.currency === "USD";
+};
+
+/**
+ * Check if an offer is a main-slot offer (starter, daily, or ladder).
+ * offerType 0 = starter, 1-4 = daily, 5-8 = ladder
+ */
+const isMainSlotOffer = (offer: Offer): boolean => {
+  const type = offer.offerType ?? -1;
+  return type >= 0 && type <= 8;
 };
 
 const resolveEntitlementSku = async (
@@ -191,33 +252,53 @@ const resolveItemType = (sku: ItemSku): ItemSku["type"] => {
   );
 };
 
+/**
+ * Resolve which slot an offer belongs to.
+ * Supports both new main-slot format and legacy starter/daily format.
+ */
 const resolveActiveOfferSlot = (
   offerId: string,
   state: ActiveOffers,
   now: number,
 ): ActiveOfferSlot | null => {
+  // Check new main slot first
+  if (state.main && state.main.offerId === offerId) {
+    if (state.main.state === "active" && state.main.expiresAt > now) {
+      return { kind: "main" };
+    }
+    return null;
+  }
+
+  // Legacy: check starter
   if (state.starter && state.starter.offerId === offerId) {
     if (state.starter.expiresAt > now) {
       return { kind: "starter" };
     }
     return null;
   }
-  if (state.daily.offerId === offerId && state.daily.expiresAt > now) {
+
+  // Legacy: check daily
+  if (state.daily?.offerId === offerId && (state.daily.expiresAt ?? 0) > now) {
     return { kind: "daily" };
   }
+
+  // Check special offers (milestones, flash sales)
   const specialIndex = state.special.findIndex(
     (entry) => entry.offerId === offerId && entry.expiresAt > now,
   );
   if (specialIndex >= 0) {
     return { kind: "special", index: specialIndex };
   }
+
   return null;
 };
 
 const ensureActiveOfferUpdate = (
   offerId: string,
   state: ActiveOffers,
+  flowState: OfferFlowState,
   now: number,
+  isIapPurchase: boolean,
   prunedSpecial?: ActiveSpecialOffer[],
 ): ActiveOfferUpdate => {
   const slot = resolveActiveOfferSlot(offerId, state, now);
@@ -227,22 +308,48 @@ const ensureActiveOfferUpdate = (
       `Offer ${offerId} is not active for this player.`,
     );
   }
-  if (slot.kind === "daily" && state.daily.isPurchased) {
+
+  // Legacy daily check
+  if (slot.kind === "daily" && state.daily?.isPurchased) {
     throw new HttpsError(
       "failed-precondition",
       "Daily offer has already been purchased.",
     );
   }
+
+  // Special offers (milestones, flash sales) - just remove from list
   if (slot.kind === "special") {
     const base = prunedSpecial ?? state.special;
     const filtered = base.filter((_, index) => index !== slot.index);
     return { slot: "special", special: filtered };
   }
-  if (prunedSpecial && prunedSpecial.length !== state.special.length) {
-    return { slot: slot.kind, special: prunedSpecial };
+
+  // For main slot IAP purchases, calculate tier progression
+  let mainUpdate: MainOfferUpdate | undefined;
+  if ((slot.kind === "main" || slot.kind === "starter" || slot.kind === "daily") && isIapPurchase) {
+    const currentTier = state.main?.tier ?? flowState.tier ?? 0;
+    const newTier = resolveNextTierOnPurchase(currentTier);
+    mainUpdate = {
+      newTier,
+      nextOfferAt: now + POST_PURCHASE_DELAY_MS,
+      isStarter: slot.kind === "starter" || Boolean(state.main?.isStarter),
+    };
   }
-  return { slot: slot.kind };
+
+  const update: ActiveOfferUpdate = { slot: slot.kind };
+  if (prunedSpecial && prunedSpecial.length !== state.special.length) {
+    update.special = prunedSpecial;
+  }
+  if (mainUpdate) {
+    update.mainUpdate = mainUpdate;
+  }
+
+  return update;
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Main Function
+// ─────────────────────────────────────────────────────────────────────────────
 
 export const purchaseOffer = onCall({ region: REGION }, async (request) => {
   const uid = request.auth?.uid;
@@ -250,7 +357,7 @@ export const purchaseOffer = onCall({ region: REGION }, async (request) => {
     throw new HttpsError("unauthenticated", "User must be authenticated.");
   }
 
-  const { opId, offerId } = ensureOfferRequest(request.data as PurchaseOfferRequest);
+  const { opId, offerId, isIapPurchase } = ensureOfferRequest(request.data as PurchaseOfferRequest);
 
   const cached = await checkIdempotency(uid, opId);
   if (cached) {
@@ -261,6 +368,10 @@ export const purchaseOffer = onCall({ region: REGION }, async (request) => {
 
   const offer = await ensureOffer(offerId);
   const resolvedEntitlements = await resolveEntitlements(offer);
+
+  // Determine if this should affect ladder progression
+  // Only IAP purchases on main-slot offers trigger progression
+  const shouldProgressLadder = isIapPurchase && isIapOffer(offer) && isMainSlotOffer(offer);
 
   const inventoryCtx = resolveInventoryContext(uid);
   const summaryRef = inventoryCtx.summaryRef;
@@ -274,10 +385,14 @@ export const purchaseOffer = onCall({ region: REGION }, async (request) => {
       const timestamp = admin.firestore.FieldValue.serverTimestamp();
       const economyRef = db.doc(`Players/${uid}/Economy/Stats`);
       const activeRef = activeOffersRef(uid);
-      const [statsSnap, activeSnap] = await Promise.all([
+      const stateRef = offerStateRef(uid);
+
+      const [statsSnap, activeSnap, flowStateSnap] = await Promise.all([
         transaction.get(economyRef),
         transaction.get(activeRef),
+        transaction.get(stateRef),
       ]);
+
       if (!statsSnap.exists) {
         throw new HttpsError("failed-precondition", "Economy profile missing for player.");
       }
@@ -289,11 +404,15 @@ export const purchaseOffer = onCall({ region: REGION }, async (request) => {
       }
 
       const activeState = normaliseActiveOffers(activeSnap.data());
+      const flowState = normaliseOfferFlowState(flowStateSnap.data());
       const prunedSpecial = pruneExpiredSpecialOffers(activeState.special, nowMillis);
+
       const activeUpdate = ensureActiveOfferUpdate(
         offerId,
         { ...activeState, special: prunedSpecial },
+        flowState,
         nowMillis,
+        shouldProgressLadder,
         prunedSpecial,
       );
 
@@ -321,21 +440,24 @@ export const purchaseOffer = onCall({ region: REGION }, async (request) => {
       let gemsAfter = gemsBefore;
       let coinsAfter = coinsBefore;
 
-      if (chargeCurrency === "gems" && chargeAmount > 0) {
-        if (gemsBefore < chargeAmount) {
-          throw new HttpsError("resource-exhausted", "Insufficient gems for offer purchase.");
+      // For IAP offers, we don't charge in-game currency
+      if (!isIapOffer(offer)) {
+        if (chargeCurrency === "gems" && chargeAmount > 0) {
+          if (gemsBefore < chargeAmount) {
+            throw new HttpsError("resource-exhausted", "Insufficient gems for offer purchase.");
+          }
+          gemsAfter -= chargeAmount;
+        } else if (chargeCurrency === "coins" && chargeAmount > 0) {
+          if (coinsBefore < chargeAmount) {
+            throw new HttpsError("resource-exhausted", "Insufficient coins for offer purchase.");
+          }
+          coinsAfter -= chargeAmount;
+        } else if (chargeAmount > 0 && chargeCurrency) {
+          throw new HttpsError(
+            "failed-precondition",
+            `Unsupported offer currency ${offer.currency}.`,
+          );
         }
-        gemsAfter -= chargeAmount;
-      } else if (chargeCurrency === "coins" && chargeAmount > 0) {
-        if (coinsBefore < chargeAmount) {
-          throw new HttpsError("resource-exhausted", "Insufficient coins for offer purchase.");
-        }
-        coinsAfter -= chargeAmount;
-      } else if (chargeAmount > 0) {
-        throw new HttpsError(
-          "failed-precondition",
-          `Unsupported offer currency ${offer.currency}.`,
-        );
       }
 
       const inventoryRefs = new Map<string, FirebaseFirestore.DocumentReference>();
@@ -443,8 +565,12 @@ export const purchaseOffer = onCall({ region: REGION }, async (request) => {
         grantPlans,
         summaryState,
         activeRef,
+        stateRef,
         activeUpdate,
         activeUpdatedAt: nowMillis,
+        flowState,
+        isIapPurchase: shouldProgressLadder,
+        offerId,
       };
       return readState;
     },
@@ -490,11 +616,27 @@ export const purchaseOffer = onCall({ region: REGION }, async (request) => {
         });
       }
 
-      if (reads.activeUpdate) {
-        const activePayload: FirebaseFirestore.UpdateData<FirebaseFirestore.DocumentData> = {
-          updatedAt: reads.activeUpdatedAt,
-        };
+      // Update active offers document
+      const activePayload: FirebaseFirestore.UpdateData<FirebaseFirestore.DocumentData> = {
+        updatedAt: reads.activeUpdatedAt,
+      };
+
+      // Handle main slot update for new format
+      if (reads.activeUpdate.mainUpdate) {
+        const mu = reads.activeUpdate.mainUpdate;
+        activePayload["main.state"] = "purchase_delay";
+        activePayload["main.nextOfferAt"] = mu.nextOfferAt;
+        activePayload["main.tier"] = mu.newTier;
+        // Clear legacy fields
+        activePayload.starter = admin.firestore.FieldValue.delete();
+        activePayload.daily = admin.firestore.FieldValue.delete();
+      } else {
+        // Handle legacy format updates
         switch (reads.activeUpdate.slot) {
+          case "main":
+            // Non-IAP main purchase - just mark as purchased (legacy behavior)
+            activePayload["main.state"] = "active";
+            break;
           case "daily":
             activePayload["daily.isPurchased"] = true;
             break;
@@ -505,15 +647,34 @@ export const purchaseOffer = onCall({ region: REGION }, async (request) => {
             activePayload.special = reads.activeUpdate.special ?? [];
             break;
         }
-        if (
-          reads.activeUpdate.special &&
-          reads.activeUpdate.slot !== "special"
-        ) {
-          activePayload.special = reads.activeUpdate.special;
-        }
-        transaction.set(reads.activeRef, activePayload, { merge: true });
       }
 
+      // Update special offers if pruned
+      if (
+        reads.activeUpdate.special &&
+        reads.activeUpdate.slot !== "special"
+      ) {
+        activePayload.special = reads.activeUpdate.special;
+      }
+
+      transaction.set(reads.activeRef, activePayload, { merge: true });
+
+      // Update flow state for IAP purchases
+      if (reads.isIapPurchase && reads.activeUpdate.mainUpdate) {
+        const flowUpdates: Partial<OfferFlowState> = {
+          tier: reads.activeUpdate.mainUpdate.newTier,
+          lastOfferPurchasedAt: reads.activeUpdatedAt,
+          offersPurchased: [...reads.flowState.offersPurchased, reads.offerId],
+          totalIapPurchases: reads.flowState.totalIapPurchases + 1,
+          updatedAt: reads.activeUpdatedAt,
+        };
+        if (reads.activeUpdate.mainUpdate.isStarter) {
+          flowUpdates.starterPurchased = true;
+        }
+        transaction.set(reads.stateRef, flowUpdates, { merge: true });
+      }
+
+      // Update economy
       transaction.set(
         reads.economyRef,
         {
@@ -523,7 +684,8 @@ export const purchaseOffer = onCall({ region: REGION }, async (request) => {
         },
         { merge: true },
       );
-      return {
+
+      const purchaseResult: PurchaseOfferResult = {
         success: true,
         opId,
         offerId,
@@ -538,8 +700,35 @@ export const purchaseOffer = onCall({ region: REGION }, async (request) => {
           coins: reads.balances.coinsAfter,
         },
       };
+
+      // Include tier progression info for IAP purchases
+      if (reads.activeUpdate.mainUpdate) {
+        purchaseResult.newTier = reads.activeUpdate.mainUpdate.newTier;
+        purchaseResult.nextOfferAt = reads.activeUpdate.mainUpdate.nextOfferAt;
+      }
+
+      return purchaseResult;
     },
   );
+
+  // Schedule transition for IAP purchases (outside transaction for efficiency)
+  if (result.newTier !== undefined && result.nextOfferAt) {
+    try {
+      // CRITICAL: Cancel any existing queue entry first to prevent conflicts
+      await cancelScheduledTransition(uid);
+
+      // Then schedule new transition
+      await scheduleOfferTransition(
+        uid,
+        result.nextOfferAt,
+        "purchase_delay_end",
+        result.newTier,
+      );
+    } catch (error) {
+      // Non-critical - scheduler will still work via getDailyOffers fallback
+      logger.warn(`Failed to schedule offer transition for ${uid}`, error);
+    }
+  }
 
   return result;
 });

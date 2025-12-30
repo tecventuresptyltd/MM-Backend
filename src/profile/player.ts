@@ -143,6 +143,25 @@ export const getPlayerAge = onCall({ region: REGION }, async (request) => {
 
   return { age, isOver13 };
 });
+export const markTutorialComplete = onCall({ region: REGION }, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError(
+      "unauthenticated",
+      "The function must be called while authenticated."
+    );
+  }
+
+  const { uid } = request.auth;
+  const progressRef = db.doc(`/Players/${uid}/Progress/Initial`);
+  const timestamp = admin.firestore.FieldValue.serverTimestamp();
+
+  await progressRef.set(
+    { tutorialComplete: true, updatedAt: timestamp },
+    { merge: true },
+  );
+
+  return { status: "ok", tutorialComplete: true };
+});
 export const setAvatar = onCall({ region: REGION }, async (request) => {
   if (!request.auth) {
     throw new HttpsError(

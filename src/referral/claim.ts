@@ -257,6 +257,14 @@ export const referralClaimReferralCode = onCall({ region: REGION }, async (rawRe
       );
 
       const inviterRewardPrep = await buildRewardSkuStates(transaction, inviterUid, cappedReward);
+      const rewardContext = shouldGrantCurrent && cappedReward.length ? inviterRewardPrep.context : null;
+      const shouldGrantReward = Boolean(rewardContext);
+      const unseenRewardsRef = db.doc(`Players/${inviterUid}/Referrals/UnseenRewards`);
+      let currentUnseen: unknown[] = [];
+      if (shouldGrantReward) {
+        const unseenSnap = await transaction.get(unseenRewardsRef);
+        currentUnseen = unseenSnap.exists ? unseenSnap.data()?.unseenRewards || [] : [];
+      }
 
       // All reads are complete above; writes begin below.
       claimAnchorForUser(transaction, anchorRef, anchorSnap, uid, timestamp);
@@ -297,13 +305,13 @@ export const referralClaimReferralCode = onCall({ region: REGION }, async (rawRe
       );
 
       let inviterAwardSummary: Array<{ skuId: string; qty: number }> = [];
-      if (shouldGrantCurrent && cappedReward.length && inviterRewardPrep.context) {
+      if (shouldGrantReward) {
         const awards = await awardReferralRewards(
           transaction,
           inviterUid,
           cappedReward,
           timestamp,
-          inviterRewardPrep.context,
+          rewardContext as AwardInventoryContext,
         );
         inviterAwardSummary = awards.map((award) => ({
           skuId: award.skuId,
@@ -311,17 +319,13 @@ export const referralClaimReferralCode = onCall({ region: REGION }, async (rawRe
         }));
 
         // Track unseen reward for the inviter so they can be notified
-        const unseenRewardsRef = db.doc(`Players/${inviterUid}/Referrals/UnseenRewards`);
-        const unseenSnap = await transaction.get(unseenRewardsRef);
-
-        const currentUnseen = unseenSnap.exists ? unseenSnap.data()?.unseenRewards || [] : [];
-
         const newUnseenEntry = {
           eventId: `reward-${opId}`,
           inviteeUid: uid,
           tier: newSentTotal,
           rewards: inviterAwardSummary,
-          timestamp,
+          // Firestore does not allow FieldValue.serverTimestamp() inside arrays; use a concrete Timestamp instead.
+          timestamp: admin.firestore.Timestamp.now(),
         };
 
         transaction.set(

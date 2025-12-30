@@ -257,6 +257,7 @@ export async function initializeUserIfNeeded(
   const socialRef = playerRef.collection("Social").doc("Profile");
   const progressRef = playerRef.collection("Progress").doc("Initial");
   const maintenanceRef = playerRef.collection("Maintenance").doc("UnseenRewards");
+  const referralsUnseenRef = playerRef.collection("Referrals").doc("UnseenRewards");
   const inventoryCtx = resolveInventoryContext(uid);
   const receiptId = opts?.opId ?? STARTER_INIT_RECEIPT_ID;
 
@@ -582,6 +583,7 @@ export async function initializeUserIfNeeded(
             socialDoc,
             progressDoc,
             maintenanceDoc,
+            referralsUnseenDoc,
             receiptDoc,
             crateDoc,
             keyDoc,
@@ -632,6 +634,7 @@ export async function initializeUserIfNeeded(
             socialDoc,
             progressDoc,
             maintenanceDoc,
+            referralsUnseenDoc,
             receiptDoc,
             crateDoc,
             keyDoc,

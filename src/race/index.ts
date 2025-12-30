@@ -7,7 +7,7 @@ import { refreshFriendSnapshots } from "../Socials/updateSnapshots.js";
 import { grantInventoryRewards } from "../shared/inventoryAwards.js";
 import { maybeTriggerFlashSales } from "../triggers/flashSales.js";
 import { buildBotLoadout } from "../game-systems/botLoadoutHelper.js";
-import { applyClanTrophyDelta, playerClanStateRef } from "../clan/helpers.js";
+import { applyClanTrophyDelta, playerClanStateRef, clanMembersCollection, clanRef } from "../clan/helpers.js";
 import { updatePlayerLeaderboardEntry } from "../Socials/liveLeaderboard.js";
 import { updateClanLeaderboardEntry } from "../clan/liveLeaderboard.js";
 import {
@@ -294,6 +294,31 @@ export const startRace = onCall({ enforceAppCheck: false, region: REGION }, asyn
       trophies: trophiesAfterPreDeduct,
       updatedAt: timestamp,
     });
+
+    // Update clan member document and clan totals if player is in a clan
+    if (appliedPreDeduction !== 0) {
+      const clanStateSnap = await transaction.get(playerClanStateRef(uid));
+      const clanId = clanStateSnap.data()?.clanId;
+
+      if (typeof clanId === "string" && clanId.length > 0) {
+        const memberRef = clanMembersCollection(clanId).doc(uid);
+        const memberSnap = await transaction.get(memberRef);
+
+        if (memberSnap.exists) {
+          // Update member trophy count
+          transaction.update(memberRef, {
+            trophies: admin.firestore.FieldValue.increment(appliedPreDeduction),
+            updatedAt: timestamp,
+          });
+
+          // Update clan total trophies
+          transaction.update(clanRef(clanId), {
+            "stats.trophies": admin.firestore.FieldValue.increment(appliedPreDeduction),
+            updatedAt: timestamp,
+          });
+        }
+      }
+    }
 
     const raceRef = db.doc(`/Races/${raceId}`);
     transaction.set(raceRef, {

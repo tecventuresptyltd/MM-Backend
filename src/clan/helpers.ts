@@ -330,6 +330,44 @@ export const updateClanMemberSnapshot = async (
   await clanMembersCollection(clanId).doc(uid).set(fields, { merge: true });
 };
 
+/**
+ * Recalculates clan total trophies by summing all member documents.
+ * Use this for migration scripts or drift correction.
+ * For incremental updates, use applyClanTrophyDelta instead.
+ */
+export const recalculateClanTotalTrophies = async (
+  clanId: string,
+  transaction?: FirebaseFirestore.Transaction,
+): Promise<number> => {
+  const runInTransaction = async (txn: FirebaseFirestore.Transaction): Promise<number> => {
+    // Get all members
+    const membersSnapshot = await txn.get(clanMembersCollection(clanId));
+
+    // Calculate total
+    let totalTrophies = 0;
+    membersSnapshot.forEach((doc) => {
+      const trophies = doc.data()?.trophies;
+      if (typeof trophies === "number" && Number.isFinite(trophies)) {
+        totalTrophies += trophies;
+      }
+    });
+
+    // Update clan document
+    txn.update(clanRef(clanId), {
+      "stats.trophies": totalTrophies,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return totalTrophies;
+  };
+
+  if (transaction) {
+    return runInTransaction(transaction);
+  }
+
+  return db.runTransaction(runInTransaction);
+};
+
 export const applyClanTrophyDelta = async (uid: string, trophyDelta: number) => {
   if (!Number.isFinite(trophyDelta) || trophyDelta === 0) {
     return;

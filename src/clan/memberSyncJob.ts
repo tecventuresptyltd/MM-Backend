@@ -1,5 +1,6 @@
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import * as logger from "firebase-functions/logger";
+import * as admin from "firebase-admin";
 import { REGION } from "../shared/region.js";
 import { db } from "../shared/firestore.js";
 import { clansCollection, clanMembersCollection, playerProfileRef } from "./helpers.js";
@@ -130,6 +131,9 @@ const syncClanMembers = async (clanId: string): Promise<{
             }
         });
 
+        // Track if trophies were updated (need to recalculate clan totals)
+        const trophiesUpdated = updatesToApply.some((update) => update.updates.trophies !== undefined);
+
         // Apply updates in batches
         if (updatesToApply.length > 0) {
             for (let i = 0; i < updatesToApply.length; i += WRITE_BATCH_SIZE) {
@@ -146,6 +150,21 @@ const syncClanMembers = async (clanId: string): Promise<{
             }
 
             logger.info(`[memberSyncJob] Updated ${updatesToApply.length} members in clan ${clanId}`);
+        }
+
+        // Recalculate clan total trophies from member docs if any trophy updates occurred
+        if (trophiesUpdated) {
+            let totalTrophies = 0;
+            profileMap.forEach((profile) => {
+                totalTrophies += profile.trophies;
+            });
+
+            await db.doc(`/Clans/${clanId}`).update({
+                "stats.trophies": totalTrophies,
+                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
+
+            logger.info(`[memberSyncJob] Recalculated clan ${clanId} total trophies: ${totalTrophies}`);
         }
 
         return { scanned, updated, missing };

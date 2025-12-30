@@ -9,7 +9,7 @@ const db = admin.firestore();
  * When scheduledMaintenanceTime is reached, automatically sets enabled and maintenance to true.
  */
 export const activateScheduledMaintenance = onSchedule({
-    schedule: "*/1 * * * *", // Every minute
+    schedule: "*/1 * * * *", // Every minute (Cloud Scheduler minimum granularity)
     timeZone: "UTC",
     region: REGION,
 }, async (event) => {

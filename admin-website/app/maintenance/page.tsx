@@ -16,7 +16,7 @@ export default function MaintenancePage() {
     const [rewardAvailable, setRewardAvailable] = useState(false);
     const [rewardGems, setRewardGems] = useState(100);
     const [immediate, setImmediate] = useState(true); // Default to immediate activation
-    const [delayMinutes, setDelayMinutes] = useState(15); // Default to 15 minutes
+    const [delayMinutes, setDelayMinutes] = useState(1); // Default to 1 minute (minimum)
     const [durationHours, setDurationHours] = useState(0); // Duration hours
     const [durationMinutes, setDurationMinutes] = useState(30); // Duration minutes (default 30min)
     const [countdown, setCountdown] = useState<string>(""); // Countdown timer display
@@ -422,6 +422,7 @@ export default function MaintenancePage() {
                                         onChange={(e) => setDelayMinutes(Number(e.target.value))}
                                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                                     >
+                                        <option value={1}>1 minute</option>
                                         <option value={5}>5 minutes</option>
                                         <option value={10}>10 minutes</option>
                                         <option value={15}>15 minutes</option>

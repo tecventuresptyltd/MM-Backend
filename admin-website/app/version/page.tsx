@@ -103,43 +103,43 @@ export default function VersionPage() {
 
     return (
         <AuthGuard>
-            <div className="min-h-screen bg-gray-50">
+            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
                 <PageHeader title="Version Control" />
 
                 {/* Main Content */}
                 <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
                     {success && (
-                        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
+                        <div className="mb-6 p-4 bg-green-900/30 border border-green-500/50 rounded-xl text-green-300 backdrop-blur-sm shadow-lg shadow-green-500/20">
                             {success}
                         </div>
                     )}
 
                     {error && (
-                        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                        <div className="mb-6 p-4 bg-red-900/30 border border-red-500/50 rounded-xl text-red-300 backdrop-blur-sm shadow-lg shadow-red-500/20">
                             {error}
                         </div>
                     )}
 
                     {/* Current Version Card */}
-                    <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-6">
-                        <h3 className="text-lg font-semibold text-blue-900 mb-3">
+                    <div className="mb-6 bg-gradient-to-br from-blue-900/40 to-blue-800/20 backdrop-blur-sm border border-blue-700/30 rounded-2xl p-6 shadow-2xl">
+                        <h3 className="text-lg font-semibold text-blue-300 mb-3">
                             Current Minimum Version
                         </h3>
                         <div className="flex items-center">
-                            <span className="text-3xl font-bold text-blue-700">
+                            <span className="text-3xl font-bold text-blue-200">
                                 {currentVersion}
                             </span>
                         </div>
-                        <p className="text-sm text-blue-600 mt-2">
+                        <p className="text-sm text-blue-400 mt-2">
                             Players with app versions below this will be forced to update
                         </p>
                     </div>
 
                     {/* Warning Card */}
-                    <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+                    <div className="mb-6 bg-yellow-900/30 border border-yellow-500/50 rounded-xl p-6 backdrop-blur-sm shadow-lg">
                         <div className="flex">
                             <svg
-                                className="w-6 h-6 text-yellow-600 mr-3 flex-shrink-0"
+                                className="w-6 h-6 text-yellow-400 mr-3 flex-shrink-0"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -152,12 +152,12 @@ export default function VersionPage() {
                                 />
                             </svg>
                             <div>
-                                <h4 className="text-sm font-semibold text-yellow-900 mb-1">
+                                <h4 className="text-sm font-semibold text-yellow-300 mb-1">
                                     Important Note
                                 </h4>
-                                <p className="text-sm text-yellow-800">
+                                <p className="text-sm text-yellow-400">
                                     This value is currently stored in Firestore for tracking. The actual version enforcement
-                                    uses the <code className="bg-yellow-100 px-1 rounded">MIN_SUPPORTED_APP_VERSION</code> environment
+                                    uses the <code className="bg-yellow-900/50 px-1 rounded text-yellow-200">MIN_SUPPORTED_APP_VERSION</code> environment
                                     variable. After updating here, you may need to update the environment variable and redeploy
                                     the backend functions for full enforcement.
                                 </p>
@@ -166,14 +166,14 @@ export default function VersionPage() {
                     </div>
 
                     {/* Update Version Card */}
-                    <div className="bg-white rounded-lg shadow-lg p-8">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                    <div className="bg-gradient-to-br from-gray-800/40 to-gray-700/20 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-gray-700/30">
+                        <h2 className="text-xl font-semibold text-white mb-6">
                             Update Minimum Version
                         </h2>
 
                         <div className="space-y-6">
                             <div>
-                                <label htmlFor="version" className="block text-sm font-medium text-gray-700 mb-2">
+                                <label htmlFor="version" className="block text-sm font-medium text-gray-300 mb-2">
                                     New Minimum Version
                                 </label>
                                 <input
@@ -181,23 +181,23 @@ export default function VersionPage() {
                                     type="text"
                                     value={newVersion}
                                     onChange={(e) => handleVersionChange(e.target.value)}
-                                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition ${versionError ? "border-red-300" : "border-gray-300"
+                                    className={`w-full px-4 py-3 bg-gray-900/50 border text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition ${versionError ? "border-red-500/50" : "border-gray-700/50"
                                         }`}
                                     placeholder="1.2.3"
                                 />
                                 {versionError && (
-                                    <p className="mt-2 text-sm text-red-600">{versionError}</p>
+                                    <p className="mt-2 text-sm text-red-400">{versionError}</p>
                                 )}
-                                <p className="text-sm text-gray-500 mt-2">
+                                <p className="text-sm text-gray-400 mt-2">
                                     Format: X.Y.Z (e.g., 1.2.3)
                                 </p>
                             </div>
 
-                            <div className="bg-gray-50 rounded-lg p-4">
-                                <h3 className="text-sm font-semibold text-gray-900 mb-2">
+                            <div className="bg-gray-900/30 rounded-xl p-4 border border-gray-700/50">
+                                <h3 className="text-sm font-semibold text-white mb-2">
                                     What happens when you update:
                                 </h3>
-                                <ul className="text-sm text-gray-700 space-y-1 list-disc list-inside">
+                                <ul className="text-sm text-gray-400 space-y-1 list-disc list-inside">
                                     <li>Players with older versions will be prompted to update</li>
                                     <li>They cannot use the game until they update to the minimum version or higher</li>
                                     <li>The change takes effect immediately</li>
@@ -207,7 +207,7 @@ export default function VersionPage() {
                             <button
                                 onClick={handleUpdate}
                                 disabled={loading || !!versionError || !newVersion}
-                                className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                                className="w-full bg-green-600/90 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-green-500/50"
                             >
                                 {loading ? "Updating..." : "Update Minimum Version"}
                             </button>
@@ -215,40 +215,40 @@ export default function VersionPage() {
                     </div>
 
                     {/* Version History */}
-                    <div className="mt-8 bg-white rounded-lg shadow-lg p-8">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                    <div className="mt-8 bg-gradient-to-br from-gray-800/40 to-gray-700/20 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-gray-700/30">
+                        <h2 className="text-xl font-semibold text-white mb-6">
                             Version History
                         </h2>
 
                         {versionHistory.length === 0 ? (
-                            <p className="text-gray-500 text-center py-8">No version history yet</p>
+                            <p className="text-gray-400 text-center py-8">No version history yet</p>
                         ) : (
                             <div className="overflow-x-auto">
                                 <table className="w-full">
                                     <thead>
-                                        <tr className="border-b border-gray-200">
-                                            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Changed At</th>
-                                            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Old Version</th>
-                                            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">New Version</th>
-                                            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Changed By</th>
+                                        <tr className="border-b border-gray-700/50">
+                                            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">Changed At</th>
+                                            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">Old Version</th>
+                                            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">New Version</th>
+                                            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">Changed By</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {versionHistory.map((event, index) => (
                                             <tr
                                                 key={event.id}
-                                                className={`border-b border-gray-100 hover:bg-gray-50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}
+                                                className={`border-b border-gray-700/30 hover:bg-gray-800/30 transition ${index % 2 === 0 ? 'bg-gray-800/10' : 'bg-gray-800/20'}`}
                                             >
-                                                <td className="py-3 px-4 text-sm text-gray-900">
+                                                <td className="py-3 px-4 text-sm text-gray-300">
                                                     {new Date(event.changedAt).toLocaleString()}
                                                 </td>
-                                                <td className="py-3 px-4 text-sm text-gray-600">
+                                                <td className="py-3 px-4 text-sm text-gray-400">
                                                     {event.oldVersion || "—"}
                                                 </td>
-                                                <td className="py-3 px-4 text-sm font-semibold text-green-600">
+                                                <td className="py-3 px-4 text-sm font-semibold text-green-400">
                                                     {event.newVersion}
                                                 </td>
-                                                <td className="py-3 px-4 text-sm text-gray-600">
+                                                <td className="py-3 px-4 text-sm text-gray-400">
                                                     {event.changedBy}
                                                 </td>
                                             </tr>

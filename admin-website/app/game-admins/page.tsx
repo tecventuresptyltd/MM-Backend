@@ -87,7 +87,7 @@ export default function GameAdminsPage() {
 
     return (
         <AuthGuard>
-            <div className="min-h-screen bg-gray-50">
+            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
                 <PageHeader title="Game Admin Management" subtitle="Manage which players can bypass maintenance mode for testing" />
 
                 {/* Main Content */}
@@ -95,20 +95,20 @@ export default function GameAdminsPage() {
 
                     {/* Success/Error Messages */}
                     {success && (
-                        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
+                        <div className="mb-6 p-4 bg-green-900/30 border border-green-500/50 rounded-xl text-green-300 backdrop-blur-sm shadow-lg shadow-green-500/20">
                             {success}
                         </div>
                     )}
 
                     {error && (
-                        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                        <div className="mb-6 p-4 bg-red-900/30 border border-red-500/50 rounded-xl text-red-300 backdrop-blur-sm shadow-lg shadow-red-500/20">
                             {error}
                         </div>
                     )}
 
                     {/* Search Section */}
-                    <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                    <div className="bg-gradient-to-br from-gray-800/40 to-gray-700/20 backdrop-blur-sm rounded-2xl shadow-2xl p-6 mb-8 border border-gray-700/30">
+                        <h2 className="text-xl font-semibold text-white mb-4">
                             Search Users
                         </h2>
                         <div className="flex gap-4">
@@ -118,12 +118,12 @@ export default function GameAdminsPage() {
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                                 placeholder="Search by username, email, or UID..."
-                                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                className="flex-1 px-4 py-3 bg-gray-900/50 border border-gray-700/50 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition placeholder-gray-500"
                             />
                             <button
                                 onClick={handleSearch}
                                 disabled={loading}
-                                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                                className="px-6 py-3 bg-blue-600/90 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-lg hover:shadow-blue-500/50"
                             >
                                 {loading ? "Searching..." : "Search"}
                             </button>
@@ -132,25 +132,25 @@ export default function GameAdminsPage() {
                         {/* Search Results */}
                         {searchResults.length > 0 && (
                             <div className="mt-6">
-                                <h3 className="text-lg font-medium text-gray-900 mb-3">
+                                <h3 className="text-lg font-medium text-white mb-3">
                                     Search Results ({searchResults.length})
                                 </h3>
                                 <div className="space-y-2">
                                     {searchResults.map((user) => (
                                         <div
                                             key={user.uid}
-                                            className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200"
+                                            className="flex items-center justify-between p-4 bg-gray-900/30 rounded-xl border border-gray-700/50 hover:bg-gray-800/40 transition"
                                         >
                                             <div>
-                                                <div className="font-medium text-gray-900">
+                                                <div className="font-medium text-white">
                                                     {user.username}
                                                     {user.isGameAdmin && (
-                                                        <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded">
+                                                        <span className="ml-2 px-2 py-1 bg-blue-900/50 text-blue-300 text-xs font-semibold rounded border border-blue-500/50">
                                                             GAME ADMIN
                                                         </span>
                                                     )}
                                                 </div>
-                                                <div className="text-sm text-gray-600">
+                                                <div className="text-sm text-gray-400">
                                                     {user.email}
                                                 </div>
                                                 <div className="text-xs text-gray-500 mt-1">
@@ -175,21 +175,21 @@ export default function GameAdminsPage() {
                     </div>
 
                     {/* Current Game Admins */}
-                    <div className="bg-white rounded-lg shadow-sm p-6">
+                    <div className="bg-gradient-to-br from-gray-800/40 to-gray-700/20 backdrop-blur-sm rounded-2xl shadow-2xl p-6 border border-gray-700/30">
                         <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-xl font-semibold text-gray-900">
+                            <h2 className="text-xl font-semibold text-white">
                                 Current Game Admins ({currentAdmins.length})
                             </h2>
                             <button
                                 onClick={loadCurrentAdmins}
-                                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                                className="text-blue-400 hover:text-blue-300 text-sm font-medium transition"
                             >
                                 Refresh
                             </button>
                         </div>
 
                         {currentAdmins.length === 0 ? (
-                            <p className="text-gray-500 text-center py-8">
+                            <p className="text-gray-400 text-center py-8">
                                 No game admins configured yet
                             </p>
                         ) : (
@@ -197,16 +197,16 @@ export default function GameAdminsPage() {
                                 {currentAdmins.map((admin) => (
                                     <div
                                         key={admin.uid}
-                                        className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200"
+                                        className="flex items-center justify-between p-4 bg-blue-900/30 rounded-xl border border-blue-700/50"
                                     >
                                         <div>
-                                            <div className="font-medium text-gray-900">
+                                            <div className="font-medium text-white">
                                                 {admin.username}
-                                                <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded">
+                                                <span className="ml-2 px-2 py-1 bg-blue-900/50 text-blue-300 text-xs font-semibold rounded border border-blue-500/50">
                                                     GAME ADMIN
                                                 </span>
                                             </div>
-                                            <div className="text-sm text-gray-600">
+                                            <div className="text-sm text-gray-400">
                                                 {admin.email}
                                             </div>
                                             <div className="text-xs text-gray-500 mt-1">
@@ -216,7 +216,7 @@ export default function GameAdminsPage() {
                                         <button
                                             onClick={() => handleToggleAdmin(admin.uid, true)}
                                             disabled={loading}
-                                            className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="px-4 py-2 bg-red-900/50 text-red-300 rounded-lg hover:bg-red-800/50 font-medium transition disabled:opacity-50 disabled:cursor-not-allowed border border-red-500/50"
                                         >
                                             Remove Admin
                                         </button>
@@ -227,9 +227,9 @@ export default function GameAdminsPage() {
                     </div>
 
                     {/* Info Box */}
-                    <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <h3 className="font-semibold text-blue-900 mb-2">ℹ️ About Game Admins</h3>
-                        <ul className="text-sm text-blue-800 space-y-1">
+                    <div className="mt-8 bg-blue-900/30 border border-blue-700/50 rounded-xl p-4 backdrop-blur-sm shadow-lg">
+                        <h3 className="font-semibold text-blue-300 mb-2">ℹ️ About Game Admins</h3>
+                        <ul className="text-sm text-blue-400 space-y-1">
                             <li>• Game admins can bypass maintenance mode to test the game during downtime</li>
                             <li>• They do NOT get access to this admin dashboard (Firebase admin only)</li>
                             <li>• Use this to allow your QA team to test during scheduled maintenance</li>

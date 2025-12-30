@@ -5,6 +5,7 @@ import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import AuthGuard from "@/components/AuthGuard";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -20,16 +21,28 @@ export default function DashboardPage() {
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
         {/* Header */}
-        <header className="bg-white shadow-md">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-gray-900">
-              Mystic Motors Admin
-            </h1>
+        <header className="border-b border-gray-700 bg-black/40 backdrop-blur-md">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div className="flex items-center gap-4">
+              <Image
+                src="/logo.png"
+                alt="Mystic Motors"
+                width={48}
+                height={48}
+                className="drop-shadow-lg"
+              />
+              <div>
+                <h1 className="text-2xl font-bold text-white tracking-tight">
+                  Mystic Motors
+                </h1>
+                <p className="text-sm text-gray-400">Admin Dashboard</p>
+              </div>
+            </div>
             <button
               onClick={handleLogout}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium"
+              className="px-6 py-2.5 bg-red-600/90 text-white rounded-lg hover:bg-red-700 transition font-medium shadow-lg hover:shadow-red-500/50"
             >
               Logout
             </button>
@@ -38,11 +51,11 @@ export default function DashboardPage() {
 
         {/* Main Content */}
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-2">
+          <div className="mb-10">
+            <h2 className="text-3xl font-bold text-white mb-3 tracking-tight">
               Dashboard
             </h2>
-            <p className="text-gray-600">
+            <p className="text-gray-400 text-lg">
               Manage game configuration and player support
             </p>
           </div>
@@ -51,11 +64,11 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Maintenance Mode Card */}
             <Link href="/maintenance">
-              <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition p-6 cursor-pointer border-2 border-transparent hover:border-blue-500">
-                <div className="flex items-center mb-4">
-                  <div className="p-3 bg-blue-100 rounded-lg">
+              <div className="group bg-gradient-to-br from-blue-900/40 to-blue-800/20 backdrop-blur-sm rounded-2xl shadow-2xl hover:shadow-blue-500/20 transition-all duration-300 p-8 cursor-pointer border border-blue-700/30 hover:border-blue-500/50 hover:scale-105">
+                <div className="flex items-center mb-6">
+                  <div className="p-4 bg-blue-600/30 rounded-xl group-hover:bg-blue-600/50 transition">
                     <svg
-                      className="w-8 h-8 text-blue-600"
+                      className="w-10 h-10 text-blue-400 group-hover:text-blue-300 transition"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -75,10 +88,10 @@ export default function DashboardPage() {
                     </svg>
                   </div>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-blue-300 transition">
                   Maintenance Mode
                 </h3>
-                <p className="text-gray-600 text-sm">
+                <p className="text-gray-400 text-sm leading-relaxed">
                   Toggle maintenance mode, set messages, and configure rewards
                 </p>
               </div>
@@ -86,11 +99,11 @@ export default function DashboardPage() {
 
             {/* Version Control Card */}
             <Link href="/version">
-              <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition p-6 cursor-pointer border-2 border-transparent hover:border-green-500">
-                <div className="flex items-center mb-4">
-                  <div className="p-3 bg-green-100 rounded-lg">
+              <div className="group bg-gradient-to-br from-green-900/40 to-green-800/20 backdrop-blur-sm rounded-2xl shadow-2xl hover:shadow-green-500/20 transition-all duration-300 p-8 cursor-pointer border border-green-700/30 hover:border-green-500/50 hover:scale-105">
+                <div className="flex items-center mb-6">
+                  <div className="p-4 bg-green-600/30 rounded-xl group-hover:bg-green-600/50 transition">
                     <svg
-                      className="w-8 h-8 text-green-600"
+                      className="w-10 h-10 text-green-400 group-hover:text-green-300 transition"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -104,10 +117,10 @@ export default function DashboardPage() {
                     </svg>
                   </div>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-green-300 transition">
                   Version Control
                 </h3>
-                <p className="text-gray-600 text-sm">
+                <p className="text-gray-400 text-sm leading-relaxed">
                   Set minimum app version requirements for players
                 </p>
               </div>
@@ -115,11 +128,11 @@ export default function DashboardPage() {
 
             {/* Game Admins Card */}
             <Link href="/game-admins">
-              <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition p-6 cursor-pointer border-2 border-transparent hover:border-purple-500">
-                <div className="flex items-center mb-4">
-                  <div className="p-3 bg-purple-100 rounded-lg">
+              <div className="group bg-gradient-to-br from-purple-900/40 to-purple-800/20 backdrop-blur-sm rounded-2xl shadow-2xl hover:shadow-purple-500/20 transition-all duration-300 p-8 cursor-pointer border border-purple-700/30 hover:border-purple-500/50 hover:scale-105">
+                <div className="flex items-center mb-6">
+                  <div className="p-4 bg-purple-600/30 rounded-xl group-hover:bg-purple-600/50 transition">
                     <svg
-                      className="w-8 h-8 text-purple-600"
+                      className="w-10 h-10 text-purple-400 group-hover:text-purple-300 transition"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -133,21 +146,21 @@ export default function DashboardPage() {
                     </svg>
                   </div>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-purple-300 transition">
                   Game Admins
                 </h3>
-                <p className="text-gray-600 text-sm">
+                <p className="text-gray-400 text-sm leading-relaxed">
                   Manage players who can bypass maintenance mode for testing
                 </p>
               </div>
             </Link>
 
             {/* Analytics Card (Coming Soon) */}
-            <div className="bg-gray-100 rounded-xl shadow-lg p-6 opacity-60 cursor-not-allowed">
-              <div className="flex items-center mb-4">
-                <div className="p-3 bg-purple-100 rounded-lg">
+            <div className="bg-gradient-to-br from-gray-800/40 to-gray-700/20 backdrop-blur-sm rounded-2xl shadow-xl p-8 opacity-50 cursor-not-allowed border border-gray-600/30">
+              <div className="flex items-center mb-6">
+                <div className="p-4 bg-gray-600/30 rounded-xl">
                   <svg
-                    className="w-8 h-8 text-purple-600"
+                    className="w-10 h-10 text-gray-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -161,23 +174,23 @@ export default function DashboardPage() {
                   </svg>
                 </div>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              <h3 className="text-2xl font-bold text-white mb-3 flex items-center gap-2">
                 Analytics
-                <span className="ml-2 text-xs bg-gray-200 px-2 py-1 rounded">
+                <span className="text-xs bg-gray-700 px-2 py-1 rounded font-normal">
                   Coming Soon
                 </span>
               </h3>
-              <p className="text-gray-600 text-sm">
+              <p className="text-gray-400 text-sm leading-relaxed">
                 View user stats and game performance metrics
               </p>
             </div>
 
             {/* Player Support Card (Coming Soon) */}
-            <div className="bg-gray-100 rounded-xl shadow-lg p-6 opacity-60 cursor-not-allowed">
-              <div className="flex items-center mb-4">
-                <div className="p-3 bg-orange-100 rounded-lg">
+            <div className="bg-gradient-to-br from-gray-800/40 to-gray-700/20 backdrop-blur-sm rounded-2xl shadow-xl p-8 opacity-50 cursor-not-allowed border border-gray-600/30">
+              <div className="flex items-center mb-6">
+                <div className="p-4 bg-gray-600/30 rounded-xl">
                   <svg
-                    className="w-8 h-8 text-orange-600"
+                    className="w-10 h-10 text-gray-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -191,13 +204,13 @@ export default function DashboardPage() {
                   </svg>
                 </div>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              <h3 className="text-2xl font-bold text-white mb-3 flex items-center gap-2">
                 Player Support
-                <span className="ml-2 text-xs bg-gray-200 px-2 py-1 rounded">
+                <span className="text-xs bg-gray-700 px-2 py-1 rounded font-normal">
                   Coming Soon
                 </span>
               </h3>
-              <p className="text-gray-600 text-sm">
+              <p className="text-gray-400 text-sm leading-relaxed">
                 Award items, gems, coins, and manage player issues
               </p>
             </div>

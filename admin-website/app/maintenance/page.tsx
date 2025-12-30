@@ -236,65 +236,65 @@ export default function MaintenancePage() {
 
     return (
         <AuthGuard>
-            <div className="min-h-screen bg-gray-50">
+            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
                 <PageHeader title="Maintenance Mode Control" />
 
                 {/* Main Content */}
                 <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
                     {success && (
-                        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
+                        <div className="mb-6 p-4 bg-green-900/30 border border-green-500/50 rounded-xl text-green-300 backdrop-blur-sm shadow-lg shadow-green-500/20">
                             {success}
                         </div>
                     )}
 
                     {error && (
-                        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                        <div className="mb-6 p-4 bg-red-900/30 border border-red-500/50 rounded-xl text-red-300 backdrop-blur-sm shadow-lg shadow-red-500/20">
                             {error}
                         </div>
                     )}
 
                     {/* Current Status Card */}
                     {currentStatus && (
-                        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-6">
-                            <h3 className="text-lg font-semibold text-blue-900 mb-3">
+                        <div className="mb-6 bg-gradient-to-br from-blue-900/40 to-blue-800/20 backdrop-blur-sm border border-blue-700/30 rounded-2xl p-6 shadow-2xl">
+                            <h3 className="text-lg font-semibold text-blue-300 mb-3">
                                 Current Status
                             </h3>
 
                             {/* Countdown Timer - Show prominently when scheduled */}
                             {countdown && currentStatus.scheduledMaintenanceTime && (
-                                <div className="mb-4 p-4 bg-orange-100 border-2 border-orange-400 rounded-lg">
+                                <div className="mb-4 p-4 bg-orange-900/40 border-2 border-orange-500/50 rounded-xl backdrop-blur-sm shadow-lg">
                                     <div className="text-center">
-                                        <p className="text-sm font-medium text-orange-700 mb-1">Maintenance Enforcement In:</p>
-                                        <p className="text-3xl font-bold text-orange-900">{countdown}</p>
-                                        <p className="text-xs text-orange-600 mt-1">Players are currently seeing the warning popup</p>
+                                        <p className="text-sm font-medium text-orange-300 mb-1">Maintenance Enforcement In:</p>
+                                        <p className="text-3xl font-bold text-orange-200">{countdown}</p>
+                                        <p className="text-xs text-orange-400 mt-1">Players are currently seeing the warning popup</p>
                                     </div>
                                 </div>
                             )}
 
                             {/* Running Timer - Show when maintenance is ACTIVE */}
                             {runningTimer && (currentStatus.maintenance || currentStatus.enabled) && (
-                                <div className="mb-4 p-4 bg-red-100 border-2 border-red-500 rounded-lg">
+                                <div className="mb-4 p-4 bg-red-900/40 border-2 border-red-500/50 rounded-xl backdrop-blur-sm shadow-lg shadow-red-500/30">
                                     <div className="text-center">
-                                        <p className="text-sm font-medium text-red-700 mb-1">🚨 Maintenance ACTIVE For:</p>
-                                        <p className="text-3xl font-bold text-red-900">{runningTimer}</p>
-                                        <p className="text-xs text-red-600 mt-1">Players are currently blocked from the game</p>
+                                        <p className="text-sm font-medium text-red-300 mb-1">🚨 Maintenance ACTIVE For:</p>
+                                        <p className="text-3xl font-bold text-red-200">{runningTimer}</p>
+                                        <p className="text-xs text-red-400 mt-1">Players are currently blocked from the game</p>
                                     </div>
                                 </div>
                             )}
 
                             <div className="grid grid-cols-2 gap-4 text-sm">
                                 <div>
-                                    <span className="text-blue-700 font-medium">Maintenance:</span>
+                                    <span className="text-blue-300 font-medium">Maintenance:</span>
                                     <span className={`ml-2 px-3 py-1 rounded-full text-xs font-semibold ${currentStatus.maintenance || currentStatus.enabled
-                                        ? "bg-red-100 text-red-700"
-                                        : "bg-green-100 text-green-700"
+                                        ? "bg-red-900/50 text-red-300 border border-red-500/50"
+                                        : "bg-green-900/50 text-green-300 border border-green-500/50"
                                         }`}>
                                         {currentStatus.maintenance || currentStatus.enabled ? "ON" : "OFF"}
                                     </span>
                                 </div>
                                 <div>
-                                    <span className="text-blue-700 font-medium">Reward Gems:</span>
-                                    <span className="ml-2 text-blue-900">
+                                    <span className="text-blue-300 font-medium">Reward Gems:</span>
+                                    <span className="ml-2 text-blue-200">
                                         {currentStatus.rewardGems || 0}
                                     </span>
                                 </div>
@@ -304,19 +304,19 @@ export default function MaintenancePage() {
 
                     {/* Emergency Off Button - Show when maintenance is active */}
                     {(currentStatus?.maintenance || currentStatus?.enabled) && (
-                        <div className="mb-6 p-4 bg-red-50 border-2 border-red-300 rounded-lg">
+                        <div className="mb-6 p-4 bg-red-900/30 border-2 border-red-500/50 rounded-xl backdrop-blur-sm shadow-lg shadow-red-500/20">
                             {!showEmergencyConfirm ? (
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <h4 className="font-semibold text-red-900">Emergency Stop</h4>
-                                        <p className="text-sm text-red-700 mt-1">
+                                        <h4 className="font-semibold text-red-300">Emergency Stop</h4>
+                                        <p className="text-sm text-red-400 mt-1">
                                             Turn off maintenance immediately
                                         </p>
                                     </div>
                                     <button
                                         onClick={() => setShowEmergencyConfirm(true)}
                                         disabled={loading}
-                                        className="px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition shadow-lg disabled:opacity-50"
+                                        className="px-6 py-3 bg-red-600/90 text-white font-semibold rounded-lg hover:bg-red-700 transition shadow-lg hover:shadow-red-500/50 disabled:opacity-50"
                                     >
                                         END MAINTENANCE NOW
                                     </button>
@@ -324,8 +324,8 @@ export default function MaintenancePage() {
                             ) : (
                                 <div className="space-y-4">
                                     <div>
-                                        <h4 className="font-semibold text-red-900">⚠️ Confirm Emergency Stop</h4>
-                                        <p className="text-sm text-red-700 mt-2">
+                                        <h4 className="font-semibold text-red-300">⚠️ Confirm Emergency Stop</h4>
+                                        <p className="text-sm text-red-400 mt-2">
                                             Are you sure you want to END MAINTENANCE NOW? This will allow all players back into the game immediately.
                                         </p>
                                     </div>
@@ -333,7 +333,7 @@ export default function MaintenancePage() {
                                         <button
                                             onClick={() => setShowEmergencyConfirm(false)}
                                             disabled={loading}
-                                            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition disabled:opacity-50"
+                                            className="px-4 py-2 bg-gray-700/50 text-gray-300 rounded-lg hover:bg-gray-600/50 transition disabled:opacity-50"
                                         >
                                             Cancel
                                         </button>
@@ -371,7 +371,7 @@ export default function MaintenancePage() {
                                                 }
                                             }}
                                             disabled={loading}
-                                            className="px-6 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition shadow-lg disabled:opacity-50"
+                                            className="px-6 py-2 bg-red-600/90 text-white font-semibold rounded-lg hover:bg-red-700 transition shadow-lg hover:shadow-red-500/50 disabled:opacity-50"
                                         >
                                             {loading ? "Ending..." : "Yes, End Now"}
                                         </button>
@@ -382,19 +382,19 @@ export default function MaintenancePage() {
                     )}
 
                     {/* Settings Card */}
-                    <div className="bg-white rounded-lg shadow-lg p-8">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                    <div className="bg-gradient-to-br from-gray-800/40 to-gray-700/20 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-gray-700/30">
+                        <h2 className="text-xl font-semibold text-white mb-6">
                             Update Maintenance Settings
                         </h2>
 
                         <div className="space-y-6">
                             {/* Maintenance Toggle */}
-                            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div className="flex items-center justify-between p-4 bg-gray-900/30 rounded-xl border border-gray-700/50">
                                 <div>
-                                    <label htmlFor="enabled" className="font-medium text-gray-900 block">
+                                    <label htmlFor="enabled" className="font-medium text-white block">
                                         Maintenance Mode
                                     </label>
-                                    <p className="text-sm text-gray-600 mt-1">
+                                    <p className="text-sm text-gray-400 mt-1">
                                         When enabled, players will see the maintenance message
                                     </p>
                                 </div>
@@ -413,36 +413,36 @@ export default function MaintenancePage() {
 
                             {/* Activation Timing - Only show when enabling maintenance */}
                             {maintenance && (
-                                <div className="p-4 bg-gray-50 rounded-lg">
-                                    <label className="font-medium text-gray-900 block mb-3">
+                                <div className="p-4 bg-gray-900/30 rounded-xl border border-gray-700/50">
+                                    <label className="font-medium text-white block mb-3">
                                         Activation Timing
                                     </label>
                                     <div className="space-y-3">
-                                        <label className="flex items-start p-3 border-2 rounded-lg cursor-pointer hover:bg-white transition">
+                                        <label className="flex items-start p-3 border-2 border-gray-700/50 rounded-xl cursor-pointer hover:bg-gray-800/30 transition">
                                             <input
                                                 type="radio"
                                                 checked={immediate}
                                                 onChange={() => setImmediate(true)}
-                                                className="mt-1 h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                                                className="mt-1 h-4 w-4 text-blue-500 border-gray-600 focus:ring-blue-500"
                                             />
                                             <div className="ml-3">
-                                                <span className="font-medium text-gray-900">Immediate</span>
-                                                <p className="text-sm text-gray-600 mt-0.5">
+                                                <span className="font-medium text-white">Immediate</span>
+                                                <p className="text-sm text-gray-400 mt-0.5">
                                                     Block all players instantly. Use for emergency maintenance.
                                                 </p>
                                             </div>
                                         </label>
 
-                                        <label className="flex items-start p-3 border-2 rounded-lg cursor-pointer hover:bg-white transition">
+                                        <label className="flex items-start p-3 border-2 border-gray-700/50 rounded-xl cursor-pointer hover:bg-gray-800/30 transition">
                                             <input
                                                 type="radio"
                                                 checked={!immediate}
                                                 onChange={() => setImmediate(false)}
-                                                className="mt-1 h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                                                className="mt-1 h-4 w-4 text-blue-500 border-gray-600 focus:ring-blue-500"
                                             />
                                             <div className="ml-3">
-                                                <span className="font-medium text-gray-900">Scheduled (15 minutes)</span>
-                                                <p className="text-sm text-gray-600 mt-0.5">
+                                                <span className="font-medium text-white">Scheduled (15 minutes)</span>
+                                                <p className="text-sm text-gray-400 mt-0.5">
                                                     Warn players now, block new logins immediately, kick existing players after 15 minutes
                                                 </p>
                                             </div>
@@ -454,14 +454,14 @@ export default function MaintenancePage() {
                             {/* Delay Minutes Selector - Only show when scheduled maintenance */}
                             {maintenance && !immediate && (
                                 <div>
-                                    <label htmlFor="delayMinutes" className="block text-sm font-medium text-gray-700 mb-2">
+                                    <label htmlFor="delayMinutes" className="block text-sm font-medium text-gray-300 mb-2">
                                         Delay Duration
                                     </label>
                                     <select
                                         id="delayMinutes"
                                         value={delayMinutes}
                                         onChange={(e) => setDelayMinutes(Number(e.target.value))}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                        className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700/50 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                                     >
                                         <option value={1}>1 minute</option>
                                         <option value={5}>5 minutes</option>
@@ -471,7 +471,7 @@ export default function MaintenancePage() {
                                         <option value={45}>45 minutes</option>
                                         <option value={60}>60 minutes (1 hour)</option>
                                     </select>
-                                    <p className="text-sm text-gray-500 mt-1">
+                                    <p className="text-sm text-gray-400 mt-1">
                                         Players will be warned immediately and kicked after this delay
                                     </p>
                                 </div>
@@ -480,36 +480,36 @@ export default function MaintenancePage() {
                             {/* Duration - Always show when enabling */}
                             {maintenance && (
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
                                         Maintenance Duration
                                     </label>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-xs text-gray-600 mb-1">Hours</label>
+                                            <label className="block text-xs text-gray-400 mb-1">Hours</label>
                                             <input
                                                 type="number"
                                                 min="0"
                                                 max="24"
                                                 value={durationHours}
                                                 onChange={(e) => setDurationHours(Number(e.target.value))}
-                                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                                className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700/50 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                                                 placeholder="0"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-xs text-gray-600 mb-1">Minutes</label>
+                                            <label className="block text-xs text-gray-400 mb-1">Minutes</label>
                                             <input
                                                 type="number"
                                                 min="0"
                                                 max="59"
                                                 value={durationMinutes}
                                                 onChange={(e) => setDurationMinutes(Number(e.target.value))}
-                                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                                className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700/50 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                                                 placeholder="30"
                                             />
                                         </div>
                                     </div>
-                                    <p className="text-xs text-gray-500 mt-2">
+                                    <p className="text-xs text-gray-400 mt-2">
                                         Optional: How long maintenance will last (shown to players as countdown)
                                     </p>
                                 </div>
@@ -519,7 +519,7 @@ export default function MaintenancePage() {
 
                             {/* Reward Gems */}
                             <div>
-                                <label htmlFor="rewardGems" className="block text-sm font-medium text-gray-700 mb-2">
+                                <label htmlFor="rewardGems" className="block text-sm font-medium text-gray-300 mb-2">
                                     Reward Gems
                                 </label>
                                 <input
@@ -528,9 +528,9 @@ export default function MaintenancePage() {
                                     min="0"
                                     value={rewardGems}
                                     onChange={(e) => setRewardGems(Number(e.target.value))}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                    className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700/50 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                                 />
-                                <p className="text-sm text-gray-500 mt-1">
+                                <p className="text-sm text-gray-400 mt-1">
                                     Number of gems to award as compensation
                                 </p>
                             </div>
@@ -539,7 +539,7 @@ export default function MaintenancePage() {
                             <button
                                 onClick={handleSave}
                                 disabled={loading}
-                                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                                className="w-full bg-blue-600/90 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-blue-500/50"
                             >
                                 {loading ? "Saving..." : "Save Changes"}
                             </button>
@@ -547,23 +547,23 @@ export default function MaintenancePage() {
                     </div>
 
                     {/* Maintenance History */}
-                    <div className="mt-8 bg-white rounded-lg shadow-lg p-8">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                    <div className="mt-8 bg-gradient-to-br from-gray-800/40 to-gray-700/20 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-gray-700/30">
+                        <h2 className="text-xl font-semibold text-white mb-6">
                             Maintenance History
                         </h2>
 
                         {maintenanceHistory.length === 0 ? (
-                            <p className="text-gray-500 text-center py-8">No maintenance history yet</p>
+                            <p className="text-gray-400 text-center py-8">No maintenance history yet</p>
                         ) : (
                             <div className="overflow-x-auto">
                                 <table className="w-full">
                                     <thead>
-                                        <tr className="border-b border-gray-200">
-                                            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Started</th>
-                                            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Ended</th>
-                                            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Duration</th>
-                                            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Gems Rewarded</th>
-                                            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Type</th>
+                                        <tr className="border-b border-gray-700/50">
+                                            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">Started</th>
+                                            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">Ended</th>
+                                            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">Duration</th>
+                                            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">Gems Rewarded</th>
+                                            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">Type</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -586,25 +586,25 @@ export default function MaintenancePage() {
                                             return (
                                                 <tr
                                                     key={event.id}
-                                                    className={`border-b border-gray-100 hover:bg-gray-50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}
+                                                    className={`border-b border-gray-700/30 hover:bg-gray-800/30 transition ${index % 2 === 0 ? 'bg-gray-800/10' : 'bg-gray-800/20'}`}
                                                 >
-                                                    <td className="py-3 px-4 text-sm text-gray-900">
+                                                    <td className="py-3 px-4 text-sm text-gray-300">
                                                         {startDate.toLocaleString()}
                                                     </td>
-                                                    <td className="py-3 px-4 text-sm text-gray-900">
+                                                    <td className="py-3 px-4 text-sm text-gray-300">
                                                         {endDate ? endDate.toLocaleString() : "—"}
                                                     </td>
                                                     <td className="py-3 px-4 text-sm">
-                                                        <span className={`${event.endedAt ? 'text-gray-900' : 'text-red-600 font-semibold'}`}>
+                                                        <span className={`${event.endedAt ? 'text-gray-300' : 'text-red-400 font-semibold'}`}>
                                                             {durationText}
                                                         </span>
                                                     </td>
                                                     <td className="py-3 px-4 text-sm">
-                                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-900/50 text-green-300 border border-green-500/50">
                                                             {event.rewardGems || 100} gems
                                                         </span>
                                                     </td>
-                                                    <td className="py-3 px-4 text-sm text-gray-900">
+                                                    <td className="py-3 px-4 text-sm text-gray-300">
                                                         {typeText}
                                                     </td>
                                                 </tr>
@@ -617,7 +617,7 @@ export default function MaintenancePage() {
                                 <div className="mt-6 text-center">
                                     <button
                                         onClick={() => loadMaintenanceHistory(true)}
-                                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                                        className="px-6 py-2 bg-blue-600/90 text-white rounded-lg hover:bg-blue-700 transition shadow-lg hover:shadow-blue-500/50"
                                     >
                                         Load More
                                     </button>

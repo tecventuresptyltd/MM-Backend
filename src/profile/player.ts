@@ -17,11 +17,19 @@ import {
   txIncSkuQty,
   txUpdateInventorySummary,
 } from "../inventory/index.js";
-import { updateClanMemberSnapshot } from "../clan/helpers.js";
+import { grantInventoryRewards } from "../shared/inventoryAwards.js";
+import { getLevelInfo } from "../shared/xp.js";
+import { applyClanTrophyDelta, updateClanMemberSnapshot } from "../clan/helpers.js";
 import { refreshFriendSnapshots } from "../Socials/updateSnapshots.js";
 
 const db = admin.firestore();
 const SUBSCRIPTION_REWARD_GEMS = 25;
+const TUTORIAL_RARE_CRATE_SKU = "sku_72wnqwtfmx";
+const TUTORIAL_REWARD_COINS = 1000;
+const TUTORIAL_REWARD_XP = 100;
+const TUTORIAL_REWARD_TROPHIES = 10;
+const TUTORIAL_SPELL_ID = "spell_2382r2jk"; // Ice Lock
+const TUTORIAL_SPELL_TARGET_LEVEL = 2;
 
 export const checkUsernameAvailable = onCall({ region: REGION }, async (request) => {
   const { username } = request.data;
@@ -153,14 +161,137 @@ export const markTutorialComplete = onCall({ region: REGION }, async (request) =
 
   const { uid } = request.auth;
   const progressRef = db.doc(`/Players/${uid}/Progress/Initial`);
+  const profileRef = db.doc(`/Players/${uid}/Profile/Profile`);
+  const statsRef = db.doc(`/Players/${uid}/Economy/Stats`);
+  const spellsRef = db.doc(`/Players/${uid}/Spells/Levels`);
   const timestamp = admin.firestore.FieldValue.serverTimestamp();
 
-  await progressRef.set(
-    { tutorialComplete: true, updatedAt: timestamp },
-    { merge: true },
-  );
+  let rareCrateGranted = false;
+  let coinsGranted = 0;
+  let xpGranted = 0;
+  let trophiesGranted = 0;
+  let finalLevel: number | null = null;
+  let finalTrophies: number | null = null;
+  await db.runTransaction(async (transaction) => {
+    const [progressSnap, profileSnap, statsSnap, spellsSnap] = await transaction.getAll(
+      progressRef,
+      profileRef,
+      statsRef,
+      spellsRef,
+    );
 
-  return { status: "ok", tutorialComplete: true };
+    if (!profileSnap.exists) {
+      throw new HttpsError("failed-precondition", "Player profile not found.");
+    }
+    if (!statsSnap.exists) {
+      throw new HttpsError("failed-precondition", "Player economy stats not found.");
+    }
+
+    const progressData = progressSnap.exists ? progressSnap.data() ?? {} : {};
+    const rewardAlreadyGranted = progressData.tutorialRewardGranted === true;
+
+    if (!rewardAlreadyGranted) {
+      const profileData = profileSnap.data() ?? {};
+      const spellsData = spellsSnap.exists ? spellsSnap.data() ?? {} : {};
+
+      await grantInventoryRewards(
+        transaction,
+        uid,
+        [{ skuId: TUTORIAL_RARE_CRATE_SKU, quantity: 1 }],
+        { timestamp },
+      );
+      rareCrateGranted = true;
+
+      coinsGranted = TUTORIAL_REWARD_COINS;
+      xpGranted = TUTORIAL_REWARD_XP;
+      trophiesGranted = TUTORIAL_REWARD_TROPHIES;
+
+      const xpBefore = Number(profileData.exp ?? 0);
+      const xpAfter = xpBefore + xpGranted;
+      const beforeInfo = getLevelInfo(xpBefore);
+      const afterInfo = getLevelInfo(xpAfter);
+      const afterRequiredForNextLevel = afterInfo.expInLevel + afterInfo.expToNext;
+      const levelsGained = afterInfo.level - beforeInfo.level;
+
+      const trophiesBefore = Number(profileData.trophies ?? 0);
+      const trophiesAfter = trophiesBefore + trophiesGranted;
+      const highestTrophies = Number(profileData.highestTrophies ?? 0);
+      const nextHighestTrophies = Math.max(highestTrophies, trophiesAfter);
+
+      const profileUpdate: Record<string, unknown> = {
+        exp: xpAfter,
+        level: afterInfo.level,
+        expProgress: afterInfo.expInLevel,
+        expToNextLevel: afterRequiredForNextLevel,
+        expProgressDisplay: `${afterInfo.expInLevel} / ${afterRequiredForNextLevel}`,
+        trophies: trophiesAfter,
+        highestTrophies: nextHighestTrophies,
+        updatedAt: timestamp,
+      };
+      transaction.update(profileRef, profileUpdate);
+
+      const statsUpdate: Record<string, unknown> = {
+        updatedAt: timestamp,
+        coins: admin.firestore.FieldValue.increment(TUTORIAL_REWARD_COINS),
+      };
+      transaction.update(statsRef, statsUpdate);
+
+      const currentSpellLevelRaw = Number((spellsData.levels ?? {})[TUTORIAL_SPELL_ID] ?? 0);
+      const currentSpellLevel = Number.isFinite(currentSpellLevelRaw) ? currentSpellLevelRaw : 0;
+      if (currentSpellLevel < TUTORIAL_SPELL_TARGET_LEVEL) {
+        const nextLevels = { ...(spellsData.levels ?? {}) };
+        nextLevels[TUTORIAL_SPELL_ID] = TUTORIAL_SPELL_TARGET_LEVEL;
+        const nextUnlockedAt = { ...(spellsData.unlockedAt ?? {}) };
+        if (!nextUnlockedAt[TUTORIAL_SPELL_ID]) {
+          nextUnlockedAt[TUTORIAL_SPELL_ID] = timestamp;
+        }
+        transaction.set(
+          spellsRef,
+          {
+            levels: nextLevels,
+            unlockedAt: nextUnlockedAt,
+            updatedAt: timestamp,
+          },
+          { merge: true },
+        );
+      }
+
+      finalLevel = afterInfo.level;
+      finalTrophies = trophiesAfter;
+    }
+
+    transaction.set(
+      progressRef,
+      {
+        tutorialComplete: true,
+        tutorialRewardGranted: true,
+        updatedAt: timestamp,
+      },
+      { merge: true },
+    );
+  });
+
+  if (trophiesGranted > 0 && finalTrophies !== null) {
+    await applyClanTrophyDelta(uid, trophiesGranted);
+    await updateClanMemberSnapshot(uid, { trophies: finalTrophies });
+  }
+
+  if (finalLevel !== null) {
+    await updateClanMemberSnapshot(uid, { level: finalLevel });
+  }
+
+  if (trophiesGranted > 0 || finalLevel !== null) {
+    await refreshFriendSnapshots(uid);
+  }
+
+  return {
+    status: "ok",
+    tutorialComplete: true,
+    rareCrateGranted,
+    coinsGranted,
+    xpGranted,
+    trophiesGranted,
+  };
 });
 export const setAvatar = onCall({ region: REGION }, async (request) => {
   if (!request.auth) {

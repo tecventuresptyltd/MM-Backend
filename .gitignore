@@ -29,6 +29,13 @@ firepit-log.txt
 *-service-account.json
 *-firebase-adminsdk-*.json
 mystic-motors-*-*.json
+backend-production-*.json
+*-prod-*.json
+*-production-*.json
+*-sandbox-*.json
+*production*.json
+*prod*.json
+*sandbox*.json
 
 # ===== ALLOWED JSON FILES =====
 !firebase.json

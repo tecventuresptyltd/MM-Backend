@@ -15,7 +15,11 @@
     "seed:testplayer": "tsx seeds/seedTestPlayer.ts",
     "tools:normalize-v3": "TS_NODE_PROJECT=../tsconfig.tools.json node -r ts-node/register ../tools/normalize_v3_catalogs.ts",
     "tools:seed-firestore": "TS_NODE_PROJECT=../tsconfig.tools.json node -r ts-node/register ../tools/seedFirestore.ts",
-    "tools:validate-v3": "TS_NODE_PROJECT=../tsconfig.tools.json node -r ts-node/register ../tools/validate_v3_catalogs.ts && TS_NODE_PROJECT=../tsconfig.tools.json node -r ts-node/register ../tools/validate_v3_skus.ts"
+    "tools:seed-sandbox": "TS_NODE_PROJECT=../tsconfig.tools.json node -r ts-node/register ../tools/seedFirestore.sandbox.ts",
+    "tools:seed-production": "TS_NODE_PROJECT=../tsconfig.tools.json node -r ts-node/register ../tools/seedFirestore.production.ts",
+    "tools:validate-v3": "TS_NODE_PROJECT=../tsconfig.tools.json node -r ts-node/register ../tools/validate_v3_catalogs.ts && TS_NODE_PROJECT=../tsconfig.tools.json node -r ts-node/register ../tools/validate_v3_skus.ts",
+    "deploy:sandbox": "./tools/deploy-sandbox.sh",
+    "deploy:production": "./tools/deploy-production.sh"
   },
   "dependencies": {
     "@google-cloud/pubsub": "^4.5.0",

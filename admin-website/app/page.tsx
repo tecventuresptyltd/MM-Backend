@@ -64,7 +64,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Maintenance Mode Card */}
             <Link href="/maintenance">
-              <div className="group bg-gradient-to-br from-blue-900/40 to-blue-800/20 backdrop-blur-sm rounded-2xl shadow-2xl hover:shadow-blue-500/20 transition-all duration-300 p-8 cursor-pointer border border-blue-700/30 hover:border-blue-500/50 hover:scale-105">
+              <div className="h-full flex flex-col group bg-gradient-to-br from-blue-900/40 to-blue-800/20 backdrop-blur-sm rounded-2xl shadow-2xl hover:shadow-blue-500/20 transition-all duration-300 p-8 cursor-pointer border border-blue-700/30 hover:border-blue-500/50 hover:scale-105">
                 <div className="flex items-center mb-6">
                   <div className="p-4 bg-blue-600/30 rounded-xl group-hover:bg-blue-600/50 transition">
                     <svg
@@ -99,7 +99,7 @@ export default function DashboardPage() {
 
             {/* Version Control Card */}
             <Link href="/version">
-              <div className="group bg-gradient-to-br from-green-900/40 to-green-800/20 backdrop-blur-sm rounded-2xl shadow-2xl hover:shadow-green-500/20 transition-all duration-300 p-8 cursor-pointer border border-green-700/30 hover:border-green-500/50 hover:scale-105">
+              <div className="h-full flex flex-col group bg-gradient-to-br from-green-900/40 to-green-800/20 backdrop-blur-sm rounded-2xl shadow-2xl hover:shadow-green-500/20 transition-all duration-300 p-8 cursor-pointer border border-green-700/30 hover:border-green-500/50 hover:scale-105">
                 <div className="flex items-center mb-6">
                   <div className="p-4 bg-green-600/30 rounded-xl group-hover:bg-green-600/50 transition">
                     <svg
@@ -128,7 +128,7 @@ export default function DashboardPage() {
 
             {/* Game Admins Card */}
             <Link href="/game-admins">
-              <div className="group bg-gradient-to-br from-purple-900/40 to-purple-800/20 backdrop-blur-sm rounded-2xl shadow-2xl hover:shadow-purple-500/20 transition-all duration-300 p-8 cursor-pointer border border-purple-700/30 hover:border-purple-500/50 hover:scale-105">
+              <div className="h-full flex flex-col group bg-gradient-to-br from-purple-900/40 to-purple-800/20 backdrop-blur-sm rounded-2xl shadow-2xl hover:shadow-purple-500/20 transition-all duration-300 p-8 cursor-pointer border border-purple-700/30 hover:border-purple-500/50 hover:scale-105">
                 <div className="flex items-center mb-6">
                   <div className="p-4 bg-purple-600/30 rounded-xl group-hover:bg-purple-600/50 transition">
                     <svg

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import AuthGuard from "@/components/AuthGuard";
+import PageHeader from "@/components/PageHeader";
 import { callFunction } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -11,11 +12,13 @@ export default function MaintenancePage() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [currentStatus, setCurrentStatus] = useState<any>(null);
-    const [enabled, setEnabled] = useState(false);
+    const [maintenance, setMaintenance] = useState(false);
     const [rewardAvailable, setRewardAvailable] = useState(false);
     const [rewardGems, setRewardGems] = useState(100);
     const [immediate, setImmediate] = useState(true); // Default to immediate activation
     const [delayMinutes, setDelayMinutes] = useState(15); // Default to 15 minutes
+    const [durationHours, setDurationHours] = useState(0); // Duration hours
+    const [durationMinutes, setDurationMinutes] = useState(30); // Duration minutes (default 30min)
     const [countdown, setCountdown] = useState<string>(""); // Countdown timer display
     const [runningTimer, setRunningTimer] = useState<string>(""); // Running timer (how long active)
     const [maintenanceHistory, setMaintenanceHistory] = useState<any[]>([]);
@@ -105,7 +108,7 @@ export default function MaintenancePage() {
             if (maintenanceDoc.exists()) {
                 const data = maintenanceDoc.data();
                 setCurrentStatus(data);
-                setEnabled(data.maintenance || data.enabled || false);
+                setMaintenance(data.maintenance || data.enabled || false);
                 setRewardAvailable(data.rewardAvailable || false);
                 setRewardGems(data.rewardGems || 100);
                 if (data.delayMinutes) {
@@ -138,24 +141,29 @@ export default function MaintenancePage() {
         try {
             // Build the request payload
             const payload: any = {
-                enabled,
+                maintenance,
                 rewardAvailable,
                 rewardGems: Number(rewardGems),
             };
 
             // Only include immediate and delayMinutes when ENABLING maintenance
-            if (enabled) {
+            if (maintenance) {
                 payload.immediate = immediate;
                 if (!immediate) {
                     payload.delayMinutes = delayMinutes;
                 }
             }
+                // Calculate total duration in minutes
+                const totalDurationMinutes = (durationHours * 60) + durationMinutes;
+                if (totalDurationMinutes > 0) {
+                    payload.durationMinutes = totalDurationMinutes;
+                }
 
             const response = await callFunction("setMaintenanceMode", payload);
 
-            if (enabled && !immediate) {
+            if (maintenance && !immediate) {
                 setSuccess(`Maintenance break scheduled for ${delayMinutes} minutes from now. Players will receive a warning.`);
-            } else if (enabled) {
+            } else if (maintenance) {
                 setSuccess("Maintenance mode activated immediately!");
             } else {
                 setSuccess("Maintenance mode disabled. Players can now access the game.");
@@ -178,37 +186,10 @@ export default function MaintenancePage() {
     return (
         <AuthGuard>
             <div className="min-h-screen bg-gray-50">
-                {/* Header */}
-                <header className="bg-white shadow-sm border-b">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                        <div className="flex items-center">
-                            <button
-                                onClick={() => router.push("/")}
-                                className="mr-4 p-2 hover:bg-gray-100 rounded-lg transition"
-                            >
-                                <svg
-                                    className="w-6 h-6 text-gray-600"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M15 19l-7-7 7-7"
-                                    />
-                                </svg>
-                            </button>
-                            <h1 className="text-2xl font-bold text-gray-900">
-                                Maintenance Mode Control
-                            </h1>
-                        </div>
-                    </div>
-                </header>
+                <PageHeader title="Maintenance Mode Control" />
 
                 {/* Main Content */}
-                <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
                     {success && (
                         <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
                             {success}
@@ -327,7 +308,7 @@ export default function MaintenancePage() {
                                                     });
                                                     console.log("[EMERGENCY] Cloud function returned:", result);
 
-                                                    setEnabled(false);
+                                                    setMaintenance(false);
                                                     setSuccess("Maintenance mode disabled. Players can now access the game.");
 
                                                     console.log("[EMERGENCY] Reloading status and history...");
@@ -375,19 +356,19 @@ export default function MaintenancePage() {
                                 </div>
                                 <button
                                     type="button"
-                                    onClick={() => setEnabled(!enabled)}
-                                    className={`relative inline-flex h-8 w-14 items-center rounded-full transition ${enabled ? "bg-blue-600" : "bg-gray-300"
+                                    onClick={() => setMaintenance(!maintenance)}
+                                    className={`relative inline-flex h-8 w-14 items-center rounded-full transition ${maintenance ? "bg-blue-600" : "bg-gray-300"
                                         }`}
                                 >
                                     <span
-                                        className={`inline-block h-6 w-6 transform rounded-full bg-white transition ${enabled ? "translate-x-7" : "translate-x-1"
+                                        className={`inline-block h-6 w-6 transform rounded-full bg-white transition ${maintenance ? "translate-x-7" : "translate-x-1"
                                             }`}
                                     />
                                 </button>
                             </div>
 
                             {/* Activation Timing - Only show when enabling maintenance */}
-                            {enabled && (
+                            {maintenance && (
                                 <div className="p-4 bg-gray-50 rounded-lg">
                                     <label className="font-medium text-gray-900 block mb-3">
                                         Activation Timing
@@ -427,7 +408,7 @@ export default function MaintenancePage() {
                             )}
 
                             {/* Delay Minutes Selector - Only show when scheduled maintenance */}
-                            {enabled && !immediate && (
+                            {maintenance && !immediate && (
                                 <div>
                                     <label htmlFor="delayMinutes" className="block text-sm font-medium text-gray-700 mb-2">
                                         Delay Duration
@@ -447,6 +428,44 @@ export default function MaintenancePage() {
                                     </select>
                                     <p className="text-sm text-gray-500 mt-1">
                                         Players will be warned immediately and kicked after this delay
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Duration - Always show when enabling */}
+                            {maintenance && (
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Maintenance Duration
+                                    </label>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-xs text-gray-600 mb-1">Hours</label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                max="24"
+                                                value={durationHours}
+                                                onChange={(e) => setDurationHours(Number(e.target.value))}
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                                placeholder="0"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs text-gray-600 mb-1">Minutes</label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                max="59"
+                                                value={durationMinutes}
+                                                onChange={(e) => setDurationMinutes(Number(e.target.value))}
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                                placeholder="30"
+                                            />
+                                        </div>
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-2">
+                                        Optional: How long maintenance will last (shown to players as countdown)
                                     </p>
                                 </div>
                             )}

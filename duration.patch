@@ -1,0 +1,38 @@
+--- a/src/game-systems/adminMaintenance.ts
++++ b/src/game-systems/adminMaintenance.ts
+@@ -75,6 +75,15 @@
+         ? timestamp + (effectiveDelayMinutes * 60 * 1000) // Convert minutes to milliseconds
+         : null;
+ 
++    // Calculate maintenance start time (immediate = now, scheduled = future)
++    const maintenanceStartTime = enabled
++        ? (immediate !== false ? timestamp : scheduledMaintenanceTime!)
++        : null;
++
++    // Calculate maintenance end time based on duration
++    const maintenanceEndTime = enabled && durationMinutes
++        ? maintenanceStartTime! + (durationMinutes * 60 * 1000)
++        : null;
++
+     const maintenanceData: any = {
+         maintenance: enabled,
+         enabled,
+@@ -96,6 +105,18 @@
+         maintenanceData.scheduledMaintenanceTime = admin.firestore.FieldValue.delete();
+     }
+ 
++    // Add duration fields if maintenance is being enabled
++    if (enabled && durationMinutes) {
++        maintenanceData.durationMinutes = durationMinutes;
++        maintenanceData.maintenanceEndTime = maintenanceEndTime;
++        maintenanceData.startedAt = immediate !== false ? timestamp : scheduledMaintenanceTime;
++    } else {
++        // Clear duration fields when disabling
++        maintenanceData.durationMinutes = admin.firestore.FieldValue.delete();
++        maintenanceData.maintenanceEndTime = admin.firestore.FieldValue.delete();
++        maintenanceData.startedAt = admin.firestore.FieldValue.delete();
++    }
++
+     // Track maintenance history
+     if (enabled) {
+         // Starting maintenance - create new history entry

@@ -63,3 +63,4 @@ export {
   refreshGlobalLeaderboardNow,
   refreshClanLeaderboardNow,
 } from "./tools/leaderboardTriggers.js";
+export { activateScheduledMaintenance } from "./game-systems/maintenanceActivator";

@@ -8,21 +8,24 @@ const db = admin.firestore();
 // --- Set Maintenance Mode ---
 
 interface SetMaintenanceModeRequest {
-    enabled: boolean;
+    maintenance: boolean;  // Changed from 'enabled'
     rewardAvailable?: boolean;
     rewardGems?: number;
     immediate?: boolean; // If true, activate immediately. If false, schedule with delay
     delayMinutes?: number; // Number of minutes to delay (if not immediate). Default: 15
+    durationMinutes?: number; // How long maintenance will last (in minutes)
 }
 
 interface SetMaintenanceModeResponse {
     success: boolean;
     maintenance: {
-        enabled: boolean;
+        maintenance: boolean;  // Changed from 'enabled'
         rewardAvailable?: boolean;
         rewardGems?: number;
         scheduledMaintenanceTime?: number; // Timestamp when maintenance will be enforced
         delayMinutes?: number; // Number of minutes until enforcement
+        durationMinutes?: number; // NEW: Duration in minutes
+        maintenanceEndTime?: number; // NEW: When maintenance will end
         updatedAt: number;
         updatedBy: string;
     };
@@ -38,10 +41,10 @@ export const setMaintenanceMode = onCall({ region: REGION }, async (request) => 
     // Verify admin privileges
     await assertIsAdmin(uid);
 
-    const { enabled, rewardAvailable, rewardGems, immediate, delayMinutes } = request.data as SetMaintenanceModeRequest;
+    const { maintenance, rewardAvailable, rewardGems, immediate, delayMinutes, durationMinutes } = request.data as SetMaintenanceModeRequest;
 
-    if (typeof enabled !== "boolean") {
-        throw new HttpsError("invalid-argument", "enabled must be a boolean.");
+    if (typeof maintenance !== "boolean") {
+        throw new HttpsError("invalid-argument", "maintenance must be a boolean.");
     }
 
     if (rewardAvailable !== undefined && typeof rewardAvailable !== "boolean") {
@@ -59,6 +62,9 @@ export const setMaintenanceMode = onCall({ region: REGION }, async (request) => 
     if (delayMinutes !== undefined && (typeof delayMinutes !== "number" || delayMinutes <= 0)) {
         throw new HttpsError("invalid-argument", "delayMinutes must be a positive number.");
     }
+    if (durationMinutes !== undefined && (typeof durationMinutes !== "number" || durationMinutes <= 0)) {
+        throw new HttpsError("invalid-argument", "durationMinutes must be a positive number.");
+    }
 
     const maintenanceRef = db.doc("/GameConfig/maintenance");
     const timestamp = Date.now();
@@ -67,13 +73,22 @@ export const setMaintenanceMode = onCall({ region: REGION }, async (request) => 
     const effectiveDelayMinutes = delayMinutes || 15;
 
     // Calculate scheduled maintenance time if not immediate
-    const scheduledMaintenanceTime = enabled && immediate === false
+    const scheduledMaintenanceTime = maintenance && immediate === false
         ? timestamp + (effectiveDelayMinutes * 60 * 1000) // Convert minutes to milliseconds
         : null;
 
+    // Calculate maintenance start time (immediate = now, scheduled = future)
+    const maintenanceStartTime = maintenance
+        ? (immediate !== false ? timestamp : scheduledMaintenanceTime!)
+        : null;
+
+    // Calculate maintenance end time based on duration
+    const maintenanceEndTime = maintenance && durationMinutes
+        ? maintenanceStartTime! + (durationMinutes * 60 * 1000)
+        : null;
+
     const maintenanceData: any = {
-        maintenance: enabled,
-        enabled,
+        maintenance: immediate !== false,  // true for immediate, false for scheduled
         rewardAvailable: rewardAvailable || false,
         rewardGems: rewardGems || 100,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -84,7 +99,7 @@ export const setMaintenanceMode = onCall({ region: REGION }, async (request) => 
     if (scheduledMaintenanceTime) {
         maintenanceData.scheduledMaintenanceTime = scheduledMaintenanceTime;
         maintenanceData.delayMinutes = effectiveDelayMinutes;
-    } else if (enabled) {
+    } else if (maintenance) {
         // If immediate maintenance, remove any scheduled time
         maintenanceData.scheduledMaintenanceTime = admin.firestore.FieldValue.delete();
     } else {
@@ -92,8 +107,20 @@ export const setMaintenanceMode = onCall({ region: REGION }, async (request) => 
         maintenanceData.scheduledMaintenanceTime = admin.firestore.FieldValue.delete();
     }
 
+    // Add duration fields if maintenance is being enabled
+    if (maintenance && durationMinutes) {
+        maintenanceData.durationMinutes = durationMinutes;
+        maintenanceData.maintenanceEndTime = maintenanceEndTime;
+        maintenanceData.startedAt = immediate !== false ? timestamp : scheduledMaintenanceTime;
+    } else {
+        // Clear duration fields when disabling
+        maintenanceData.durationMinutes = admin.firestore.FieldValue.delete();
+        maintenanceData.maintenanceEndTime = admin.firestore.FieldValue.delete();
+        maintenanceData.startedAt = admin.firestore.FieldValue.delete();
+    }
+
     // Track maintenance history
-    if (enabled) {
+    if (maintenance) {
         // Starting maintenance - create new history entry
         // IMPORTANT: Use current timestamp for startedAt (when we enabled it)
         // NOT the scheduledMaintenanceTime (when it will activate)
@@ -108,6 +135,7 @@ export const setMaintenanceMode = onCall({ region: REGION }, async (request) => 
             delayMinutes: scheduledMaintenanceTime ? effectiveDelayMinutes : 0,
             immediate: immediate !== false, // default to true if not specified
             rewardGems: rewardGems || 100,
+            durationMinutes: durationMinutes || null, // Track planned duration
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
         });
 
@@ -145,7 +173,7 @@ export const setMaintenanceMode = onCall({ region: REGION }, async (request) => 
     const response: SetMaintenanceModeResponse = {
         success: true,
         maintenance: {
-            enabled,
+            maintenance: immediate !== false,  // Only true if immediate
             rewardAvailable: rewardAvailable || false,
             rewardGems: rewardGems || 100,
             updatedAt: timestamp,
@@ -156,6 +184,11 @@ export const setMaintenanceMode = onCall({ region: REGION }, async (request) => 
     if (scheduledMaintenanceTime) {
         response.maintenance.scheduledMaintenanceTime = scheduledMaintenanceTime;
         response.maintenance.delayMinutes = effectiveDelayMinutes;
+    }
+
+    if (durationMinutes) {
+        response.maintenance.durationMinutes = durationMinutes;
+        response.maintenance.maintenanceEndTime = maintenanceEndTime!;
     }
 
     return response;

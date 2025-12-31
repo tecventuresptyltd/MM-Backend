@@ -11,6 +11,7 @@ import {
   getBotNamesConfig,
   getItemSkusCatalog,
 } from "../core/config.js";
+import { playerClanStateRef, clanMembersCollection, clanRef } from "../clan/helpers.js";
 import { ItemSku, CarLevel } from "../shared/types.js";
 import { SeededRNG } from "./lib/random.js";
 import { resolveCarStats, calculateBotStatsFromTrophies } from "./lib/stats.js";
@@ -505,6 +506,105 @@ export const prepareRace = onCall({ region: REGION }, async (request) => {
     const proof = { hmac: hmacSign(payload) };
     const result = { ...payload, proof };
     const sanitisedResult = sanitizeForFirestore(result);
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // PERSISTENCE CHANGE: Save Race & Participant + Deduct Trophies
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    // Helper to ensure valid trophy number
+    const sanitizeTrophyCount = (val: unknown): number => {
+      const n = Number(val);
+      return Number.isFinite(n) ? Math.floor(n) : 0;
+    };
+
+    await db.runTransaction(async (transaction) => {
+      // ─────────────────────────────────────────────────────────────────────────────
+      // 1. READS (All reads must come before writes)
+      // ─────────────────────────────────────────────────────────────────────────────
+
+      const freshProfileRef = db.doc(`/Players/${uid}/Profile/Profile`);
+      const clanStateRef = playerClanStateRef(uid);
+
+      // Parallelize initial reads
+      const [freshProfileSnap, clanStateSnap] = await Promise.all([
+        transaction.get(freshProfileRef),
+        transaction.get(clanStateRef)
+      ]);
+
+      const currentTrophies = freshProfileSnap.exists
+        ? sanitizeTrophyCount(freshProfileSnap.data()?.trophies)
+        : playerTrophies;
+
+      const appliedPreDeduction = preDeductedTrophies < 0
+        ? Math.max(preDeductedTrophies, -currentTrophies)
+        : preDeductedTrophies;
+
+      const trophiesAfterPreDeduct = Math.max(0, currentTrophies + appliedPreDeduction);
+
+      // Check clan membership for potential second read
+      // Note: In strict Firestore transactions, dynamic reads dependent on previous reads are allowed 
+      // AS LONG AS no writes have happened yet.
+      let clanId: string | null = null;
+      let memberRef: FirebaseFirestore.DocumentReference | null = null;
+      let memberSnap: FirebaseFirestore.DocumentSnapshot | null = null;
+      let clanRefDoc: FirebaseFirestore.DocumentReference | null = null;
+
+      if (appliedPreDeduction !== 0) {
+        clanId = clanStateSnap.data()?.clanId;
+        if (typeof clanId === "string" && clanId.length > 0) {
+          memberRef = clanMembersCollection(clanId).doc(uid);
+          memberSnap = await transaction.get(memberRef); // Allowed because no writes yet
+          clanRefDoc = clanRef(clanId);
+        }
+      }
+
+      // ─────────────────────────────────────────────────────────────────────────────
+      // 2. WRITES (All writes must happen after reads)
+      // ─────────────────────────────────────────────────────────────────────────────
+
+      // Update Player Profile
+      transaction.update(freshProfileRef, {
+        trophies: trophiesAfterPreDeduct,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      // Update Clan Trophies (if applicable)
+      if (memberRef && memberSnap && memberSnap.exists && clanRefDoc) {
+        transaction.update(memberRef, {
+          trophies: admin.firestore.FieldValue.increment(appliedPreDeduction),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        transaction.update(clanRefDoc, {
+          "stats.trophies": admin.firestore.FieldValue.increment(appliedPreDeduction),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      }
+
+      // Create Race Document
+      const raceRef = db.doc(`/Races/${raceId}`);
+      transaction.set(raceRef, {
+        status: "pending",
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        lobbySnapshot: [
+          { rating: playerTrophies, participantId: uid },
+          ...bots.map(b => ({ rating: b.trophies, participantId: null }))
+        ],
+        laps,
+        trackId: trackId || "track_01"
+      });
+
+      // Create Participant Document
+      const participantRef = db.doc(`/Races/${raceId}/Participants/${uid}`);
+      transaction.set(participantRef, {
+        preDeductedTrophies: appliedPreDeduction,
+        playerIndex: 0,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        carId,
+        deckIndex,
+      });
+    });
 
     await completeOperation(uid, opId, sanitisedResult);
     return sanitisedResult;

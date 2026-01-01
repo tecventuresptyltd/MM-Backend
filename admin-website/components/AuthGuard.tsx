@@ -11,50 +11,49 @@ interface AuthGuardProps {
 
 export default function AuthGuard({ children }: AuthGuardProps) {
     const router = useRouter();
-    const { auth, db, user, isLoading, logout, currentEnvironment } = useFirebase();
+    const { auth, db, user, isLoading, logout, currentEnvironment, hasAuthChecked } = useFirebase();
     const [isAuthorized, setIsAuthorized] = useState(false);
-    const [checking, setChecking] = useState(true);
+    const [isCheckingAdmin, setIsCheckingAdmin] = useState(false);
 
     useEffect(() => {
-        const checkAuth = async () => {
-            console.log("[AuthGuard] checkAuth called", {
+        // Reset authorization when environment or user changes
+        setIsAuthorized(false);
+    }, [currentEnvironment, user]);
+
+    useEffect(() => {
+        // Don't do anything until Firebase is fully initialized
+        if (isLoading || !hasAuthChecked || !auth || !db) {
+            console.log("[AuthGuard] Waiting for Firebase initialization...", {
                 isLoading,
+                hasAuthChecked,
                 hasAuth: !!auth,
-                hasDb: !!db,
-                hasUser: !!user,
-                currentEnvironment
+                hasDb: !!db
             });
+            return;
+        }
 
-            // Wait for Firebase to initialize
-            if (isLoading || !auth || !db) {
-                console.log("[AuthGuard] Still loading, waiting...");
-                return;
-            }
+        // If no user after auth check, redirect to login
+        if (!user) {
+            console.log("[AuthGuard] No user after auth check, redirecting to login");
+            router.replace("/login");
+            return;
+        }
 
-            setChecking(true);
-
-            if (!user) {
-                // Not logged in - redirect to login
-                console.log("[AuthGuard] No user, redirecting to login");
-                router.push("/login");
-                return;
-            }
-
+        // User exists, check if they're an admin
+        const checkAdminStatus = async () => {
             console.log(`[AuthGuard] Checking admin status for ${user.uid} in ${currentEnvironment}`);
+            setIsCheckingAdmin(true);
 
             try {
-                // Check if user is an admin in this environment
                 const adminDocRef = doc(db, "AdminUsers", user.uid);
-                console.log("[AuthGuard] Fetching admin doc...");
                 const adminDoc = await getDoc(adminDocRef);
 
                 console.log("[AuthGuard] Admin doc exists:", adminDoc.exists(), "data:", adminDoc.data());
 
                 if (!adminDoc.exists() || adminDoc.data()?.role !== "admin") {
-                    // User is not an admin in this environment
                     console.log(`[AuthGuard] User ${user.uid} is NOT an admin in ${currentEnvironment}`);
                     await logout();
-                    router.push("/login?error=unauthorized");
+                    router.replace("/login?error=unauthorized");
                     return;
                 }
 
@@ -63,16 +62,17 @@ export default function AuthGuard({ children }: AuthGuardProps) {
             } catch (error) {
                 console.error("[AuthGuard] Error checking admin status:", error);
                 await logout();
-                router.push("/login?error=auth-error");
+                router.replace("/login?error=auth-error");
             } finally {
-                setChecking(false);
+                setIsCheckingAdmin(false);
             }
         };
 
-        checkAuth();
-    }, [auth, db, user, isLoading, logout, router, currentEnvironment]);
+        checkAdminStatus();
+    }, [auth, db, user, isLoading, hasAuthChecked, logout, router, currentEnvironment]);
 
-    if (isLoading || checking) {
+    // Show loading while Firebase is initializing or checking admin status
+    if (isLoading || !hasAuthChecked || isCheckingAdmin) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-black">
                 <div className="text-center">
@@ -83,10 +83,15 @@ export default function AuthGuard({ children }: AuthGuardProps) {
         );
     }
 
+    // Show nothing while redirecting (user is null)
+    if (!user) {
+        return null;
+    }
+
+    // Only show content when authorized
     if (!isAuthorized) {
         return null;
     }
 
     return <>{children}</>;
 }
-

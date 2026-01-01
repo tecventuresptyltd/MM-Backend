@@ -21,6 +21,7 @@ export default function MaintenancePage() {
     const [durationHours, setDurationHours] = useState(0); // Duration hours
     const [durationMinutes, setDurationMinutes] = useState(30); // Duration minutes (default 30min)
     const [countdown, setCountdown] = useState<string>(""); // Countdown timer display
+    const [graceCountdown, setGraceCountdown] = useState<string>(""); // Grace period countdown (60s before active)
     const [runningTimer, setRunningTimer] = useState<string>(""); // Running timer (how long active)
     const [maintenanceHistory, setMaintenanceHistory] = useState<any[]>([]);
     const [success, setSuccess] = useState("");
@@ -30,7 +31,7 @@ export default function MaintenancePage() {
     useEffect(() => {
         loadCurrentStatus();
         loadMaintenanceHistory();
-    }, []);
+    }, [db]);
 
     // Real-time listener for maintenance status changes
     useEffect(() => {
@@ -70,30 +71,46 @@ export default function MaintenancePage() {
         };
     }, [db]); // Add db as dependency
 
-    // Countdown timer effect (before maintenance activates)
+    // Countdown timer effect (before maintenance activates) + Grace period handling
     useEffect(() => {
         if (!currentStatus) return;
 
         const scheduledTime = currentStatus.scheduledMaintenanceTime;
         if (!scheduledTime) {
             setCountdown("");
+            setGraceCountdown("");
             return;
         }
+
+        // Grace period is 60 seconds after scheduled time
+        const GRACE_PERIOD_MS = 60 * 1000;
+        const graceEndTime = scheduledTime + GRACE_PERIOD_MS;
 
         const updateCountdown = () => {
             const now = Date.now();
             const remaining = scheduledTime - now;
 
-            if (remaining <= 0) {
-                setCountdown("");
+            // Before scheduled time - show main countdown
+            if (remaining > 0) {
+                setGraceCountdown("");
+                const hours = Math.floor(remaining / (1000 * 60 * 60));
+                const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+                setCountdown(`${hours}h ${minutes}m ${seconds}s`);
                 return;
             }
 
-            const hours = Math.floor(remaining / (1000 * 60 * 60));
-            const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+            // After scheduled time - check if in grace period
+            setCountdown("");
+            const graceRemaining = graceEndTime - now;
 
-            setCountdown(`${hours}h ${minutes}m ${seconds}s`);
+            // During grace period - show grace countdown
+            if (graceRemaining > 0 && !(currentStatus.maintenance || currentStatus.enabled)) {
+                const seconds = Math.ceil(graceRemaining / 1000);
+                setGraceCountdown(`${seconds}s`);
+            } else {
+                setGraceCountdown("");
+            }
         };
 
         updateCountdown();
@@ -160,10 +177,15 @@ export default function MaintenancePage() {
     };
 
     const loadMaintenanceHistory = async (loadMore = false) => {
-        if (!db) return; // Wait for db to be initialized
+        if (!db) {
+            console.log("[MaintenanceHistory] No db available yet");
+            return;
+        }
+        console.log("[MaintenanceHistory] Loading history...");
         try {
             const { collection, query, orderBy, limit, getDocs, startAfter } = await import("firebase/firestore");
             const historyRef = collection(db, "MaintenanceHistory");
+            console.log("[MaintenanceHistory] Collection ref created");
 
             let q;
             if (loadMore && maintenanceHistory.length > 0) {
@@ -173,17 +195,25 @@ export default function MaintenancePage() {
             } else {
                 q = query(historyRef, orderBy("startedAt", "desc"), limit(10));
             }
+            console.log("[MaintenanceHistory] Query created, executing...");
 
             const snapshot = await getDocs(q);
-            const history = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            console.log("[MaintenanceHistory] Query returned", snapshot.size, "documents");
+
+            const history = snapshot.docs.map(doc => {
+                const data = doc.data();
+                console.log("[MaintenanceHistory] Doc:", doc.id, data);
+                return { id: doc.id, ...data };
+            });
 
             if (loadMore) {
                 setMaintenanceHistory([...maintenanceHistory, ...history]);
             } else {
                 setMaintenanceHistory(history);
             }
+            console.log("[MaintenanceHistory] History state updated with", history.length, "records");
         } catch (err) {
-            console.error("Error loading maintenance history:", err);
+            console.error("[MaintenanceHistory] Error loading history:", err);
         }
     };
 
@@ -295,6 +325,17 @@ export default function MaintenancePage() {
                                         <p className="text-sm font-medium text-orange-300 mb-1">Maintenance Enforcement In:</p>
                                         <p className="text-3xl font-bold text-orange-200">{countdown}</p>
                                         <p className="text-xs text-orange-400 mt-1">Players are currently seeing the warning popup</p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Grace Period Timer - Show during 60s grace period before activation */}
+                            {graceCountdown && currentStatus.scheduledMaintenanceTime && (
+                                <div className="mb-4 p-4 bg-yellow-900/40 border-2 border-yellow-500/50 rounded-xl backdrop-blur-sm shadow-lg animate-pulse">
+                                    <div className="text-center">
+                                        <p className="text-sm font-medium text-yellow-300 mb-1">⏳ Grace Period - Activating In:</p>
+                                        <p className="text-3xl font-bold text-yellow-200">{graceCountdown}</p>
+                                        <p className="text-xs text-yellow-400 mt-1">Players have 60 seconds to finish their current activity</p>
                                     </div>
                                 </div>
                             )}

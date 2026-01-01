@@ -123,6 +123,12 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // MaintenanceHistory - allow authenticated users (admins) to read history
+    match /MaintenanceHistory/{historyId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
     // Audit/AdminOps - server-only
     match /Audit/{day}/Entries/{id} { allow read, write: if false; }
     match /AdminOps/{opId}         { allow read, write: if false; }

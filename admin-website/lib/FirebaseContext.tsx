@@ -40,6 +40,9 @@ interface FirebaseContextType {
 
     // Logout current environment
     logout: () => Promise<void>;
+
+    // Has auth state been checked at least once?
+    hasAuthChecked: boolean;
 }
 
 const FirebaseContext = createContext<FirebaseContextType | null>(null);
@@ -56,6 +59,7 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
     const [functions, setFunctions] = useState<Functions | null>(null);
     const [user, setUser] = useState<User | null>(null);
     const [authUnsubscribe, setAuthUnsubscribe] = useState<(() => void) | null>(null);
+    const [hasAuthChecked, setHasAuthChecked] = useState(false);
 
     // Production confirmation modal state
     const [confirmModalVisible, setConfirmModalVisible] = useState(false);
@@ -86,6 +90,7 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
 
         const initializeFirebase = async () => {
             setIsLoading(true);
+            setHasAuthChecked(false); // Reset auth check flag when reinitializing
 
             // Clean up previous auth listener
             if (authUnsubscribe) {
@@ -130,6 +135,7 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
             const unsubscribe = onAuthStateChanged(authInstance, (firebaseUser) => {
                 console.log("[Firebase] Auth state changed:", firebaseUser?.uid || "null");
                 setUser(firebaseUser);
+                setHasAuthChecked(true);
                 setIsLoading(false);
             });
 
@@ -239,6 +245,7 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
         isProd: currentEnvironment === "prod",
         showProductionConfirm,
         logout,
+        hasAuthChecked,
     };
 
     return (

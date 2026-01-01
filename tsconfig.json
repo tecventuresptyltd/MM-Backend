@@ -1,7 +1,10 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["ES2022"],
+    "lib": [
+      "ES2022",
+      "DOM"
+    ],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "outDir": "lib",
@@ -11,8 +14,15 @@
     "isolatedModules": true,
     "resolveJsonModule": true,
     "sourceMap": false,
-    "types": ["jest", "node"]
+    "types": [
+      "jest",
+      "node"
+    ]
   },
-  "include": ["src/**/*"],
-  "exclude": ["src/legacy/**/*"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "src/legacy/**/*"
+  ]
 }

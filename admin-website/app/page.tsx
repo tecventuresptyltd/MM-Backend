@@ -155,35 +155,34 @@ export default function DashboardPage() {
               </div>
             </Link>
 
-            {/* Analytics Card (Coming Soon) */}
-            <div className="bg-gradient-to-br from-gray-800/40 to-gray-700/20 backdrop-blur-sm rounded-2xl shadow-xl p-8 opacity-50 cursor-not-allowed border border-gray-600/30">
-              <div className="flex items-center mb-6">
-                <div className="p-4 bg-gray-600/30 rounded-xl">
-                  <svg
-                    className="w-10 h-10 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                    />
-                  </svg>
+            {/* Analytics Card */}
+            <Link href="/analytics">
+              <div className="h-full flex flex-col group bg-gradient-to-br from-orange-900/40 to-orange-800/20 backdrop-blur-sm rounded-2xl shadow-2xl hover:shadow-orange-500/20 transition-all duration-300 p-8 cursor-pointer border border-orange-700/30 hover:border-orange-500/50 hover:scale-105">
+                <div className="flex items-center mb-6">
+                  <div className="p-4 bg-orange-600/30 rounded-xl group-hover:bg-orange-600/50 transition">
+                    <svg
+                      className="w-10 h-10 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                      />
+                    </svg>
+                  </div>
                 </div>
+                <h3 className="text-2xl font-bold text-white mb-3">
+                  Analytics
+                </h3>
+                <p className="text-gray-300 leading-relaxed">
+                  View user stats and game performance metrics from Firebase Analytics
+                </p>
               </div>
-              <h3 className="text-2xl font-bold text-white mb-3 flex items-center gap-2">
-                Analytics
-                <span className="text-xs bg-gray-700 px-2 py-1 rounded font-normal">
-                  Coming Soon
-                </span>
-              </h3>
-              <p className="text-gray-400 text-sm leading-relaxed">
-                View user stats and game performance metrics
-              </p>
-            </div>
+            </Link>
 
             {/* Player Support Card (Coming Soon) */}
             <div className="bg-gradient-to-br from-gray-800/40 to-gray-700/20 backdrop-blur-sm rounded-2xl shadow-xl p-8 opacity-50 cursor-not-allowed border border-gray-600/30">

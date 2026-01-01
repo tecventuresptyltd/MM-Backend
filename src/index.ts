@@ -67,3 +67,11 @@ export {
   refreshClanLeaderboardNow,
 } from "./tools/leaderboardTriggers.js";
 export { activateScheduledMaintenance } from "./game-systems/maintenanceActivator";
+
+// Analytics Dashboard Functions
+export {
+  analyticsOverview,
+  analyticsGrowth,
+  analyticsPlatforms,
+} from "./analytics";
+export { testAnalytics } from "./analyticsTest";

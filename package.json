@@ -23,6 +23,7 @@
     "deploy:production": "./tools/deploy-production.sh"
   },
   "dependencies": {
+    "@google-analytics/data": "^5.2.1",
     "@google-cloud/pubsub": "^4.5.0",
     "crockford-base32": "^2.0.0",
     "firebase-admin": "^12.7.0",

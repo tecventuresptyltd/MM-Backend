@@ -2,17 +2,21 @@
 
 import { useRouter } from "next/navigation";
 import { signOut } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { useFirebase } from "@/lib/FirebaseContext";
 import AuthGuard from "@/components/AuthGuard";
+import EnvironmentSwitcher from "@/components/EnvironmentSwitcher";
 import Link from "next/link";
 import Image from "next/image";
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { auth, isProd, environmentConfig } = useFirebase();
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
+      if (auth) {
+        await signOut(auth);
+      }
       router.push("/login");
     } catch (error) {
       console.error("Logout error:", error);
@@ -22,6 +26,15 @@ export default function DashboardPage() {
   return (
     <AuthGuard>
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
+        {/* Production Warning Banner */}
+        {isProd && (
+          <div className="bg-red-900/80 border-b border-red-700 py-2 px-4 text-center">
+            <span className="text-red-200 text-sm font-medium">
+              ⚠️ You are viewing the <strong>PRODUCTION</strong> environment. Changes will affect live players!
+            </span>
+          </div>
+        )}
+
         {/* Header */}
         <header className="border-b border-gray-700 bg-black/40 backdrop-blur-md">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
@@ -40,12 +53,16 @@ export default function DashboardPage() {
                 <p className="text-sm text-gray-400">Admin Dashboard</p>
               </div>
             </div>
-            <button
-              onClick={handleLogout}
-              className="px-6 py-2.5 bg-red-600/90 text-white rounded-lg hover:bg-red-700 transition font-medium shadow-lg hover:shadow-red-500/50"
-            >
-              Logout
-            </button>
+
+            <div className="flex items-center gap-4">
+              <EnvironmentSwitcher />
+              <button
+                onClick={handleLogout}
+                className="px-6 py-2.5 bg-red-600/90 text-white rounded-lg hover:bg-red-700 transition font-medium shadow-lg hover:shadow-red-500/50"
+              >
+                Logout
+              </button>
+            </div>
           </div>
         </header>
 

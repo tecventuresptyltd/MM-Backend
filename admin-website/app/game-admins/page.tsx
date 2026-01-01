@@ -4,10 +4,12 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import AuthGuard from "@/components/AuthGuard";
 import PageHeader from "@/components/PageHeader";
-import { callFunction } from "@/lib/firebase";
+import { useFirebase, useProductionConfirm } from "@/lib/FirebaseContext";
 
 export default function GameAdminsPage() {
     const router = useRouter();
+    const { callFunction, isProd } = useFirebase();
+    const confirmProd = useProductionConfirm();
     const [loading, setLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -60,6 +62,13 @@ export default function GameAdminsPage() {
     const handleToggleAdmin = async (uid: string, currentStatus: boolean) => {
         setError("");
         setSuccess("");
+
+        // Confirm production action
+        if (isProd) {
+            const confirmed = await confirmProd(currentStatus ? 'remove game admin status' : 'grant game admin status');
+            if (!confirmed) return;
+        }
+
         setLoading(true);
 
         try {
@@ -88,7 +97,15 @@ export default function GameAdminsPage() {
     return (
         <AuthGuard>
             <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
-                <PageHeader title="Game Admin Management" subtitle="Manage which players can bypass maintenance mode for testing" />
+                {/* Production Warning Banner */}
+                {isProd && (
+                    <div className="bg-red-900/80 border-b border-red-700 py-2 px-4 text-center">
+                        <span className="text-red-200 text-sm font-medium">
+                            ⚠️ You are managing <strong>PRODUCTION</strong> game admins. Changes will affect live players!
+                        </span>
+                    </div>
+                )}
+                <PageHeader title={`Game Admin Management ${isProd ? '(PROD)' : ''}`} subtitle="Manage which players can bypass maintenance mode for testing" />
 
                 {/* Main Content */}
                 <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

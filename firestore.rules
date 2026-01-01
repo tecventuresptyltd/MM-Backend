@@ -24,6 +24,13 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // AdminUsers - allow authenticated users to read their own admin document
+    // This is needed for the admin dashboard to verify admin privileges
+    match /AdminUsers/{uid} {
+      allow read: if isSelf(uid);
+      allow write: if false;
+    }
+
     // Players collection and all sub-collections are server-authoritative.
     // Clients can read their own data but cannot write directly.
     match /Players/{uid} {

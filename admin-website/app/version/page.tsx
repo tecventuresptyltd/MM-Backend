@@ -4,12 +4,13 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import AuthGuard from "@/components/AuthGuard";
 import PageHeader from "@/components/PageHeader";
-import { callFunction } from "@/lib/firebase";
+import { useFirebase, useProductionConfirm } from "@/lib/FirebaseContext";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 
 export default function VersionPage() {
     const router = useRouter();
+    const { db, callFunction, isProd } = useFirebase();
+    const confirmProd = useProductionConfirm();
     const [loading, setLoading] = useState(false);
     const [currentVersion, setCurrentVersion] = useState("");
     const [newVersion, setNewVersion] = useState("");
@@ -24,6 +25,7 @@ export default function VersionPage() {
     }, []);
 
     const loadCurrentVersion = async () => {
+        if (!db) return;
         try {
             const versionRef = doc(db, "GameConfig", "appVersion");
             const versionDoc = await getDoc(versionRef);
@@ -41,9 +43,10 @@ export default function VersionPage() {
     };
 
     const loadVersionHistory = async () => {
+        if (!db) return;
         try {
             const { collection, query, orderBy, limit, getDocs } = await import("firebase/firestore");
-            const historyRef = collection(db, "VersionHistory");
+            const historyRef = collection(db, "GameConfig", "VersionHistory");
             const q = query(historyRef, orderBy("changedAt", "desc"), limit(20));
             const snapshot = await getDocs(q);
             const history = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -80,6 +83,13 @@ export default function VersionPage() {
 
         setError("");
         setSuccess("");
+
+        // Confirm production action
+        if (isProd) {
+            const confirmed = await confirmProd(`update minimum version to ${newVersion}`);
+            if (!confirmed) return;
+        }
+
         setLoading(true);
 
         try {
@@ -104,7 +114,15 @@ export default function VersionPage() {
     return (
         <AuthGuard>
             <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
-                <PageHeader title="Version Control" />
+                {/* Production Warning Banner */}
+                {isProd && (
+                    <div className="bg-red-900/80 border-b border-red-700 py-2 px-4 text-center">
+                        <span className="text-red-200 text-sm font-medium">
+                            ⚠️ You are managing <strong>PRODUCTION</strong> version. Changes will affect live players!
+                        </span>
+                    </div>
+                )}
+                <PageHeader title={`Version Control ${isProd ? '(PROD)' : ''}`} />
 
                 {/* Main Content */}
                 <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">

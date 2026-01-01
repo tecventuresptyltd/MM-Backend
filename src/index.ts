@@ -73,5 +73,13 @@ export {
   analyticsOverview,
   analyticsGrowth,
   analyticsPlatforms,
+  analyticsRevenue,
+  analyticsRevenueByProduct,
+  analyticsRetention,
+  analyticsEvents,
+  analyticsRealtime,
+  analyticsGeography,
+  analyticsDevices,
+  analyticsSessions,
 } from "./analytics";
 export { testAnalytics } from "./analyticsTest";

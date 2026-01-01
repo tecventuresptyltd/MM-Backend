@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { onAuthStateChanged, User } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
+import { useFirebase } from "@/lib/FirebaseContext";
 
 interface AuthGuardProps {
     children: React.ReactNode;
@@ -12,47 +11,73 @@ interface AuthGuardProps {
 
 export default function AuthGuard({ children }: AuthGuardProps) {
     const router = useRouter();
-    const [loading, setLoading] = useState(true);
+    const { auth, db, user, isLoading, logout, currentEnvironment } = useFirebase();
     const [isAuthorized, setIsAuthorized] = useState(false);
+    const [checking, setChecking] = useState(true);
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (user: User | null) => {
+        const checkAuth = async () => {
+            console.log("[AuthGuard] checkAuth called", {
+                isLoading,
+                hasAuth: !!auth,
+                hasDb: !!db,
+                hasUser: !!user,
+                currentEnvironment
+            });
+
+            // Wait for Firebase to initialize
+            if (isLoading || !auth || !db) {
+                console.log("[AuthGuard] Still loading, waiting...");
+                return;
+            }
+
+            setChecking(true);
+
             if (!user) {
+                // Not logged in - redirect to login
+                console.log("[AuthGuard] No user, redirecting to login");
                 router.push("/login");
                 return;
             }
 
+            console.log(`[AuthGuard] Checking admin status for ${user.uid} in ${currentEnvironment}`);
+
             try {
-                // Check if user is an admin
+                // Check if user is an admin in this environment
                 const adminDocRef = doc(db, "AdminUsers", user.uid);
+                console.log("[AuthGuard] Fetching admin doc...");
                 const adminDoc = await getDoc(adminDocRef);
 
+                console.log("[AuthGuard] Admin doc exists:", adminDoc.exists(), "data:", adminDoc.data());
+
                 if (!adminDoc.exists() || adminDoc.data()?.role !== "admin") {
-                    // User is not an admin
-                    await auth.signOut();
+                    // User is not an admin in this environment
+                    console.log(`[AuthGuard] User ${user.uid} is NOT an admin in ${currentEnvironment}`);
+                    await logout();
                     router.push("/login?error=unauthorized");
                     return;
                 }
 
+                console.log("[AuthGuard] User IS admin, authorizing");
                 setIsAuthorized(true);
             } catch (error) {
-                console.error("Error checking admin status:", error);
-                await auth.signOut();
+                console.error("[AuthGuard] Error checking admin status:", error);
+                await logout();
                 router.push("/login?error=auth-error");
             } finally {
-                setLoading(false);
+                setChecking(false);
             }
-        });
+        };
 
-        return () => unsubscribe();
-    }, [router]);
+        checkAuth();
+    }, [auth, db, user, isLoading, logout, router, currentEnvironment]);
 
-    if (loading) {
+    if (isLoading || checking) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-black">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                    <p className="mt-4 text-gray-600">Verifying credentials...</p>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+                    <p className="mt-4 text-gray-400">Verifying credentials...</p>
                 </div>
             </div>
         );
@@ -64,3 +89,4 @@ export default function AuthGuard({ children }: AuthGuardProps) {
 
     return <>{children}</>;
 }
+

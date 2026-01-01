@@ -4,12 +4,13 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import AuthGuard from "@/components/AuthGuard";
 import PageHeader from "@/components/PageHeader";
-import { callFunction } from "@/lib/firebase";
+import { useFirebase, useProductionConfirm } from "@/lib/FirebaseContext";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 
 export default function MaintenancePage() {
     const router = useRouter();
+    const { db, callFunction, isProd, environmentConfig } = useFirebase();
+    const confirmProd = useProductionConfirm();
     const [loading, setLoading] = useState(false);
     const [currentStatus, setCurrentStatus] = useState<any>(null);
     const [maintenance, setMaintenance] = useState(false);
@@ -33,6 +34,8 @@ export default function MaintenancePage() {
 
     // Real-time listener for maintenance status changes
     useEffect(() => {
+        if (!db) return; // Wait for db to be initialized
+
         const setupRealtimeListener = async () => {
             const { onSnapshot } = await import("firebase/firestore");
             const maintenanceRef = doc(db, "GameConfig", "maintenance");
@@ -65,7 +68,7 @@ export default function MaintenancePage() {
         return () => {
             if (unsubscribe) unsubscribe();
         };
-    }, []);
+    }, [db]); // Add db as dependency
 
     // Countdown timer effect (before maintenance activates)
     useEffect(() => {
@@ -137,6 +140,7 @@ export default function MaintenancePage() {
     }, [currentStatus]);
 
     const loadCurrentStatus = async () => {
+        if (!db) return; // Wait for db to be initialized
         try {
             const maintenanceRef = doc(db, "GameConfig", "maintenance");
             const maintenanceDoc = await getDoc(maintenanceRef);
@@ -156,6 +160,7 @@ export default function MaintenancePage() {
     };
 
     const loadMaintenanceHistory = async (loadMore = false) => {
+        if (!db) return; // Wait for db to be initialized
         try {
             const { collection, query, orderBy, limit, getDocs, startAfter } = await import("firebase/firestore");
             const historyRef = collection(db, "MaintenanceHistory");
@@ -185,6 +190,13 @@ export default function MaintenancePage() {
     const handleSave = async () => {
         setError("");
         setSuccess("");
+
+        // Confirm production action
+        if (isProd) {
+            const confirmed = await confirmProd(maintenance ? "enable maintenance mode" : "disable maintenance mode");
+            if (!confirmed) return;
+        }
+
         setLoading(true);
 
         try {
@@ -237,7 +249,15 @@ export default function MaintenancePage() {
     return (
         <AuthGuard>
             <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
-                <PageHeader title="Maintenance Mode Control" />
+                {/* Production Warning Banner */}
+                {isProd && (
+                    <div className="bg-red-900/80 border-b border-red-700 py-2 px-4 text-center">
+                        <span className="text-red-200 text-sm font-medium">
+                            ⚠️ You are managing <strong>PRODUCTION</strong> maintenance. Changes will affect live players!
+                        </span>
+                    </div>
+                )}
+                <PageHeader title={`Maintenance Mode Control ${isProd ? '(PROD)' : ''}`} />
 
                 {/* Main Content */}
                 <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
@@ -255,10 +275,18 @@ export default function MaintenancePage() {
 
                     {/* Current Status Card */}
                     {currentStatus && (
-                        <div className="mb-6 bg-gradient-to-br from-blue-900/40 to-blue-800/20 backdrop-blur-sm border border-blue-700/30 rounded-2xl p-6 shadow-2xl">
-                            <h3 className="text-lg font-semibold text-blue-300 mb-3">
-                                Current Status
-                            </h3>
+                        <div className={`mb-6 bg-gradient-to-br ${isProd ? 'from-red-900/40 to-red-800/20 border-red-700/30' : 'from-blue-900/40 to-blue-800/20 border-blue-700/30'} backdrop-blur-sm border rounded-2xl p-6 shadow-2xl`}>
+                            <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                                <h3 className={`text-lg font-semibold ${isProd ? 'text-red-300' : 'text-blue-300'}`}>
+                                    Current Status
+                                </h3>
+                                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${isProd ? 'bg-red-900/60 border border-red-500/50' : 'bg-green-900/60 border border-green-500/50'}`}>
+                                    <span className="text-sm">📍</span>
+                                    <span className={`text-sm font-semibold ${isProd ? 'text-red-300' : 'text-green-300'}`}>
+                                        {environmentConfig.firebase.projectId}
+                                    </span>
+                                </div>
+                            </div>
 
                             {/* Countdown Timer - Show prominently when scheduled */}
                             {countdown && currentStatus.scheduledMaintenanceTime && (

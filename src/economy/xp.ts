@@ -24,7 +24,7 @@ interface GrantXPRequest {
 }
 
 
-export const grantXP = onCall({ enforceAppCheck: false, region: "us-central1" }, async (request) => {
+export const grantXP = onCall({ region: "us-central1" }, async (request) => {
   const { amount, opId } = request.data as GrantXPRequest;
   const uid = request.auth?.uid;
 
@@ -45,14 +45,14 @@ export const grantXP = onCall({ enforceAppCheck: false, region: "us-central1" },
   const result = await db.runTransaction(async (transaction) => {
     const statsRef = db.doc(`/Players/${uid}/Economy/Stats`);
     const profileRef = db.doc(`/Players/${uid}/Profile/Profile`);
-    
+
     const [statsDoc, profileDoc] = await transaction.getAll(statsRef, profileRef);
 
     if (!statsDoc.exists) {
       throw new HttpsError("not-found", "Player economy stats not found.");
     }
     if (!profileDoc.exists) {
-        throw new HttpsError("not-found", "Player profile not found.");
+      throw new HttpsError("not-found", "Player profile not found.");
     }
 
     const profile = profileDoc.data()!;
@@ -81,12 +81,12 @@ export const grantXP = onCall({ enforceAppCheck: false, region: "us-central1" },
 
     // Update Profile/Profile
     const profileUpdate = {
-        exp: xpAfter,
-        level: afterInfo.level,
-        expProgress: afterInfo.expInLevel,
-        expToNextLevel: afterRequiredForNextLevel,
-        expProgressDisplay: `${afterInfo.expInLevel} / ${afterRequiredForNextLevel}`,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      exp: xpAfter,
+      level: afterInfo.level,
+      expProgress: afterInfo.expInLevel,
+      expToNextLevel: afterRequiredForNextLevel,
+      expProgressDisplay: `${afterInfo.expInLevel} / ${afterRequiredForNextLevel}`,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
     transaction.update(profileRef, profileUpdate);
 

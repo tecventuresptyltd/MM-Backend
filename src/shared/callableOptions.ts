@@ -1,7 +1,7 @@
 import type { CallableOptions } from "firebase-functions/v2/https";
 import { REGION } from "./region.js";
 
-const defaultEnforceAppCheck = false;
+const defaultEnforceAppCheck = true;  // ✅ App Check required for all functions
 
 // Helper to determine if we're running in production
 const isProduction = (): boolean => {

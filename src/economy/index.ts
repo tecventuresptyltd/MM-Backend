@@ -1,6 +1,7 @@
 import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { getMinInstances } from "../shared/callableOptions.js";
 
 import { getOffersCatalog, getRanksCatalog, resolveSkuOrThrow } from "../core/config.js";
 import { checkIdempotency, createInProgressReceipt, completeOperation } from "../core/idempotency.js";
@@ -16,7 +17,7 @@ export const offers = onCall(
 );
 
 export const exchangeGemsForCoins = onCall(
-  { region: "us-central1" },
+  { region: "us-central1", minInstances: getMinInstances(true), memory: "256MiB" },
   async (request) => {
     const { data, auth } = request;
     const uid = auth?.uid;
@@ -90,7 +91,7 @@ export const exchangeGemsForCoins = onCall(
 );
 
 export const claimRankUpReward = onCall(
-  { region: "us-central1" },
+  { region: "us-central1", minInstances: getMinInstances(true), memory: "256MiB" },
   async (request) => {
     const { data, auth } = request;
     const uid = auth?.uid;

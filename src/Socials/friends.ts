@@ -233,7 +233,7 @@ const performSendFriendRequest = async (
 };
 
 export const sendFriendRequest = onCall(
-  callableOptions(),
+  callableOptions({}, true),
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -276,7 +276,7 @@ export const sendFriendRequest = onCall(
 );
 
 export const sendFriendRequestByUid = onCall(
-  callableOptions(),
+  callableOptions({}, true),
   async (request) => {
     if (!request.auth?.uid) {
       throw new HttpsError("unauthenticated", "Authentication required.");
@@ -307,7 +307,7 @@ export const sendFriendRequestByUid = onCall(
 );
 
 export const acceptFriendRequest = onCall(
-  callableOptions(),
+  callableOptions({}, true),
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -406,7 +406,7 @@ export const acceptFriendRequest = onCall(
 );
 
 export const rejectFriendRequest = onCall(
-  callableOptions(),
+  callableOptions({}, true),
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

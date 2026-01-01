@@ -2,6 +2,7 @@ import * as admin from "firebase-admin";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { checkUsername } from "./validators";
 import { REGION } from "../shared/region";
+import { getMinInstances } from "../shared/callableOptions.js";
 import {
   checkIdempotency,
   createInProgressReceipt,
@@ -37,7 +38,7 @@ export const checkUsernameAvailable = onCall({ region: REGION }, async (request)
   return { available: isAvailable };
 });
 
-export const setUsername = onCall({ region: REGION }, async (request) => {
+export const setUsername = onCall({ region: REGION, minInstances: getMinInstances(true), memory: "256MiB" }, async (request) => {
   if (!request.auth) {
     throw new HttpsError(
       "unauthenticated",
@@ -151,7 +152,7 @@ export const getPlayerAge = onCall({ region: REGION }, async (request) => {
 
   return { age, isOver13 };
 });
-export const markTutorialComplete = onCall({ region: REGION }, async (request) => {
+export const markTutorialComplete = onCall({ region: REGION, minInstances: getMinInstances(true), memory: "256MiB" }, async (request) => {
   if (!request.auth) {
     throw new HttpsError(
       "unauthenticated",
@@ -293,7 +294,7 @@ export const markTutorialComplete = onCall({ region: REGION }, async (request) =
     trophiesGranted,
   };
 });
-export const setAvatar = onCall({ region: REGION }, async (request) => {
+export const setAvatar = onCall({ region: REGION, minInstances: getMinInstances(true), memory: "256MiB" }, async (request) => {
   if (!request.auth) {
     throw new HttpsError(
       "unauthenticated",
@@ -476,21 +477,21 @@ export const claimStarterOffer = onCall({ region: REGION }, async (request) => {
         const legacyInfo =
           useItemIdInventory
             ? {
-                itemsRef: legacyItemsRef,
-                itemsCounts:
-                  (legacyItemsDoc?.exists
-                    ? ((legacyItemsDoc.data() ?? {}) as { counts?: Record<string, number> })
-                        .counts
-                    : undefined) ?? {},
-                consumablesRef:
-                  legacyConsumablesDoc?.exists === true ? legacyConsumablesRef : null,
-                consumableCounts:
-                  legacyConsumablesDoc?.exists === true
-                    ? ((legacyConsumablesDoc?.data() ?? {}) as {
-                        counts?: Record<string, number>;
-                      }).counts ?? {}
-                    : {},
-              }
+              itemsRef: legacyItemsRef,
+              itemsCounts:
+                (legacyItemsDoc?.exists
+                  ? ((legacyItemsDoc.data() ?? {}) as { counts?: Record<string, number> })
+                    .counts
+                  : undefined) ?? {},
+              consumablesRef:
+                legacyConsumablesDoc?.exists === true ? legacyConsumablesRef : null,
+              consumableCounts:
+                legacyConsumablesDoc?.exists === true
+                  ? ((legacyConsumablesDoc?.data() ?? {}) as {
+                    counts?: Record<string, number>;
+                  }).counts ?? {}
+                  : {},
+            }
             : null;
 
         return {

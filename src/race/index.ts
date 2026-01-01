@@ -2,6 +2,7 @@ import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { REGION } from "../shared/region.js";
+import { getMinInstances } from "../shared/callableOptions.js";
 import { getLevelInfo } from "../shared/xp.js";
 import { refreshFriendSnapshots } from "../Socials/updateSnapshots.js";
 import { grantInventoryRewards } from "../shared/inventoryAwards.js";
@@ -261,7 +262,7 @@ const buildFinishOrderIndexes = (
   return resolved;
 };
 
-export const startRace = onCall({ enforceAppCheck: false, region: REGION }, async (request) => {
+export const startRace = onCall({ enforceAppCheck: false, region: REGION, minInstances: getMinInstances(true), memory: "256MiB" }, async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "User is not authenticated.");
@@ -362,7 +363,7 @@ export const generateBotLoadout = onCall({ region: REGION }, async (request) => 
   };
 });
 
-export const recordRaceResult = onCall({ enforceAppCheck: false, region: REGION }, async (request) => {
+export const recordRaceResult = onCall({ enforceAppCheck: false, region: REGION, minInstances: getMinInstances(true), memory: "256MiB" }, async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "User is not authenticated.");

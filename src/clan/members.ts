@@ -243,7 +243,7 @@ interface JoinClanRequest {
   clanId: string;
 }
 
-export const joinClan = onCall(callableOptions(), async (request) => {
+export const joinClan = onCall(callableOptions({}, true), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as JoinClanRequest;
   const opId = requireOpId(payload.opId);
@@ -787,7 +787,7 @@ interface RequestToJoinClanRequest {
   message?: string;
 }
 
-export const requestToJoinClan = onCall(callableOptions(), async (request) => {
+export const requestToJoinClan = onCall(callableOptions({}, true), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as RequestToJoinClanRequest;
   const opId = requireOpId(payload.opId);

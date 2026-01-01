@@ -86,7 +86,7 @@ const resolveActiveDeck = (
 };
 
 export const viewPlayerProfile = onCall(
-  callableOptions(),
+  callableOptions({}, true),
   async (request) => {
     const callerUid = request.auth?.uid;
     if (!callerUid) {
@@ -119,10 +119,10 @@ export const viewPlayerProfile = onCall(
     let clanBadge: string | null = rawClanBadge || null;
     let clan:
       | {
-          clanId: string;
-          name: string | null;
-          badge: string | null;
-        }
+        clanId: string;
+        name: string | null;
+        badge: string | null;
+      }
       | null = null;
 
     if (rawClanId) {

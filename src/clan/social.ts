@@ -375,7 +375,7 @@ interface InviteToClanRequest {
   message?: string;
 }
 
-export const inviteToClan = onCall(callableOptions(), async (request) => {
+export const inviteToClan = onCall(callableOptions({}, true), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as InviteToClanRequest;
   const opId = requireOpId(payload.opId);
@@ -467,7 +467,7 @@ interface AcceptClanInviteRequest {
   clanId: string;
 }
 
-export const acceptClanInvite = onCall(callableOptions(), async (request) => {
+export const acceptClanInvite = onCall(callableOptions({}, true), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as AcceptClanInviteRequest;
   const opId = requireOpId(payload.opId);
@@ -748,12 +748,12 @@ export const refreshBookmarkedClans = onCall(callableOptions(), async (request) 
   const payload = (request.data ?? {}) as RefreshBookmarkedClansRequest;
   const clanIds = Array.isArray(payload.clanIds)
     ? Array.from(
-        new Set(
-          payload.clanIds
-            .map((value) => (typeof value === "string" ? value.trim() : ""))
-            .filter((value) => value.length > 0),
-        ),
-      ).slice(0, MAX_BOOKMARK_REFRESH_BATCH)
+      new Set(
+        payload.clanIds
+          .map((value) => (typeof value === "string" ? value.trim() : ""))
+          .filter((value) => value.length > 0),
+      ),
+    ).slice(0, MAX_BOOKMARK_REFRESH_BATCH)
     : [];
 
   if (clanIds.length === 0) {
@@ -812,12 +812,12 @@ export const refreshClanInvites = onCall(callableOptions(), async (request) => {
   const payload = (request.data ?? {}) as RefreshClanInvitesRequest;
   const requestedIds = Array.isArray(payload.clanIds)
     ? Array.from(
-        new Set(
-          payload.clanIds
-            .map((value) => (typeof value === "string" ? value.trim() : ""))
-            .filter((value) => value.length > 0),
-        ),
-      )
+      new Set(
+        payload.clanIds
+          .map((value) => (typeof value === "string" ? value.trim() : ""))
+          .filter((value) => value.length > 0),
+      ),
+    )
     : [];
 
   const invitesRef = playerClanInvitesRef(uid);

@@ -38,7 +38,7 @@ const mergeRequestEntry = <
 });
 
 export const getFriends = onCall(
-  callableOptions(),
+  callableOptions({}, true),
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -72,7 +72,7 @@ export const getFriends = onCall(
 );
 
 export const getFriendRequests = onCall(
-  callableOptions(),
+  callableOptions({}, true),
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -82,9 +82,9 @@ export const getFriendRequests = onCall(
     const snapshot = await socialRequestsRef(uid).get();
     const data = snapshot.exists
       ? ((snapshot.data() ?? {}) as {
-          incoming?: FriendRequestIncoming[];
-          outgoing?: FriendRequestOutgoing[];
-        })
+        incoming?: FriendRequestIncoming[];
+        outgoing?: FriendRequestOutgoing[];
+      })
       : {};
     const incoming = Array.isArray(data.incoming) ? data.incoming : [];
     const outgoing = Array.isArray(data.outgoing) ? data.outgoing : [];

@@ -1,6 +1,7 @@
 import * as admin from "firebase-admin";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { REGION } from "../shared/region.js";
+import { getMinInstances } from "../shared/callableOptions.js";
 import { checkIdempotency, createInProgressReceipt, completeOperation, sanitizeForFirestore } from "../core/idempotency.js";
 import {
   getCarsCatalog,
@@ -99,7 +100,7 @@ function weightedChoice<T extends string>(weights: Record<T, number>, rng: Seede
   return entries[entries.length - 1][0];
 }
 
-export const prepareRace = onCall({ region: REGION }, async (request) => {
+export const prepareRace = onCall({ region: REGION, minInstances: getMinInstances(true), memory: "256MiB" }, async (request) => {
   const uid = request.auth?.uid;
   if (!uid) throw new HttpsError("unauthenticated", "User must be authenticated.");
 

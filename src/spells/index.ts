@@ -31,10 +31,10 @@ const normaliseSpellLevels = (
         value && typeof value === "object" ? { ...(value as Record<string, unknown>) } : {};
       const rawTokenCost = Number(
         entry.tokenCost ??
-          (typeof entry.cost === "object"
-            ? (entry.cost as Record<string, unknown>).spellTokens
-            : undefined) ??
-          0,
+        (typeof entry.cost === "object"
+          ? (entry.cost as Record<string, unknown>).spellTokens
+          : undefined) ??
+        0,
       );
       const tokenCost = Number.isFinite(rawTokenCost) && rawTokenCost > 0 ? rawTokenCost : 0;
       entry.tokenCost = tokenCost;
@@ -111,7 +111,7 @@ function getOrderedSpellIds(spellsCatalog: Record<string, Spell>): string[] {
     .map((entry) => entry.id);
 }
 
-export const setLoadout = onCall(callableOptions(), async (request) => {
+export const setLoadout = onCall(callableOptions({}, true), async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "User must be authenticated.");
@@ -130,7 +130,7 @@ export const setLoadout = onCall(callableOptions(), async (request) => {
   return { success: true };
 });
 
-export const equipCosmetics = onCall(callableOptions(), async (request) => {
+export const equipCosmetics = onCall(callableOptions({}, true), async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "User must be authenticated.");
@@ -149,7 +149,7 @@ export const equipCosmetics = onCall(callableOptions(), async (request) => {
   return { success: true };
 });
 
-export const setSpellDeck = onCall(callableOptions(), async (request) => {
+export const setSpellDeck = onCall(callableOptions({}, true), async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "User must be authenticated.");
@@ -171,7 +171,7 @@ export const setSpellDeck = onCall(callableOptions(), async (request) => {
   return { success: true };
 });
 
-export const selectActiveSpellDeck = onCall(callableOptions(), async (request) => {
+export const selectActiveSpellDeck = onCall(callableOptions({}, true), async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "User must be authenticated.");
@@ -190,7 +190,7 @@ export const selectActiveSpellDeck = onCall(callableOptions(), async (request) =
   return { success: true };
 });
 
-export const upgradeSpell = onCall(callableOptions(), async (request) => {
+export const upgradeSpell = onCall(callableOptions({}, true), async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "User must be authenticated.");
@@ -248,7 +248,7 @@ export const upgradeSpell = onCall(callableOptions(), async (request) => {
       const { map: spellLevels, maxLevel: catalogMaxLevel } = normaliseSpellLevels(
         spellGameData.levels as Record<string, unknown> | undefined,
       );
-      
+
       // Determine max level from spell attributes if not defined in levels config
       let actualMaxLevel = catalogMaxLevel;
       const spellData = spellGameData as any; // Cast to access attributes from game data
@@ -259,7 +259,7 @@ export const upgradeSpell = onCall(callableOptions(), async (request) => {
           actualMaxLevel = firstAttributeValues.length;
         }
       }
-      
+
       const allowedMaxLevel = Math.min(MAX_SPELL_LEVEL, actualMaxLevel);
 
       const currentLevel = Number((playerSpellsData.levels ?? {})[spellId] ?? 0);
@@ -269,7 +269,7 @@ export const upgradeSpell = onCall(callableOptions(), async (request) => {
 
       const nextLevel = currentLevel + 1;
       let nextLevelConfig = spellLevels[String(nextLevel)];
-      
+
       // If no specific level config exists, create a default one
       if (!nextLevelConfig && nextLevel <= allowedMaxLevel) {
         nextLevelConfig = {
@@ -278,7 +278,7 @@ export const upgradeSpell = onCall(callableOptions(), async (request) => {
         };
         spellLevels[String(nextLevel)] = nextLevelConfig;
       }
-      
+
       if (!nextLevelConfig) {
         throw new HttpsError(
           "failed-precondition",
@@ -319,18 +319,18 @@ export const upgradeSpell = onCall(callableOptions(), async (request) => {
       const levelConfigRecord = nextLevelConfig as Record<string, unknown>;
       let rawTokenCost = Number(
         levelConfigRecord.tokenCost ??
-          (typeof levelConfigRecord.cost === "object"
-            ? (levelConfigRecord.cost as Record<string, unknown>).spellTokens
-            : undefined) ??
-          0,
+        (typeof levelConfigRecord.cost === "object"
+          ? (levelConfigRecord.cost as Record<string, unknown>).spellTokens
+          : undefined) ??
+        0,
       );
-      
+
       // If no cost is specified in config, use default cost logic
       if (!Number.isFinite(rawTokenCost) || rawTokenCost <= 0) {
         // Both unlocking and upgrading spells cost 1 spell token
         rawTokenCost = 1;
       }
-      
+
       const cost = Number.isFinite(rawTokenCost) && rawTokenCost > 0 ? rawTokenCost : 0;
       const currentTokens = Number(economyData.spellTokens ?? 0);
       if (currentTokens < cost) {

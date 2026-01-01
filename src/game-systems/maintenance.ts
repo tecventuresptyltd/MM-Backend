@@ -1,6 +1,7 @@
 import * as admin from "firebase-admin";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { REGION } from "../shared/region";
+import { getMinInstances } from "../shared/callableOptions.js";
 import { checkIdempotency, createInProgressReceipt } from "../core/idempotency";
 import { runTransactionWithReceipt } from "../core/transactions";
 
@@ -45,7 +46,7 @@ interface ClaimMaintenanceRewardResponse {
   gemsGranted: number;
 }
 
-export const claimMaintenanceReward = onCall({ region: REGION }, async (request) => {
+export const claimMaintenanceReward = onCall({ region: REGION, minInstances: getMinInstances(true), memory: "256MiB" }, async (request) => {
   const { opId } = request.data as ClaimMaintenanceRewardRequest;
   const uid = request.auth?.uid;
 

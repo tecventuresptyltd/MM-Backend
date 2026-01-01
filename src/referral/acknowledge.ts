@@ -1,6 +1,7 @@
 import * as admin from "firebase-admin";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { REGION } from "../shared/region.js";
+import { getMinInstances } from "../shared/callableOptions.js";
 import { db } from "../shared/firestore.js";
 
 interface AcknowledgeReferralRewardsRequest {
@@ -21,7 +22,7 @@ interface AcknowledgeReferralRewardsResponse {
  * @param eventIds - Optional array of event IDs to acknowledge. Empty/omitted = acknowledge all.
  * @returns Number of rewards acknowledged and number remaining.
  */
-export const acknowledgeReferralRewards = onCall({ region: REGION }, async (rawRequest) => {
+export const acknowledgeReferralRewards = onCall({ region: REGION, minInstances: getMinInstances(true), memory: "256MiB" }, async (rawRequest) => {
     const uid = rawRequest.auth?.uid;
     if (!uid) {
         throw new HttpsError("unauthenticated", "Authentication required.");

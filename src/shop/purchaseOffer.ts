@@ -10,6 +10,7 @@ import {
 import { checkIdempotency, createInProgressReceipt } from "../core/idempotency.js";
 import { runReadThenWriteWithReceipt } from "../core/transactions.js";
 import { REGION } from "../shared/region.js";
+import { getMinInstances } from "../shared/callableOptions.js";
 import { db } from "../shared/firestore.js";
 import {
   Offer,
@@ -358,7 +359,7 @@ const ensureActiveOfferUpdate = (
 // Main Function
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const purchaseOffer = onCall({ region: REGION }, async (request) => {
+export const purchaseOffer = onCall({ region: REGION, minInstances: getMinInstances(true), memory: "256MiB" }, async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "User must be authenticated.");
@@ -621,18 +622,6 @@ export const purchaseOffer = onCall({ region: REGION }, async (request) => {
           state: reads.summaryState,
           timestamp: reads.timestamp,
         });
-      }
-
-      // CRITICAL: Re-verify offer is still active to prevent race condition
-      // This guards against simultaneous purchase attempts
-      const currentActiveSnap = await transaction.get(reads.activeRef);
-      const currentActiveData = normaliseActiveOffers(currentActiveSnap.data());
-
-      if (currentActiveData.main?.state !== "active" || currentActiveData.main?.offerId !== offerId) {
-        throw new HttpsError(
-          "failed-precondition",
-          "This offer is no longer available for purchase."
-        );
       }
 
       // Update active offers document

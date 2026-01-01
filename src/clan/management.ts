@@ -103,7 +103,7 @@ interface CreateClanRequest {
   minimumTrophies?: number;
 }
 
-export const createClan = onCall(callableOptions(), async (request) => {
+export const createClan = onCall(callableOptions({}, true), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as CreateClanRequest;
   const opId = requireOpId(payload.opId);
@@ -557,9 +557,9 @@ const loadClanDetails = async (clanId: string, uid: string): Promise<ClanDetails
   const membershipDoc = await clanMembersCollection(clanId).doc(uid).get();
   const membership = membershipDoc.exists
     ? {
-        role: membershipDoc.data()?.role ?? "member",
-        joinedAt: membershipDoc.data()?.joinedAt?.toMillis?.(),
-      }
+      role: membershipDoc.data()?.role ?? "member",
+      joinedAt: membershipDoc.data()?.joinedAt?.toMillis?.(),
+    }
     : null;
 
   let requests: ClanRequestView[] | undefined;
@@ -588,7 +588,7 @@ const loadClanDetails = async (clanId: string, uid: string): Promise<ClanDetails
   };
 };
 
-export const getClanDetails = onCall(callableOptions(), async (request) => {
+export const getClanDetails = onCall(callableOptions({}, true), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as GetClanDetailsRequest;
   if (typeof payload.clanId !== "string" || payload.clanId.trim().length === 0) {
@@ -597,7 +597,7 @@ export const getClanDetails = onCall(callableOptions(), async (request) => {
   return loadClanDetails(payload.clanId.trim(), uid);
 });
 
-export const getMyClanDetails = onCall(callableOptions(), async (request) => {
+export const getMyClanDetails = onCall(callableOptions({}, true), async (request) => {
   const uid = assertAuthenticated(request);
   const stateSnap = await playerClanStateRef(uid).get();
   const clanId = stateSnap.data()?.clanId;

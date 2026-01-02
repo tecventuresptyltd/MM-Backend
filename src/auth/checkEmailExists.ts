@@ -10,8 +10,10 @@ interface ResponseData {
   exists: boolean;
 }
 
+// TEMPORARY: Disabled App Check until Firebase Authentication service sends tokens
+// TODO: Re-enable once Authentication shows >90% verified requests
 export const checkEmailExists = onCall<RequestData>(
-  { region: "us-central1" },
+  { enforceAppCheck: false, region: "us-central1" },
   async (request): Promise<ResponseData> => {
     const { email } = request.data;
 

@@ -23,7 +23,9 @@ const ensureString = (value: unknown, field: string): string => {
   return value.trim();
 };
 
-export const signupApple = onCall({ region: REGION }, async (request) => {
+// TEMPORARY: Disabled App Check until Firebase Authentication service sends tokens
+// TODO: Re-enable once Authentication shows >90% verified requests
+export const signupApple = onCall({ enforceAppCheck: false, region: REGION }, async (request) => {
   const { identityToken, nonce, opId, platform, appVersion, deviceAnchor } =
     (request.data ?? {}) as SignupAppleRequest;
 
@@ -114,7 +116,7 @@ export const signupApple = onCall({ region: REGION }, async (request) => {
       if (createdNewUser) {
         try {
           await auth.deleteUser(uid);
-        } catch {}
+        } catch { }
       }
       if (error instanceof HttpsError) {
         throw error;

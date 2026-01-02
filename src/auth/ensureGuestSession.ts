@@ -7,7 +7,9 @@ import { initializeUserIfNeeded, waitForUserBootstrap } from "../shared/initiali
 import { REGION } from "../shared/region";
 import { assertSupportedAppVersion } from "../shared/appVersion";
 
-export const ensureGuestSession = onCall({ region: REGION, invoker: "public" }, async (request) => {
+// TEMPORARY: Disabled App Check until Firebase Authentication service sends tokens
+// TODO: Re-enable once Authentication shows >90% verified requests
+export const ensureGuestSession = onCall({ enforceAppCheck: false, region: REGION, invoker: "public" }, async (request) => {
   // Defensive guard before destructuring
   const data = request.data ?? {};
   const { opId, deviceAnchor, platform, appVersion } = data;

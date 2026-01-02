@@ -3,7 +3,9 @@ import * as admin from "firebase-admin";
 import { normalizeEmail } from "../shared/normalize";
 import { initializeUserIfNeeded } from "../shared/initializeUser";
 
-export const bindEmailPassword = onCall({ region: "us-central1" }, async (request) => {
+// TEMPORARY: Disabled App Check until Firebase Authentication service sends tokens
+// TODO: Re-enable once Authentication shows >90% verified requests
+export const bindEmailPassword = onCall({ enforceAppCheck: false, region: "us-central1" }, async (request) => {
   const data = request.data ?? {};
   const { email, password, opId } = data;
 
@@ -100,7 +102,7 @@ export const bindEmailPassword = onCall({ region: "us-central1" }, async (reques
         await batch.commit();
       }
     }
-  } catch {}
+  } catch { }
 
   return {
     status: "ok",

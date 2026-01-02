@@ -6,7 +6,9 @@ import { normalizeEmail } from "../shared/normalize";
 import { initializeUserIfNeeded } from "../shared/initializeUser";
 import { assertSupportedAppVersion } from "../shared/appVersion";
 
-export const signupEmailPassword = onCall({ region: REGION }, async (request) => {
+// TEMPORARY: Disabled App Check until Firebase Authentication service sends tokens
+// TODO: Re-enable once Authentication shows >90% verified requests
+export const signupEmailPassword = onCall({ enforceAppCheck: false, region: REGION }, async (request) => {
   const { opId, email, password, deviceAnchor, platform, appVersion } = request.data || {};
   if (!email || !password || !opId) throw new HttpsError('invalid-argument', 'Missing required fields.');
   if (!appVersion) throw new HttpsError("invalid-argument", "Missing appVersion.");
@@ -97,7 +99,7 @@ export const signupEmailPassword = onCall({ region: REGION }, async (request) =>
   } catch (e) {
     // Clean up auth user if Firestore reservation failed
     if (createdNewUser) {
-      try { await auth.deleteUser(user.uid); } catch {}
+      try { await auth.deleteUser(user.uid); } catch { }
     }
     throw e;
   }

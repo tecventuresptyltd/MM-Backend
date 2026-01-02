@@ -6,8 +6,9 @@ import { normalizeEmail } from "../shared/normalize";
 import { verifyGoogleIdToken } from "../shared/googleVerify";
 import { initializeUserIfNeeded } from "../shared/initializeUser";
 import { assertSupportedAppVersion } from "../shared/appVersion";
-
-export const signupGoogle = onCall({ region: REGION }, async (request) => {
+// TEMPORARY: Disabled App Check until Firebase Authentication service sends tokens
+// TODO: Re-enable once Authentication shows >90% verified requests
+export const signupGoogle = onCall({ enforceAppCheck: false, region: REGION }, async (request) => {
   const { idToken, opId, platform, appVersion, deviceAnchor } = (request.data ?? {}) as {
     idToken?: string; opId?: string; platform?: string; appVersion?: string; deviceAnchor?: string;
   };
@@ -52,7 +53,7 @@ export const signupGoogle = onCall({ region: REGION }, async (request) => {
     authUser: targetUid === user.uid ? user : null,
     opId,
   });
-  
+
   if (existingEmailDoc.exists) {
     // Email already registered - link to that account instead
     const existingUid = existingEmailDoc.data()?.uid;
@@ -60,12 +61,12 @@ export const signupGoogle = onCall({ region: REGION }, async (request) => {
       // Delete the newly created user and use the existing one
       try {
         await auth.deleteUser(user.uid);
-      } catch {}
+      } catch { }
       finalUid = existingUid;
-      
+
       // Add Google as a provider to the existing account
       await initializeUserIfNeeded(finalUid, ['google'], buildInitOpts(finalUid));
-      
+
       const customToken = await admin.auth().createCustomToken(finalUid, { googleSub });
       return { status: "ok", uid: finalUid, customToken };
     }

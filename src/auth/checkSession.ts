@@ -18,7 +18,9 @@ const isFresh = (value: unknown, now: number): boolean => {
   return ts > 0 && now - ts <= SESSION_TTL_MS;
 };
 
-export const checkSession = onCall({ region: REGION }, async (request) => {
+// TEMPORARY: Disabled App Check until Firebase Authentication service sends tokens
+// TODO: Re-enable once Authentication shows >90% verified requests
+export const checkSession = onCall({ enforceAppCheck: false, region: REGION }, async (request) => {
   const { deviceAnchor, appVersion } = request.data ?? {};
 
   if (!request.auth?.uid) {

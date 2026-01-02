@@ -16,6 +16,7 @@ interface FirebaseContextType {
     setEnvironment: (env: Environment) => void;
 
     // Firebase instances - ALL use current environment
+    app: FirebaseApp | null;
     auth: Auth | null;
     db: Firestore | null;
     functions: Functions | null;
@@ -236,6 +237,7 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
         currentEnvironment,
         environmentConfig: environments[currentEnvironment],
         setEnvironment,
+        app,
         auth,
         db,
         functions,

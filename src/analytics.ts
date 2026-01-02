@@ -1,6 +1,8 @@
-import { onRequest } from "firebase-functions/v2/https";
+import { onRequest, onCall, HttpsError, CallableRequest } from "firebase-functions/v2/https";
 import { defineString } from "firebase-functions/params";
 import { BetaAnalyticsDataClient } from "@google-analytics/data";
+import * as admin from "firebase-admin";
+import type { Request, Response } from "express";
 
 // Define environment parameter
 const ga4PropertyId = defineString("GA4_PROPERTY_ID");
@@ -9,12 +11,95 @@ const ga4PropertyId = defineString("GA4_PROPERTY_ID");
 const analyticsDataClient = new BetaAnalyticsDataClient();
 
 /**
- * Get overview analytics metrics
- * Endpoint: /analyticsOverview
+ * Verify that the callable request comes from an authenticated admin user.
+ * Uses the built-in Firebase Auth context from onCall functions.
+ * @throws HttpsError if user is not authenticated or not an admin
  */
-export const analyticsOverview = onRequest(
-    { cors: true, region: "us-central1" },
-    async (req, res) => {
+async function verifyAdminCallable(request: CallableRequest): Promise<string> {
+    console.log("[verifyAdminCallable] Starting verification...");
+
+    // Check if user is authenticated (onCall provides this automatically)
+    if (!request.auth) {
+        console.log("[verifyAdminCallable] No auth context found");
+        throw new HttpsError("unauthenticated", "User must be authenticated to access analytics");
+    }
+
+    const uid = request.auth.uid;
+    const email = request.auth.token?.email || "unknown";
+    console.log("[verifyAdminCallable] User UID:", uid);
+    console.log("[verifyAdminCallable] User Email:", email);
+
+    // Check if user is an admin
+    try {
+        const adminDoc = await admin.firestore().collection("AdminUsers").doc(uid).get();
+        console.log("[verifyAdminCallable] Admin doc exists:", adminDoc.exists);
+        if (adminDoc.exists) {
+            console.log("[verifyAdminCallable] Admin doc data:", JSON.stringify(adminDoc.data()));
+        }
+
+        if (!adminDoc.exists) {
+            console.log("[verifyAdminCallable] User is NOT an admin - doc does not exist");
+            throw new HttpsError("permission-denied", "User is not an administrator");
+        }
+    } catch (error: any) {
+        if (error.code === "permission-denied") {
+            throw error;
+        }
+        console.error("[verifyAdminCallable] Firestore error:", error);
+        throw new HttpsError("internal", "Failed to verify admin status");
+    }
+
+    console.log("[verifyAdminCallable] Verification successful for UID:", uid);
+    return uid;
+}
+
+
+/**
+ * Verify that the request comes from an authenticated admin user.
+ * Checks Authorization header for Bearer token, verifies it, and confirms admin status.
+ * @returns Object with success boolean. If false, response has already been sent.
+ */
+async function verifyAdminRequest(req: Request, res: Response): Promise<{ success: boolean; uid?: string }> {
+    try {
+        // Get Authorization header
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            res.status(401).json({ error: "Unauthorized: Missing or invalid Authorization header" });
+            return { success: false };
+        }
+
+        const idToken = authHeader.split("Bearer ")[1];
+
+        // Verify the ID token
+        const decodedToken = await admin.auth().verifyIdToken(idToken);
+        const uid = decodedToken.uid;
+
+        // Check if user is an admin
+        const adminDoc = await admin.firestore().collection("AdminUsers").doc(uid).get();
+        if (!adminDoc.exists) {
+            res.status(403).json({ error: "Forbidden: User is not an administrator" });
+            return { success: false };
+        }
+
+        return { success: true, uid };
+    } catch (error) {
+        console.error("Auth verification failed:", error);
+        res.status(401).json({ error: "Unauthorized: Invalid or expired token" });
+        return { success: false };
+    }
+}
+
+
+/**
+ * Get overview analytics metrics
+ * Callable function - requires Firebase Auth
+ */
+export const analyticsOverview = onCall(
+    { region: "us-central1" },
+    async (request) => {
+        // Verify admin authentication using built-in Firebase Auth
+        await verifyAdminCallable(request);
+
         try {
             const propertyId = ga4PropertyId.value();
 
@@ -74,7 +159,7 @@ export const analyticsOverview = onRequest(
 
             const eventCount = parseInt(eventsResponse[0].rows?.[0]?.metricValues?.[0]?.value || "0");
 
-            res.json({
+            return {
                 dau,
                 wau,
                 mau,
@@ -84,32 +169,45 @@ export const analyticsOverview = onRequest(
                 engagementRate: Math.round(engagementRate * 1000) / 10,
                 eventCount,
                 timestamp: new Date().toISOString(),
-            });
+            };
         } catch (error) {
             console.error("Analytics overview error:", error);
             console.error("Property ID used:", ga4PropertyId.value());
-            console.error("Full error details:", JSON.stringify(error, null, 2));
-            res.status(500).json({ error: "Failed to fetch analytics data" });
+            throw new HttpsError("internal", "Failed to fetch analytics data");
         }
     }
 );
 
+
 /**
  * Get user growth data
- * Endpoint: /analyticsGrowth?days=30
+ * Callable function - requires Firebase Auth
  */
-export const analyticsGrowth = onRequest(
-    { cors: true, region: "us-central1" },
-    async (req, res) => {
+export const analyticsGrowth = onCall(
+    { region: "us-central1" },
+    async (request) => {
+        await verifyAdminCallable(request);
+
         try {
             const propertyId = ga4PropertyId.value();
-            const days = parseInt(req.query.days as string) || 30;
+            const days = (request.data?.days as number) || 30;
+            const platform = (request.data?.platform as string) || "";
+
+            // Build dimension filter for platform
+            const dimensionFilter = platform && platform !== "all" ? {
+                filter: {
+                    fieldName: "platform",
+                    stringFilter: { value: platform },
+                },
+            } : undefined;
 
             const [response] = await analyticsDataClient.runReport({
                 property: propertyId,
-                dateRanges: [{ startDate: `${days} daysAgo`, endDate: "today" }],
+                dateRanges: [{ startDate: `${days}daysAgo`, endDate: "today" }],
                 dimensions: [{ name: "date" }],
                 metrics: [{ name: "newUsers" }, { name: "activeUsers" }],
+                orderBys: [{ dimension: { dimensionName: "date" } }],
+                dimensionFilter,
             });
 
             const data = response.rows?.map((row) => ({
@@ -118,21 +216,23 @@ export const analyticsGrowth = onRequest(
                 activeUsers: parseInt(row.metricValues?.[1]?.value || "0"),
             })) || [];
 
-            res.json({ data, timestamp: new Date().toISOString() });
+            return { data, days, platform: platform || "all", timestamp: new Date().toISOString() };
         } catch (error) {
             console.error("Analytics growth error:", error);
-            res.status(500).json({ error: "Failed to fetch user growth data" });
+            throw new HttpsError("internal", "Failed to fetch user growth data");
         }
     }
 );
 
 /**
  * Get platform distribution
- * Endpoint: /analyticsPlatforms
+ * Callable function - requires Firebase Auth
  */
-export const analyticsPlatforms = onRequest(
-    { cors: true, region: "us-central1" },
-    async (req, res) => {
+export const analyticsPlatforms = onCall(
+    { region: "us-central1" },
+    async (request) => {
+        await verifyAdminCallable(request);
+
         try {
             const propertyId = ga4PropertyId.value();
 
@@ -148,13 +248,14 @@ export const analyticsPlatforms = onRequest(
                 users: parseInt(row.metricValues?.[0]?.value || "0"),
             })) || [];
 
-            res.json({ data, timestamp: new Date().toISOString() });
+            return { data, timestamp: new Date().toISOString() };
         } catch (error) {
             console.error("Analytics platforms error:", error);
-            res.status(500).json({ error: "Failed to fetch platform data" });
+            throw new HttpsError("internal", "Failed to fetch platform data");
         }
     }
 );
+
 
 /**
  * Get revenue analytics
@@ -163,6 +264,10 @@ export const analyticsPlatforms = onRequest(
 export const analyticsRevenue = onRequest(
     { cors: true, region: "us-central1" },
     async (req, res) => {
+        // Verify admin authentication
+        const authResult = await verifyAdminRequest(req, res);
+        if (!authResult.success) return;
+
         try {
             const propertyId = ga4PropertyId.value();
             const days = parseInt(req.query.days as string) || 30;
@@ -258,6 +363,10 @@ export const analyticsRevenue = onRequest(
 export const analyticsRevenueByProduct = onRequest(
     { cors: true, region: "us-central1" },
     async (req, res) => {
+        // Verify admin authentication
+        const authResult = await verifyAdminRequest(req, res);
+        if (!authResult.success) return;
+
         try {
             const propertyId = ga4PropertyId.value();
             const days = parseInt(req.query.days as string) || 30;
@@ -305,6 +414,10 @@ export const analyticsRevenueByProduct = onRequest(
 export const analyticsRetention = onRequest(
     { cors: true, region: "us-central1" },
     async (req, res) => {
+        // Verify admin authentication
+        const authResult = await verifyAdminRequest(req, res);
+        if (!authResult.success) return;
+
         try {
             const propertyId = ga4PropertyId.value();
 
@@ -373,6 +486,10 @@ export const analyticsRetention = onRequest(
 export const analyticsEvents = onRequest(
     { cors: true, region: "us-central1" },
     async (req, res) => {
+        // Verify admin authentication
+        const authResult = await verifyAdminRequest(req, res);
+        if (!authResult.success) return;
+
         try {
             const propertyId = ga4PropertyId.value();
             const days = parseInt(req.query.days as string) || 30;
@@ -412,6 +529,10 @@ export const analyticsEvents = onRequest(
 export const analyticsRealtime = onRequest(
     { cors: true, region: "us-central1" },
     async (req, res) => {
+        // Verify admin authentication
+        const authResult = await verifyAdminRequest(req, res);
+        if (!authResult.success) return;
+
         try {
             const propertyId = ga4PropertyId.value();
 
@@ -486,6 +607,10 @@ export const analyticsRealtime = onRequest(
 export const analyticsGeography = onRequest(
     { cors: true, region: "us-central1" },
     async (req, res) => {
+        // Verify admin authentication
+        const authResult = await verifyAdminRequest(req, res);
+        if (!authResult.success) return;
+
         try {
             const propertyId = ga4PropertyId.value();
             const days = parseInt(req.query.days as string) || 30;
@@ -547,6 +672,10 @@ export const analyticsGeography = onRequest(
 export const analyticsDevices = onRequest(
     { cors: true, region: "us-central1" },
     async (req, res) => {
+        // Verify admin authentication
+        const authResult = await verifyAdminRequest(req, res);
+        if (!authResult.success) return;
+
         try {
             const propertyId = ga4PropertyId.value();
             const days = parseInt(req.query.days as string) || 30;
@@ -645,6 +774,10 @@ export const analyticsDevices = onRequest(
 export const analyticsSessions = onRequest(
     { cors: true, region: "us-central1" },
     async (req, res) => {
+        // Verify admin authentication
+        const authResult = await verifyAdminRequest(req, res);
+        if (!authResult.success) return;
+
         try {
             const propertyId = ga4PropertyId.value();
             const days = parseInt(req.query.days as string) || 30;

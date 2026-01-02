@@ -16,6 +16,11 @@
       },
       "endGameDifficulty": 100
     },
+    "performanceVariance": {
+      "enabled": true,
+      "standardDeviation": 0.03,
+      "description": "Normal distribution variance applied to bot aiLevel (0.03 = ±6% spread at 2σ)"
+    },
     "carUnlockThresholds": [
       {
         "carId": "car_h4ayzwf31g",

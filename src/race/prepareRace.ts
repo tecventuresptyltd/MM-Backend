@@ -189,6 +189,12 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
       console.warn('[prepareRace] BotConfig missing endGameDifficulty field, using default (100)');
     }
 
+    // Extract performance variance configuration
+    const performanceVariance = {
+      enabled: botConfig.performanceVariance?.enabled ?? false,
+      standardDeviation: botConfig.performanceVariance?.standardDeviation ?? 0.03,
+    };
+
     // Resolve player car and stats
     const carId: string = loadout.carId || Object.keys(carsCatalog)[0];
     const playerCar = carsCatalog[carId];
@@ -391,9 +397,24 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
       // ==========================================
       // AI DIFFICULTY SYSTEM
       // ==========================================
-      // Calculate aiLevel as percentage (0-100) based on normalized trophies
-      const trophyPercentage = normalizedTrophies / 7000;
-      (botStats.real as any).aiLevel = Math.round((trophyPercentage * 100) * 100) / 100;
+      // Calculate base aiLevel from trophy progression (0-100%)
+      const baseTrophyPercentage = normalizedTrophies / 7000;
+      const baseAiLevel = baseTrophyPercentage * 100;
+
+      // Apply performance variance using normal distribution (independent of trophy clamping)
+      let finalAiLevel = baseAiLevel;
+      if (performanceVariance.enabled) {
+        // Generate variance: mean=0, σ=standardDeviation (e.g., 0.03)
+        const varianceMultiplier = rng.normal(0, performanceVariance.standardDeviation);
+
+        // Apply as percentage adjustment (e.g., ±3% at 1σ, ±6% at 2σ)
+        finalAiLevel = baseAiLevel + (varianceMultiplier * 100);
+
+        // Clamp to valid range [0, 100]
+        finalAiLevel = Math.max(0, Math.min(100, finalAiLevel));
+      }
+
+      (botStats.real as any).aiLevel = Math.round(finalAiLevel * 100) / 100;
 
       // Add performanceRanges from BotConfig for Unity's AI controller
       (botStats.real as any).performanceRanges = {
@@ -471,9 +492,10 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
 
     // Final validation: log summary of bot AI difficulty values
     console.log('[prepareRace] Bot generation complete - AI Difficulty Summary:');
+    console.log(`  Performance variance: ${performanceVariance.enabled ? `enabled (σ=${performanceVariance.standardDeviation})` : 'disabled'}`);
     console.log(`  Total bots: ${bots.length}`);
-    console.log(`  All have aiLevel: ${bots.every(b => typeof (b.carStats?.real as any)?.aiLevel === 'number')}`);
-    console.log(`  All have performanceRanges: ${bots.every(b => !!(b.carStats?.real as any)?.performanceRanges)}`);
+    const aiLevels = bots.map(b => (b.carStats.real as any).aiLevel);
+    console.log(`  aiLevel range: [${Math.min(...aiLevels).toFixed(2)}, ${Math.max(...aiLevels).toFixed(2)}]`);
     console.log(`  Sample aiLevels: [${bots.slice(0, 3).map(b => (b.carStats.real as any).aiLevel).join(', ')}]`);
 
     const lobbyRatings: number[] = [playerTrophies, ...bots.map((bot) => bot.trophies)];

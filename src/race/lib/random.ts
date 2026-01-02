@@ -81,6 +81,19 @@ export class SeededRNG {
     return this.nextFloat(min, max);
   }
 
+  /**
+   * Generate random number from normal distribution using Box-Muller transform
+   * @param mean - Mean (center) of the distribution
+   * @param stdDev - Standard deviation (spread) of the distribution
+   */
+  normal(mean: number = 0, stdDev: number = 1): number {
+    // Box-Muller transform: generates normally distributed values from uniform random values
+    const u1 = this.next();
+    const u2 = this.next();
+    const z0 = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
+    return mean + z0 * stdDev;
+  }
+
   int(min: number, max: number): number {
     return this.nextInt(min, max);
   }

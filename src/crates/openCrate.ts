@@ -14,7 +14,7 @@ import { checkIdempotency, createInProgressReceipt } from "../core/idempotency.j
 import { runReadThenWriteWithReceipt } from "../core/transactions.js";
 import { db } from "../shared/firestore.js";
 import { REGION } from "../shared/region.js";
-import { getMinInstances } from "../shared/callableOptions.js";
+import { callableOptions, getMinInstances } from "../shared/callableOptions.js";
 import { CrateDefinition, ItemSku } from "../shared/types.js";
 import {
   decSkuQtyOrThrowTx,
@@ -299,7 +299,7 @@ const applyDelta = (
   target[skuId] = (target[skuId] ?? 0) + delta;
 };
 
-export const openCrate = onCall({ region: REGION, minInstances: getMinInstances(true), memory: "256MiB" }, async (request) => {
+export const openCrate = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "256MiB" }, true), async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "User must be authenticated.");

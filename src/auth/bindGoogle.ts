@@ -6,7 +6,9 @@ import { ensureOp } from "../shared/idempotency";
 import { initializeUserIfNeeded } from "../shared/initializeUser";
 import { isProduction } from "../shared/environment.js";
 
-export const bindGoogle = onCall({ enforceAppCheck: isProduction(), region: "us-central1" }, async (request) => {
+// TEMPORARY: Disabled App Check until Firebase Authentication service sends tokens
+// TODO: Re-enable once Authentication shows >90% verified requests
+export const bindGoogle = onCall({ enforceAppCheck: false, region: "us-central1" }, async (request) => {
   const { opId, idToken } = request.data;
   const uid = request.auth?.uid;
 

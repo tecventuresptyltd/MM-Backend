@@ -1,7 +1,7 @@
 import * as admin from "firebase-admin";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 
-import { REGION } from "../shared/region.js";
+import { callableOptions } from "../shared/callableOptions.js";
 import { findGemPackByProductId } from "../game-data/catalogs/GemPacksCatalog.js";
 
 type VerifyIapRequest = {
@@ -38,7 +38,7 @@ const extractTransactionId = (receipt: unknown): string => {
   throw new HttpsError("invalid-argument", "receipt must include transactionId.");
 };
 
-export const verifyIapPurchase = onCall({ region: REGION }, async (request) => {
+export const verifyIapPurchase = onCall(callableOptions(), async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "Authentication required.");

@@ -1,6 +1,6 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
-import { REGION } from "./shared/region";
+import { callableOptions } from "./shared/callableOptions.js";
 
 const MAX_FEEDBACK_BYTES = 950_000; // stay under the 1 MB Firestore doc limit
 
@@ -9,7 +9,7 @@ interface SubmitFeedbackRequest {
   name?: unknown;
 }
 
-export const submitFeedback = onCall({ region: REGION }, async (request) => {
+export const submitFeedback = onCall(callableOptions(), async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "User must be authenticated.");

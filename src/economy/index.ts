@@ -1,7 +1,7 @@
 import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
-import { getMinInstances } from "../shared/callableOptions.js";
+import { callableOptions, getMinInstances } from "../shared/callableOptions.js";
 
 import { getOffersCatalog, getRanksCatalog, resolveSkuOrThrow } from "../core/config.js";
 import { checkIdempotency, createInProgressReceipt, completeOperation } from "../core/idempotency.js";
@@ -17,7 +17,7 @@ export const offers = onCall(
 );
 
 export const exchangeGemsForCoins = onCall(
-  { region: "us-central1", minInstances: getMinInstances(true), memory: "256MiB" },
+  callableOptions({ minInstances: getMinInstances(true), memory: "256MiB" }, true),
   async (request) => {
     const { data, auth } = request;
     const uid = auth?.uid;
@@ -91,7 +91,7 @@ export const exchangeGemsForCoins = onCall(
 );
 
 export const claimRankUpReward = onCall(
-  { region: "us-central1", minInstances: getMinInstances(true), memory: "256MiB" },
+  callableOptions({ minInstances: getMinInstances(true), memory: "256MiB" }, true),
   async (request) => {
     const { data, auth } = request;
     const uid = auth?.uid;
@@ -209,28 +209,26 @@ export const claimRankUpReward = onCall(
   }
 );
 
-export const getLeaderboard = onCall(
-  { region: "us-central1" },
-  async (request) => {
-    const { data } = request;
-    const { leaderboardType, pageSize, startAfter } = data as { leaderboardType: string, pageSize: number, startAfter?: unknown };
+export const getLeaderboard = onCall(callableOptions(), async (request) => {
+  const { data } = request;
+  const { leaderboardType, pageSize, startAfter } = data as { leaderboardType: string, pageSize: number, startAfter?: unknown };
 
-    if (typeof leaderboardType !== "string" || typeof pageSize !== "number") {
-      throw new HttpsError("invalid-argument", "leaderboardType must be a string and pageSize must be a number.");
-    }
-
-    const db = admin.firestore();
-    let query = db.collection("Players").orderBy(leaderboardType, "desc").limit(pageSize);
-
-    if (startAfter) {
-      query = query.startAfter(startAfter);
-    }
-
-    const snapshot = await query.get();
-    const players = snapshot.docs.map((doc) => doc.data());
-    const nextPageToken = snapshot.docs[snapshot.docs.length - 1];
-
-    logger.info("getLeaderboard called");
-    return { players, nextPageToken };
+  if (typeof leaderboardType !== "string" || typeof pageSize !== "number") {
+    throw new HttpsError("invalid-argument", "leaderboardType must be a string and pageSize must be a number.");
   }
+
+  const db = admin.firestore();
+  let query = db.collection("Players").orderBy(leaderboardType, "desc").limit(pageSize);
+
+  if (startAfter) {
+    query = query.startAfter(startAfter);
+  }
+
+  const snapshot = await query.get();
+  const players = snapshot.docs.map((doc) => doc.data());
+  const nextPageToken = snapshot.docs[snapshot.docs.length - 1];
+
+  logger.info("getLeaderboard called");
+  return { players, nextPageToken };
+}
 );

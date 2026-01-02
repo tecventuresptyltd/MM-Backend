@@ -22,7 +22,9 @@ const ensureString = (value: unknown, field: string): string => {
   return value.trim();
 };
 
-export const bindApple = onCall({ enforceAppCheck: isProduction(), region: "us-central1" }, async (request) => {
+// TEMPORARY: Disabled App Check until Firebase Authentication service sends tokens
+// TODO: Re-enable once Authentication shows >90% verified requests
+export const bindApple = onCall({ enforceAppCheck: false, region: "us-central1" }, async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "User must be authenticated.");

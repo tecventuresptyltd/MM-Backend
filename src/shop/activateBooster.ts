@@ -11,7 +11,7 @@ import { checkIdempotency, createInProgressReceipt } from "../core/idempotency.j
 import { runReadThenWriteWithReceipt } from "../core/transactions.js";
 import { db } from "../shared/firestore.js";
 import { REGION } from "../shared/region.js";
-import { getMinInstances } from "../shared/callableOptions.js";
+import { callableOptions, getMinInstances } from "../shared/callableOptions.js";
 import { ItemSku, BoosterSubType, PlayerBoostersState } from "../shared/types.js";
 import {
   decSkuQtyOrThrowTx,
@@ -107,7 +107,7 @@ const BOOSTER_DURATION_BY_PRICE: Record<BoosterSubType, Record<number, number>> 
   },
 };
 
-export const activateBooster = onCall({ region: REGION, minInstances: getMinInstances(true), memory: "256MiB" }, async (request) => {
+export const activateBooster = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "256MiB" }, true), async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "User must be authenticated.");

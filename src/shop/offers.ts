@@ -2,7 +2,7 @@ import { HttpsError, onCall } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 
 import { REGION } from "../shared/region.js";
-import { getMinInstances } from "../shared/callableOptions.js";
+import { callableOptions, getMinInstances } from "../shared/callableOptions.js";
 import { db } from "../shared/firestore.js";
 import { MainOffer, OfferFlowState } from "../shared/types.js";
 import {
@@ -158,7 +158,7 @@ export const maybeGenerateStarterOffer = async (uid: string): Promise<boolean> =
  * - maybeGenerateStarterOffer (after race completion)
  * - offerTransitionJob (scheduled, handles cooldown/delay transitions)
  */
-export const getDailyOffers = onCall({ region: REGION, minInstances: getMinInstances(true), memory: "256MiB" }, async (request) => {
+export const getDailyOffers = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "256MiB" }, true), async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "User must be authenticated.");

@@ -2,7 +2,7 @@ import * as admin from "firebase-admin";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 
 import { REGION } from "../shared/region.js";
-import { getMinInstances } from "../shared/callableOptions.js";
+import { callableOptions, getMinInstances } from "../shared/callableOptions.js";
 import { checkIdempotency, createInProgressReceipt } from "../core/idempotency.js";
 import { runReadThenWriteWithReceipt } from "../core/transactions.js";
 import { getCratesCatalogDoc, getItemSkusCatalog, resolveSkuOrThrow } from "../core/config.js";
@@ -81,7 +81,7 @@ interface EquipCosmeticResponse {
   opId: string;
 }
 
-export const equipCosmetic = onCall({ region: REGION, minInstances: getMinInstances(true), memory: "256MiB" }, async (request) => {
+export const equipCosmetic = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "256MiB" }, true), async (request) => {
   const { skuId, slot, loadoutId, opId } = request.data as EquipCosmeticRequest;
   const uid = request.auth?.uid;
 
@@ -205,7 +205,7 @@ interface GrantItemResponse {
   opId: string;
 }
 
-export const grantItem = onCall({ region: REGION }, async (request) => {
+export const grantItem = onCall(callableOptions(), async (request) => {
   const { skuId, quantity, opId, reason } = request.data as GrantItemRequest;
   const uid = request.auth?.uid;
 
@@ -361,7 +361,7 @@ interface PurchaseCrateItemResponse {
 
 const VALID_PURCHASE_KINDS: PurchaseKind[] = ["crate", "key"];
 
-export const purchaseCrateItem = onCall({ region: REGION, minInstances: getMinInstances(true), memory: "256MiB" }, async (request) => {
+export const purchaseCrateItem = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "256MiB" }, true), async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "User must be authenticated.");

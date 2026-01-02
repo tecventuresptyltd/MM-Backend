@@ -1,7 +1,7 @@
 import * as admin from "firebase-admin";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { REGION } from "../shared/region";
-import { getMinInstances } from "../shared/callableOptions.js";
+import { callableOptions, getMinInstances } from "../shared/callableOptions.js";
 import { checkIdempotency, createInProgressReceipt } from "../core/idempotency";
 import { runTransactionWithReceipt } from "../core/transactions";
 
@@ -9,7 +9,7 @@ const db = admin.firestore();
 
 // --- Get Maintenance Status ---
 
-export const getMaintenanceStatus = onCall({ region: REGION }, async () => {
+export const getMaintenanceStatus = onCall(callableOptions(), async () => {
   const maintenanceRef = db.doc("/GameConfig/maintenance");
   const maintenanceDoc = await maintenanceRef.get();
 
@@ -46,7 +46,7 @@ interface ClaimMaintenanceRewardResponse {
   gemsGranted: number;
 }
 
-export const claimMaintenanceReward = onCall({ region: REGION, minInstances: getMinInstances(true), memory: "256MiB" }, async (request) => {
+export const claimMaintenanceReward = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "256MiB" }, true), async (request) => {
   const { opId } = request.data as ClaimMaintenanceRewardRequest;
   const uid = request.auth?.uid;
 

@@ -1,4 +1,5 @@
 import * as admin from "firebase-admin";
+import { callableOptions } from "./shared/callableOptions.js";
 import { setGlobalOptions } from "firebase-functions/v2";
 import { onCall } from "firebase-functions/v2/https";
 import { REGION } from "./shared/region";
@@ -14,7 +15,7 @@ setGlobalOptions({
 admin.initializeApp();
 
 // Simple ping function for health checks
-export const ping = onCall({ region: "us-central1" }, async () => {
+export const ping = onCall(callableOptions(), async () => {
   return { status: "ok", timestamp: new Date().toISOString() };
 });
 

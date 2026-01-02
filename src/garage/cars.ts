@@ -1,7 +1,7 @@
 import * as admin from "firebase-admin";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { REGION } from "../shared/region.js";
-import { getMinInstances } from "../shared/callableOptions.js";
+import { callableOptions, getMinInstances } from "../shared/callableOptions.js";
 import { checkIdempotency, createInProgressReceipt } from "../core/idempotency.js";
 import { runTransactionWithReceipt } from "../core/transactions.js";
 import { getCarsCatalog } from "../core/config.js";
@@ -21,7 +21,7 @@ interface PurchaseCarResponse {
   carId: string;
 }
 
-export const purchaseCar = onCall({ region: REGION, minInstances: getMinInstances(true), memory: "256MiB" }, async (request) => {
+export const purchaseCar = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "256MiB" }, true), async (request) => {
   const { carId, opId } = request.data as PurchaseCarRequest;
   const uid = request.auth?.uid;
 
@@ -113,7 +113,7 @@ interface UpgradeCarResponse {
   levelAfter: number;
 }
 
-export const upgradeCar = onCall({ region: REGION, minInstances: getMinInstances(true), memory: "256MiB" }, async (request) => {
+export const upgradeCar = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "256MiB" }, true), async (request) => {
   const { carId, opId } = request.data as UpgradeCarRequest;
   const uid = request.auth?.uid;
 

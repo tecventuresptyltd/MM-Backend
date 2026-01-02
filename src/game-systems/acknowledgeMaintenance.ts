@@ -1,7 +1,7 @@
 import * as admin from "firebase-admin";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { REGION } from "../shared/region.js";
-import { getMinInstances } from "../shared/callableOptions.js";
+import { callableOptions, getMinInstances } from "../shared/callableOptions.js";
 import { db } from "../shared/firestore.js";
 
 interface AcknowledgeMaintenanceRewardsRequest {
@@ -22,7 +22,7 @@ interface AcknowledgeMaintenanceRewardsResponse {
  * @param maintenanceIds - Optional array of maintenance IDs to acknowledge. Empty/omitted = acknowledge all.
  * @returns Number of rewards acknowledged and number remaining.
  */
-export const acknowledgeMaintenanceRewards = onCall({ region: REGION, minInstances: getMinInstances(true), memory: "256MiB" }, async (rawRequest) => {
+export const acknowledgeMaintenanceRewards = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "256MiB" }, true), async (rawRequest) => {
     const uid = rawRequest.auth?.uid;
     if (!uid) {
         throw new HttpsError("unauthenticated", "Authentication required.");

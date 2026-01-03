@@ -401,14 +401,16 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
       const baseTrophyPercentage = normalizedTrophies / 7000;
       const baseAiLevel = baseTrophyPercentage * 100;
 
-      // Apply performance variance using normal distribution (independent of trophy clamping)
+      // Apply performance variance using normal distribution
       let finalAiLevel = baseAiLevel;
       if (performanceVariance.enabled) {
-        // Generate variance: mean=0, σ=standardDeviation (e.g., 0.03)
-        const varianceMultiplier = rng.normal(0, performanceVariance.standardDeviation);
+        // Use absolute variance scaled by standardDeviation
+        // This ensures: (1) works at 0 trophies, (2) respects standardDeviation setting everywhere
+        // With σ=0.03: ±3 points (68%), ±6 points (95%)
+        // With σ=0.10: ±10 points (68%), ±20 points (95%)
+        const absoluteVariance = rng.normal(0, performanceVariance.standardDeviation * 100);
 
-        // Apply as percentage adjustment (e.g., ±3% at 1σ, ±6% at 2σ)
-        finalAiLevel = baseAiLevel + (varianceMultiplier * 100);
+        finalAiLevel = baseAiLevel + absoluteVariance;
 
         // Clamp to valid range [0, 100]
         finalAiLevel = Math.max(0, Math.min(100, finalAiLevel));

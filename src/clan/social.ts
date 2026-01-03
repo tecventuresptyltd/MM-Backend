@@ -1211,6 +1211,7 @@ export const sendClanChatMessage = onCall(callableOptions(), async (request) => 
 interface GetGlobalChatMessagesRequest {
   roomId: string;
   limit?: number;
+  sinceTimestamp?: number;
 }
 
 export const getGlobalChatMessages = onCall(callableOptions(), async (request) => {
@@ -1218,13 +1219,18 @@ export const getGlobalChatMessages = onCall(callableOptions(), async (request) =
   const payload = (request.data ?? {}) as GetGlobalChatMessagesRequest;
   const roomId = requireRoomId(payload.roomId);
   const limit = Math.min(clampFetchLimit(payload.limit), GLOBAL_CHAT_HISTORY_FETCH);
+  const sinceTimestamp = typeof payload.sinceTimestamp === "number" ? payload.sinceTimestamp : null;
 
   const roomSnap = await roomsCollection().doc(roomId).get();
   if (!roomSnap.exists) {
     throw new HttpsError("not-found", "Room not found.");
   }
 
-  const chatSnap = await globalChatMessagesRef(roomId).orderByChild("ts").limitToLast(limit).get();
+  let query = globalChatMessagesRef(roomId).orderByChild("ts");
+  if (sinceTimestamp !== null) {
+    query = query.startAt(sinceTimestamp + 1);
+  }
+  const chatSnap = await query.limitToLast(limit).get();
   const messages: ReturnType<typeof mapRtdbMessage>[] = [];
   if (chatSnap.exists()) {
     chatSnap.forEach((child) => {
@@ -1245,12 +1251,14 @@ export const getGlobalChatMessages = onCall(callableOptions(), async (request) =
 
 interface GetClanChatMessagesRequest {
   limit?: number;
+  sinceTimestamp?: number;
 }
 
 export const getClanChatMessages = onCall(callableOptions(), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as GetClanChatMessagesRequest;
   const limit = Math.min(clampFetchLimit(payload.limit), CLAN_CHAT_HISTORY_FETCH);
+  const sinceTimestamp = typeof payload.sinceTimestamp === "number" ? payload.sinceTimestamp : null;
 
   const stateSnap = await playerClanStateRef(uid).get();
   const clanId = stateSnap.data()?.clanId;
@@ -1258,10 +1266,11 @@ export const getClanChatMessages = onCall(callableOptions(), async (request) => 
     throw new HttpsError("failed-precondition", "Player is not in a clan.");
   }
 
-  const chatSnap = await clanChatMessagesRef(clanId)
-    .orderByChild("ts")
-    .limitToLast(limit)
-    .get();
+  let query = clanChatMessagesRef(clanId).orderByChild("ts");
+  if (sinceTimestamp !== null) {
+    query = query.startAt(sinceTimestamp + 1);
+  }
+  const chatSnap = await query.limitToLast(limit).get();
 
   await playerClanStateRef(uid).set(
     { lastVisitedClanChatAt: FieldValue.serverTimestamp() },

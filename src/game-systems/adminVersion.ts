@@ -2,6 +2,7 @@ import * as admin from "firebase-admin";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { REGION } from "../shared/region";
 import { assertIsAdmin } from "../shared/adminAuth";
+import { callableOptions } from "../shared/callableOptions";
 
 const db = admin.firestore();
 
@@ -26,7 +27,7 @@ function validateVersionFormat(version: string): boolean {
     return versionRegex.test(version);
 }
 
-export const setMinimumVersion = onCall({ region: REGION }, async (request) => {
+export const setMinimumVersion = onCall(callableOptions(), async (request) => {
     const uid = request.auth?.uid;
 
     if (!uid) {
@@ -91,7 +92,7 @@ interface GetMinimumVersionResponse {
     updatedBy?: string;
 }
 
-export const getMinimumVersion = onCall({ region: REGION }, async (request) => {
+export const getMinimumVersion = onCall(callableOptions(), async (request) => {
     const uid = request.auth?.uid;
 
     if (!uid) {
@@ -136,7 +137,7 @@ interface CheckAppVersionResponse {
  * Public function for game clients to check if they need to update
  * No authentication required - anyone can call this
  */
-export const checkAppVersion = onCall({ region: REGION }, async (request) => {
+export const checkAppVersion = onCall(callableOptions(), async (request) => {
     const { clientVersion } = request.data as CheckAppVersionRequest;
 
     if (!clientVersion || typeof clientVersion !== "string") {

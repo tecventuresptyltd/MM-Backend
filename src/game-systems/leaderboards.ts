@@ -1,6 +1,7 @@
 import * as admin from "firebase-admin";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { REGION } from "../shared/region";
+import { callableOptions } from "../shared/callableOptions";
 
 const db = admin.firestore();
 
@@ -10,7 +11,7 @@ interface GetLeaderboardRequest {
   startAfter?: unknown;
 }
 
-export const getLeaderboard = onCall({ region: REGION }, async (request) => {
+export const getLeaderboard = onCall(callableOptions(), async (request) => {
   const { leaderboardType, pageSize, startAfter } = request.data as GetLeaderboardRequest;
 
   if (!leaderboardType || !pageSize) {

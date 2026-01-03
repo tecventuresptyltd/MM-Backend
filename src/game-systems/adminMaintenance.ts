@@ -2,6 +2,7 @@ import * as admin from "firebase-admin";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { REGION } from "../shared/region";
 import { assertIsAdmin } from "../shared/adminAuth";
+import { callableOptions } from "../shared/callableOptions";
 
 const db = admin.firestore();
 
@@ -30,7 +31,7 @@ interface SetMaintenanceModeResponse {
     };
 }
 
-export const setMaintenanceMode = onCall({ region: REGION }, async (request) => {
+export const setMaintenanceMode = onCall(callableOptions(), async (request) => {
     const uid = request.auth?.uid;
 
     if (!uid) {

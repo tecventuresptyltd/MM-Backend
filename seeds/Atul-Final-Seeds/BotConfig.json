@@ -19,7 +19,7 @@
     "performanceVariance": {
       "enabled": true,
       "standardDeviation": 0.03,
-      "description": "Normal distribution variance applied to bot aiLevel (0.03 = ±6% spread at 2σ)"
+      "description": "Absolute variance applied to bot aiLevel. 0.03 = ±3 points (1σ), ±6 points (2σ). Works consistently at all trophy levels including 0."
     },
     "carUnlockThresholds": [
       {

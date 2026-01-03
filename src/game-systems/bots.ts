@@ -1,8 +1,9 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { REGION } from "../shared/region.js";
 import { buildBotLoadout } from "./botLoadoutHelper.js";
+import { callableOptions } from "../shared/callableOptions.js";
 
-export const generateBotLoadout = onCall({ region: REGION }, async (request) => {
+export const generateBotLoadout = onCall(callableOptions(), async (request) => {
   const { trophyCount } = request.data ?? {};
   const uid = request.auth?.uid;
 

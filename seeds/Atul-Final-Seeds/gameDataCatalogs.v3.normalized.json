@@ -13351,7 +13351,7 @@
           "basePrice": 10800,
           "unlock": {
             "type": "shop",
-            "minPlayerLevel": 3
+            "minPlayerLevel": 4
           },
           "levels": {
             "0": {
@@ -13556,7 +13556,7 @@
           "basePrice": 19400,
           "unlock": {
             "type": "shop",
-            "minPlayerLevel": 7
+            "minPlayerLevel": 9
           },
           "levels": {
             "0": {
@@ -13761,7 +13761,7 @@
           "basePrice": 35000,
           "unlock": {
             "type": "shop",
-            "minPlayerLevel": 12
+            "minPlayerLevel": 14
           },
           "levels": {
             "0": {
@@ -13966,7 +13966,7 @@
           "basePrice": 63000,
           "unlock": {
             "type": "shop",
-            "minPlayerLevel": 18
+            "minPlayerLevel": 20
           },
           "levels": {
             "0": {
@@ -14171,7 +14171,7 @@
           "basePrice": 113000,
           "unlock": {
             "type": "shop",
-            "minPlayerLevel": 25
+            "minPlayerLevel": 27
           },
           "levels": {
             "0": {
@@ -14376,7 +14376,7 @@
           "basePrice": 204000,
           "unlock": {
             "type": "shop",
-            "minPlayerLevel": 33
+            "minPlayerLevel": 35
           },
           "levels": {
             "0": {
@@ -14581,7 +14581,7 @@
           "basePrice": 367000,
           "unlock": {
             "type": "shop",
-            "minPlayerLevel": 42
+            "minPlayerLevel": 44
           },
           "levels": {
             "0": {
@@ -14786,7 +14786,7 @@
           "basePrice": 661000,
           "unlock": {
             "type": "shop",
-            "minPlayerLevel": 52
+            "minPlayerLevel": 54
           },
           "levels": {
             "0": {
@@ -14991,7 +14991,7 @@
           "basePrice": 1190000,
           "unlock": {
             "type": "shop",
-            "minPlayerLevel": 63
+            "minPlayerLevel": 65
           },
           "levels": {
             "0": {
@@ -15196,7 +15196,7 @@
           "basePrice": 2140000,
           "unlock": {
             "type": "shop",
-            "minPlayerLevel": 75
+            "minPlayerLevel": 77
           },
           "levels": {
             "0": {
@@ -15401,7 +15401,7 @@
           "basePrice": 3860000,
           "unlock": {
             "type": "shop",
-            "minPlayerLevel": 88
+            "minPlayerLevel": 90
           },
           "levels": {
             "0": {
@@ -15606,7 +15606,7 @@
           "basePrice": 6940000,
           "unlock": {
             "type": "shop",
-            "minPlayerLevel": 102
+            "minPlayerLevel": 104
           },
           "levels": {
             "0": {
@@ -15811,7 +15811,7 @@
           "basePrice": 12490000,
           "unlock": {
             "type": "shop",
-            "minPlayerLevel": 117
+            "minPlayerLevel": 119
           },
           "levels": {
             "0": {
@@ -16016,7 +16016,7 @@
           "basePrice": 22490000,
           "unlock": {
             "type": "shop",
-            "minPlayerLevel": 133
+            "minPlayerLevel": 135
           },
           "levels": {
             "0": {

@@ -2,6 +2,7 @@ import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import * as admin from 'firebase-admin';
 import { REGION } from '../shared/region';
 import { assertIsAdmin } from '../shared/adminAuth';
+import { callableOptions } from '../shared/callableOptions';
 
 interface SearchUsersRequest {
     query: string; // Username, email, or UID
@@ -41,7 +42,7 @@ interface GetGameAdminsResponse {
  * Search for game users by username, email, or UID
  * Only accessible by Firebase admins
  */
-export const searchGameUsers = onCall({ region: REGION }, async (request) => {
+export const searchGameUsers = onCall(callableOptions(), async (request) => {
     const { auth } = request;
 
     if (!auth) {
@@ -118,7 +119,7 @@ export const searchGameUsers = onCall({ region: REGION }, async (request) => {
  * Set game admin status for a user
  * Only accessible by Firebase admins
  */
-export const setGameAdminStatus = onCall({ region: REGION }, async (request) => {
+export const setGameAdminStatus = onCall(callableOptions(), async (request) => {
     const { auth } = request;
 
     if (!auth) {
@@ -168,7 +169,7 @@ export const setGameAdminStatus = onCall({ region: REGION }, async (request) => 
  * Get list of all current game admins
  * Only accessible by Firebase admins
  */
-export const getGameAdmins = onCall({ region: REGION }, async (request) => {
+export const getGameAdmins = onCall(callableOptions(), async (request) => {
     const { auth } = request;
 
     if (!auth) {

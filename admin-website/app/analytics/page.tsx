@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
 import AuthGuard from "@/components/AuthGuard";
 import PageHeader from "@/components/PageHeader";
 import { useFirebase } from "@/lib/FirebaseContext";
+import { useAdminPermissions } from "@/lib/AdminPermissionsContext";
 import { getFunctions, httpsCallable, connectFunctionsEmulator } from "firebase/functions";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { format } from "date-fns";
@@ -82,10 +84,20 @@ interface DevicesData {
 }
 
 export default function AnalyticsPage() {
+    const router = useRouter();
     const { environmentConfig, isProd, user, app } = useFirebase();
+    const { permissions } = useAdminPermissions();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<TabId>("overview");
+
+    // Check if user has permission to view analytics
+    useEffect(() => {
+        if (!permissions.canViewAnalytics) {
+            console.log("[Analytics] User does not have permission to view analytics, redirecting...");
+            router.replace("/?error=analytics-restricted");
+        }
+    }, [permissions.canViewAnalytics, router]);
 
     // Filters
     const [dateRange, setDateRange] = useState<DateRange>("30");
@@ -108,10 +120,22 @@ export default function AnalyticsPage() {
             setLoading(true);
             setError(null);
 
-            // Get auth token for HTTP requests
-            const token = await user?.getIdToken();
-            if (!token || !app) {
+            // Ensure user is fully authenticated
+            if (!user || !app) {
+                console.log("[Analytics] No user or app, skipping fetch");
                 setError("Not authenticated");
+                setLoading(false);
+                return;
+            }
+
+            // Get auth token for HTTP requests - force refresh to ensure valid token
+            console.log("[Analytics] Getting ID token for user:", user.uid);
+            const token = await user.getIdToken(true); // Force refresh
+            console.log("[Analytics] Token obtained, length:", token?.length || 0);
+
+            if (!token) {
+                console.log("[Analytics] Token is null/undefined");
+                setError("Failed to get authentication token");
                 setLoading(false);
                 return;
             }
@@ -444,6 +468,7 @@ const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
     'Bangkok': { lat: 13.76, lng: 100.50 },
     'Mumbai': { lat: 19.08, lng: 72.88 },
     'Delhi': { lat: 28.61, lng: 77.21 },
+    'Noida': { lat: 28.53, lng: 77.39 },
     'Bangalore': { lat: 12.97, lng: 77.59 },
     'Jakarta': { lat: -6.20, lng: 106.85 },
     'Manila': { lat: 14.60, lng: 120.98 },
@@ -473,151 +498,202 @@ const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
     'St. Petersburg': { lat: 59.93, lng: 30.34 },
 };
 
-// Convert lat/lng to SVG coordinates (Mercator-like projection)
-// Map viewBox: 0 0 1000 500 (width=1000, height=500)
+
+// amCharts World Map dimensions and projection
+// From amcharts:ammap - leftLongitude="-169.6" topLatitude="83.68" rightLongitude="190.25" bottomLatitude="-55.55"
+const MAP_CONFIG = {
+    leftLng: -169.6,
+    rightLng: 190.25,
+    topLat: 83.68,
+    bottomLat: -55.55,
+    width: 1010,
+    height: 665,
+};
+
+// Mercator projection y-coordinate
+function mercatorY(lat: number): number {
+    return Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI / 180) / 2));
+}
+
+// Convert lat/lng to SVG coordinates using Mercator projection (matching amCharts SVG)
 function latLngToSvg(lat: number, lng: number): { x: number; y: number } {
-    // Clamp latitude to avoid extreme distortion at poles
-    const clampedLat = Math.max(-85, Math.min(85, lat));
-    // Convert to 0-1000 x and 0-500 y
-    const x = ((lng + 180) / 360) * 1000;
-    // Use simple equirectangular for better appearance
-    const y = ((90 - clampedLat) / 180) * 500;
+    // Clamp latitude to map bounds
+    const clampedLat = Math.max(MAP_CONFIG.bottomLat, Math.min(MAP_CONFIG.topLat, lat));
+    const clampedLng = Math.max(MAP_CONFIG.leftLng, Math.min(MAP_CONFIG.rightLng, lng));
+
+    // X is linear interpolation
+    const x = ((clampedLng - MAP_CONFIG.leftLng) / (MAP_CONFIG.rightLng - MAP_CONFIG.leftLng)) * MAP_CONFIG.width;
+
+    // Y uses Mercator projection
+    const topMerc = mercatorY(MAP_CONFIG.topLat);
+    const bottomMerc = mercatorY(MAP_CONFIG.bottomLat);
+    const latMerc = mercatorY(clampedLat);
+    const y = ((topMerc - latMerc) / (topMerc - bottomMerc)) * MAP_CONFIG.height;
+
     return { x, y };
 }
 
-// Accurate world map SVG with proper country outlines
-function WorldMapSVG({ usersByCity }: { usersByCity: { city: string; country: string; users: number }[] }) {
+// World Map Component using amCharts SVG with city dot overlay - 2D Scrollable
+function WorldMapSVG({ usersByCity, activeUsers }: { usersByCity: { city: string; country: string; users: number }[]; activeUsers?: number }) {
     const maxUsers = Math.max(...usersByCity.map(c => c.users), 1);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const [startPos, setStartPos] = useState({ x: 0, y: 0 });
+    const [scrollPos, setScrollPos] = useState({ left: 0, top: 0 });
+
+    // Handle drag to pan (2D)
+    const handleMouseDown = (e: React.MouseEvent) => {
+        if (!containerRef.current) return;
+        setIsDragging(true);
+        setStartPos({
+            x: e.pageX - containerRef.current.offsetLeft,
+            y: e.pageY - containerRef.current.offsetTop
+        });
+        setScrollPos({
+            left: containerRef.current.scrollLeft,
+            top: containerRef.current.scrollTop
+        });
+    };
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (!isDragging || !containerRef.current) return;
+        e.preventDefault();
+        const x = e.pageX - containerRef.current.offsetLeft;
+        const y = e.pageY - containerRef.current.offsetTop;
+        const walkX = (x - startPos.x) * 1.5;
+        const walkY = (y - startPos.y) * 1.5;
+        containerRef.current.scrollLeft = scrollPos.left - walkX;
+        containerRef.current.scrollTop = scrollPos.top - walkY;
+    };
+
+    const handleMouseUp = () => setIsDragging(false);
+    const handleMouseLeave = () => setIsDragging(false);
 
     return (
-        <svg viewBox="0 0 1000 500" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
-            <defs>
-                <radialGradient id="cityDotGlow" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" stopColor="#3B82F6" stopOpacity="1" />
-                    <stop offset="100%" stopColor="#3B82F6" stopOpacity="0" />
-                </radialGradient>
-                <filter id="cityGlow" x="-100%" y="-100%" width="300%" height="300%">
-                    <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-                    <feMerge>
-                        <feMergeNode in="coloredBlur" />
-                        <feMergeNode in="SourceGraphic" />
-                    </feMerge>
-                </filter>
-            </defs>
+        <div className="relative w-full" style={{ height: '450px' }}>
+            {/* Scrollable map area - vertical only */}
+            <div
+                ref={containerRef}
+                className="absolute inset-0 overflow-y-auto overflow-x-hidden cursor-grab active:cursor-grabbing rounded-lg"
+                style={{
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: '#4B5563 #1F2937'
+                }}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseLeave}
+            >
+                {/* Map container - full width, taller height for vertical scroll */}
+                <div
+                    className="relative w-full"
+                    style={{ height: '600px' }}
+                >
+                    {/* Background: amCharts SVG World Map */}
+                    <img
+                        src="/world-map.svg"
+                        alt="World Map"
+                        className="absolute inset-0 w-full h-full"
+                        style={{
+                            objectFit: 'cover',
+                            objectPosition: 'center top',
+                            filter: 'brightness(0.6) saturate(1.2) hue-rotate(180deg)',
+                            opacity: 0.85
+                        }}
+                        draggable={false}
+                    />
 
-            {/* Accurate World Map - Country Outlines */}
-            <g fill="#1a2e45" stroke="#2d4a6f" strokeWidth="0.5">
-                {/* North America */}
-                {/* Canada */}
-                <path d="M130,60 L180,55 L230,60 L280,65 L300,85 L290,95 L270,100 L250,90 L220,95 L190,90 L160,95 L140,90 L125,80 L115,70 Z" />
-                {/* USA */}
-                <path d="M115,95 L160,95 L190,90 L220,95 L250,90 L270,100 L280,115 L285,135 L270,155 L240,165 L200,170 L160,165 L130,150 L115,130 Z" />
-                {/* Alaska */}
-                <path d="M55,60 L90,55 L110,70 L100,85 L70,90 L50,75 Z" />
-                {/* Mexico & Central America */}
-                <path d="M130,165 L165,165 L190,175 L200,195 L190,215 L175,225 L158,235 L145,230 L140,210 L130,185 Z" />
+                    {/* Overlay: City Dots */}
+                    <svg
+                        viewBox={`0 0 ${MAP_CONFIG.width} ${MAP_CONFIG.height}`}
+                        className="absolute inset-0 w-full h-full"
+                        style={{ pointerEvents: 'none' }}
+                        preserveAspectRatio="xMidYMin slice"
+                    >
+                        <defs>
+                            <radialGradient id="cityDotGlow" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stopColor="#3B82F6" stopOpacity="1" />
+                                <stop offset="100%" stopColor="#3B82F6" stopOpacity="0" />
+                            </radialGradient>
+                            <filter id="cityGlow" x="-100%" y="-100%" width="300%" height="300%">
+                                <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur" />
+                                    <feMergeNode in="SourceGraphic" />
+                                </feMerge>
+                            </filter>
+                        </defs>
 
-                {/* South America */}
-                <path d="M190,235 L220,230 L260,245 L290,270 L305,310 L295,360 L280,400 L250,435 L215,450 L195,430 L185,390 L190,340 L200,295 L195,260 Z" />
+                        {/* City dots based on user activity */}
+                        {usersByCity.map((cityData) => {
+                            const coords = CITY_COORDS[cityData.city];
+                            if (!coords) return null;
 
-                {/* Europe */}
-                {/* UK & Ireland */}
-                <path d="M415,90 L430,85 L445,90 L445,110 L430,120 L415,115 Z" />
-                <path d="M400,100 L410,95 L415,110 L405,115 Z" />
-                {/* Scandinavia */}
-                <path d="M470,40 L500,35 L520,50 L515,75 L495,85 L475,90 L455,80 L460,55 Z" />
-                {/* Continental Europe */}
-                <path d="M430,110 L475,105 L520,110 L550,120 L545,145 L520,160 L480,165 L445,155 L420,140 L415,125 Z" />
-                {/* Iberian Peninsula */}
-                <path d="M395,140 L430,135 L440,155 L430,175 L400,180 L385,165 L385,150 Z" />
-                {/* Italy */}
-                <path d="M475,145 L490,135 L505,155 L495,185 L480,195 L465,180 L470,160 Z" />
+                            const svgCoords = latLngToSvg(coords.lat, coords.lng);
+                            const size = Math.max(6, (cityData.users / maxUsers) * 14 + 6);
 
-                {/* Russia/Northern Asia */}
-                <path d="M520,50 L700,45 L850,55 L920,75 L930,100 L900,115 L850,130 L750,125 L650,120 L580,115 L540,100 L530,80 Z" />
+                            return (
+                                <g key={`${cityData.city}-${cityData.country}`}>
+                                    {/* Pulsing glow effect */}
+                                    <circle
+                                        cx={svgCoords.x}
+                                        cy={svgCoords.y}
+                                        r={size * 2}
+                                        fill="url(#cityDotGlow)"
+                                        className="animate-ping"
+                                        style={{ animationDuration: '2s', opacity: 0.5 }}
+                                    />
+                                    {/* Outer glow */}
+                                    <circle
+                                        cx={svgCoords.x}
+                                        cy={svgCoords.y}
+                                        r={size * 1.3}
+                                        fill="#3B82F6"
+                                        fillOpacity="0.3"
+                                        filter="url(#cityGlow)"
+                                    />
+                                    {/* Main dot */}
+                                    <circle
+                                        cx={svgCoords.x}
+                                        cy={svgCoords.y}
+                                        r={size}
+                                        fill="#3B82F6"
+                                    />
+                                    {/* Center bright point */}
+                                    <circle
+                                        cx={svgCoords.x}
+                                        cy={svgCoords.y}
+                                        r={size * 0.35}
+                                        fill="#93C5FD"
+                                    />
+                                </g>
+                            );
+                        })}
 
-                {/* Africa */}
-                <path d="M430,195 L500,190 L545,200 L580,220 L600,270 L595,330 L575,380 L540,410 L490,420 L450,400 L430,350 L425,290 L430,235 Z" />
+                        {/* No active users message */}
+                        {usersByCity.length === 0 && (
+                            <text x={MAP_CONFIG.width / 2} y={MAP_CONFIG.height / 2} textAnchor="middle" fill="#6B7280" fontSize="14">
+                                No active users right now
+                            </text>
+                        )}
+                    </svg>
+                </div>
+            </div>
 
-                {/* Middle East */}
-                <path d="M545,165 L590,160 L630,180 L640,210 L615,235 L580,220 L550,200 Z" />
-
-                {/* South Asia - India */}
-                <path d="M640,210 L680,195 L720,210 L735,260 L720,305 L690,320 L665,305 L655,260 L640,240 Z" />
-
-                {/* Southeast Asia */}
-                <path d="M730,230 L780,225 L820,245 L830,280 L810,310 L770,320 L740,300 L725,265 Z" />
-
-                {/* East Asia - China */}
-                <path d="M700,120 L800,115 L870,130 L890,165 L875,205 L830,230 L770,225 L725,200 L700,165 L690,140 Z" />
-                {/* Japan */}
-                <path d="M895,140 L915,130 L930,145 L925,175 L905,190 L890,175 L888,155 Z" />
-                {/* Korean Peninsula */}
-                <path d="M860,140 L880,135 L890,155 L880,175 L865,175 L855,160 Z" />
-
-                {/* Australia */}
-                <path d="M790,360 L860,345 L920,360 L950,400 L940,445 L895,460 L840,455 L800,430 L785,395 Z" />
-                {/* New Zealand */}
-                <path d="M965,430 L980,420 L990,445 L975,465 L960,455 Z" />
-
-                {/* Indonesia & Philippines */}
-                <path d="M800,295 L830,290 L870,305 L885,325 L870,350 L830,355 L800,340 L790,320 Z" />
-                <path d="M855,260 L875,255 L885,275 L875,290 L860,285 Z" />
-            </g>
-
-            {/* City dots based on user activity */}
-            {usersByCity.map((cityData) => {
-                const coords = CITY_COORDS[cityData.city];
-                if (!coords) return null;
-
-                const svgCoords = latLngToSvg(coords.lat, coords.lng);
-                const size = Math.max(4, (cityData.users / maxUsers) * 12 + 4);
-
-                return (
-                    <g key={`${cityData.city}-${cityData.country}`}>
-                        {/* Pulsing glow effect */}
-                        <circle
-                            cx={svgCoords.x}
-                            cy={svgCoords.y}
-                            r={size * 3}
-                            fill="url(#cityDotGlow)"
-                            className="animate-ping"
-                            style={{ animationDuration: '2s', opacity: 0.6 }}
-                        />
-                        {/* Outer glow */}
-                        <circle
-                            cx={svgCoords.x}
-                            cy={svgCoords.y}
-                            r={size * 1.5}
-                            fill="#3B82F6"
-                            fillOpacity="0.3"
-                            filter="url(#cityGlow)"
-                        />
-                        {/* Main dot */}
-                        <circle
-                            cx={svgCoords.x}
-                            cy={svgCoords.y}
-                            r={size}
-                            fill="#3B82F6"
-                        />
-                        {/* Center bright point */}
-                        <circle
-                            cx={svgCoords.x}
-                            cy={svgCoords.y}
-                            r={size * 0.4}
-                            fill="#93C5FD"
-                        />
-                    </g>
-                );
-            })}
-
-            {/* No active users message */}
-            {usersByCity.length === 0 && (
-                <text x="500" y="250" textAnchor="middle" fill="#6B7280" fontSize="20">
-                    No active users right now
-                </text>
+            {/* Active Users Overlay - Fixed position outside scroll */}
+            {activeUsers !== undefined && (
+                <div className="absolute bottom-4 left-4 z-20 bg-gradient-to-br from-green-900/90 to-green-700/70 backdrop-blur-sm border border-green-500/40 rounded-xl px-5 py-3 shadow-xl pointer-events-none">
+                    <p className="text-xs font-medium text-green-400 mb-0.5">USERS RIGHT NOW</p>
+                    <p className="text-4xl font-bold text-green-300">{activeUsers}</p>
+                    <p className="text-[10px] text-green-500 mt-0.5">Active in the last 30 min</p>
+                </div>
             )}
-        </svg>
+
+            {/* Scroll hint - Fixed position outside scroll */}
+            <div className="absolute bottom-4 right-4 z-20 text-xs text-gray-500 opacity-60 pointer-events-none bg-gray-900/70 px-2 py-1 rounded">
+                ↕ Scroll to pan
+            </div>
+        </div>
     );
 }
 
@@ -673,20 +749,9 @@ function LiveTab({ realtimeData, lastUpdate, onRefresh }: { realtimeData: Realti
                 </button>
             </div>
 
-            {/* Active Users Count */}
-            <div className="mb-8 text-center">
-                <div className="inline-block bg-gradient-to-br from-green-900/60 to-green-700/30 border border-green-500/50 rounded-2xl px-12 py-8 shadow-xl">
-                    <p className="text-sm font-medium text-green-400 mb-2">USERS RIGHT NOW</p>
-                    <p className="text-7xl font-bold text-green-300">{realtimeData.activeUsers}</p>
-                    <p className="text-xs text-green-500 mt-2">Active in the last 30 minutes</p>
-                </div>
-            </div>
-
-            {/* World Map */}
+            {/* World Map with Active Users Overlay */}
             <ChartCard title="🌍 Users Around the World">
-                <div className="relative w-full" style={{ height: "300px" }}>
-                    <WorldMapSVG usersByCity={realtimeData.usersByCity} />
-                </div>
+                <WorldMapSVG usersByCity={realtimeData.usersByCity} activeUsers={realtimeData.activeUsers} />
             </ChartCard>
 
             {/* World Map Visualization - Country Breakdown */}

@@ -5,6 +5,7 @@ import { initializeApp, getApps, FirebaseApp, deleteApp } from "firebase/app";
 import { getAuth, Auth, onAuthStateChanged, User, signOut } from "firebase/auth";
 import { getFunctions, Functions, httpsCallable } from "firebase/functions";
 import { getFirestore, Firestore } from "firebase/firestore";
+import { getStorage, FirebaseStorage } from "firebase/storage";
 import { environments, Environment, DEFAULT_ENVIRONMENT, EnvironmentConfig } from "./environments";
 
 interface FirebaseContextType {
@@ -19,6 +20,7 @@ interface FirebaseContextType {
     app: FirebaseApp | null;
     auth: Auth | null;
     db: Firestore | null;
+    storage: FirebaseStorage | null;
     functions: Functions | null;
 
     // Current user
@@ -57,6 +59,7 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
     const [app, setApp] = useState<FirebaseApp | null>(null);
     const [auth, setAuth] = useState<Auth | null>(null);
     const [db, setDb] = useState<Firestore | null>(null);
+    const [storage, setStorage] = useState<FirebaseStorage | null>(null);
     const [functions, setFunctions] = useState<Functions | null>(null);
     const [user, setUser] = useState<User | null>(null);
     const [authUnsubscribe, setAuthUnsubscribe] = useState<(() => void) | null>(null);
@@ -125,11 +128,13 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
 
             const authInstance = getAuth(firebaseApp);
             const dbInstance = getFirestore(firebaseApp);
+            const storageInstance = getStorage(firebaseApp);
             const functionsInstance = getFunctions(firebaseApp, "us-central1");
 
             setApp(firebaseApp);
             setAuth(authInstance);
             setDb(dbInstance);
+            setStorage(storageInstance);
             setFunctions(functionsInstance);
 
             // Listen for auth state changes
@@ -240,6 +245,7 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
         app,
         auth,
         db,
+        storage,
         functions,
         user,
         callFunction,

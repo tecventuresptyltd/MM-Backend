@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { useFirebase } from "@/lib/FirebaseContext";
+import { useAdminPermissions } from "@/lib/AdminPermissionsContext";
 
 interface AuthGuardProps {
     children: React.ReactNode;
@@ -12,6 +13,7 @@ interface AuthGuardProps {
 export default function AuthGuard({ children }: AuthGuardProps) {
     const router = useRouter();
     const { auth, db, user, isLoading, logout, currentEnvironment, hasAuthChecked } = useFirebase();
+    const { setPermissions } = useAdminPermissions();
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [isCheckingAdmin, setIsCheckingAdmin] = useState(false);
 
@@ -57,6 +59,19 @@ export default function AuthGuard({ children }: AuthGuardProps) {
                     return;
                 }
 
+                // Extract permissions from the admin document
+                const adminData = adminDoc.data();
+                const canViewAnalytics = adminData?.canViewAnalytics === true; // Default to false if not set
+
+                console.log("[AuthGuard] Setting permissions - canViewAnalytics:", canViewAnalytics);
+                setPermissions({
+                    canViewAnalytics,
+                    displayName: adminData?.displayName || user.email || "Admin",
+                    email: user.email || undefined,
+                    photoURL: adminData?.photoURL || undefined,
+                    role: adminData?.role,
+                });
+
                 console.log("[AuthGuard] User IS admin, authorizing");
                 setIsAuthorized(true);
             } catch (error) {
@@ -69,7 +84,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
         };
 
         checkAdminStatus();
-    }, [auth, db, user, isLoading, hasAuthChecked, logout, router, currentEnvironment]);
+    }, [auth, db, user, isLoading, hasAuthChecked, logout, router, currentEnvironment, setPermissions]);
 
     // Show loading while Firebase is initializing or checking admin status
     if (isLoading || !hasAuthChecked || isCheckingAdmin) {

@@ -11,9 +11,9 @@ const ga4PropertyId = defineString("GA4_PROPERTY_ID");
 const analyticsDataClient = new BetaAnalyticsDataClient();
 
 /**
- * Verify that the callable request comes from an authenticated admin user.
+ * Verify that the callable request comes from an authenticated admin user with analytics access.
  * Uses the built-in Firebase Auth context from onCall functions.
- * @throws HttpsError if user is not authenticated or not an admin
+ * @throws HttpsError if user is not authenticated, not an admin, or doesn't have analytics permission
  */
 async function verifyAdminCallable(request: CallableRequest): Promise<string> {
     console.log("[verifyAdminCallable] Starting verification...");
@@ -29,17 +29,23 @@ async function verifyAdminCallable(request: CallableRequest): Promise<string> {
     console.log("[verifyAdminCallable] User UID:", uid);
     console.log("[verifyAdminCallable] User Email:", email);
 
-    // Check if user is an admin
+    // Check if user is an admin with analytics permission
     try {
         const adminDoc = await admin.firestore().collection("AdminUsers").doc(uid).get();
         console.log("[verifyAdminCallable] Admin doc exists:", adminDoc.exists);
-        if (adminDoc.exists) {
-            console.log("[verifyAdminCallable] Admin doc data:", JSON.stringify(adminDoc.data()));
-        }
 
         if (!adminDoc.exists) {
             console.log("[verifyAdminCallable] User is NOT an admin - doc does not exist");
             throw new HttpsError("permission-denied", "User is not an administrator");
+        }
+
+        const adminData = adminDoc.data();
+        console.log("[verifyAdminCallable] Admin doc data:", JSON.stringify(adminData));
+
+        // Check canViewAnalytics permission
+        if (adminData?.canViewAnalytics !== true) {
+            console.log("[verifyAdminCallable] User does not have canViewAnalytics permission");
+            throw new HttpsError("permission-denied", "User does not have permission to view analytics");
         }
     } catch (error: any) {
         if (error.code === "permission-denied") {
@@ -55,35 +61,60 @@ async function verifyAdminCallable(request: CallableRequest): Promise<string> {
 
 
 /**
- * Verify that the request comes from an authenticated admin user.
- * Checks Authorization header for Bearer token, verifies it, and confirms admin status.
+ * Verify that the request comes from an authenticated admin user with analytics access.
+ * Checks Authorization header for Bearer token, verifies it, and confirms admin status with analytics permission.
  * @returns Object with success boolean. If false, response has already been sent.
  */
 async function verifyAdminRequest(req: Request, res: Response): Promise<{ success: boolean; uid?: string }> {
+    console.log("[verifyAdminRequest] Starting verification...");
+    console.log("[verifyAdminRequest] Request method:", req.method);
+    console.log("[verifyAdminRequest] Request URL:", req.url);
+
     try {
         // Get Authorization header
         const authHeader = req.headers.authorization;
+        console.log("[verifyAdminRequest] Auth header present:", !!authHeader);
+        console.log("[verifyAdminRequest] Auth header starts with Bearer:", authHeader?.startsWith("Bearer "));
+
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            console.log("[verifyAdminRequest] FAILED: Missing or invalid Authorization header");
             res.status(401).json({ error: "Unauthorized: Missing or invalid Authorization header" });
             return { success: false };
         }
 
         const idToken = authHeader.split("Bearer ")[1];
+        console.log("[verifyAdminRequest] Token length:", idToken?.length || 0);
 
         // Verify the ID token
         const decodedToken = await admin.auth().verifyIdToken(idToken);
         const uid = decodedToken.uid;
+        const email = decodedToken.email || "unknown";
+        console.log("[verifyAdminRequest] Token verified, UID:", uid);
+        console.log("[verifyAdminRequest] Token email:", email);
 
-        // Check if user is an admin
+        // Check if user is an admin with analytics permission
         const adminDoc = await admin.firestore().collection("AdminUsers").doc(uid).get();
+        console.log("[verifyAdminRequest] AdminUsers doc exists:", adminDoc.exists);
+
         if (!adminDoc.exists) {
+            console.log("[verifyAdminRequest] FAILED: User not in AdminUsers collection");
             res.status(403).json({ error: "Forbidden: User is not an administrator" });
             return { success: false };
         }
 
+        const adminData = adminDoc.data();
+
+        // Check canViewAnalytics permission
+        if (adminData?.canViewAnalytics !== true) {
+            console.log("[verifyAdminRequest] FAILED: User does not have canViewAnalytics permission");
+            res.status(403).json({ error: "Forbidden: User does not have permission to view analytics" });
+            return { success: false };
+        }
+
+        console.log("[verifyAdminRequest] SUCCESS: User verified as admin with analytics access");
         return { success: true, uid };
-    } catch (error) {
-        console.error("Auth verification failed:", error);
+    } catch (error: any) {
+        console.error("[verifyAdminRequest] EXCEPTION:", error?.code || "unknown", error?.message || error);
         res.status(401).json({ error: "Unauthorized: Invalid or expired token" });
         return { success: false };
     }
@@ -593,9 +624,28 @@ export const analyticsRealtime = onRequest(
                 realtimeEvents,
                 timestamp: new Date().toISOString(),
             });
-        } catch (error) {
+        } catch (error: any) {
             console.error("Analytics realtime error:", error);
-            res.status(500).json({ error: "Failed to fetch realtime data" });
+
+            // Check if this is a quota exhaustion error
+            const isQuotaError = error?.code === 8 ||
+                error?.details?.includes("RESOURCE_EXHAUSTED") ||
+                error?.message?.includes("quota");
+
+            if (isQuotaError) {
+                // Return empty data gracefully with a message instead of failing
+                res.json({
+                    activeUsers: 0,
+                    usersByCountry: [],
+                    usersByCity: [],
+                    realtimeEvents: [],
+                    timestamp: new Date().toISOString(),
+                    quotaExhausted: true,
+                    message: "Analytics API quota temporarily exhausted. Will reset within an hour."
+                });
+            } else {
+                res.status(500).json({ error: "Failed to fetch realtime data" });
+            }
         }
     }
 );

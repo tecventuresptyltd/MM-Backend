@@ -1,27 +1,16 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { signOut } from "firebase/auth";
 import { useFirebase } from "@/lib/FirebaseContext";
+import { useAdminPermissions } from "@/lib/AdminPermissionsContext";
 import AuthGuard from "@/components/AuthGuard";
 import EnvironmentSwitcher from "@/components/EnvironmentSwitcher";
+import UserProfileDropdown from "@/components/UserProfileDropdown";
 import Link from "next/link";
 import Image from "next/image";
 
 export default function DashboardPage() {
-  const router = useRouter();
-  const { auth, isProd, environmentConfig } = useFirebase();
-
-  const handleLogout = async () => {
-    try {
-      if (auth) {
-        await signOut(auth);
-      }
-      router.push("/login");
-    } catch (error) {
-      console.error("Logout error:", error);
-    }
-  };
+  const { isProd } = useFirebase();
+  const { permissions } = useAdminPermissions();
 
   return (
     <AuthGuard>
@@ -36,7 +25,7 @@ export default function DashboardPage() {
         )}
 
         {/* Header */}
-        <header className="border-b border-gray-700 bg-black/40 backdrop-blur-md">
+        <header className="relative z-50 border-b border-gray-700 bg-black/40 backdrop-blur-md">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
             <div className="flex items-center gap-4">
               <Image
@@ -56,12 +45,7 @@ export default function DashboardPage() {
 
             <div className="flex items-center gap-4">
               <EnvironmentSwitcher />
-              <button
-                onClick={handleLogout}
-                className="px-6 py-2.5 bg-red-600/90 text-white rounded-lg hover:bg-red-700 transition font-medium shadow-lg hover:shadow-red-500/50"
-              >
-                Logout
-              </button>
+              <UserProfileDropdown />
             </div>
           </div>
         </header>
@@ -172,34 +156,36 @@ export default function DashboardPage() {
               </div>
             </Link>
 
-            {/* Analytics Card */}
-            <Link href="/analytics">
-              <div className="h-full flex flex-col group bg-gradient-to-br from-orange-900/40 to-orange-800/20 backdrop-blur-sm rounded-2xl shadow-2xl hover:shadow-orange-500/20 transition-all duration-300 p-8 cursor-pointer border border-orange-700/30 hover:border-orange-500/50 hover:scale-105">
-                <div className="flex items-center mb-6">
-                  <div className="p-4 bg-orange-600/30 rounded-xl group-hover:bg-orange-600/50 transition">
-                    <svg
-                      className="w-10 h-10 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                      />
-                    </svg>
+            {/* Analytics Card - Only shown to users with canViewAnalytics permission */}
+            {permissions.canViewAnalytics && (
+              <Link href="/analytics">
+                <div className="h-full flex flex-col group bg-gradient-to-br from-orange-900/40 to-orange-800/20 backdrop-blur-sm rounded-2xl shadow-2xl hover:shadow-orange-500/20 transition-all duration-300 p-8 cursor-pointer border border-orange-700/30 hover:border-orange-500/50 hover:scale-105">
+                  <div className="flex items-center mb-6">
+                    <div className="p-4 bg-orange-600/30 rounded-xl group-hover:bg-orange-600/50 transition">
+                      <svg
+                        className="w-10 h-10 text-white"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                        />
+                      </svg>
+                    </div>
                   </div>
+                  <h3 className="text-2xl font-bold text-white mb-3">
+                    Analytics
+                  </h3>
+                  <p className="text-gray-300 leading-relaxed">
+                    View user stats and game performance metrics from Firebase Analytics
+                  </p>
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-3">
-                  Analytics
-                </h3>
-                <p className="text-gray-300 leading-relaxed">
-                  View user stats and game performance metrics from Firebase Analytics
-                </p>
-              </div>
-            </Link>
+              </Link>
+            )}
 
             {/* Player Support Card (Coming Soon) */}
             <div className="bg-gradient-to-br from-gray-800/40 to-gray-700/20 backdrop-blur-sm rounded-2xl shadow-xl p-8 opacity-50 cursor-not-allowed border border-gray-600/30">

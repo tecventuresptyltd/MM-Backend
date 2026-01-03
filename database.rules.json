@@ -3,14 +3,18 @@
     "chat_messages": {
       "clans": {
         "$clanId": {
-          ".indexOn": ["ts"],
-          ".read": "auth != null && root.child('presence/online').child(auth.uid).child('clanId').val() === $clanId",
+          ".indexOn": [
+            "ts"
+          ],
+          ".read": "auth != null",
           ".write": false
         }
       },
       "global": {
         "$roomId": {
-          ".indexOn": ["ts"],
+          ".indexOn": [
+            "ts"
+          ],
           ".read": "auth != null && root.child('presence/online').child(auth.uid).child('roomId').val() === $roomId",
           ".write": false
         }

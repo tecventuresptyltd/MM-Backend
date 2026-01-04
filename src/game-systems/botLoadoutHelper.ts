@@ -100,24 +100,24 @@ const buildSpellDeck = async (trophyCount: number): Promise<GeneratedBotLoadout[
   if (!cachedSpellIds || cachedSpellIds.length === 0) {
     return [];
   }
-  
+
   // Get bot config for spell level bands
   const botConfig = await getBotConfig().catch(() => null);
   const normalizedTrophies = Math.max(0, Math.min(7000, Math.floor(trophyCount)));
-  
+
   // Find appropriate spell level band
   const band = botConfig?.spellLevelBands?.find(
     (b: any) => normalizedTrophies >= b.minTrophies && normalizedTrophies <= b.maxTrophies
   ) || { minLevel: 1, maxLevel: 2 }; // Fallback to rookie tier
-  
+
   const deckSize = Math.min(5, cachedSpellIds.length);
   const deck: Array<{ spellId: string; level: number }> = [];
   const shuffled = [...cachedSpellIds].sort(() => Math.random() - 0.5); // Shuffle
-  
+
   for (let i = 0; i < deckSize; i++) {
     const spellId = shuffled[i];
     if (!spellId) break;
-    
+
     // Random level within band range
     const level = Math.floor(Math.random() * (band.maxLevel - band.minLevel + 1)) + band.minLevel;
     deck.push({ spellId, level });
@@ -157,8 +157,16 @@ export const buildBotLoadout = async (trophyCount: number): Promise<GeneratedBot
 
     thresholds.sort((a, b) => a.trophies - b.trophies);
     const clampedTrophies = Math.max(0, Math.floor(trophyCount));
-    let idx = thresholds.findIndex((t) => clampedTrophies < t.trophies) - 1;
-    if (idx < 0) idx = thresholds.length - 1;
+
+    // Find the highest unlocked car (last threshold where trophies <= clampedTrophies)
+    let idx = 0;
+    for (let i = thresholds.length - 1; i >= 0; i--) {
+      if (thresholds[i].trophies <= clampedTrophies) {
+        idx = i;
+        break;
+      }
+    }
+
     // ±1 variance for variety
     const variance = Math.round(Math.random() * 2 - 1); // -1,0,1
     idx = Math.max(0, Math.min(thresholds.length - 1, idx + variance));

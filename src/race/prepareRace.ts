@@ -351,9 +351,17 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
     // Helper: pick bot car by thresholds
     function pickBotCarId(tr: number): string {
       const thresholds = [...botConfig.carUnlockThresholds].sort((a, b) => a.trophies - b.trophies);
-      let idx = thresholds.findIndex((t) => tr < t.trophies) - 1;
-      if (idx < 0) idx = thresholds.length - 1;
-      // ±1 variance
+
+      // Find the highest unlocked car (last threshold where trophies <= tr)
+      let idx = 0;
+      for (let i = thresholds.length - 1; i >= 0; i--) {
+        if (thresholds[i].trophies <= tr) {
+          idx = i;
+          break;
+        }
+      }
+
+      // ±1 variance for variety
       const variance = rng.int(-1, 1);
       idx = Math.max(0, Math.min(thresholds.length - 1, idx + variance));
       return thresholds[idx].carId;

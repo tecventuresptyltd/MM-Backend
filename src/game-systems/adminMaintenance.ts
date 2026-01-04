@@ -31,7 +31,7 @@ interface SetMaintenanceModeResponse {
     };
 }
 
-export const setMaintenanceMode = onCall(callableOptions(), async (request) => {
+export const setMaintenanceMode = onCall({ region: REGION, enforceAppCheck: false }, async (request) => {
     const uid = request.auth?.uid;
 
     if (!uid) {

@@ -88,3 +88,5 @@ export { testAnalytics } from "./analyticsTest";
 
 // Admin Dashboard Authentication (bypasses App Check)
 export { verifyAdminStatus } from "./admin/verifyAdminStatus";
+export { getAdminMaintenanceStatus, getMaintenanceHistory } from "./admin/adminMaintenance";
+

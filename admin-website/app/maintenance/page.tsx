@@ -5,11 +5,10 @@ import { useRouter } from "next/navigation";
 import AuthGuard from "@/components/AuthGuard";
 import PageHeader from "@/components/PageHeader";
 import { useFirebase, useProductionConfirm } from "@/lib/FirebaseContext";
-import { doc, getDoc } from "firebase/firestore";
 
 export default function MaintenancePage() {
     const router = useRouter();
-    const { db, callFunction, isProd, environmentConfig } = useFirebase();
+    const { functions, callFunction, isProd, environmentConfig } = useFirebase();
     const confirmProd = useProductionConfirm();
     const [loading, setLoading] = useState(false);
     const [currentStatus, setCurrentStatus] = useState<any>(null);
@@ -29,47 +28,46 @@ export default function MaintenancePage() {
     const [showEmergencyConfirm, setShowEmergencyConfirm] = useState(false);
 
     useEffect(() => {
-        loadCurrentStatus();
-        loadMaintenanceHistory();
-    }, [db]);
+        if (functions) {
+            loadCurrentStatus();
+            loadMaintenanceHistory();
+        }
+    }, [functions]);
 
-    // Real-time listener for maintenance status changes
+    // Polling for maintenance status changes (replaces real-time listener blocked by App Check)
     useEffect(() => {
-        if (!db) return; // Wait for db to be initialized
+        if (!functions) return;
 
-        const setupRealtimeListener = async () => {
-            const { onSnapshot } = await import("firebase/firestore");
-            const maintenanceRef = doc(db, "GameConfig", "maintenance");
+        // Poll every 5 seconds for status updates
+        const pollInterval = setInterval(async () => {
+            try {
+                const result = await callFunction("getAdminMaintenanceStatus", {});
+                const response = result.data as { exists: boolean; data: any };
 
-            const unsubscribe = onSnapshot(maintenanceRef, (snapshot) => {
-                if (snapshot.exists()) {
-                    const data = snapshot.data();
-                    console.log("[Real-time] Maintenance status updated:", data);
-
-                    // Update all state automatically
-                    setCurrentStatus(data);
-                    setMaintenance(data.maintenance || false);
-                    setRewardGems(data.rewardGems || 100);
-
-                    if (data.delayMinutes && data.delayMinutes >= 1) {
-                        setDelayMinutes(data.delayMinutes);
-                    }
+                if (response && response.exists && response.data) {
+                    const data = response.data;
+                    // Only update if data has changed
+                    setCurrentStatus((prev: any) => {
+                        if (JSON.stringify(prev) !== JSON.stringify(data)) {
+                            console.log("[Polling] Maintenance status updated:", data);
+                            setMaintenance(data.maintenance || data.enabled || false);
+                            setRewardGems(data.rewardGems || 100);
+                            if (data.delayMinutes && data.delayMinutes >= 1) {
+                                setDelayMinutes(data.delayMinutes);
+                            }
+                            return data;
+                        }
+                        return prev;
+                    });
                 }
-            }, (error) => {
-                console.error("[Real-time] Error listening to maintenance status:", error);
-            });
+            } catch (error) {
+                // Silently fail on poll errors - initial load already succeeded
+                console.debug("[Polling] Status check failed:", error);
+            }
+        }, 5000);
 
-            return unsubscribe;
-        };
-
-        let unsubscribe: (() => void) | undefined;
-        setupRealtimeListener().then(unsub => { unsubscribe = unsub; });
-
-        // Cleanup
-        return () => {
-            if (unsubscribe) unsubscribe();
-        };
-    }, [db]); // Add db as dependency
+        return () => clearInterval(pollInterval);
+    }, [functions]);
 
     // Countdown timer effect (before maintenance activates) + Grace period handling
     useEffect(() => {
@@ -157,13 +155,15 @@ export default function MaintenancePage() {
     }, [currentStatus]);
 
     const loadCurrentStatus = async () => {
-        if (!db) return; // Wait for db to be initialized
+        if (!callFunction) return; // Wait for Firebase to be initialized
         try {
-            const maintenanceRef = doc(db, "GameConfig", "maintenance");
-            const maintenanceDoc = await getDoc(maintenanceRef);
+            console.log("[MaintenanceStatus] Loading via Cloud Function...");
+            const result = await callFunction("getAdminMaintenanceStatus", {});
+            const response = result.data as { exists: boolean; data: any };
+            console.log("[MaintenanceStatus] Response:", response);
 
-            if (maintenanceDoc.exists()) {
-                const data = maintenanceDoc.data();
+            if (response && response.exists && response.data) {
+                const data = response.data;
                 setCurrentStatus(data);
                 setMaintenance(data.maintenance || data.enabled || false);
                 setRewardGems(data.rewardGems || 100);
@@ -172,39 +172,31 @@ export default function MaintenancePage() {
                 }
             }
         } catch (err) {
-            console.error("Error loading maintenance status:", err);
+            console.error("[MaintenanceStatus] Error loading maintenance status:", err);
         }
     };
 
     const loadMaintenanceHistory = async (loadMore = false) => {
-        if (!db) {
-            console.log("[MaintenanceHistory] No db available yet");
+        if (!callFunction) {
+            console.log("[MaintenanceHistory] No callFunction available yet");
             return;
         }
-        console.log("[MaintenanceHistory] Loading history...");
+        console.log("[MaintenanceHistory] Loading history via Cloud Function...");
         try {
-            const { collection, query, orderBy, limit, getDocs, startAfter } = await import("firebase/firestore");
-            const historyRef = collection(db, "MaintenanceHistory");
-            console.log("[MaintenanceHistory] Collection ref created");
+            const payload: { limit?: number; startAfter?: number } = { limit: 10 };
 
-            let q;
             if (loadMore && maintenanceHistory.length > 0) {
-                // Get the last document for pagination
+                // Get the last document's startedAt for pagination
                 const lastDoc = maintenanceHistory[maintenanceHistory.length - 1];
-                q = query(historyRef, orderBy("startedAt", "desc"), startAfter(lastDoc.startedAt), limit(10));
-            } else {
-                q = query(historyRef, orderBy("startedAt", "desc"), limit(10));
+                payload.startAfter = lastDoc.startedAt;
             }
-            console.log("[MaintenanceHistory] Query created, executing...");
 
-            const snapshot = await getDocs(q);
-            console.log("[MaintenanceHistory] Query returned", snapshot.size, "documents");
+            const result = await callFunction("getMaintenanceHistory", payload);
+            const response = result.data as { history: any[] };
+            console.log("[MaintenanceHistory] Response:", response);
 
-            const history = snapshot.docs.map(doc => {
-                const data = doc.data();
-                console.log("[MaintenanceHistory] Doc:", doc.id, data);
-                return { id: doc.id, ...data };
-            });
+            const history = response?.history || [];
+            console.log("[MaintenanceHistory] Got", history.length, "documents");
 
             if (loadMore) {
                 setMaintenanceHistory([...maintenanceHistory, ...history]);

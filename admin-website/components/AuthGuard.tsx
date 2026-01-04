@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { doc, getDoc } from "firebase/firestore";
+import { httpsCallable } from "firebase/functions";
 import { useFirebase } from "@/lib/FirebaseContext";
 import { useAdminPermissions } from "@/lib/AdminPermissionsContext";
 
@@ -10,9 +10,18 @@ interface AuthGuardProps {
     children: React.ReactNode;
 }
 
+interface VerifyAdminResponse {
+    isAdmin: boolean;
+    canViewAnalytics: boolean;
+    displayName?: string;
+    email?: string;
+    photoURL?: string;
+    role?: string;
+}
+
 export default function AuthGuard({ children }: AuthGuardProps) {
     const router = useRouter();
-    const { auth, db, user, isLoading, logout, currentEnvironment, hasAuthChecked } = useFirebase();
+    const { auth, functions, user, isLoading, logout, currentEnvironment, hasAuthChecked } = useFirebase();
     const { setPermissions, setPermissionsLoaded } = useAdminPermissions();
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [isCheckingAdmin, setIsCheckingAdmin] = useState(false);
@@ -25,12 +34,12 @@ export default function AuthGuard({ children }: AuthGuardProps) {
 
     useEffect(() => {
         // Don't do anything until Firebase is fully initialized
-        if (isLoading || !hasAuthChecked || !auth || !db) {
+        if (isLoading || !hasAuthChecked || !auth || !functions) {
             console.log("[AuthGuard] Waiting for Firebase initialization...", {
                 isLoading,
                 hasAuthChecked,
                 hasAuth: !!auth,
-                hasDb: !!db
+                hasFunctions: !!functions
             });
             return;
         }
@@ -43,47 +52,42 @@ export default function AuthGuard({ children }: AuthGuardProps) {
             return;
         }
 
-        // User exists, check if they're an admin
+        // User exists, check if they're an admin via Cloud Function
         const checkAdminStatus = async () => {
             console.log(`[AuthGuard] Checking admin status for ${user.uid} in ${currentEnvironment}`);
             setIsCheckingAdmin(true);
 
-            // Debug: Log auth and db state
+            // Debug: Log auth state
             console.log("[AuthGuard] DEBUG - Auth state:", {
                 authInstance: !!auth,
                 currentUser: auth?.currentUser?.uid,
                 currentUserEmail: auth?.currentUser?.email,
-                dbInstance: !!db,
                 userUid: user.uid,
                 userEmail: user.email,
             });
 
-            // Retry logic for auth token propagation
+            // Retry logic
             const maxRetries = 3;
-            const retryDelay = 1000; // 1 second
+            const retryDelay = 1000;
 
             for (let attempt = 1; attempt <= maxRetries; attempt++) {
                 try {
-                    // Wait for auth token to propagate to Firestore
                     if (attempt > 1) {
-                        console.log(`[AuthGuard] Retry attempt ${attempt}/${maxRetries} after ${retryDelay}ms delay`);
+                        console.log(`[AuthGuard] Retry attempt ${attempt}/${maxRetries} after delay`);
                         await new Promise(resolve => setTimeout(resolve, retryDelay * attempt));
                     }
 
-                    // Force refresh the auth token before Firestore read
-                    if (auth?.currentUser) {
-                        console.log("[AuthGuard] Getting current auth token...");
-                        const token = await auth.currentUser.getIdToken(attempt > 1);
-                        console.log("[AuthGuard] Token obtained, length:", token?.length || 0);
-                    }
+                    console.log(`[AuthGuard] Attempt ${attempt}: Calling verifyAdminStatus function`);
 
-                    console.log(`[AuthGuard] Attempt ${attempt}: Fetching AdminUsers/${user.uid}`);
-                    const adminDocRef = doc(db, "AdminUsers", user.uid);
-                    const adminDoc = await getDoc(adminDocRef);
+                    // Call the Cloud Function instead of reading Firestore directly
+                    // This bypasses App Check since the function has enforceAppCheck: false
+                    const verifyAdmin = httpsCallable<void, VerifyAdminResponse>(functions, "verifyAdminStatus");
+                    const result = await verifyAdmin();
+                    const adminData = result.data;
 
-                    console.log("[AuthGuard] Admin doc exists:", adminDoc.exists(), "data:", adminDoc.data());
+                    console.log("[AuthGuard] verifyAdminStatus response:", adminData);
 
-                    if (!adminDoc.exists() || adminDoc.data()?.role !== "admin") {
+                    if (!adminData.isAdmin) {
                         console.log(`[AuthGuard] User ${user.uid} is NOT an admin in ${currentEnvironment}`);
                         setPermissionsLoaded(true);
                         await logout();
@@ -91,27 +95,24 @@ export default function AuthGuard({ children }: AuthGuardProps) {
                         return;
                     }
 
-                    // Extract permissions from the admin document
-                    const adminData = adminDoc.data();
-                    const canViewAnalytics = adminData?.canViewAnalytics === true; // Default to false if not set
-
-                    console.log("[AuthGuard] Setting permissions - canViewAnalytics:", canViewAnalytics);
+                    // Set permissions from the Cloud Function response
+                    console.log("[AuthGuard] Setting permissions - canViewAnalytics:", adminData.canViewAnalytics);
                     setPermissions({
-                        canViewAnalytics,
-                        displayName: adminData?.displayName || user.email || "Admin",
-                        email: user.email || undefined,
-                        photoURL: adminData?.photoURL || undefined,
-                        role: adminData?.role,
+                        canViewAnalytics: adminData.canViewAnalytics,
+                        displayName: adminData.displayName || user.email || "Admin",
+                        email: adminData.email || user.email || undefined,
+                        photoURL: adminData.photoURL || undefined,
+                        role: adminData.role,
                     });
                     setPermissionsLoaded(true);
 
                     console.log("[AuthGuard] User IS admin, authorizing");
                     setIsAuthorized(true);
-                    return; // Success, exit the retry loop
+                    setIsCheckingAdmin(false);
+                    return; // Success
                 } catch (error: unknown) {
                     const errorMessage = error instanceof Error ? error.message : String(error);
                     const errorCode = (error as any)?.code || "unknown";
-                    const isPermissionError = errorMessage.includes("permission") || errorMessage.includes("Permission");
 
                     console.error(`[AuthGuard] Attempt ${attempt}/${maxRetries} - Error checking admin status:`, {
                         message: errorMessage,
@@ -121,27 +122,21 @@ export default function AuthGuard({ children }: AuthGuardProps) {
                         environment: currentEnvironment,
                     });
 
-                    // If it's a permission error and we have more retries, continue
-                    if (isPermissionError && attempt < maxRetries) {
-                        console.log("[AuthGuard] Permission error - will retry with token refresh");
-                        continue;
-                    }
-
-                    // Final attempt failed or non-permission error
+                    // Final attempt failed
                     if (attempt === maxRetries) {
                         console.error("[AuthGuard] All retry attempts failed");
+                        setPermissionsLoaded(true);
                         await logout();
                         router.replace("/login?error=auth-error");
                         return;
                     }
                 }
             }
-            // Reset checking state when done
             setIsCheckingAdmin(false);
         };
 
         checkAdminStatus();
-    }, [auth, db, user, isLoading, hasAuthChecked, logout, router, currentEnvironment, setPermissions]);
+    }, [auth, functions, user, isLoading, hasAuthChecked, logout, router, currentEnvironment, setPermissions, setPermissionsLoaded]);
 
     // Show loading while Firebase is initializing or checking admin status
     if (isLoading || !hasAuthChecked || isCheckingAdmin) {

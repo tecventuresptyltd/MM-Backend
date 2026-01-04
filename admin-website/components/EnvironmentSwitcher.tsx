@@ -87,21 +87,21 @@ export default function EnvironmentSwitcher() {
     return (
         <>
             <div className="relative flex items-center gap-2">
-                {/* Environment Badge */}
-                <div className={`px-3 py-1.5 rounded-lg ${config.bgColor} ${config.borderColor} border`}>
+                {/* Environment Badge - Hidden on mobile */}
+                <div className={`hidden sm:block px-3 py-1.5 rounded-lg ${config.bgColor} ${config.borderColor} border`}>
                     <span className={`text-sm font-semibold ${config.color}`}>
                         {isProd ? "⚠️ " : "🛠️ "}{config.displayName}
                     </span>
                 </div>
 
-                {/* Environment Dropdown */}
+                {/* Environment Dropdown - Shows icon on mobile */}
                 <select
                     value={currentEnvironment}
                     onChange={(e) => handleEnvChange(e.target.value as Environment)}
-                    className="bg-gray-800 border border-gray-600 text-white text-sm rounded-lg px-3 py-1.5 cursor-pointer hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`bg-gray-800 border text-white text-sm rounded-lg px-2 sm:px-3 py-1.5 cursor-pointer hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 ${isProd ? 'border-red-600' : 'border-gray-600'}`}
                 >
-                    <option value="sandbox">Sandbox (Dev)</option>
-                    <option value="prod">Production</option>
+                    <option value="sandbox">🛠️ Sandbox</option>
+                    <option value="prod">⚠️ Production</option>
                 </select>
             </div>
 

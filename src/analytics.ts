@@ -439,6 +439,89 @@ export const analyticsRevenueByProduct = onRequest(
 );
 
 /**
+ * Get revenue analytics by country (for ad targeting and revenue optimization)
+ * Endpoint: /analyticsRevenueByCountry?days=30&platform=iOS
+ * Returns: country, revenue, users, purchasers, ARPU, ARPPU, conversion rate
+ */
+export const analyticsRevenueByCountry = onRequest(
+    { cors: true, region: "us-central1" },
+    async (req, res) => {
+        // Verify admin authentication
+        const authResult = await verifyAdminRequest(req, res);
+        if (!authResult.success) return;
+
+        try {
+            const propertyId = ga4PropertyId.value();
+            const days = parseInt(req.query.days as string) || 30;
+            const platform = req.query.platform as string || "";
+
+            // Build dimension filter for platform
+            const dimensionFilter = platform && platform !== "all" ? {
+                filter: {
+                    fieldName: "platform",
+                    stringFilter: { value: platform },
+                },
+            } : undefined;
+
+            const [response] = await analyticsDataClient.runReport({
+                property: propertyId,
+                dateRanges: [{ startDate: `${days}daysAgo`, endDate: "today" }],
+                dimensions: [{ name: "country" }],
+                metrics: [
+                    { name: "purchaseRevenue" },
+                    { name: "activeUsers" },
+                    { name: "totalPurchasers" },
+                    { name: "transactions" },
+                    { name: "averagePurchaseRevenue" },
+                ],
+                orderBys: [{ metric: { metricName: "purchaseRevenue" }, desc: true }],
+                dimensionFilter,
+            });
+
+            const data = response.rows?.map((row) => {
+                const country = row.dimensionValues?.[0]?.value || "Unknown";
+                const revenue = parseFloat(row.metricValues?.[0]?.value || "0");
+                const users = parseInt(row.metricValues?.[1]?.value || "0");
+                const purchasers = parseInt(row.metricValues?.[2]?.value || "0");
+                const transactions = parseInt(row.metricValues?.[3]?.value || "0");
+                const avgPurchase = parseFloat(row.metricValues?.[4]?.value || "0");
+
+                // Calculate ARPU (Average Revenue Per User) and ARPPU (Average Revenue Per Paying User)
+                const arpu = users > 0 ? revenue / users : 0;
+                const arppu = purchasers > 0 ? revenue / purchasers : 0;
+                const conversionRate = users > 0 ? (purchasers / users) * 100 : 0;
+
+                return {
+                    country,
+                    revenue: Math.round(revenue * 100) / 100,
+                    users,
+                    purchasers,
+                    transactions,
+                    arpu: Math.round(arpu * 100) / 100,
+                    arppu: Math.round(arppu * 100) / 100,
+                    avgPurchase: Math.round(avgPurchase * 100) / 100,
+                    conversionRate: Math.round(conversionRate * 100) / 100,
+                };
+            }).filter(item => item.revenue > 0 || item.users > 0) || [];
+
+            // Sort by ARPU for top spending countries view
+            const sortedByArpu = [...data].sort((a, b) => b.arpu - a.arpu);
+
+            res.json({
+                data,
+                topByArpu: sortedByArpu.slice(0, 15),
+                days,
+                platform: platform || "all",
+                timestamp: new Date().toISOString()
+            });
+        } catch (error) {
+            console.error("Analytics revenue by country error:", error);
+            res.status(500).json({ error: "Failed to fetch country revenue data" });
+        }
+    }
+);
+
+/**
  * Get retention metrics
  * Endpoint: /analyticsRetention?days=30
  */

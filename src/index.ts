@@ -76,6 +76,7 @@ export {
   analyticsPlatforms,
   analyticsRevenue,
   analyticsRevenueByProduct,
+  analyticsRevenueByCountry,
   analyticsRetention,
   analyticsEvents,
   analyticsRealtime,

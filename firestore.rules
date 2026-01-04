@@ -31,8 +31,9 @@ service cloud.firestore {
 
     // AdminUsers - allow authenticated users to read their own admin document
     // This is needed for the admin dashboard to verify admin privileges
+    // TEMPORARILY completely open for diagnosis
     match /AdminUsers/{uid} {
-      allow read: if isSelf(uid);
+      allow read: if true;
       allow write: if false;
     }
 

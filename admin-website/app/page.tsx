@@ -26,26 +26,30 @@ export default function DashboardPage() {
 
         {/* Header */}
         <header className="relative z-50 border-b border-gray-700 bg-black/40 backdrop-blur-md">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              <Image
-                src="/logo.png"
-                alt="Mystic Motors"
-                width={48}
-                height={48}
-                className="drop-shadow-lg"
-              />
-              <div>
-                <h1 className="text-2xl font-bold text-white tracking-tight">
-                  Mystic Motors
-                </h1>
-                <p className="text-sm text-gray-400">Admin Dashboard</p>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              {/* Logo and Title */}
+              <div className="flex items-center gap-3">
+                <Image
+                  src="/logo.png"
+                  alt="Mystic Motors"
+                  width={40}
+                  height={40}
+                  className="drop-shadow-lg w-8 h-8 sm:w-10 sm:h-10"
+                />
+                <div>
+                  <h1 className="text-lg sm:text-2xl font-bold text-white tracking-tight">
+                    Mystic Motors
+                  </h1>
+                  <p className="text-xs sm:text-sm text-gray-400">Admin Dashboard</p>
+                </div>
               </div>
-            </div>
 
-            <div className="flex items-center gap-4">
-              <EnvironmentSwitcher />
-              <UserProfileDropdown />
+              {/* Controls */}
+              <div className="flex items-center gap-2 sm:gap-4 justify-between sm:justify-end">
+                <EnvironmentSwitcher />
+                <UserProfileDropdown />
+              </div>
             </div>
           </div>
         </header>

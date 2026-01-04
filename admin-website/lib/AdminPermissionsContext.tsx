@@ -23,18 +23,23 @@ const DEFAULT_PERMISSIONS: AdminPermissions = {
 interface AdminPermissionsContextType {
     permissions: AdminPermissions;
     setPermissions: (permissions: AdminPermissions) => void;
+    permissionsLoaded: boolean;
+    setPermissionsLoaded: (loaded: boolean) => void;
 }
 
 const AdminPermissionsContext = createContext<AdminPermissionsContextType>({
     permissions: DEFAULT_PERMISSIONS,
     setPermissions: () => { },
+    permissionsLoaded: false,
+    setPermissionsLoaded: () => { },
 });
 
 export function AdminPermissionsProvider({ children }: { children: React.ReactNode }) {
     const [permissions, setPermissions] = useState<AdminPermissions>(DEFAULT_PERMISSIONS);
+    const [permissionsLoaded, setPermissionsLoaded] = useState(false);
 
     return (
-        <AdminPermissionsContext.Provider value={{ permissions, setPermissions }}>
+        <AdminPermissionsContext.Provider value={{ permissions, setPermissions, permissionsLoaded, setPermissionsLoaded }}>
             {children}
         </AdminPermissionsContext.Provider>
     );

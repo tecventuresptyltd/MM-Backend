@@ -42,7 +42,7 @@ async function createUser(email: string, password: string, displayName: string) 
     }
 }
 
-async function addAdminDocument(uid: string, email: string, role: string, displayName: string) {
+async function addAdminDocument(uid: string, email: string, role: string, displayName: string, canViewAnalytics: boolean = false) {
     try {
         const adminRef = db.collection("AdminUsers").doc(uid);
         const existingDoc = await adminRef.get();
@@ -55,11 +55,12 @@ async function addAdminDocument(uid: string, email: string, role: string, displa
             email,
             role,
             displayName,
+            canViewAnalytics,
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         }, { merge: true });
 
-        console.log(`Added/updated AdminUsers document for ${email} with role: ${role}`);
+        console.log(`Added/updated AdminUsers document for ${email} with role: ${role}, canViewAnalytics: ${canViewAnalytics}`);
     } catch (error) {
         console.error(`Error adding AdminUsers document for ${email}:`, error);
         throw error;
@@ -74,17 +75,17 @@ async function main() {
     const adminUid = await createUser(
         "tecventurescorp@gmail.com",
         "$Millions2026$",
-        "Tech Ventures Admin"
+        "Tec Ventures Admin"
     );
-    await addAdminDocument(adminUid, "tecventurescorp@gmail.com", "admin", "Tech Ventures Admin");
+    await addAdminDocument(adminUid, "tecventurescorp@gmail.com", "admin", "Tec Ventures Admin", true);
 
     console.log("\n=== Creating Developer User ===");
     const developerUid = await createUser(
-        "developer@mysticmotors.app",
+        "mysticmotors.io@gmail.com",
         "Developer@123@",
         "Developer"
     );
-    await addAdminDocument(developerUid, "developer@mysticmotors.app", "member", "Developer");
+    await addAdminDocument(developerUid, "mysticmotors.io@gmail.com", "admin", "Developer", false);
 
     console.log("\n✅ Production admin users setup complete!");
     console.log("\nAdmin User:");
@@ -92,9 +93,9 @@ async function main() {
     console.log(`  UID: ${adminUid}`);
     console.log(`  Role: admin`);
     console.log("\nDeveloper User:");
-    console.log(`  Email: developer@mysticmotors.app`);
+    console.log(`  Email: mysticmotors.io@gmail.com`);
     console.log(`  UID: ${developerUid}`);
-    console.log(`  Role: member`);
+    console.log(`  Role: admin`);
 
     process.exit(0);
 }

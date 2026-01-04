@@ -9,6 +9,17 @@ import { useAdminPermissions } from "@/lib/AdminPermissionsContext";
 import { getFunctions, httpsCallable, connectFunctionsEmulator } from "firebase/functions";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { format } from "date-fns";
+import dynamic from "next/dynamic";
+
+// Dynamically import the map component to avoid SSR issues with Leaflet
+const InteractiveWorldMap = dynamic(() => import("@/components/InteractiveWorldMap"), {
+    ssr: false,
+    loading: () => (
+        <div className="w-full h-[450px] bg-gray-800 rounded-lg flex items-center justify-center">
+            <div className="text-gray-400">Loading map...</div>
+        </div>
+    ),
+});
 
 // Types
 interface OverviewMetrics {
@@ -65,6 +76,18 @@ interface ProductData {
     quantity: number;
 }
 
+interface CountryRevenueData {
+    country: string;
+    revenue: number;
+    users: number;
+    purchasers: number;
+    transactions: number;
+    arpu: number;
+    arppu: number;
+    avgPurchase: number;
+    conversionRate: number;
+}
+
 type DateRange = "1" | "7" | "14" | "30" | "60" | "90" | "180" | "365";
 type PlatformFilter = "all" | "Android" | "iOS";
 type TabId = "overview" | "revenue" | "retention" | "events" | "live" | "devices";
@@ -86,18 +109,18 @@ interface DevicesData {
 export default function AnalyticsPage() {
     const router = useRouter();
     const { environmentConfig, isProd, user, app } = useFirebase();
-    const { permissions } = useAdminPermissions();
+    const { permissions, permissionsLoaded } = useAdminPermissions();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<TabId>("overview");
 
-    // Check if user has permission to view analytics
+    // Check if user has permission to view analytics (only after permissions are loaded)
     useEffect(() => {
-        if (!permissions.canViewAnalytics) {
+        if (permissionsLoaded && !permissions.canViewAnalytics) {
             console.log("[Analytics] User does not have permission to view analytics, redirecting...");
             router.replace("/?error=analytics-restricted");
         }
-    }, [permissions.canViewAnalytics, router]);
+    }, [permissions.canViewAnalytics, permissionsLoaded, router]);
 
     // Filters
     const [dateRange, setDateRange] = useState<DateRange>("30");
@@ -111,6 +134,7 @@ export default function AnalyticsPage() {
     const [growthData, setGrowthData] = useState<GrowthData[]>([]);
     const [platformData, setPlatformData] = useState<PlatformData[]>([]);
     const [productData, setProductData] = useState<ProductData[]>([]);
+    const [countryRevenueData, setCountryRevenueData] = useState<CountryRevenueData[]>([]);
     const [realtimeData, setRealtimeData] = useState<RealtimeData | null>(null);
     const [lastRealtimeUpdate, setLastRealtimeUpdate] = useState<string>("");
     const [devicesData, setDevicesData] = useState<DevicesData | null>(null);
@@ -165,7 +189,8 @@ export default function AnalyticsPage() {
                 retentionRes,
                 eventsRes,
                 productsRes,
-                devicesRes
+                devicesRes,
+                countryRevenueRes
             ] = await Promise.all([
                 // Callable functions (secure without public invoker)
                 analyticsOverviewFn().catch((err) => {
@@ -186,15 +211,17 @@ export default function AnalyticsPage() {
                 fetch(`${baseUrl}/analyticsEvents?days=${days}&limit=15${platform ? `&platform=${platform}` : ""}`, { headers }),
                 fetch(`${baseUrl}/analyticsRevenueByProduct?days=${days}${platform ? `&platform=${platform}` : ""}`, { headers }),
                 fetch(`${baseUrl}/analyticsDevices?days=${days}${platform ? `&platform=${platform}` : ""}`, { headers }),
+                fetch(`${baseUrl}/analyticsRevenueByCountry?days=${days}${platform ? `&platform=${platform}` : ""}`, { headers }),
             ]);
 
             // Parse HTTP responses
-            const [revenue, retention, events, products, devices] = await Promise.all([
+            const [revenue, retention, events, products, devices, countryRevenue] = await Promise.all([
                 revenueRes.ok ? revenueRes.json() : null,
                 retentionRes.ok ? retentionRes.json() : null,
                 eventsRes.ok ? eventsRes.json() : null,
                 productsRes.ok ? productsRes.json() : null,
                 devicesRes.ok ? devicesRes.json() : null,
+                countryRevenueRes.ok ? countryRevenueRes.json() : null,
             ]);
 
             // Set state from callable function results
@@ -208,6 +235,7 @@ export default function AnalyticsPage() {
             setEventsData(events?.data || []);
             setProductData(products?.data || []);
             setDevicesData(devices);
+            setCountryRevenueData(countryRevenue?.topByArpu || []);
             setLoading(false);
         } catch (err: any) {
             console.error("Error fetching analytics:", err);
@@ -287,31 +315,33 @@ export default function AnalyticsPage() {
                 />
 
                 <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                    {/* Filters Bar */}
-                    <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-                        {/* Tabs */}
-                        <div className="flex gap-2">
-                            {tabs.map((tab) => (
-                                <button
-                                    key={tab.id}
-                                    onClick={() => setActiveTab(tab.id)}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === tab.id
-                                        ? "bg-blue-600 text-white shadow-lg"
-                                        : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-                                        }`}
-                                >
-                                    {tab.icon} {tab.label}
-                                </button>
-                            ))}
+                    {/* Filters Bar - Mobile Responsive */}
+                    <div className="flex flex-col gap-4 mb-6">
+                        {/* Tabs - Horizontally scrollable on mobile */}
+                        <div className="overflow-x-auto -mx-4 px-4 pb-2 scrollbar-hide">
+                            <div className="flex gap-2 min-w-max">
+                                {tabs.map((tab) => (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => setActiveTab(tab.id)}
+                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${activeTab === tab.id
+                                            ? "bg-blue-600 text-white shadow-lg"
+                                            : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                                            }`}
+                                    >
+                                        {tab.icon} {tab.label}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
 
-                        {/* Filters */}
+                        {/* Filters - Wrap on mobile */}
                         <div className="flex items-center gap-3 flex-wrap">
                             {/* Date Range */}
                             <select
                                 value={dateRange}
                                 onChange={(e) => setDateRange(e.target.value as DateRange)}
-                                className="bg-gray-800 border border-gray-600 text-white text-sm rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                                className="bg-gray-800 border border-gray-600 text-white text-sm rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 flex-1 sm:flex-none min-w-[120px]"
                             >
                                 <option value="1">Today</option>
                                 <option value="7">Last 7 Days</option>
@@ -327,7 +357,7 @@ export default function AnalyticsPage() {
                             <select
                                 value={platformFilter}
                                 onChange={(e) => setPlatformFilter(e.target.value as PlatformFilter)}
-                                className="bg-gray-800 border border-gray-600 text-white text-sm rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                                className="bg-gray-800 border border-gray-600 text-white text-sm rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 flex-1 sm:flex-none min-w-[120px]"
                             >
                                 <option value="all">All Platforms</option>
                                 <option value="Android">🤖 Android</option>
@@ -337,7 +367,7 @@ export default function AnalyticsPage() {
                             <button
                                 onClick={fetchAnalytics}
                                 disabled={loading}
-                                className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition"
+                                className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition flex-shrink-0"
                             >
                                 {loading ? "Loading..." : "🔄 Refresh"}
                             </button>
@@ -383,6 +413,7 @@ export default function AnalyticsPage() {
                                 <RevenueTab
                                     revenueMetrics={revenueMetrics}
                                     productData={productData}
+                                    countryRevenueData={countryRevenueData}
                                     COLORS={COLORS}
                                 />
                             )}
@@ -496,6 +527,116 @@ const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
     'Istanbul': { lat: 41.01, lng: 28.98 },
     'Moscow': { lat: 55.76, lng: 37.62 },
     'St. Petersburg': { lat: 59.93, lng: 30.34 },
+    // Additional US cities (cloud/data center locations)
+    'Boardman': { lat: 45.84, lng: -119.70 },
+    'Ashburn': { lat: 39.04, lng: -77.49 },
+    'San Jose': { lat: 37.34, lng: -121.89 },
+    'Portland': { lat: 45.52, lng: -122.68 },
+    'Las Vegas': { lat: 36.17, lng: -115.14 },
+    'Salt Lake City': { lat: 40.76, lng: -111.89 },
+    'Columbus': { lat: 39.96, lng: -83.00 },
+    'Charlotte': { lat: 35.23, lng: -80.84 },
+    'Minneapolis': { lat: 44.98, lng: -93.27 },
+    'Detroit': { lat: 42.33, lng: -83.05 },
+    'Philadelphia': { lat: 39.95, lng: -75.17 },
+    'San Diego': { lat: 32.72, lng: -117.16 },
+    'Austin': { lat: 30.27, lng: -97.74 },
+    'Nashville': { lat: 36.16, lng: -86.78 },
+    'Raleigh': { lat: 35.78, lng: -78.64 },
+    'Orlando': { lat: 28.54, lng: -81.38 },
+    'Pittsburgh': { lat: 40.44, lng: -79.99 },
+    'Cleveland': { lat: 41.50, lng: -81.69 },
+    'Kansas City': { lat: 39.10, lng: -94.58 },
+    'St. Louis': { lat: 38.63, lng: -90.20 },
+    'Indianapolis': { lat: 39.77, lng: -86.16 },
+    'Cincinnati': { lat: 39.10, lng: -84.51 },
+    'Milwaukee': { lat: 43.04, lng: -87.91 },
+    'Tampa': { lat: 27.95, lng: -82.46 },
+    'Sacramento': { lat: 38.58, lng: -121.49 },
+    'Omaha': { lat: 41.26, lng: -95.94 },
+    // Additional international cities
+    'Frankfurt': { lat: 50.11, lng: 8.68 },
+    'Montreal': { lat: 45.50, lng: -73.57 },
+    'Calgary': { lat: 51.05, lng: -114.07 },
+    'Edmonton': { lat: 53.55, lng: -113.49 },
+    'Ottawa': { lat: 45.42, lng: -75.70 },
+    'Manchester': { lat: 53.48, lng: -2.24 },
+    'Birmingham': { lat: 52.49, lng: -1.90 },
+    'Leeds': { lat: 53.80, lng: -1.55 },
+    'Glasgow': { lat: 55.86, lng: -4.25 },
+    'Edinburgh': { lat: 55.95, lng: -3.19 },
+    'Lyon': { lat: 45.76, lng: 4.84 },
+    'Marseille': { lat: 43.30, lng: 5.37 },
+    'Hamburg': { lat: 53.55, lng: 9.99 },
+    'Osaka': { lat: 34.69, lng: 135.50 },
+    'Nagoya': { lat: 35.18, lng: 136.91 },
+    'Fukuoka': { lat: 33.59, lng: 130.40 },
+    'Busan': { lat: 35.18, lng: 129.08 },
+    'Guangzhou': { lat: 23.13, lng: 113.26 },
+    'Shenzhen': { lat: 22.54, lng: 114.06 },
+    'Chengdu': { lat: 30.57, lng: 104.07 },
+    'Hyderabad': { lat: 17.39, lng: 78.49 },
+    'Chennai': { lat: 13.08, lng: 80.27 },
+    'Kolkata': { lat: 22.57, lng: 88.36 },
+    'Pune': { lat: 18.52, lng: 73.86 },
+    'Ahmedabad': { lat: 23.02, lng: 72.57 },
+};
+
+// Country centroid coordinates for fallback when city is not found
+const COUNTRY_COORDS: Record<string, { lat: number; lng: number }> = {
+    'United States': { lat: 37.09, lng: -95.71 },
+    'Australia': { lat: -25.27, lng: 133.78 },
+    'United Kingdom': { lat: 55.38, lng: -3.44 },
+    'Canada': { lat: 56.13, lng: -106.35 },
+    'Germany': { lat: 51.17, lng: 10.45 },
+    'France': { lat: 46.23, lng: 2.21 },
+    'Japan': { lat: 36.20, lng: 138.25 },
+    'South Korea': { lat: 35.91, lng: 127.77 },
+    'China': { lat: 35.86, lng: 104.20 },
+    'India': { lat: 20.59, lng: 78.96 },
+    'Brazil': { lat: -14.24, lng: -51.93 },
+    'Mexico': { lat: 23.63, lng: -102.55 },
+    'Russia': { lat: 61.52, lng: 105.32 },
+    'Spain': { lat: 40.46, lng: -3.75 },
+    'Italy': { lat: 41.87, lng: 12.57 },
+    'Netherlands': { lat: 52.13, lng: 5.29 },
+    'Sweden': { lat: 60.13, lng: 18.64 },
+    'Norway': { lat: 60.47, lng: 8.47 },
+    'Finland': { lat: 61.92, lng: 25.75 },
+    'Denmark': { lat: 56.26, lng: 9.50 },
+    'Poland': { lat: 51.92, lng: 19.15 },
+    'Turkey': { lat: 38.96, lng: 35.24 },
+    'Indonesia': { lat: -0.79, lng: 113.92 },
+    'Philippines': { lat: 12.88, lng: 121.77 },
+    'Thailand': { lat: 15.87, lng: 100.99 },
+    'Vietnam': { lat: 14.06, lng: 108.28 },
+    'Malaysia': { lat: 4.21, lng: 101.98 },
+    'Singapore': { lat: 1.35, lng: 103.82 },
+    'New Zealand': { lat: -40.90, lng: 174.89 },
+    'Argentina': { lat: -38.42, lng: -63.62 },
+    'Chile': { lat: -35.68, lng: -71.54 },
+    'Colombia': { lat: 4.57, lng: -74.30 },
+    'Peru': { lat: -9.19, lng: -75.02 },
+    'South Africa': { lat: -30.56, lng: 22.94 },
+    'Egypt': { lat: 26.82, lng: 30.80 },
+    'Nigeria': { lat: 9.08, lng: 8.68 },
+    'Kenya': { lat: -0.02, lng: 37.91 },
+    'Saudi Arabia': { lat: 23.89, lng: 45.08 },
+    'United Arab Emirates': { lat: 23.42, lng: 53.85 },
+    'Israel': { lat: 31.05, lng: 34.85 },
+    'Ireland': { lat: 53.14, lng: -7.69 },
+    'Switzerland': { lat: 46.82, lng: 8.23 },
+    'Austria': { lat: 47.52, lng: 14.55 },
+    'Belgium': { lat: 50.50, lng: 4.47 },
+    'Portugal': { lat: 39.40, lng: -8.22 },
+    'Greece': { lat: 39.07, lng: 21.82 },
+    'Czech Republic': { lat: 49.82, lng: 15.47 },
+    'Romania': { lat: 45.94, lng: 24.97 },
+    'Ukraine': { lat: 48.38, lng: 31.17 },
+    'Pakistan': { lat: 30.38, lng: 69.35 },
+    'Bangladesh': { lat: 23.68, lng: 90.36 },
+    'Taiwan': { lat: 23.70, lng: 120.96 },
+    'Hong Kong': { lat: 22.32, lng: 114.17 },
 };
 
 
@@ -626,11 +767,23 @@ function WorldMapSVG({ usersByCity, activeUsers }: { usersByCity: { city: string
 
                         {/* City dots based on user activity */}
                         {usersByCity.map((cityData) => {
-                            const coords = CITY_COORDS[cityData.city];
-                            if (!coords) return null;
+                            // Try city coordinates first, then fall back to country coordinates
+                            let coords = CITY_COORDS[cityData.city];
+                            let isCountryFallback = false;
+
+                            if (!coords) {
+                                coords = COUNTRY_COORDS[cityData.country];
+                                isCountryFallback = true;
+                            }
+
+                            // Skip if we still don't have coordinates
+                            if (!coords) {
+                                console.log(`[WorldMap] No coordinates found for city: ${cityData.city}, country: ${cityData.country}`);
+                                return null;
+                            }
 
                             const svgCoords = latLngToSvg(coords.lat, coords.lng);
-                            const size = Math.max(6, (cityData.users / maxUsers) * 14 + 6);
+                            const size = Math.max(8, (cityData.users / maxUsers) * 16 + 8);
 
                             return (
                                 <g key={`${cityData.city}-${cityData.country}`}>
@@ -732,8 +885,8 @@ function LiveTab({ realtimeData, lastUpdate, onRefresh }: { realtimeData: Realti
     return (
         <>
             {/* Live Header */}
-            <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+                <div className="flex items-center gap-3 flex-wrap">
                     <span className="relative flex h-3 w-3">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                         <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
@@ -743,15 +896,15 @@ function LiveTab({ realtimeData, lastUpdate, onRefresh }: { realtimeData: Realti
                 </div>
                 <button
                     onClick={onRefresh}
-                    className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm transition"
+                    className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm transition self-start sm:self-auto"
                 >
                     🔄 Refresh Now
                 </button>
             </div>
 
-            {/* World Map with Active Users Overlay */}
+            {/* Interactive World Map with Active Users Overlay */}
             <ChartCard title="🌍 Users Around the World">
-                <WorldMapSVG usersByCity={realtimeData.usersByCity} activeUsers={realtimeData.activeUsers} />
+                <InteractiveWorldMap usersByCity={realtimeData.usersByCity} activeUsers={realtimeData.activeUsers} />
             </ChartCard>
 
             {/* World Map Visualization - Country Breakdown */}
@@ -912,7 +1065,7 @@ function OverviewTab({ metrics, growthData, platformData, COLORS }: { metrics: O
     );
 }
 
-function RevenueTab({ revenueMetrics, productData, COLORS }: { revenueMetrics: RevenueMetrics | null; productData: ProductData[]; COLORS: string[] }) {
+function RevenueTab({ revenueMetrics, productData, countryRevenueData, COLORS }: { revenueMetrics: RevenueMetrics | null; productData: ProductData[]; countryRevenueData: CountryRevenueData[]; COLORS: string[] }) {
     if (!revenueMetrics) {
         return (
             <div className="bg-yellow-900/30 border border-yellow-700/50 rounded-xl p-8">
@@ -962,7 +1115,7 @@ function RevenueTab({ revenueMetrics, productData, COLORS }: { revenueMetrics: R
             </div>
 
             {/* Revenue Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                 <ChartCard title="Revenue Over Time">
                     <ResponsiveContainer width="100%" height={300}>
                         <LineChart data={revenueMetrics.revenueOverTime}>
@@ -1011,6 +1164,89 @@ function RevenueTab({ revenueMetrics, productData, COLORS }: { revenueMetrics: R
                     )}
                 </ChartCard>
             </div>
+
+            {/* Country Revenue Breakdown - New Section */}
+            <ChartCard title="🌍 Revenue by Country (Top Spending Markets)">
+                {countryRevenueData.length > 0 ? (
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                            <thead>
+                                <tr className="border-b border-gray-700 text-gray-400 text-left">
+                                    <th className="pb-3 font-medium">Country</th>
+                                    <th className="pb-3 font-medium text-right">Revenue</th>
+                                    <th className="pb-3 font-medium text-right">Users</th>
+                                    <th className="pb-3 font-medium text-right">
+                                        <span className="text-blue-400">ARPU</span>
+                                    </th>
+                                    <th className="pb-3 font-medium text-right">
+                                        <span className="text-purple-400">ARPPU</span>
+                                    </th>
+                                    <th className="pb-3 font-medium text-right">Conversion</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {countryRevenueData.slice(0, 12).map((country, index) => (
+                                    <tr key={country.country} className={`border-b border-gray-800 ${index < 3 ? 'bg-gradient-to-r from-green-900/20 to-transparent' : ''}`}>
+                                        <td className="py-3 flex items-center gap-2">
+                                            {index < 3 && <span className="text-xs">🔥</span>}
+                                            <span className="text-white font-medium">{country.country}</span>
+                                        </td>
+                                        <td className="py-3 text-right text-green-400 font-medium">
+                                            ${country.revenue.toLocaleString()}
+                                        </td>
+                                        <td className="py-3 text-right text-gray-300">
+                                            {country.users.toLocaleString()}
+                                        </td>
+                                        <td className="py-3 text-right">
+                                            <span className={`font-bold ${country.arpu > 0.1 ? 'text-blue-400' : 'text-gray-500'}`}>
+                                                ${country.arpu.toFixed(2)}
+                                            </span>
+                                        </td>
+                                        <td className="py-3 text-right">
+                                            <span className={`font-bold ${country.arppu > 1 ? 'text-purple-400' : 'text-gray-500'}`}>
+                                                ${country.arppu.toFixed(2)}
+                                            </span>
+                                        </td>
+                                        <td className="py-3 text-right">
+                                            <span className={`${country.conversionRate > 5 ? 'text-green-400' : country.conversionRate > 2 ? 'text-yellow-400' : 'text-gray-500'}`}>
+                                                {country.conversionRate.toFixed(1)}%
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+
+                        {/* Insights Section */}
+                        <div className="mt-6 p-4 bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded-xl border border-purple-700/30">
+                            <h4 className="text-sm font-semibold text-purple-300 mb-3">💡 Ad Targeting Insights</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                <div className="bg-gray-900/50 rounded-lg p-3 border border-gray-700/50">
+                                    <p className="text-gray-400 mb-1">Highest ARPU Markets</p>
+                                    <p className="text-white font-medium">
+                                        {countryRevenueData.slice(0, 3).map(c => c.country).join(', ')}
+                                    </p>
+                                    <p className="text-xs text-blue-400 mt-1">Focus ad spend on these high-value regions</p>
+                                </div>
+                                <div className="bg-gray-900/50 rounded-lg p-3 border border-gray-700/50">
+                                    <p className="text-gray-400 mb-1">Best Conversion Markets</p>
+                                    <p className="text-white font-medium">
+                                        {[...countryRevenueData].sort((a, b) => b.conversionRate - a.conversionRate).slice(0, 3).map(c => c.country).join(', ')}
+                                    </p>
+                                    <p className="text-xs text-green-400 mt-1">Users in these markets are more likely to purchase</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="flex items-center justify-center h-[200px] text-gray-500">
+                        <div className="text-center">
+                            <p>No country revenue data available yet</p>
+                            <p className="text-xs text-gray-600 mt-1">Data will appear once purchases are made</p>
+                        </div>
+                    </div>
+                )}
+            </ChartCard>
         </>
     );
 }

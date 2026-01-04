@@ -7,7 +7,10 @@
             "ts"
           ],
           ".read": "auth != null",
-          ".write": false
+          ".write": false,
+          "$messageId": {
+            ".read": "auth != null"
+          }
         }
       },
       "global": {

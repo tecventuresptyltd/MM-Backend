@@ -4,6 +4,7 @@ import * as logger from "firebase-functions/logger";
 import { REGION } from "../shared/region.js";
 import { db } from "../shared/firestore.js";
 import { MainOffer } from "../shared/types.js";
+import { callableOptions } from "../shared/callableOptions.js";
 import {
     OFFER_VALIDITY_MS,
     normaliseActiveOffers,
@@ -246,11 +247,10 @@ export const offerSafetyNetJob = onSchedule(
  * IMPORTANT: Only callable by authenticated users (add admin check if needed)
  */
 export const runOfferSafetyNet = onCall(
-    {
-        region: REGION,
+    callableOptions({
         timeoutSeconds: 540,
         memory: "512MiB",
-    },
+    }),
     async (request) => {
         const uid = request.auth?.uid;
         if (!uid) {

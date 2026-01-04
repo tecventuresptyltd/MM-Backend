@@ -30,6 +30,10 @@
     {
       "instance": "mystic-motors-sandbox-default-rtdb",
       "rules": "database.rules.json"
+    },
+    {
+      "instance": "mystic-motors-prod-default-rtdb",
+      "rules": "database.rules.json"
     }
   ],
   "emulators": {

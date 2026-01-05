@@ -15,6 +15,45 @@ import { ensureOp } from "../shared/idempotency.js";
 const db = admin.firestore();
 const MAX_SPELL_LEVEL = 5;
 
+// --- Spell Upgrade Costs Config Loader ---
+let cachedUpgradeCosts: { data: Record<string, number>; lastFetched: number } | null = null;
+
+/**
+ * Fetches the default spell upgrade costs configuration from Firestore.
+ * Returns a map of target level -> token cost.
+ * Falls back to 1 token per level if config is missing.
+ */
+async function getSpellUpgradeCosts(): Promise<Record<string, number>> {
+  const now = Date.now();
+  const CACHE_TTL_MS = 60 * 1000; // 60 seconds
+
+  if (cachedUpgradeCosts && now - cachedUpgradeCosts.lastFetched < CACHE_TTL_MS) {
+    return cachedUpgradeCosts.data;
+  }
+
+  try {
+    const doc = await db.doc("/GameData/v1/config/SpellUpgradeCosts").get();
+    if (!doc.exists) {
+      console.warn("[SpellUpgrade] SpellUpgradeCosts config not found, using fallback of 1 token per level");
+      const fallback = { "1": 1, "2": 1, "3": 1, "4": 1, "5": 1 };
+      cachedUpgradeCosts = { data: fallback, lastFetched: now };
+      return fallback;
+    }
+
+    const data = doc.data()?.defaultCosts ?? {};
+    cachedUpgradeCosts = { data, lastFetched: now };
+    return data;
+  } catch (error) {
+    console.error("[SpellUpgrade] Failed to load SpellUpgradeCosts config:", error);
+    // Return cached data if available, otherwise use fallback
+    if (cachedUpgradeCosts) {
+      return cachedUpgradeCosts.data;
+    }
+    return { "1": 1, "2": 1, "3": 1, "4": 1, "5": 1 };
+  }
+}
+
+
 const normaliseSpellLevels = (
   rawLevels: Record<string, unknown> | undefined,
 ): { map: Record<string, Record<string, unknown>>; maxLevel: number } => {
@@ -325,10 +364,10 @@ export const upgradeSpell = onCall(callableOptions({}, true), async (request) =>
         0,
       );
 
-      // If no cost is specified in config, use default cost logic
+      // If no cost is specified in spell-specific config, use global config
       if (!Number.isFinite(rawTokenCost) || rawTokenCost <= 0) {
-        // Both unlocking and upgrading spells cost 1 spell token
-        rawTokenCost = 1;
+        const upgradeCosts = await getSpellUpgradeCosts();
+        rawTokenCost = Number(upgradeCosts[String(nextLevel)] ?? 1);
       }
 
       const cost = Number.isFinite(rawTokenCost) && rawTokenCost > 0 ? rawTokenCost : 0;

@@ -1,0 +1,16 @@
+{
+    "path": "/GameData/v1/config/SpellUpgradeCosts",
+    "data": {
+        "version": "v1",
+        "defaultCosts": {
+            "1": 1,
+            "2": 2,
+            "3": 3,
+            "4": 4,
+            "5": 5
+        },
+        "description": "Cost in spell tokens to upgrade to each level. Key = target level, Value = token cost.",
+        "updatedAt": 1736078400000,
+        "createdAt": 1736078400000
+    }
+}

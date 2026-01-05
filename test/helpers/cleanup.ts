@@ -54,6 +54,26 @@ const seedReferralConfigFixture = async (): Promise<void> => {
   );
 };
 
+const seedSpellUpgradeCostsFixture = async (): Promise<void> => {
+  const ref = admin.firestore().doc("/GameData/v1/config/SpellUpgradeCosts");
+  await ref.set(
+    {
+      version: "v1",
+      defaultCosts: {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4,
+        "5": 5,
+      },
+      description: "Cost in spell tokens to upgrade to each level. Key = target level, Value = token cost.",
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    },
+    { merge: true },
+  );
+};
+
 let catalogSeedPromise: Promise<void> | null = null;
 
 export const ensureCatalogsSeeded = async (): Promise<void> => {
@@ -63,6 +83,7 @@ export const ensureCatalogsSeeded = async (): Promise<void> => {
     catalogSeedPromise = seedGameDataCatalogs()
       .then(async () => {
         await seedReferralConfigFixture();
+        await seedSpellUpgradeCostsFixture();
       })
       .catch((error) => {
         catalogSeedPromise = null;

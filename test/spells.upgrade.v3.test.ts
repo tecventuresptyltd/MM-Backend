@@ -73,7 +73,7 @@ describe("upgradeSpell (v3)", () => {
 
     expect(response.success).toBe(true);
     expect(response.newLevel).toBe(1);
-    expect(response.spentTokens).toBe(0);
+    expect(response.spentTokens).toBe(1); // 1 token to unlock (0 → 1)
 
     const spellsDoc = await admin
       .firestore()
@@ -139,10 +139,42 @@ describe("upgradeSpell (v3)", () => {
 
     expect(response.success).toBe(true);
     expect(response.newLevel).toBe(2);
-    expect(response.spentTokens).toBe(fixture.levelTwoCost);
+    expect(response.spentTokens).toBe(2); // 2 tokens for level 2 upgrade (1 → 2)
 
     const updatedEconomy = await economyRef.get();
-    expect(Number(updatedEconomy.data()?.spellTokens ?? 0)).toBe(10);
+    const expectedRemaining = (2 + 10) - 2; // Started with 12, spent 2
+    expect(Number(updatedEconomy.data()?.spellTokens ?? 0)).toBe(expectedRemaining);
+  });
+
+  it("deducts 3 spell tokens on level 2 → 3 upgrade", async () => {
+    const profileRef = admin.firestore().doc(`Players/${uid}/Profile/Profile`);
+    const economyRef = admin.firestore().doc(`Players/${uid}/Economy/Stats`);
+    const spellsRef = admin.firestore().doc(`Players/${uid}/Spells/Levels`);
+
+    await Promise.all([
+      profileRef.set({ level: Math.max(10, fixture.catalogEntry.requiredLevel ?? 0) }, { merge: true }),
+      economyRef.set({ spellTokens: 10 }, { merge: true }),
+      spellsRef.set(
+        {
+          levels: { [fixture.spellId]: 2 },
+          unlockedAt: { [fixture.spellId]: admin.firestore.FieldValue.serverTimestamp() },
+        },
+        { merge: true },
+      ),
+    ]);
+
+    const wrapped = wrapCallable(upgradeSpell);
+    const response = await wrapped({
+      data: { opId: `upgrade-to-3-${Date.now()}`, spellId: fixture.spellId },
+      ...authContext(uid),
+    });
+
+    expect(response.success).toBe(true);
+    expect(response.newLevel).toBe(3);
+    expect(response.spentTokens).toBe(3); // 3 tokens for level 3 upgrade (2 → 3)
+
+    const updatedEconomy = await economyRef.get();
+    expect(Number(updatedEconomy.data()?.spellTokens ?? 0)).toBe(7); // 10 - 3 = 7
   });
 
   it("prevents upgrades when spell tokens are insufficient", async () => {
@@ -152,7 +184,7 @@ describe("upgradeSpell (v3)", () => {
 
     await Promise.all([
       profileRef.set({ level: Math.max(10, fixture.catalogEntry.requiredLevel ?? 0) }, { merge: true }),
-      economyRef.set({ spellTokens: Math.max(0, fixture.levelTwoCost - 1) }, { merge: true }),
+      economyRef.set({ spellTokens: 1 }, { merge: true }), // Only 1 token, need 2 for level 2
       spellsRef.set({ levels: { [fixture.spellId]: 1 } }, { merge: true }),
     ]);
 
@@ -292,8 +324,8 @@ function orderSpellEntries(
         typeof spell.displayName === "string"
           ? spell.displayName
           : typeof spell.i18n?.en === "string"
-          ? spell.i18n.en
-          : id;
+            ? spell.i18n.en
+            : id;
       return { id, requiredLevel, isDefault, name };
     })
     .sort((a, b) => {

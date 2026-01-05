@@ -22,6 +22,8 @@ async function seedCatalogs() {
     const seedFile = path.join(seedsRoot, 'gameDataCatalogs.v3.normalized.json');
     const botNamesSeedFile = path.join(seedsRoot, 'BotNamesConfig.json');
     const botConfigSeedFile = path.join(seedsRoot, 'BotConfig.json');
+    const spellUpgradeCostsSeedFile = path.join(seedsRoot, 'SpellUpgradeCosts.json');
+    const carTuningConfigSeedFile = path.join(seedsRoot, 'CarTuningConfig.json');
 
     if (!fs.existsSync(seedFile)) {
         console.error('❌ Seed file not found:', seedFile);
@@ -45,6 +47,22 @@ async function seedCatalogs() {
         const botConfigDoc = JSON.parse(fs.readFileSync(botConfigSeedFile, 'utf-8'));
         if (botConfigDoc && typeof botConfigDoc === 'object') {
             seedData.push(botConfigDoc);
+        }
+    }
+
+    // Add SpellUpgradeCosts if it exists
+    if (fs.existsSync(spellUpgradeCostsSeedFile)) {
+        const spellUpgradeCostsDoc = JSON.parse(fs.readFileSync(spellUpgradeCostsSeedFile, 'utf-8'));
+        if (spellUpgradeCostsDoc && typeof spellUpgradeCostsDoc === 'object') {
+            seedData.push(spellUpgradeCostsDoc);
+        }
+    }
+
+    // Add CarTuningConfig if it exists
+    if (fs.existsSync(carTuningConfigSeedFile)) {
+        const carTuningConfigDoc = JSON.parse(fs.readFileSync(carTuningConfigSeedFile, 'utf-8'));
+        if (carTuningConfigDoc && typeof carTuningConfigDoc === 'object') {
+            seedData.push(carTuningConfigDoc);
         }
     }
 

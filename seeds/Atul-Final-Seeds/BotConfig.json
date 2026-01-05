@@ -3,7 +3,7 @@
   "data": {
     "statRanges": {
       "aiSpeed": {
-        "min": 145,
+        "min": 130,
         "max": 600
       },
       "aiBoostPower": {
@@ -11,7 +11,7 @@
         "max": 0.30
       },
       "aiAcceleration": {
-        "min": 4,
+        "min": 2,
         "max": 15
       },
       "endGameDifficulty": 100

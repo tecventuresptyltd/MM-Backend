@@ -5,11 +5,10 @@ import { useRouter } from "next/navigation";
 import AuthGuard from "@/components/AuthGuard";
 import PageHeader from "@/components/PageHeader";
 import { useFirebase, useProductionConfirm } from "@/lib/FirebaseContext";
-import { doc, getDoc } from "firebase/firestore";
 
 export default function VersionPage() {
     const router = useRouter();
-    const { db, callFunction, isProd } = useFirebase();
+    const { functions, callFunction, isProd } = useFirebase();
     const confirmProd = useProductionConfirm();
     const [loading, setLoading] = useState(false);
     const [currentVersion, setCurrentVersion] = useState("");
@@ -20,41 +19,45 @@ export default function VersionPage() {
     const [versionHistory, setVersionHistory] = useState<any[]>([]);
 
     useEffect(() => {
-        loadCurrentVersion();
-        loadVersionHistory();
-    }, []);
+        if (functions) {
+            loadCurrentVersion();
+            loadVersionHistory();
+        }
+    }, [functions]);
 
     const loadCurrentVersion = async () => {
-        if (!db) return;
+        if (!callFunction) return;
         try {
-            const versionRef = doc(db, "GameConfig", "appVersion");
-            const versionDoc = await getDoc(versionRef);
+            console.log("[VersionStatus] Loading via Cloud Function...");
+            const result = await callFunction("getAdminVersionStatus", {});
+            const response = result.data as { exists: boolean; data: any };
+            console.log("[VersionStatus] Response:", response);
 
-            if (versionDoc.exists()) {
-                const data = versionDoc.data();
-                setCurrentVersion(data.minimumVersion || "Not set");
+            if (response && response.data) {
+                setCurrentVersion(response.data.minimumVersion || "Not set");
             } else {
                 setCurrentVersion("Not set");
             }
         } catch (err) {
-            console.error("Error loading version:", err);
+            console.error("[VersionStatus] Error loading version:", err);
             setCurrentVersion("Error loading");
         }
     };
 
     const loadVersionHistory = async () => {
-        if (!db) return;
+        if (!callFunction) return;
         try {
-            const { collection, query, orderBy, limit, getDocs } = await import("firebase/firestore");
-            const historyRef = collection(db, "GameConfig", "VersionHistory");
-            const q = query(historyRef, orderBy("changedAt", "desc"), limit(20));
-            const snapshot = await getDocs(q);
-            const history = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setVersionHistory(history);
+            console.log("[VersionHistory] Loading via Cloud Function...");
+            const result = await callFunction("getVersionHistory", { limit: 20 });
+            const response = result.data as { history: any[] };
+            console.log("[VersionHistory] Response:", response);
+
+            setVersionHistory(response?.history || []);
         } catch (err) {
-            console.error("Error loading version history:", err);
+            console.error("[VersionHistory] Error loading history:", err);
         }
     };
+
 
     const validateVersion = (version: string): boolean => {
         const versionRegex = /^\d+\.\d+\.\d+$/;

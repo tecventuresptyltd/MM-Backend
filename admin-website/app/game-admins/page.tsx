@@ -8,7 +8,7 @@ import { useFirebase, useProductionConfirm } from "@/lib/FirebaseContext";
 
 export default function GameAdminsPage() {
     const router = useRouter();
-    const { callFunction, isProd } = useFirebase();
+    const { functions, callFunction, isProd } = useFirebase();
     const confirmProd = useProductionConfirm();
     const [loading, setLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
@@ -18,10 +18,13 @@ export default function GameAdminsPage() {
     const [error, setError] = useState("");
 
     useEffect(() => {
-        loadCurrentAdmins();
-    }, []);
+        if (functions) {
+            loadCurrentAdmins();
+        }
+    }, [functions]);
 
     const loadCurrentAdmins = async () => {
+        if (!callFunction) return; // Wait for Firebase to be initialized
         try {
             const response = await callFunction("getGameAdmins", {});
             setCurrentAdmins(response.data?.admins || []);

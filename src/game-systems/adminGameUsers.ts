@@ -42,7 +42,7 @@ interface GetGameAdminsResponse {
  * Search for game users by username, email, or UID
  * Only accessible by Firebase admins
  */
-export const searchGameUsers = onCall(callableOptions(), async (request) => {
+export const searchGameUsers = onCall({ region: REGION, enforceAppCheck: false }, async (request) => {
     const { auth } = request;
 
     if (!auth) {
@@ -119,7 +119,7 @@ export const searchGameUsers = onCall(callableOptions(), async (request) => {
  * Set game admin status for a user
  * Only accessible by Firebase admins
  */
-export const setGameAdminStatus = onCall(callableOptions(), async (request) => {
+export const setGameAdminStatus = onCall({ region: REGION, enforceAppCheck: false }, async (request) => {
     const { auth } = request;
 
     if (!auth) {
@@ -169,7 +169,7 @@ export const setGameAdminStatus = onCall(callableOptions(), async (request) => {
  * Get list of all current game admins
  * Only accessible by Firebase admins
  */
-export const getGameAdmins = onCall(callableOptions(), async (request) => {
+export const getGameAdmins = onCall({ region: REGION, enforceAppCheck: false }, async (request) => {
     const { auth } = request;
 
     if (!auth) {

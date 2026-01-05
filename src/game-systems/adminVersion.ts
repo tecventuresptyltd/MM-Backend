@@ -27,7 +27,7 @@ function validateVersionFormat(version: string): boolean {
     return versionRegex.test(version);
 }
 
-export const setMinimumVersion = onCall(callableOptions(), async (request) => {
+export const setMinimumVersion = onCall({ region: REGION, enforceAppCheck: false }, async (request) => {
     const uid = request.auth?.uid;
 
     if (!uid) {

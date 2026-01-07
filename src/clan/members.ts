@@ -32,6 +32,7 @@ import {
   publishClanSystemMessages,
 } from "./chat.js";
 import { refreshPlayerLeaderboardSnapshots } from "../Socials/liveLeaderboard.js";
+import { refreshFriendSnapshots } from "../Socials/updateSnapshots.js";
 
 const { FieldValue } = admin.firestore;
 
@@ -349,6 +350,10 @@ export const joinClan = onCall(callableOptions({}, true), async (request) => {
 
   await publishClanSystemMessages(result.systemMessages ?? []);
   await refreshClanLeaderboardEntry(result.clanId);
+  // Sync friend snapshots so friends see the new clan info
+  await refreshFriendSnapshots(uid).catch((err) =>
+    logger.warn("Failed to refresh friend snapshots after joinClan", { uid, err })
+  );
   return { clanId: result.clanId };
 });
 
@@ -715,6 +720,14 @@ export const kickClanMember = onCall(callableOptions(), async (request) => {
   );
 
   await publishClanSystemMessages(result.systemMessages ?? []);
+  // Refresh kicked player's leaderboard snapshots to clear clan info
+  await refreshPlayerLeaderboardSnapshots(targetUid).catch((err) =>
+    logger.warn("Failed to refresh leaderboard snapshots for kicked player", { targetUid, err })
+  );
+  // Sync friend snapshots so the kicked player's friends see they left the clan
+  await refreshFriendSnapshots(targetUid).catch((err) =>
+    logger.warn("Failed to refresh friend snapshots for kicked player", { targetUid, err })
+  );
   return { clanId: result.clanId };
 });
 
@@ -997,6 +1010,10 @@ export const leaveClan = onCall(callableOptions(), async (request) => {
   }
   await refreshClanLeaderboardEntry(result.clanId);
   await refreshPlayerLeaderboardSnapshots(uid);
+  // Sync friend snapshots so friends see the player left the clan
+  await refreshFriendSnapshots(uid).catch((err) =>
+    logger.warn("Failed to refresh friend snapshots after leaveClan", { uid, err })
+  );
 
   return { clanId: result.clanId };
 });

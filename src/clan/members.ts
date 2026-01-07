@@ -395,10 +395,11 @@ export const promoteClanMember = onCall(callableOptions(), async (request) => {
     "promoteClanMember",
     async (transaction) => {
       const systemMessages: PendingClanSystemMessage[] = [];
-      const [clanSnap, actorSnap, targetSnap] = await Promise.all([
+      const [clanSnap, actorSnap, targetSnap, targetStateSnap] = await Promise.all([
         transaction.get(clanDocRef),
         transaction.get(actorMemberRef),
         transaction.get(targetMemberRef),
+        transaction.get(playerClanStateRef(targetUid)),
       ]);
       if (!clanSnap.exists) {
         throw new HttpsError("not-found", "Clan not found.");
@@ -422,6 +423,14 @@ export const promoteClanMember = onCall(callableOptions(), async (request) => {
         rolePriority: rolePriority(desiredRole),
         lastPromotedAt: now,
       });
+
+        // Update Socials doc with new role
+        const prevState = targetStateSnap.exists ? targetStateSnap.data() ?? {} : {};
+        setPlayerClanState(transaction, targetUid, {
+          clanId,
+          role: desiredRole,
+          joinedAt: prevState.joinedAt ?? now,
+        });
 
       const targetAuthor = buildAuthorFromMemberDoc(targetUid, targetSnap.data());
       const roleLabel = formatRoleLabel(desiredRole);
@@ -488,10 +497,11 @@ export const demoteClanMember = onCall(callableOptions(), async (request) => {
     "demoteClanMember",
     async (transaction) => {
       const systemMessages: PendingClanSystemMessage[] = [];
-      const [clanSnap, actorSnap, targetSnap] = await Promise.all([
+      const [clanSnap, actorSnap, targetSnap, targetStateSnap] = await Promise.all([
         transaction.get(clanDocRef),
         transaction.get(actorMemberRef),
         transaction.get(targetMemberRef),
+        transaction.get(playerClanStateRef(targetUid)),
       ]);
       if (!clanSnap.exists) {
         throw new HttpsError("not-found", "Clan not found.");
@@ -515,6 +525,14 @@ export const demoteClanMember = onCall(callableOptions(), async (request) => {
         rolePriority: rolePriority(desiredRole),
         lastPromotedAt: now,
       });
+
+        // Update Socials doc with new role
+        const prevState = targetStateSnap.exists ? targetStateSnap.data() ?? {} : {};
+        setPlayerClanState(transaction, targetUid, {
+          clanId,
+          role: desiredRole,
+          joinedAt: prevState.joinedAt ?? now,
+        });
 
       const targetAuthor = buildAuthorFromMemberDoc(targetUid, targetSnap.data());
       const roleLabel = formatRoleLabel(desiredRole);

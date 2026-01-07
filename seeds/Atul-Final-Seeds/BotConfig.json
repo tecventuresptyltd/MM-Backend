@@ -18,7 +18,7 @@
     },
     "performanceVariance": {
       "enabled": true,
-      "standardDeviation": 0.05,
+      "standardDeviation": 0.04,
       "description": "Absolute variance applied to bot aiLevel. 0.05 = ±5 points (1σ), ±10 points (2σ). Works consistently at all trophy levels including 0."
     },
     "carUnlockThresholds": [
@@ -85,40 +85,40 @@
     ],
     "cosmeticRarityWeights": {
       "0-999": {
-        "common": 85,
+        "common": 80,
         "rare": 14,
-        "epic": 1,
+        "epic": 6,
         "legendary": 0
       },
       "1000-1999": {
         "common": 70,
-        "rare": 22,
+        "rare": 20,
         "epic": 6,
-        "legendary": 2
+        "legendary": 4
       },
       "2000-2999": {
         "common": 60,
-        "rare": 25,
+        "rare": 20,
         "epic": 10,
-        "legendary": 5
+        "legendary": 10
       },
       "3000-4999": {
-        "common": 50,
-        "rare": 30,
-        "epic": 15,
-        "legendary": 5
+        "common": 40,
+        "rare": 20,
+        "epic": 20,
+        "legendary": 20
       },
       "5000-7000": {
-        "common": 40,
-        "rare": 35,
-        "epic": 18,
-        "legendary": 7
+        "common": 20,
+        "rare": 30,
+        "epic": 30,
+        "legendary": 20
       },
       "7001-99999": {
-        "common": 30,
-        "rare": 35,
-        "epic": 25,
-        "legendary": 10
+        "common": 10,
+        "rare": 20,
+        "epic": 40,
+        "legendary": 30
       }
     },
     "spellLevelBands": [

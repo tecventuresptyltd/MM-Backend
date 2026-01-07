@@ -12933,18 +12933,18 @@
           "displayName": "Overdrive",
           "type": "Powerup",
           "description": "The car is able to have unlimited nitros for a period of time",
-          "requiredLevel": 5,
+          "requiredLevel": 12,
           "isUnlocked": false,
           "attributes": [
             {
               "name": "Duration",
               "unit": "seconds",
               "values": [
+                2,
+                3,
                 4,
                 5,
-                6,
-                7,
-                8
+                6
               ]
             }
           ],
@@ -13070,7 +13070,7 @@
           "displayName": "Supersonic",
           "type": "Powerup",
           "description": "Turns the car into a jet for some time",
-          "requiredLevel": 3,
+          "requiredLevel": 5,
           "isUnlocked": false,
           "attributes": [
             {
@@ -13102,7 +13102,7 @@
           "displayName": "Tiny Terror",
           "type": "Powerup",
           "description": "Shrinks down the car and the car is able to demo other cars",
-          "requiredLevel": 10,
+          "requiredLevel": 20,
           "isUnlocked": false,
           "attributes": [
             {

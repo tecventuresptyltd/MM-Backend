@@ -35,6 +35,7 @@ import {
 import { pushClanSystemMessage } from "./chat.js";
 import { updateClanLeaderboardEntry } from "./liveLeaderboard.js";
 import { refreshPlayerLeaderboardSnapshots } from "../Socials/liveLeaderboard.js";
+import { refreshFriendSnapshots } from "../Socials/updateSnapshots.js";
 
 const db = admin.firestore();
 const { FieldValue } = admin.firestore;
@@ -235,6 +236,10 @@ export const createClan = onCall(callableOptions({}, true), async (request) => {
     logger.warn("Failed post-create clan leaderboard verification", { clanId: result.clanId, error });
   }
   await refreshPlayerLeaderboardSnapshots(uid);
+  // Sync friend snapshots so friends see the new clan info
+  await refreshFriendSnapshots(uid).catch((err) =>
+    logger.warn("Failed to refresh friend snapshots after createClan", { uid, err })
+  );
   return loadClanDetails(result.clanId, uid);
 });
 

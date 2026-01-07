@@ -34,6 +34,8 @@ import {
 } from "./chat.js";
 import { roomsCollection } from "../chat/rooms.js";
 import { maskProfanity } from "../shared/profanity.js";
+import { refreshFriendSnapshots } from "../Socials/updateSnapshots.js";
+import * as logger from "firebase-functions/logger";
 
 const { FieldValue } = admin.firestore;
 const CHAT_FETCH_LIMIT = 25;
@@ -575,6 +577,10 @@ export const acceptClanInvite = onCall(callableOptions({}, true), async (request
   );
 
   await publishClanSystemMessages(result.systemMessages ?? []);
+  // Sync friend snapshots so friends see the new clan info
+  await refreshFriendSnapshots(uid).catch((err) =>
+    logger.warn("Failed to refresh friend snapshots after acceptClanInvite", { uid, err })
+  );
   return { clanId: result.clanId };
 });
 

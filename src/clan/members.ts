@@ -1153,6 +1153,10 @@ export const acceptJoinRequest = onCall(callableOptions(), async (request) => {
   );
 
   await publishClanSystemMessages(result.systemMessages ?? []);
+  // Sync friend snapshots so the new member's friends see they joined a clan
+  await refreshFriendSnapshots(targetUid).catch((err) =>
+    logger.warn("Failed to refresh friend snapshots after acceptJoinRequest", { targetUid, err })
+  );
   return { clanId: result.clanId };
 });
 

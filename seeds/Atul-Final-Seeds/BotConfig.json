@@ -3,7 +3,7 @@
   "data": {
     "statRanges": {
       "aiSpeed": {
-        "min": 130,
+        "min": 115,
         "max": 600
       },
       "aiBoostPower": {
@@ -18,8 +18,8 @@
     },
     "performanceVariance": {
       "enabled": true,
-      "standardDeviation": 0.03,
-      "description": "Absolute variance applied to bot aiLevel. 0.03 = ±3 points (1σ), ±6 points (2σ). Works consistently at all trophy levels including 0."
+      "standardDeviation": 0.05,
+      "description": "Absolute variance applied to bot aiLevel. 0.05 = ±5 points (1σ), ±10 points (2σ). Works consistently at all trophy levels including 0."
     },
     "carUnlockThresholds": [
       {

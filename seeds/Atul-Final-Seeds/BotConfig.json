@@ -18,8 +18,8 @@
     },
     "performanceVariance": {
       "enabled": true,
-      "standardDeviation": 0.04,
-      "description": "Absolute variance applied to bot aiLevel. 0.05 = ±5 points (1σ), ±10 points (2σ). Works consistently at all trophy levels including 0."
+      "standardDeviation": 0.07,
+      "description": "Positive-only variance added to bot aiLevel. 0.07 = adds 0-7 points uniformly. Ensures consistent variance at all trophy levels."
     },
     "carUnlockThresholds": [
       {

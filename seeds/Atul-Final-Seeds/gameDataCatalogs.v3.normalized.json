@@ -12858,7 +12858,7 @@
           "displayName": "Fireball",
           "type": "TargetLock",
           "description": "Shoots a fireball at the target",
-          "requiredLevel": 20,
+          "requiredLevel": 30,
           "isUnlocked": false,
           "attributes": [
             {
@@ -12975,7 +12975,7 @@
           "displayName": "Phase Shift",
           "type": "Powerup",
           "description": "Exchanges players car position with the targeted opponoents car position (targets the player in front).",
-          "requiredLevel": 30,
+          "requiredLevel": 35,
           "isUnlocked": false,
           "attributes": [
             {
@@ -13028,7 +13028,7 @@
           "displayName": "Shockwave",
           "type": "AreaEffect",
           "description": "The car produces a supersonic blast around it and demolishes other cars around it",
-          "requiredLevel": 15,
+          "requiredLevel": 25,
           "isUnlocked": false,
           "attributes": [
             {

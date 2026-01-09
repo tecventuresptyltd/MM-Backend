@@ -409,19 +409,18 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
       const baseTrophyPercentage = normalizedTrophies / 7000;
       const baseAiLevel = baseTrophyPercentage * 100;
 
-      // Apply performance variance using normal distribution
+      // Apply performance variance using positive-only uniform distribution
       let finalAiLevel = baseAiLevel;
       if (performanceVariance.enabled) {
-        // Use absolute variance scaled by standardDeviation
-        // This ensures: (1) works at 0 trophies, (2) respects standardDeviation setting everywhere
-        // With σ=0.03: ±3 points (68%), ±6 points (95%)
-        // With σ=0.10: ±10 points (68%), ±20 points (95%)
-        const absoluteVariance = rng.normal(0, performanceVariance.standardDeviation * 100);
+        // Positive-only variance: adds 0 to (σ×100) points to base aiLevel
+        // This ensures consistent variance at ALL trophy levels (no clipping at 0 or 100)
+        // With σ=0.04: adds 0-4 points uniformly
+        // With σ=0.10: adds 0-10 points uniformly
+        const positiveVariance = rng.float(0, performanceVariance.standardDeviation * 100);
 
-        finalAiLevel = baseAiLevel + absoluteVariance;
+        finalAiLevel = baseAiLevel + positiveVariance;
 
-        // Clamp to valid range [0, 100]
-        finalAiLevel = Math.max(0, Math.min(100, finalAiLevel));
+        // Note: aiLevel can exceed 100 at high trophy counts - Unity interpolates accordingly
       }
 
       (botStats.real as any).aiLevel = Math.round(finalAiLevel * 100) / 100;

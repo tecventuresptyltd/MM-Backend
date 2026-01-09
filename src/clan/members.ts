@@ -195,6 +195,12 @@ const promoteNextLeader = async (
       lastPromotedAt: timestamp,
     });
     transaction.update(clanRef(clanId), { leaderUid: doc.id });
+    // Update Socials doc for new leader
+    setPlayerClanState(transaction, doc.id, {
+      clanId,
+      role: "leader",
+      joinedAt: data.joinedAt ?? timestamp,
+    });
     return { uid: doc.id, displayName: data.displayName ?? "Racer" };
   }
   return null;
@@ -613,11 +619,19 @@ export const transferClanLeadership = onCall(callableOptions(), async (request) 
         throw new HttpsError("permission-denied", "Only the leader can transfer leadership.");
       }
 
+
       transaction.update(targetRef, {
         role: "leader",
         rolePriority: rolePriority("leader"),
         lastPromotedAt: now,
       });
+      // Update Socials doc for new leader
+      setPlayerClanState(transaction, targetUid, {
+        clanId,
+        role: "leader",
+        joinedAt: targetSnap.data()?.joinedAt ?? now,
+      });
+
       transaction.update(leaderRef, {
         role: "coLeader",
         rolePriority: rolePriority("coLeader"),

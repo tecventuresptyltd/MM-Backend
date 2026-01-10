@@ -27,3 +27,6 @@ export const playerLoadoutRef = (uid: string) =>
 
 export const playerSpellDecksRef = (uid: string) =>
   db.collection("Players").doc(uid).collection("SpellDecks").doc("Decks");
+
+export const playerSpellLevelsRef = (uid: string) =>
+  db.collection("Players").doc(uid).collection("Spells").doc("Levels");

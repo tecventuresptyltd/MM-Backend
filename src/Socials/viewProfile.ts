@@ -4,6 +4,7 @@ import {
   playerProfileRef,
   playerLoadoutRef,
   playerSpellDecksRef,
+  playerSpellLevelsRef,
 } from "./refs.js";
 import { fetchClanSummary } from "./summary.js";
 
@@ -94,10 +95,11 @@ export const viewPlayerProfile = onCall(
     }
 
     const targetUid = sanitizeUid(request.data?.uid ?? request.data?.targetUid ?? callerUid);
-    const [profileSnap, loadoutSnap, spellDecksSnap] = await Promise.all([
+    const [profileSnap, loadoutSnap, spellDecksSnap, spellLevelsSnap] = await Promise.all([
       playerProfileRef(targetUid).get(),
       playerLoadoutRef(targetUid).get(),
       playerSpellDecksRef(targetUid).get(),
+      playerSpellLevelsRef(targetUid).get(),
     ]);
 
     if (!profileSnap.exists) {
@@ -107,6 +109,7 @@ export const viewPlayerProfile = onCall(
     const profileData = profileSnap.data() ?? {};
     const loadoutData = loadoutSnap.exists ? loadoutSnap.data() ?? {} : null;
     const spellDecksData = spellDecksSnap.exists ? spellDecksSnap.data() ?? {} : null;
+    const spellLevelsData = spellLevelsSnap.exists ? (spellLevelsSnap.data()?.levels ?? {}) : {};
     const activeSpellDeck = resolveActiveDeck(loadoutData, spellDecksData);
 
     const rawClanId = typeof profileData.clanId === "string" ? profileData.clanId.trim() : "";
@@ -155,6 +158,7 @@ export const viewPlayerProfile = onCall(
         clan,
         loadout: loadoutData,
         activeSpellDeck,
+        spellLevels: spellLevelsData,
       },
     };
   },

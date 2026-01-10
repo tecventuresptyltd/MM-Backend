@@ -104,7 +104,7 @@ interface CreateClanRequest {
   minimumTrophies?: number;
 }
 
-export const createClan = onCall(callableOptions({}, true), async (request) => {
+export const createClan = onCall(callableOptions({ cpu: 1, concurrency: 80 }, true), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as CreateClanRequest;
   const opId = requireOpId(payload.opId);
@@ -340,7 +340,7 @@ const syncClanIdentityToMemberProfiles = async (
   await commitBatch();
 };
 
-export const updateClanSettings = onCall(callableOptions(), async (request) => {
+export const updateClanSettings = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as UpdateClanSettingsRequest;
   const opId = requireOpId(payload.opId);
@@ -420,7 +420,7 @@ interface DeleteClanResponse {
   deleted: boolean;
 }
 
-export const deleteClan = onCall(callableOptions(), async (request) => {
+export const deleteClan = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as DeleteClanRequest;
   const opId = requireOpId(payload.opId);
@@ -593,7 +593,7 @@ const loadClanDetails = async (clanId: string, uid: string): Promise<ClanDetails
   };
 };
 
-export const getClanDetails = onCall(callableOptions({}, true), async (request) => {
+export const getClanDetails = onCall(callableOptions({ cpu: 1, concurrency: 80 }, true), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as GetClanDetailsRequest;
   if (typeof payload.clanId !== "string" || payload.clanId.trim().length === 0) {
@@ -602,7 +602,7 @@ export const getClanDetails = onCall(callableOptions({}, true), async (request) 
   return loadClanDetails(payload.clanId.trim(), uid);
 });
 
-export const getMyClanDetails = onCall(callableOptions({}, true), async (request) => {
+export const getMyClanDetails = onCall(callableOptions({ cpu: 1, concurrency: 80 }, true), async (request) => {
   const uid = assertAuthenticated(request);
   const stateSnap = await playerClanStateRef(uid).get();
   const clanId = stateSnap.data()?.clanId;
@@ -639,7 +639,7 @@ const clampLimit = (value?: unknown, fallback = 25, max = 50): number => {
   return parsed;
 };
 
-export const searchClans = onCall(callableOptions(), async (request) => {
+export const searchClans = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   assertAuthenticated(request);
   const payload = (request.data ?? {}) as SearchClansRequest;
   const limit = clampLimit(payload.limit);
@@ -690,7 +690,7 @@ interface GetClanLeaderboardRequest {
   location?: string;
 }
 
-export const getClanLeaderboard = onCall(callableOptions(), async (request) => {
+export const getClanLeaderboard = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   assertAuthenticated(request);
   const payload = (request.data ?? {}) as GetClanLeaderboardRequest;
   const limit = clampLimit(payload.limit, 25, 100);

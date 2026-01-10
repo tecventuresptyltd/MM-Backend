@@ -92,7 +92,7 @@ interface GetMinimumVersionResponse {
     updatedBy?: string;
 }
 
-export const getMinimumVersion = onCall(callableOptions(), async (request) => {
+export const getMinimumVersion = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
     const uid = request.auth?.uid;
 
     if (!uid) {
@@ -137,7 +137,7 @@ interface CheckAppVersionResponse {
  * Public function for game clients to check if they need to update
  * No authentication required - anyone can call this
  */
-export const checkAppVersion = onCall(callableOptions(), async (request) => {
+export const checkAppVersion = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
     const { clientVersion } = request.data as CheckAppVersionRequest;
 
     if (!clientVersion || typeof clientVersion !== "string") {

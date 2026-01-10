@@ -125,7 +125,7 @@ const normalizePoolEntries = (input: unknown): RecommendedClanPoolEntry[] => {
   return normalized;
 };
 
-export const getRecommendedClansPool = onCall(callableOptions(), async (request) => {
+export const getRecommendedClansPool = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   requireAuth(request);
   let snapshot = await recommendedClansDocRef().get();
   if (!snapshot.exists) {

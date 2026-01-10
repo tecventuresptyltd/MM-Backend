@@ -100,7 +100,7 @@ function weightedChoice<T extends string>(weights: Record<T, number>, rng: Seede
   return entries[entries.length - 1][0];
 }
 
-export const prepareRace = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "256MiB" }, true), async (request) => {
+export const prepareRace = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true), async (request) => {
   const uid = request.auth?.uid;
   if (!uid) throw new HttpsError("unauthenticated", "User must be authenticated.");
 

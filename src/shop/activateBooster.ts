@@ -107,7 +107,7 @@ const BOOSTER_DURATION_BY_PRICE: Record<BoosterSubType, Record<number, number>> 
   },
 };
 
-export const activateBooster = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "256MiB" }, true), async (request) => {
+export const activateBooster = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true), async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "User must be authenticated.");

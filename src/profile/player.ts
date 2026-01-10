@@ -32,13 +32,13 @@ const TUTORIAL_REWARD_TROPHIES = 10;
 const TUTORIAL_SPELL_ID = "spell_2382r2jk"; // Ice Lock
 const TUTORIAL_SPELL_TARGET_LEVEL = 2;
 
-export const checkUsernameAvailable = onCall(callableOptions(), async (request) => {
+export const checkUsernameAvailable = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   const { username } = request.data;
   const isAvailable = await checkUsername(username);
   return { available: isAvailable };
 });
 
-export const setUsername = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "256MiB" }, true), async (request) => {
+export const setUsername = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true), async (request) => {
   if (!request.auth) {
     throw new HttpsError(
       "unauthenticated",
@@ -99,7 +99,7 @@ export const setUsername = onCall(callableOptions({ minInstances: getMinInstance
   return { status: "ok" };
 });
 
-export const setAgeYears = onCall(callableOptions(), async (request) => {
+export const setAgeYears = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   if (!request.auth) {
     throw new HttpsError(
       "unauthenticated",
@@ -126,7 +126,7 @@ export const setAgeYears = onCall(callableOptions(), async (request) => {
   return { status: "ok", birthYear, isOver13 };
 });
 
-export const getPlayerAge = onCall(callableOptions(), async (request) => {
+export const getPlayerAge = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   const { uid } = request.data;
   // Read birthYear from the root Player document
   const playerRef = db.doc(`/Players/${uid}`);
@@ -152,7 +152,7 @@ export const getPlayerAge = onCall(callableOptions(), async (request) => {
 
   return { age, isOver13 };
 });
-export const markTutorialComplete = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "256MiB" }, true), async (request) => {
+export const markTutorialComplete = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true), async (request) => {
   if (!request.auth) {
     throw new HttpsError(
       "unauthenticated",
@@ -294,7 +294,7 @@ export const markTutorialComplete = onCall(callableOptions({ minInstances: getMi
     trophiesGranted,
   };
 });
-export const setAvatar = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "256MiB" }, true), async (request) => {
+export const setAvatar = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true), async (request) => {
   if (!request.auth) {
     throw new HttpsError(
       "unauthenticated",
@@ -322,7 +322,7 @@ export const setAvatar = onCall(callableOptions({ minInstances: getMinInstances(
 
   return { status: "ok" };
 });
-export const setSubscriptionFlag = onCall(callableOptions(), async (request) => {
+export const setSubscriptionFlag = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   if (!request.auth) {
     throw new HttpsError(
       "unauthenticated",
@@ -390,7 +390,7 @@ export const setSubscriptionFlag = onCall(callableOptions(), async (request) => 
 
   return { status: "ok", gemsGranted };
 });
-export const claimStarterOffer = onCall(callableOptions(), async (request) => {
+export const claimStarterOffer = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   if (!request.auth) {
     throw new HttpsError(
       "unauthenticated",

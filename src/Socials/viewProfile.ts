@@ -86,7 +86,7 @@ const resolveActiveDeck = (
 };
 
 export const viewPlayerProfile = onCall(
-  callableOptions({}, true),
+  callableOptions({ cpu: 1, concurrency: 80 }, true),
   async (request) => {
     const callerUid = request.auth?.uid;
     if (!callerUid) {

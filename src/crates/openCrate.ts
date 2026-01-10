@@ -299,7 +299,7 @@ const applyDelta = (
   target[skuId] = (target[skuId] ?? 0) + delta;
 };
 
-export const openCrate = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "256MiB" }, true), async (request) => {
+export const openCrate = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true), async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "User must be authenticated.");

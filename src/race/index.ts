@@ -10,7 +10,7 @@ import { maybeTriggerFlashSales } from "../triggers/flashSales.js";
 import { maybeGenerateStarterOffer } from "../shop/offers.js";
 import { STARTER_RACE_THRESHOLD } from "../shop/offerState.js";
 import { buildBotLoadout } from "../game-systems/botLoadoutHelper.js";
-import { applyClanTrophyDelta, playerClanStateRef, clanMembersCollection, clanRef } from "../clan/helpers.js";
+import { applyClanTrophyDelta, playerClanStateRef, clanMembersCollection, clanRef, updateClanMemberSnapshot } from "../clan/helpers.js";
 import { updatePlayerLeaderboardEntry } from "../Socials/liveLeaderboard.js";
 import { updateClanLeaderboardEntry } from "../clan/liveLeaderboard.js";
 import {
@@ -262,7 +262,7 @@ const buildFinishOrderIndexes = (
   return resolved;
 };
 
-export const startRace = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "256MiB" }, true), async (request) => {
+export const startRace = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true), async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "User is not authenticated.");
@@ -277,52 +277,34 @@ export const startRace = onCall(callableOptions({ minInstances: getMinInstances(
   const ratingVector = lobbySnapshot.map((entry) => entry.rating);
 
   const raceId = db.collection("Races").doc().id;
+  // NOTE: Trophy pre-deduction is handled by prepareRace, NOT startRace
+  // This function only creates the race and participant documents
   const preDeductedTrophies = calculateLastPlaceDelta(playerIndex, ratingVector, TROPHY_CONFIG);
 
   const result = await db.runTransaction(async (transaction) => {
     const profileRef = db.doc(`/Players/${uid}/Profile/Profile`);
     const timestamp = admin.firestore.FieldValue.serverTimestamp();
 
+    // Read profile to verify it exists (no trophy modification here - prepareRace handles it)
     const profileSnap = await transaction.get(profileRef);
     if (!profileSnap.exists) {
       throw new HttpsError("failed-precondition", "Player profile not found.");
     }
+
     const currentTrophies = sanitizeTrophyCount(profileSnap.data()?.trophies);
     const appliedPreDeduction =
-      // Never remove more trophies up front than the player currently has.
       preDeductedTrophies < 0 ? Math.max(preDeductedTrophies, -currentTrophies) : preDeductedTrophies;
-    const trophiesAfterPreDeduct = Math.max(0, currentTrophies + appliedPreDeduction);
 
-    transaction.update(profileRef, {
-      trophies: trophiesAfterPreDeduct,
-      updatedAt: timestamp,
+    // Debug logging - NO trophy deduction happens here, prepareRace already did it
+    logger.info("[startRace] Race setup (no trophy deduction - handled by prepareRace)", {
+      uid,
+      raceId,
+      currentTrophiesFromProfile: currentTrophies,
+      calculatedPreDeduction: preDeductedTrophies,
+      appliedPreDeduction,
     });
 
-    // Update clan member document and clan totals if player is in a clan
-    if (appliedPreDeduction !== 0) {
-      const clanStateSnap = await transaction.get(playerClanStateRef(uid));
-      const clanId = clanStateSnap.data()?.clanId;
-
-      if (typeof clanId === "string" && clanId.length > 0) {
-        const memberRef = clanMembersCollection(clanId).doc(uid);
-        const memberSnap = await transaction.get(memberRef);
-
-        if (memberSnap.exists) {
-          // Update member trophy count
-          transaction.update(memberRef, {
-            trophies: admin.firestore.FieldValue.increment(appliedPreDeduction),
-            updatedAt: timestamp,
-          });
-
-          // Update clan total trophies
-          transaction.update(clanRef(clanId), {
-            "stats.trophies": admin.firestore.FieldValue.increment(appliedPreDeduction),
-            updatedAt: timestamp,
-          });
-        }
-      }
-    }
-
+    // Create Race document
     const raceRef = db.doc(`/Races/${raceId}`);
     transaction.set(raceRef, {
       status: "pending",
@@ -334,21 +316,31 @@ export const startRace = onCall(callableOptions({ minInstances: getMinInstances(
       })),
     });
 
+    // Create Participant document
+    // IMPORTANT: Use preDeductedTrophies (raw ELO calculation), NOT appliedPreDeduction
+    // prepareRace already applied the cap and deducted from profile, so currentTrophies is already reduced
+    // We need to store the ORIGINAL pre-deduction value for recordRaceResult to settle correctly
     const participantRef = db.doc(`/Races/${raceId}/Participants/${uid}`);
     transaction.set(participantRef, {
-      preDeductedTrophies: appliedPreDeduction,
+      preDeductedTrophies: preDeductedTrophies, // Use raw ELO value, not re-capped value
       playerIndex,
       createdAt: timestamp,
     });
 
-    return { success: true, raceId, preDeductedTrophies: appliedPreDeduction };
+    return { success: true, raceId, preDeductedTrophies: preDeductedTrophies };
+  });
+
+  logger.info("[startRace] Race created", {
+    uid,
+    raceId: result.raceId,
+    preDeductedTrophies: result.preDeductedTrophies,
   });
 
   await refreshFriendSnapshots(uid);
   return result;
 });
 
-export const generateBotLoadout = onCall(callableOptions(), async (request) => {
+export const generateBotLoadout = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   const { trophyCount } = request.data ?? {};
   if (typeof trophyCount !== "number" || trophyCount < 0) {
     throw new HttpsError("invalid-argument", "trophyCount must be a non-negative number.");
@@ -363,7 +355,7 @@ export const generateBotLoadout = onCall(callableOptions(), async (request) => {
   };
 });
 
-export const recordRaceResult = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "256MiB" }, true), async (request) => {
+export const recordRaceResult = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true), async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "User is not authenticated.");
@@ -531,6 +523,21 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
     }
     transaction.update(profileRef, profileUpdate);
 
+    // Debug logging for trophy investigation
+    logger.info("[recordRaceResult] Trophy calculation debug", {
+      uid,
+      raceId,
+      place,
+      currentTrophies,
+      lastPlaceDeltaApplied,
+      trophiesBeforeRace,
+      desiredTrophiesActual,
+      appliedActualTrophiesDelta,
+      appliedTrophiesSettlement,
+      trophiesAfterSettlement,
+      newHighestTrophies,
+    });
+
     transaction.update(raceRef, { status: "settled", updatedAt: admin.firestore.FieldValue.serverTimestamp() });
 
     return {
@@ -571,6 +578,19 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
     };
   });
 
+  // VERIFICATION: Confirm the trophies were actually persisted
+  const verifyProfile = await db.doc(`/Players/${uid}/Profile/Profile`).get();
+  const verifiedTrophies = verifyProfile.data()?.trophies;
+  logger.info("[recordRaceResult] POST-TRANSACTION VERIFICATION", {
+    uid,
+    raceId,
+    returnedTrophies: result.rewards?.trophies,
+    verifiedTrophiesInFirestore: verifiedTrophies,
+    expectedTrophies: result.trophySettlement?.applied !== undefined
+      ? "should match returnedTrophies calculation"
+      : "unknown",
+  });
+
   try {
     await maybeTriggerFlashSales({ uid });
   } catch (error) {
@@ -588,19 +608,29 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
     logger.warn("Starter offer trigger failed after race result", { uid, error });
   }
 
+  // Sync clan member trophies with post-race profile trophies (SET, not INCREMENT, to prevent drift)
   let clanIdForLiveUpdate: string | null = null;
-  const trophyDelta = Number(result.rewards?.trophies ?? 0);
-  if (Number.isFinite(trophyDelta) && trophyDelta !== 0) {
-    try {
-      await applyClanTrophyDelta(uid, trophyDelta);
-      const clanStateSnap = await playerClanStateRef(uid).get();
-      const clanId = clanStateSnap.data()?.clanId;
-      if (typeof clanId === "string" && clanId.length > 0) {
-        clanIdForLiveUpdate = clanId;
-      }
-    } catch (error) {
-      logger.warn("Failed to apply clan trophy delta after race", { uid, raceId, trophyDelta, error });
+  try {
+    const clanStateSnap = await playerClanStateRef(uid).get();
+    const clanId = clanStateSnap.data()?.clanId;
+    if (typeof clanId === "string" && clanId.length > 0) {
+      // Read the actual post-race trophies from profile
+      const profileSnap = await db.doc(`/Players/${uid}/Profile/Profile`).get();
+      const finalTrophies = Number(profileSnap.data()?.trophies ?? 0);
+
+      // SET clan member trophies to match profile (not increment - prevents drift)
+      await updateClanMemberSnapshot(uid, { trophies: finalTrophies });
+      clanIdForLiveUpdate = clanId;
+
+      logger.info("[recordRaceResult] Synced clan member trophies", {
+        uid,
+        raceId,
+        finalTrophies,
+        clanId,
+      });
     }
+  } catch (error) {
+    logger.warn("Failed to sync clan member trophies after race", { uid, raceId, error });
   }
 
   await refreshFriendSnapshots(uid);

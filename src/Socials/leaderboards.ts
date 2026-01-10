@@ -32,7 +32,7 @@ const resolveMetric = (rawMetric?: unknown, rawType?: unknown): LeaderboardMetri
   );
 };
 export const getGlobalLeaderboard = onCall(
-  callableOptions(),
+  callableOptions({ cpu: 1, concurrency: 80 }),
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -62,10 +62,10 @@ export const getGlobalLeaderboard = onCall(
       uid: entry.snapshot.uid,
       clan: entry.snapshot.clan
         ? {
-            clanId: entry.snapshot.clan.clanId,
-            name: entry.snapshot.clan.name,
-            badge: entry.snapshot.clan.badge ?? null,
-          }
+          clanId: entry.snapshot.clan.clanId,
+          name: entry.snapshot.clan.name,
+          badge: entry.snapshot.clan.badge ?? null,
+        }
         : null,
     }));
 
@@ -79,7 +79,7 @@ export const getGlobalLeaderboard = onCall(
 );
 
 export const getMyLeaderboardRank = onCall(
-  callableOptions(),
+  callableOptions({ cpu: 1, concurrency: 80 }),
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

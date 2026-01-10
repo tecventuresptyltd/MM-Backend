@@ -9,7 +9,7 @@ interface SubmitFeedbackRequest {
   name?: unknown;
 }
 
-export const submitFeedback = onCall(callableOptions(), async (request) => {
+export const submitFeedback = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "User must be authenticated.");

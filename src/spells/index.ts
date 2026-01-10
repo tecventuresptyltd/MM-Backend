@@ -150,7 +150,7 @@ function getOrderedSpellIds(spellsCatalog: Record<string, Spell>): string[] {
     .map((entry) => entry.id);
 }
 
-export const setLoadout = onCall(callableOptions({}, true), async (request) => {
+export const setLoadout = onCall(callableOptions({ cpu: 1, concurrency: 80 }, true), async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "User must be authenticated.");
@@ -169,7 +169,7 @@ export const setLoadout = onCall(callableOptions({}, true), async (request) => {
   return { success: true };
 });
 
-export const equipCosmetics = onCall(callableOptions({}, true), async (request) => {
+export const equipCosmetics = onCall(callableOptions({ cpu: 1, concurrency: 80 }, true), async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "User must be authenticated.");
@@ -188,7 +188,7 @@ export const equipCosmetics = onCall(callableOptions({}, true), async (request) 
   return { success: true };
 });
 
-export const setSpellDeck = onCall(callableOptions({}, true), async (request) => {
+export const setSpellDeck = onCall(callableOptions({ cpu: 1, concurrency: 80 }, true), async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "User must be authenticated.");
@@ -210,7 +210,7 @@ export const setSpellDeck = onCall(callableOptions({}, true), async (request) =>
   return { success: true };
 });
 
-export const selectActiveSpellDeck = onCall(callableOptions({}, true), async (request) => {
+export const selectActiveSpellDeck = onCall(callableOptions({ cpu: 1, concurrency: 80 }, true), async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "User must be authenticated.");
@@ -229,7 +229,7 @@ export const selectActiveSpellDeck = onCall(callableOptions({}, true), async (re
   return { success: true };
 });
 
-export const upgradeSpell = onCall(callableOptions({}, true), async (request) => {
+export const upgradeSpell = onCall(callableOptions({ cpu: 1, concurrency: 80 }, true), async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "User must be authenticated.");

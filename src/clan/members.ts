@@ -250,7 +250,7 @@ interface JoinClanRequest {
   clanId: string;
 }
 
-export const joinClan = onCall(callableOptions({}, true), async (request) => {
+export const joinClan = onCall(callableOptions({ cpu: 1, concurrency: 80 }, true), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as JoinClanRequest;
   const opId = requireOpId(payload.opId);
@@ -370,7 +370,7 @@ interface PromoteClanMemberRequest {
   role?: ClanRole;
 }
 
-export const promoteClanMember = onCall(callableOptions(), async (request) => {
+export const promoteClanMember = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as PromoteClanMemberRequest;
   const opId = requireOpId(payload.opId);
@@ -430,13 +430,13 @@ export const promoteClanMember = onCall(callableOptions(), async (request) => {
         lastPromotedAt: now,
       });
 
-        // Update Socials doc with new role
-        const prevState = targetStateSnap.exists ? targetStateSnap.data() ?? {} : {};
-        setPlayerClanState(transaction, targetUid, {
-          clanId,
-          role: desiredRole,
-          joinedAt: prevState.joinedAt ?? now,
-        });
+      // Update Socials doc with new role
+      const prevState = targetStateSnap.exists ? targetStateSnap.data() ?? {} : {};
+      setPlayerClanState(transaction, targetUid, {
+        clanId,
+        role: desiredRole,
+        joinedAt: prevState.joinedAt ?? now,
+      });
 
       const targetAuthor = buildAuthorFromMemberDoc(targetUid, targetSnap.data());
       const roleLabel = formatRoleLabel(desiredRole);
@@ -473,7 +473,7 @@ interface DemoteClanMemberRequest {
   role?: ClanRole;
 }
 
-export const demoteClanMember = onCall(callableOptions(), async (request) => {
+export const demoteClanMember = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as DemoteClanMemberRequest;
   const opId = requireOpId(payload.opId);
@@ -532,13 +532,13 @@ export const demoteClanMember = onCall(callableOptions(), async (request) => {
         lastPromotedAt: now,
       });
 
-        // Update Socials doc with new role
-        const prevState = targetStateSnap.exists ? targetStateSnap.data() ?? {} : {};
-        setPlayerClanState(transaction, targetUid, {
-          clanId,
-          role: desiredRole,
-          joinedAt: prevState.joinedAt ?? now,
-        });
+      // Update Socials doc with new role
+      const prevState = targetStateSnap.exists ? targetStateSnap.data() ?? {} : {};
+      setPlayerClanState(transaction, targetUid, {
+        clanId,
+        role: desiredRole,
+        joinedAt: prevState.joinedAt ?? now,
+      });
 
       const targetAuthor = buildAuthorFromMemberDoc(targetUid, targetSnap.data());
       const roleLabel = formatRoleLabel(desiredRole);
@@ -574,7 +574,7 @@ interface TransferClanLeadershipRequest {
   targetUid: string;
 }
 
-export const transferClanLeadership = onCall(callableOptions(), async (request) => {
+export const transferClanLeadership = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as TransferClanLeadershipRequest;
   const opId = requireOpId(payload.opId);
@@ -660,7 +660,7 @@ interface KickClanMemberRequest {
   targetUid: string;
 }
 
-export const kickClanMember = onCall(callableOptions(), async (request) => {
+export const kickClanMember = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as KickClanMemberRequest;
   const opId = requireOpId(payload.opId);
@@ -774,7 +774,7 @@ interface UpdateMemberTrophiesResponse {
   clanId?: string;
 }
 
-export const updateMemberTrophies = onCall(callableOptions(), async (request) => {
+export const updateMemberTrophies = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as UpdateMemberTrophiesRequest;
   const opId = requireOpId(payload.opId);
@@ -832,7 +832,7 @@ interface RequestToJoinClanRequest {
   message?: string;
 }
 
-export const requestToJoinClan = onCall(callableOptions({}, true), async (request) => {
+export const requestToJoinClan = onCall(callableOptions({ cpu: 1, concurrency: 80 }, true), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as RequestToJoinClanRequest;
   const opId = requireOpId(payload.opId);
@@ -922,7 +922,7 @@ interface CancelJoinRequest {
   clanId: string;
 }
 
-export const cancelJoinRequest = onCall(callableOptions(), async (request) => {
+export const cancelJoinRequest = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as CancelJoinRequest;
   const opId = requireOpId(payload.opId);
@@ -949,7 +949,7 @@ interface LeaveClanRequest {
   opId: string;
 }
 
-export const leaveClan = onCall(callableOptions(), async (request) => {
+export const leaveClan = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as LeaveClanRequest;
   const opId = requireOpId(payload.opId);
@@ -1056,7 +1056,7 @@ interface AcceptJoinRequestRequest {
   targetUid: string;
 }
 
-export const acceptJoinRequest = onCall(callableOptions(), async (request) => {
+export const acceptJoinRequest = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as AcceptJoinRequestRequest;
   const opId = requireOpId(payload.opId);
@@ -1198,7 +1198,7 @@ interface DeclineJoinRequestRequest {
   targetUid: string;
 }
 
-export const declineJoinRequest = onCall(callableOptions(), async (request) => {
+export const declineJoinRequest = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as DeclineJoinRequestRequest;
   const opId = requireOpId(payload.opId);

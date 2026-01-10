@@ -9,7 +9,7 @@ const db = admin.firestore();
 
 // --- Get Maintenance Status ---
 
-export const getMaintenanceStatus = onCall(callableOptions(), async () => {
+export const getMaintenanceStatus = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async () => {
   const maintenanceRef = db.doc("/GameConfig/maintenance");
   const maintenanceDoc = await maintenanceRef.get();
 
@@ -46,7 +46,7 @@ interface ClaimMaintenanceRewardResponse {
   gemsGranted: number;
 }
 
-export const claimMaintenanceReward = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "256MiB" }, true), async (request) => {
+export const claimMaintenanceReward = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true), async (request) => {
   const { opId } = request.data as ClaimMaintenanceRewardRequest;
   const uid = request.auth?.uid;
 

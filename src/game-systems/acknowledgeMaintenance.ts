@@ -22,7 +22,7 @@ interface AcknowledgeMaintenanceRewardsResponse {
  * @param maintenanceIds - Optional array of maintenance IDs to acknowledge. Empty/omitted = acknowledge all.
  * @returns Number of rewards acknowledged and number remaining.
  */
-export const acknowledgeMaintenanceRewards = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "256MiB" }, true), async (rawRequest) => {
+export const acknowledgeMaintenanceRewards = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true), async (rawRequest) => {
     const uid = rawRequest.auth?.uid;
     if (!uid) {
         throw new HttpsError("unauthenticated", "Authentication required.");

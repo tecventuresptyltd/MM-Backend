@@ -377,7 +377,7 @@ interface InviteToClanRequest {
   message?: string;
 }
 
-export const inviteToClan = onCall(callableOptions({}, true), async (request) => {
+export const inviteToClan = onCall(callableOptions({ cpu: 1, concurrency: 80 }, true), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as InviteToClanRequest;
   const opId = requireOpId(payload.opId);
@@ -469,7 +469,7 @@ interface AcceptClanInviteRequest {
   clanId: string;
 }
 
-export const acceptClanInvite = onCall(callableOptions({}, true), async (request) => {
+export const acceptClanInvite = onCall(callableOptions({ cpu: 1, concurrency: 80 }, true), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as AcceptClanInviteRequest;
   const opId = requireOpId(payload.opId);
@@ -589,7 +589,7 @@ interface DeclineClanInviteRequest {
   clanId: string;
 }
 
-export const declineClanInvite = onCall(callableOptions(), async (request) => {
+export const declineClanInvite = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as DeclineClanInviteRequest;
   const opId = requireOpId(payload.opId);
@@ -624,7 +624,7 @@ interface BookmarkClanRequest {
   clanId: string;
 }
 
-export const bookmarkClan = onCall(callableOptions(), async (request) => {
+export const bookmarkClan = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as BookmarkClanRequest;
   const opId = requireOpId(payload.opId);
@@ -666,7 +666,7 @@ export const bookmarkClan = onCall(callableOptions(), async (request) => {
   return result;
 });
 
-export const unbookmarkClan = onCall(callableOptions(), async (request) => {
+export const unbookmarkClan = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as BookmarkClanRequest;
   const opId = requireOpId(payload.opId);
@@ -728,7 +728,7 @@ const normalizeBookmarkEntry = (
   };
 };
 
-export const getBookmarkedClans = onCall(callableOptions(), async (request) => {
+export const getBookmarkedClans = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   const uid = assertAuthenticated(request);
   const doc = await playerClanBookmarksRef(uid).get();
   const bookmarks = doc.data()?.bookmarks ?? {};
@@ -749,7 +749,7 @@ interface RefreshBookmarkedClansRequest {
   clanIds: string[];
 }
 
-export const refreshBookmarkedClans = onCall(callableOptions(), async (request) => {
+export const refreshBookmarkedClans = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as RefreshBookmarkedClansRequest;
   const clanIds = Array.isArray(payload.clanIds)
@@ -813,7 +813,7 @@ interface RefreshClanInvitesRequest {
   clanIds?: string[];
 }
 
-export const refreshClanInvites = onCall(callableOptions(), async (request) => {
+export const refreshClanInvites = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as RefreshClanInvitesRequest;
   const requestedIds = Array.isArray(payload.clanIds)
@@ -894,7 +894,7 @@ interface AssignGlobalChatRoomResponse {
   hardCap: number;
 }
 
-export const assignGlobalChatRoom = onCall(callableOptions(), async (request) => {
+export const assignGlobalChatRoom = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as AssignGlobalChatRoomRequest;
   const requestedRegion = sanitizeRoomRegion(payload.region);
@@ -1028,7 +1028,7 @@ interface ChatResponse {
   clanId?: string;
 }
 
-export const sendGlobalChatMessage = onCall(callableOptions(), async (request) => {
+export const sendGlobalChatMessage = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as SendGlobalChatMessageRequest;
   const opId = requireOpId(payload.opId);
@@ -1105,7 +1105,7 @@ interface SendClanChatMessageRequest {
   clientCreatedAt?: string;
 }
 
-export const sendClanChatMessage = onCall(callableOptions(), async (request) => {
+export const sendClanChatMessage = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as SendClanChatMessageRequest;
   const opId = requireOpId(payload.opId);
@@ -1220,7 +1220,7 @@ interface GetGlobalChatMessagesRequest {
   sinceTimestamp?: number;
 }
 
-export const getGlobalChatMessages = onCall(callableOptions(), async (request) => {
+export const getGlobalChatMessages = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as GetGlobalChatMessagesRequest;
   const roomId = requireRoomId(payload.roomId);
@@ -1260,7 +1260,7 @@ interface GetClanChatMessagesRequest {
   sinceTimestamp?: number;
 }
 
-export const getClanChatMessages = onCall(callableOptions(), async (request) => {
+export const getClanChatMessages = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as GetClanChatMessagesRequest;
   const limit = Math.min(clampFetchLimit(payload.limit), CLAN_CHAT_HISTORY_FETCH);

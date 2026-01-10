@@ -233,7 +233,7 @@ const performSendFriendRequest = async (
 };
 
 export const sendFriendRequest = onCall(
-  callableOptions({}, true),
+  callableOptions({ cpu: 1, concurrency: 80 }, true),
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -276,7 +276,7 @@ export const sendFriendRequest = onCall(
 );
 
 export const sendFriendRequestByUid = onCall(
-  callableOptions({}, true),
+  callableOptions({ cpu: 1, concurrency: 80 }, true),
   async (request) => {
     if (!request.auth?.uid) {
       throw new HttpsError("unauthenticated", "Authentication required.");
@@ -307,7 +307,7 @@ export const sendFriendRequestByUid = onCall(
 );
 
 export const acceptFriendRequest = onCall(
-  callableOptions({}, true),
+  callableOptions({ cpu: 1, concurrency: 80 }, true),
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -406,7 +406,7 @@ export const acceptFriendRequest = onCall(
 );
 
 export const rejectFriendRequest = onCall(
-  callableOptions({}, true),
+  callableOptions({ cpu: 1, concurrency: 80 }, true),
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -456,7 +456,7 @@ export const rejectFriendRequest = onCall(
 );
 
 export const cancelFriendRequest = onCall(
-  callableOptions(),
+  callableOptions({ cpu: 1, concurrency: 80 }),
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -511,7 +511,7 @@ interface RemoveFriendsResponse {
 }
 
 export const removeFriends = onCall(
-  callableOptions(),
+  callableOptions({ cpu: 1, concurrency: 80 }),
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

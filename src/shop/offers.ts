@@ -158,7 +158,7 @@ export const maybeGenerateStarterOffer = async (uid: string): Promise<boolean> =
  * - maybeGenerateStarterOffer (after race completion)
  * - offerTransitionJob (scheduled, handles cooldown/delay transitions)
  */
-export const getDailyOffers = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "256MiB" }, true), async (request) => {
+export const getDailyOffers = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true), async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "User must be authenticated.");

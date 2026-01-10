@@ -11,7 +11,7 @@ interface GetLeaderboardRequest {
   startAfter?: unknown;
 }
 
-export const getLeaderboard = onCall(callableOptions(), async (request) => {
+export const getLeaderboard = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   const { leaderboardType, pageSize, startAfter } = request.data as GetLeaderboardRequest;
 
   if (!leaderboardType || !pageSize) {

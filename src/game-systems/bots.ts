@@ -3,7 +3,7 @@ import { REGION } from "../shared/region.js";
 import { buildBotLoadout } from "./botLoadoutHelper.js";
 import { callableOptions } from "../shared/callableOptions.js";
 
-export const generateBotLoadout = onCall(callableOptions(), async (request) => {
+export const generateBotLoadout = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   const { trophyCount } = request.data ?? {};
   const uid = request.auth?.uid;
 

@@ -38,7 +38,7 @@ const extractTransactionId = (receipt: unknown): string => {
   throw new HttpsError("invalid-argument", "receipt must include transactionId.");
 };
 
-export const verifyIapPurchase = onCall(callableOptions(), async (request) => {
+export const verifyIapPurchase = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "Authentication required.");

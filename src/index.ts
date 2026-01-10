@@ -15,7 +15,7 @@ setGlobalOptions({
 admin.initializeApp();
 
 // Simple ping function for health checks
-export const ping = onCall(callableOptions(), async () => {
+export const ping = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async () => {
   return { status: "ok", timestamp: new Date().toISOString() };
 });
 

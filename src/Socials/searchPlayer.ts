@@ -12,7 +12,7 @@ const normalizeName = (value: string | undefined): string => {
 };
 
 export const searchPlayer = onCall(
-  callableOptions(),
+  callableOptions({ cpu: 1, concurrency: 80 }),
   async (request) => {
     const rawName =
       (typeof request.data?.query === "string" ? request.data.query : null) ??

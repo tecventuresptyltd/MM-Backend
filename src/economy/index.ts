@@ -209,7 +209,7 @@ export const claimRankUpReward = onCall(
   }
 );
 
-export const getLeaderboard = onCall(callableOptions(), async (request) => {
+export const getLeaderboard = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   const { data } = request;
   const { leaderboardType, pageSize, startAfter } = data as { leaderboardType: string, pageSize: number, startAfter?: unknown };
 

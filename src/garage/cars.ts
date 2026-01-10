@@ -21,7 +21,7 @@ interface PurchaseCarResponse {
   carId: string;
 }
 
-export const purchaseCar = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "256MiB" }, true), async (request) => {
+export const purchaseCar = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true), async (request) => {
   const { carId, opId } = request.data as PurchaseCarRequest;
   const uid = request.auth?.uid;
 
@@ -113,7 +113,7 @@ interface UpgradeCarResponse {
   levelAfter: number;
 }
 
-export const upgradeCar = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "256MiB" }, true), async (request) => {
+export const upgradeCar = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true), async (request) => {
   const { carId, opId } = request.data as UpgradeCarRequest;
   const uid = request.auth?.uid;
 

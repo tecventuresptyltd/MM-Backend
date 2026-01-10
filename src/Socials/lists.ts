@@ -38,7 +38,7 @@ const mergeRequestEntry = <
 });
 
 export const getFriends = onCall(
-  callableOptions({}, true),
+  callableOptions({ cpu: 1, concurrency: 80 }, true),
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -72,7 +72,7 @@ export const getFriends = onCall(
 );
 
 export const getFriendRequests = onCall(
-  callableOptions({}, true),
+  callableOptions({ cpu: 1, concurrency: 80 }, true),
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

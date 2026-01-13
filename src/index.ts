@@ -50,6 +50,7 @@ export {
 
 export {
   getGlobalLeaderboard,
+  getMyLeaderboardRank,
   searchPlayer,
   sendFriendRequest,
   sendFriendRequestByUid,

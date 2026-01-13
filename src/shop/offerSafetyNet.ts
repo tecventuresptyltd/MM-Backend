@@ -64,6 +64,12 @@ const needsOfferRestoration = (activeOffers: any, flowState: any, now: number): 
         return true;
     }
 
+    // Expired active offer (missed expiry transition - this is the fix for stale offers)
+    if (main.state === "active" && main.expiresAt <= now) {
+        logger.warn(`Active offer expired at ${main.expiresAt}, now is ${now}`);
+        return true;
+    }
+
     // Stuck in cooldown/delay for too long (>48 hours)
     if (main.state !== "active" && main.nextOfferAt) {
         const timeSinceTransition = now - main.nextOfferAt;

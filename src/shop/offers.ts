@@ -101,7 +101,7 @@ export const maybeGenerateStarterOffer = async (uid: string): Promise<boolean> =
   try {
     const ladderIndex = await loadOfferLadderIndex();
 
-    return await db.runTransaction(async (transaction) => {
+    const result = await db.runTransaction(async (transaction) => {
       const activeRef = activeOffersRef(uid);
       const stateRef = offerStateRef(uid);
 
@@ -114,13 +114,13 @@ export const maybeGenerateStarterOffer = async (uid: string): Promise<boolean> =
 
       // Already shown starter? Don't show again
       if (flowState.starterShown) {
-        return false;
+        return null;
       }
 
       // Check if there's already an active main offer
       const activeOffers = normaliseActiveOffers(activeSnap.data());
       if (activeOffers.main && activeOffers.main.state === "active") {
-        return false;
+        return null;
       }
 
       // Generate starter offer
@@ -139,8 +139,25 @@ export const maybeGenerateStarterOffer = async (uid: string): Promise<boolean> =
       }, now);
 
       logger.info(`[offers] Generated starter offer for player ${uid}`);
-      return true;
+      return starterOffer;
     });
+
+    // Schedule expiry transition for newly created starter offer
+    if (result) {
+      try {
+        await scheduleOfferTransition(
+          uid,
+          result.expiresAt,
+          "offer_expired",
+          result.tier,
+        );
+      } catch (error) {
+        logger.warn(`Failed to schedule starter expiry for ${uid}`, error);
+      }
+      return true;
+    }
+
+    return false;
   } catch (error) {
     logger.error(`[offers] Failed to generate starter offer for ${uid}:`, error);
     return false;
@@ -265,6 +282,21 @@ export const getDailyOffers = onCall(callableOptions({ minInstances: getMinInsta
       );
     } catch (error) {
       logger.warn(`Failed to schedule cooldown transition for ${uid}`, error);
+    }
+  }
+
+  // Schedule expiry transition for newly created active offers
+  // This is the KEY FIX: ensures offers expire even if player never opens shop again
+  if (result.main?.state === "active" && result.main.expiresAt > now) {
+    try {
+      await scheduleOfferTransition(
+        uid,
+        result.main.expiresAt,
+        "offer_expired",
+        result.main.tier,
+      );
+    } catch (error) {
+      logger.warn(`Failed to schedule expiry transition for ${uid}`, error);
     }
   }
 

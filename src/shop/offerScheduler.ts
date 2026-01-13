@@ -11,6 +11,7 @@ import {
     ACTIVE_OFFERS_PATH,
     OFFER_STATE_PATH,
     OFFER_VALIDITY_MS,
+    POST_EXPIRY_COOLDOWN_MS,
     normaliseActiveOffers,
     normaliseOfferFlowState,
     pruneExpiredSpecialOffers,
@@ -119,6 +120,14 @@ const createTierOffer = (tier: number, index: OfferLadderIndex, now: number): Ma
 // Transition Processing
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** Result from processing a transition, indicating follow-up schedules needed */
+interface TransitionResult {
+    /** If set, schedule a cooldown_end transition */
+    scheduleCooldownEnd?: { tier: number; cooldownEndsAt: number };
+    /** If set, schedule an offer_expired transition for newly created offer */
+    scheduleOfferExpiry?: { tier: number; expiresAt: number };
+}
+
 /**
  * Process a single player's offer transition.
  */
@@ -130,7 +139,7 @@ const processPlayerTransition = async (
     const { uid, tier } = transition;
 
     try {
-        await db.runTransaction(async (transaction) => {
+        const result = await db.runTransaction(async (transaction): Promise<TransitionResult> => {
             const activeRef = db.doc(ACTIVE_OFFERS_PATH(uid));
             const stateRef = db.doc(OFFER_STATE_PATH(uid));
             const queueRef = db.collection(TRANSITION_QUEUE_PATH).doc(uid);
@@ -160,7 +169,9 @@ const processPlayerTransition = async (
 
                 // Delete queue entry inside transaction for atomicity
                 transaction.delete(queueRef);
-                return;
+
+                // Schedule expiry for this new offer
+                return { scheduleOfferExpiry: { tier, expiresAt: newOffer.expiresAt } };
             }
 
             // For other transitions: verify main still exists and matches state
@@ -168,14 +179,51 @@ const processPlayerTransition = async (
             if (!main) {
                 // Delete stale queue entry
                 transaction.delete(queueRef);
-                return;
+                return {};
+            }
+
+            // For offer_expired: verify offer is still active
+            if (transition.transitionType === "offer_expired") {
+                if (main.state !== "active") {
+                    // Offer was already purchased or transitioned
+                    transaction.delete(queueRef);
+                    return {};
+                }
+
+                // Transition to cooldown
+                const newTier = Math.max(0, main.tier - 2); // Drop 2 tiers on expiry
+                const cooldownEndsAt = now + POST_EXPIRY_COOLDOWN_MS;
+
+                const cooldownOffer: MainOffer = {
+                    ...main,
+                    state: "cooldown",
+                    nextOfferAt: cooldownEndsAt,
+                    tier: newTier,
+                };
+
+                const expiredPrunedSpecial = pruneExpiredSpecialOffers(activeOffers.special, now);
+                writeActiveOffersV2(transaction, uid, {
+                    main: cooldownOffer,
+                    special: expiredPrunedSpecial,
+                }, now);
+
+                writeOfferFlowState(transaction, uid, {
+                    tier: newTier,
+                    lastOfferExpiredAt: now,
+                }, now);
+
+                // Delete queue entry - we'll schedule cooldown_end outside transaction
+                transaction.delete(queueRef);
+
+                // Mark that we need to schedule cooldown_end
+                return { scheduleCooldownEnd: { tier: newTier, cooldownEndsAt } };
             }
 
             // Only proceed if state matches expected transition type
             if (transition.transitionType === "cooldown_end" && main.state !== "cooldown") {
                 // State changed, delete stale queue entry
                 transaction.delete(queueRef);
-                return;
+                return {};
             }
 
             // Generate new active offer
@@ -193,7 +241,37 @@ const processPlayerTransition = async (
 
             // CRITICAL: Delete queue entry inside transaction for atomicity
             transaction.delete(queueRef);
+
+            // Schedule expiry for this new offer
+            return { scheduleOfferExpiry: { tier, expiresAt: newOffer.expiresAt } };
         });
+
+        // Schedule follow-up transitions outside the transaction
+        if (result.scheduleCooldownEnd) {
+            try {
+                await scheduleOfferTransition(
+                    uid,
+                    result.scheduleCooldownEnd.cooldownEndsAt,
+                    "cooldown_end",
+                    result.scheduleCooldownEnd.tier,
+                );
+            } catch (error) {
+                logger.warn(`[offerScheduler] Failed to schedule cooldown_end for ${uid}`, error);
+            }
+        }
+
+        if (result.scheduleOfferExpiry) {
+            try {
+                await scheduleOfferTransition(
+                    uid,
+                    result.scheduleOfferExpiry.expiresAt,
+                    "offer_expired",
+                    result.scheduleOfferExpiry.tier,
+                );
+            } catch (error) {
+                logger.warn(`[offerScheduler] Failed to schedule offer_expired for ${uid}`, error);
+            }
+        }
 
         return true;
     } catch (error) {

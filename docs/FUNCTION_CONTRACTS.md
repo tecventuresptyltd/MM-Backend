@@ -457,6 +457,45 @@ This document provides detailed contracts for each Cloud Function, including inp
 
 **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`
 
+---
+
+### `markTutorialComplete`
+
+**Purpose:** Marks the player's initial tutorial as complete. Optionally grants tutorial completion rewards (Coins, XP, Trophies, Spells, Items) if they haven't been granted yet.
+
+**Input:**
+
+```json
+{
+  "grantRewards": "boolean (optional, default: true)"
+}
+```
+
+**Output:**
+
+*   **Success:**
+```json
+{
+  "status": "ok",
+  "tutorialComplete": true,
+  "rareCrateGranted": boolean,
+  "coinsGranted": number,
+  "xpGranted": number,
+  "trophiesGranted": number
+}
+```
+
+**Errors:** `UNAUTHENTICATED`, `FAILED_PRECONDITION` (profile/stats not found)
+
+**Side-effects:**
+* Updates `/Players/{uid}/Progress/Initial` setting `tutorialComplete: true`.
+* If `grantRewards` is `true` (default) and `tutorialRewardGranted` is false:
+    * Updates `tutorialRewardGranted: true` in `Progress/Initial`.
+    * Grants **1000 Coins**, **100 XP**, and **10 Trophies**.
+    * Grants a **Rare Crate** (`sku_72wnqwtfmx`) to inventory.
+    * Unlocks **"Ice Lock"** spell (`spell_2382r2jk`) at level 2 if not already unlocked/higher.
+    * Updates Clan and Friend snapshots with new stats.
+
 ## Garage, Loadouts & Spells
 
 ### `upgradeCar`

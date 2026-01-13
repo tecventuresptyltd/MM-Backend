@@ -161,6 +161,7 @@ export const markTutorialComplete = onCall(callableOptions({ minInstances: getMi
   }
 
   const { uid } = request.auth;
+  const { grantRewards = true } = request.data;
   const progressRef = db.doc(`/Players/${uid}/Progress/Initial`);
   const profileRef = db.doc(`/Players/${uid}/Profile/Profile`);
   const statsRef = db.doc(`/Players/${uid}/Economy/Stats`);
@@ -191,7 +192,7 @@ export const markTutorialComplete = onCall(callableOptions({ minInstances: getMi
     const progressData = progressSnap.exists ? progressSnap.data() ?? {} : {};
     const rewardAlreadyGranted = progressData.tutorialRewardGranted === true;
 
-    if (!rewardAlreadyGranted) {
+    if (grantRewards && !rewardAlreadyGranted) {
       const profileData = profileSnap.data() ?? {};
       const spellsData = spellsSnap.exists ? spellsSnap.data() ?? {} : {};
 

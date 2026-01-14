@@ -79,36 +79,46 @@ export const getGlobalLeaderboard = onCall(
 );
 
 export const getMyLeaderboardRank = onCall(
-  callableOptions({ cpu: 1, concurrency: 80 }),
+  callableOptions({ cpu: 1, concurrency: 80 }, true),
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
       throw new HttpsError("unauthenticated", "Authentication required.");
     }
 
-    const metric = resolveMetric(request.data?.metric, request.data?.type);
-    const metricField = LEADERBOARD_METRICS[metric].field;
-
     const profileSnap = await playerProfileRef(uid).get();
     if (!profileSnap.exists) {
       throw new HttpsError("failed-precondition", "Player profile missing.");
     }
     const profile = profileSnap.data() ?? {};
-    const rawValue = profile[metricField];
-    const statValue = typeof rawValue === "number" && Number.isFinite(rawValue) ? rawValue : 0;
 
-    const query = db
-      .collectionGroup("Profile")
-      .where(metricField as string, ">", statValue);
+    const metrics = Object.keys(LEADERBOARD_METRICS) as LeaderboardMetric[];
 
-    const countSnap = await query.count().get();
-    const higherCount = countSnap.data().count ?? 0;
+    const rankings = await Promise.all(
+      metrics.map(async (metric) => {
+        const config = LEADERBOARD_METRICS[metric];
+        const metricField = config.field;
 
-    return {
-      metric,
-      leaderboardType: LEADERBOARD_METRICS[metric].legacyType,
-      value: statValue,
-      rank: higherCount + 1,
-    };
+        const rawValue = profile[metricField];
+        const statValue = typeof rawValue === "number" && Number.isFinite(rawValue) ? rawValue : 0;
+
+        const countSnap = await db
+          .collectionGroup("Profile")
+          .where(metricField as string, ">", statValue)
+          .count()
+          .get();
+
+        const higherCount = countSnap.data().count ?? 0;
+
+        return {
+          metric,
+          leaderboardType: config.legacyType,
+          value: statValue,
+          rank: higherCount + 1,
+        };
+      })
+    );
+
+    return { rankings };
   },
 );

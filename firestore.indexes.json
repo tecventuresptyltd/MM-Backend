@@ -4,125 +4,248 @@
       "collectionGroup": "Messages",
       "queryScope": "COLLECTION_GROUP",
       "fields": [
-        { "fieldPath": "roomId", "order": "ASCENDING" },
-        { "fieldPath": "createdAt", "order": "DESCENDING" }
+        {
+          "fieldPath": "roomId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
       "collectionGroup": "Members",
       "queryScope": "COLLECTION_GROUP",
       "fields": [
-        { "fieldPath": "role", "order": "ASCENDING" },
-        { "fieldPath": "joinedAt", "order": "DESCENDING" }
+        {
+          "fieldPath": "role",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "joinedAt",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
       "collectionGroup": "Inventory",
       "queryScope": "COLLECTION_GROUP",
       "fields": [
-        { "fieldPath": "category", "order": "ASCENDING" },
-        { "fieldPath": "updatedAt", "order": "DESCENDING" }
+        {
+          "fieldPath": "category",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "updatedAt",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
       "collectionGroup": "Participants",
       "queryScope": "COLLECTION_GROUP",
       "fields": [
-        { "fieldPath": "uid", "order": "ASCENDING" },
-        { "fieldPath": "submittedAt", "order": "DESCENDING" }
+        {
+          "fieldPath": "uid",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "submittedAt",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
       "collectionId": "Clans",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "status", "order": "ASCENDING" },
-        { "fieldPath": "stats.trophies", "order": "DESCENDING" }
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "stats.trophies",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
       "collectionId": "Clans",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "status", "order": "ASCENDING" },
-        { "fieldPath": "search.location", "order": "ASCENDING" },
-        { "fieldPath": "stats.trophies", "order": "DESCENDING" }
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "search.location",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "stats.trophies",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
       "collectionId": "Clans",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "status", "order": "ASCENDING" },
-        { "fieldPath": "search.language", "order": "ASCENDING" },
-        { "fieldPath": "stats.trophies", "order": "DESCENDING" }
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "search.language",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "stats.trophies",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
       "collectionId": "Clans",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "status", "order": "ASCENDING" },
-        { "fieldPath": "type", "order": "ASCENDING" },
-        { "fieldPath": "stats.trophies", "order": "DESCENDING" }
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "type",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "stats.trophies",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
       "collectionId": "Clans",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "status", "order": "ASCENDING" },
-        { "fieldPath": "stats.members", "order": "ASCENDING" },
-        { "fieldPath": "stats.trophies", "order": "DESCENDING" }
-      ]
-    },
-    {
-      "collectionId": "Clans", 
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "status", "order": "ASCENDING" },
-        { "fieldPath": "search.location", "order": "ASCENDING" },
-        { "fieldPath": "search.language", "order": "ASCENDING" },
-        { "fieldPath": "stats.trophies", "order": "DESCENDING" }
-      ]
-    },
-    {
-      "collectionId": "Clans",
-      "queryScope": "COLLECTION", 
-      "fields": [
-        { "fieldPath": "status", "order": "ASCENDING" },
-        { "fieldPath": "search.location", "order": "ASCENDING" },
-        { "fieldPath": "type", "order": "ASCENDING" },
-        { "fieldPath": "stats.trophies", "order": "DESCENDING" }
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "stats.members",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "stats.trophies",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
       "collectionId": "Clans",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "status", "order": "ASCENDING" },
-        { "fieldPath": "search.language", "order": "ASCENDING" },
-        { "fieldPath": "type", "order": "ASCENDING" },
-        { "fieldPath": "stats.trophies", "order": "DESCENDING" }
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "search.location",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "search.language",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "stats.trophies",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionId": "Clans",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "search.location",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "type",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "stats.trophies",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionId": "Clans",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "search.language",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "type",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "stats.trophies",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
       "collectionId": "Rooms",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "type", "order": "ASCENDING" },
-        { "fieldPath": "region", "order": "ASCENDING" },
-        { "fieldPath": "isArchived", "order": "ASCENDING" },
-        { "fieldPath": "connectedCount", "order": "ASCENDING" }
+        {
+          "fieldPath": "type",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "region",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "isArchived",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "connectedCount",
+          "order": "ASCENDING"
+        }
       ]
     },
     {
       "collectionId": "Members",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "rolePriority", "order": "DESCENDING" },
-        { "fieldPath": "lastPromotedAt", "order": "ASCENDING" },
-        { "fieldPath": "joinedAt", "order": "ASCENDING" }
+        {
+          "fieldPath": "rolePriority",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "lastPromotedAt",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "joinedAt",
+          "order": "ASCENDING"
+        }
       ]
     }
   ],
@@ -131,24 +254,84 @@
       "collectionGroup": "Members",
       "fieldPath": "rolePriority",
       "indexes": [
-        { "order": "ASCENDING", "queryScope": "COLLECTION" },
-        { "order": "DESCENDING", "queryScope": "COLLECTION" }
+        {
+          "order": "ASCENDING",
+          "queryScope": "COLLECTION"
+        },
+        {
+          "order": "DESCENDING",
+          "queryScope": "COLLECTION"
+        }
       ]
     },
     {
-      "collectionGroup": "Requests", 
+      "collectionGroup": "Requests",
       "fieldPath": "requestedAt",
       "indexes": [
-        { "order": "ASCENDING", "queryScope": "COLLECTION" },
-        { "order": "DESCENDING", "queryScope": "COLLECTION" }
+        {
+          "order": "ASCENDING",
+          "queryScope": "COLLECTION"
+        },
+        {
+          "order": "DESCENDING",
+          "queryScope": "COLLECTION"
+        }
       ]
     },
     {
       "collectionGroup": "Chat",
-      "fieldPath": "createdAt", 
+      "fieldPath": "createdAt",
       "indexes": [
-        { "order": "ASCENDING", "queryScope": "COLLECTION" },
-        { "order": "DESCENDING", "queryScope": "COLLECTION" }
+        {
+          "order": "ASCENDING",
+          "queryScope": "COLLECTION"
+        },
+        {
+          "order": "DESCENDING",
+          "queryScope": "COLLECTION"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "Profile",
+      "fieldPath": "trophies",
+      "indexes": [
+        {
+          "order": "ASCENDING",
+          "queryScope": "COLLECTION_GROUP"
+        },
+        {
+          "order": "DESCENDING",
+          "queryScope": "COLLECTION_GROUP"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "Profile",
+      "fieldPath": "careerCoins",
+      "indexes": [
+        {
+          "order": "ASCENDING",
+          "queryScope": "COLLECTION_GROUP"
+        },
+        {
+          "order": "DESCENDING",
+          "queryScope": "COLLECTION_GROUP"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "Profile",
+      "fieldPath": "totalWins",
+      "indexes": [
+        {
+          "order": "ASCENDING",
+          "queryScope": "COLLECTION_GROUP"
+        },
+        {
+          "order": "DESCENDING",
+          "queryScope": "COLLECTION_GROUP"
+        }
       ]
     }
   ]

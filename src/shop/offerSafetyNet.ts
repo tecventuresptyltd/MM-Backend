@@ -11,6 +11,7 @@ import {
     normaliseOfferFlowState,
     writeActiveOffersV2,
     writeOfferFlowState,
+    pruneExpiredSpecialOffers,
 } from "./offerState.js";
 import { loadOfferLadderIndex, OfferLadderIndex } from "./offerCatalog.js";
 
@@ -83,7 +84,17 @@ const needsOfferRestoration = (activeOffers: any, flowState: any, now: number): 
 };
 
 /**
- * Restore offers for a single player.
+ * Remove undefined values from a main offer to prevent Firestore errors.
+ */
+const sanitizeMainOffer = (offer: MainOffer | undefined): MainOffer | null => {
+    if (!offer) return null;
+    // JSON round-trip strips undefined values
+    return JSON.parse(JSON.stringify(offer));
+};
+
+/**
+ * Check and fix offers for a single player.
+ * Returns true if any changes were made.
  */
 const restorePlayerOffers = async (
     uid: string,
@@ -103,41 +114,46 @@ const restorePlayerOffers = async (
             const activeOffers = normaliseActiveOffers(activeSnap.data());
             const flowState = normaliseOfferFlowState(stateSnap.data());
 
-            // Check if restoration needed
-            if (!needsOfferRestoration(activeOffers, flowState, now)) {
+            // Always prune expired special offers first
+            const prunedSpecial = pruneExpiredSpecialOffers(activeOffers.special || [], now);
+            const specialNeedsPruning = prunedSpecial.length !== (activeOffers.special || []).length;
+
+            // Check if main offer needs restoration
+            const mainNeedsRestoration = needsOfferRestoration(activeOffers, flowState, now);
+
+            // Skip if nothing needs fixing
+            if (!mainNeedsRestoration && !specialNeedsPruning) {
                 return false;
             }
 
-            logger.info(`[offerSafetyNet] Restoring offers for player ${uid}`);
+            logger.info(`[offerSafetyNet] Fixing offers for player ${uid} (main: ${mainNeedsRestoration}, special: ${specialNeedsPruning})`);
 
-            // Create fresh daily offer at current tier
-            const restoredOffer = createDailyOffer(ladderIndex, now);
-            restoredOffer.tier = flowState.tier; // Maintain their tier
-
-            // Preserve special offers
-            const special = activeOffers.special || [];
+            // Determine what main offer to use
+            let mainOffer = activeOffers.main;
+            if (mainNeedsRestoration) {
+                // Create fresh daily offer at current tier
+                const restoredOffer = createDailyOffer(ladderIndex, now);
+                restoredOffer.tier = flowState.tier;
+                mainOffer = restoredOffer;
+            }
 
             writeActiveOffersV2(transaction, uid, {
-                main: restoredOffer,
-                special,
+                main: sanitizeMainOffer(mainOffer),
+                special: prunedSpecial,
             }, now);
 
-            // Ensure flow state exists
-            if (!stateSnap.exists) {
+            // Always ensure starterShown is true if we restored main
+            if (mainNeedsRestoration) {
                 writeOfferFlowState(transaction, uid, {
-                    starterEligible: false,
                     starterShown: true,
-                    starterPurchased: false,
                     tier: flowState.tier,
-                    offersPurchased: flowState.offersPurchased,
-                    totalIapPurchases: flowState.totalIapPurchases,
                 }, now);
             }
 
             return true;
         });
     } catch (error) {
-        logger.error(`[offerSafetyNet] Failed to restore offers for ${uid}:`, error);
+        logger.error(`[offerSafetyNet] Failed to fix offers for ${uid}:`, error);
         return false;
     }
 };
@@ -157,25 +173,25 @@ export const runOfferSafetyCheck = async (): Promise<{
     try {
         const ladderIndex = await loadOfferLadderIndex();
 
-        // Query all player profiles to get UIDs
-        // We use Profile collection as the source of truth for active players
-        const profilesSnap = await db
-            .collectionGroup("Profile")
-            .where("__name__", "==", "Profile")
+        // Query all player root documents to get UIDs
+        // We query the Players collection directly
+        const playersSnap = await db
+            .collection("Players")
+            .select() // Only get document references, not full data
             .get();
 
-        logger.info(`[offerSafetyNet] Found ${profilesSnap.size} players to check`);
+        logger.info(`[offerSafetyNet] Found ${playersSnap.size} players to check`);
 
         // Process in batches
         const BATCH_SIZE = 20;
-        const playerDocs = profilesSnap.docs;
+        const playerDocs = playersSnap.docs;
 
         for (let i = 0; i < playerDocs.length; i += BATCH_SIZE) {
             const batch = playerDocs.slice(i, i + BATCH_SIZE);
 
             const results = await Promise.allSettled(
-                batch.map(async (doc) => {
-                    const uid = doc.ref.parent.parent?.id;
+                batch.map(async (doc: FirebaseFirestore.DocumentSnapshot) => {
+                    const uid = doc.id;
                     if (!uid) {
                         logger.warn(`[offerSafetyNet] Could not extract UID from ${doc.ref.path}`);
                         return { restored: false, error: false };

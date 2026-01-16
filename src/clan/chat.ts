@@ -109,10 +109,30 @@ export const publishClanSystemMessages = async (messages: PendingClanSystemMessa
   );
 };
 
-const pruneChatHistory = async (path: string, cutoffMs: number): Promise<number> => {
+const pruneChatHistory = async (path: string, cutoffMs: number, minKeep: number = 0): Promise<number> => {
   let pruned = 0;
   const ref = rtdb().ref(path);
+
+  // If minKeep is set, check total message count first
+  if (minKeep > 0) {
+    const totalSnapshot = await ref.once("value");
+    const totalCount = totalSnapshot.numChildren();
+    if (totalCount <= minKeep) {
+      // Already at or below minimum, don't prune anything
+      return 0;
+    }
+  }
+
   while (true) {
+    // If minKeep is set, recheck count before each batch
+    if (minKeep > 0) {
+      const countSnapshot = await ref.once("value");
+      const currentCount = countSnapshot.numChildren();
+      if (currentCount <= minKeep) {
+        break;
+      }
+    }
+
     const snapshot = await ref.orderByChild("ts").endAt(cutoffMs).limitToFirst(CLAN_CHAT_PRUNE_BATCH).get();
     if (!snapshot.exists()) {
       break;
@@ -163,7 +183,7 @@ export const cleanupChatHistory = onSchedule(
     let totalGlobalPruned = 0;
     for (const doc of roomsSnapshot.docs) {
       const roomId = (doc.data()?.roomId as string) || doc.id;
-      totalGlobalPruned += await pruneChatHistory(`${GLOBAL_CHAT_ROOT}/${roomId}`, globalCutoff);
+      totalGlobalPruned += await pruneChatHistory(`${GLOBAL_CHAT_ROOT}/${roomId}`, globalCutoff, GLOBAL_CHAT_HISTORY_FETCH);
     }
 
     console.log(

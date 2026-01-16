@@ -218,15 +218,17 @@ export const getDailyOffers = onCall(callableOptions({ minInstances: getMinInsta
       }
     } else {
       // Main offer exists - check for transitions
-      const main = activeOffers.main;
+      // NOTE: We check activeOffers.main directly (not a captured variable) because
+      // each transition mutates the object, and subsequent checks need the updated state.
 
       // Handle expired active offer -> cooldown
-      if (main.state === "active" && main.expiresAt <= now) {
-        const newTier = Math.max(0, main.tier - 2); // Drop 2 tiers on expiry
-        const cooldownEndsAt = main.expiresAt + POST_EXPIRY_COOLDOWN_MS; // From EXPIRY, not now
+      if (activeOffers.main.state === "active" && activeOffers.main.expiresAt <= now) {
+        const expiredMain = activeOffers.main;
+        const newTier = Math.max(0, expiredMain.tier - 2); // Drop 2 tiers on expiry
+        const cooldownEndsAt = expiredMain.expiresAt + POST_EXPIRY_COOLDOWN_MS; // From EXPIRY, not now
 
         activeOffers.main = {
-          ...main,
+          ...expiredMain,
           state: "cooldown",
           nextOfferAt: cooldownEndsAt,
           tier: newTier,
@@ -236,15 +238,15 @@ export const getDailyOffers = onCall(callableOptions({ minInstances: getMinInsta
 
       // Handle cooldown -> new active offer
       // NOTE: This is intentional fallback - if scheduler is delayed/down, client still gets offers
-      if (main.state === "cooldown" && (main.nextOfferAt ?? 0) <= now) {
-        activeOffers.main = createTierOffer(main.tier, ladderIndex, now);
+      if (activeOffers.main.state === "cooldown" && (activeOffers.main.nextOfferAt ?? 0) <= now) {
+        activeOffers.main = createTierOffer(activeOffers.main.tier, ladderIndex, now);
         mutated = true;
       }
 
       // Handle purchase_delay -> new active offer
       // NOTE: This is intentional fallback - if scheduler is delayed/down, client still gets offers
-      if (main.state === "purchase_delay" && (main.nextOfferAt ?? 0) <= now) {
-        activeOffers.main = createTierOffer(main.tier, ladderIndex, now);
+      if (activeOffers.main.state === "purchase_delay" && (activeOffers.main.nextOfferAt ?? 0) <= now) {
+        activeOffers.main = createTierOffer(activeOffers.main.tier, ladderIndex, now);
         mutated = true;
       }
     }

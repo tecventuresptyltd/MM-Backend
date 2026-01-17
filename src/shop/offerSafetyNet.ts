@@ -14,6 +14,7 @@ import {
     pruneExpiredSpecialOffers,
 } from "./offerState.js";
 import { loadOfferLadderIndex, OfferLadderIndex } from "./offerCatalog.js";
+import { scheduleOfferTransition } from "./offerScheduler.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Offer Selection
@@ -102,7 +103,8 @@ const restorePlayerOffers = async (
     now: number,
 ): Promise<boolean> => {
     try {
-        return await db.runTransaction(async (transaction) => {
+        // Transaction returns info about what was restored
+        const result = await db.runTransaction(async (transaction) => {
             const activeRef = db.doc(`Players/${uid}/Offers/Active`);
             const stateRef = db.doc(`Players/${uid}/Offers/State`);
 
@@ -123,16 +125,18 @@ const restorePlayerOffers = async (
 
             // Skip if nothing needs fixing
             if (!mainNeedsRestoration && !specialNeedsPruning) {
-                return false;
+                return null; // Nothing to do
             }
 
             logger.info(`[offerSafetyNet] Fixing offers for player ${uid} (main: ${mainNeedsRestoration}, special: ${specialNeedsPruning})`);
 
             // Determine what main offer to use
             let mainOffer = activeOffers.main;
+            let restoredOffer: MainOffer | null = null;
+
             if (mainNeedsRestoration) {
                 // Create fresh daily offer at current tier
-                const restoredOffer = createDailyOffer(ladderIndex, now);
+                restoredOffer = createDailyOffer(ladderIndex, now);
                 restoredOffer.tier = flowState.tier;
                 mainOffer = restoredOffer;
             }
@@ -150,8 +154,29 @@ const restorePlayerOffers = async (
                 }, now);
             }
 
-            return true;
+            // Return info for scheduling (can't schedule inside transaction)
+            return restoredOffer ? { expiresAt: restoredOffer.expiresAt, tier: restoredOffer.tier } : { fixed: true };
         });
+
+        if (!result) {
+            return false; // Nothing was fixed
+        }
+
+        // Schedule expiry transition for the restored offer (OUTSIDE transaction)
+        if ("expiresAt" in result && result.expiresAt) {
+            try {
+                await scheduleOfferTransition(
+                    uid,
+                    result.expiresAt,
+                    "offer_expired",
+                    result.tier ?? 0,
+                );
+            } catch (scheduleError) {
+                logger.warn(`[offerSafetyNet] Failed to schedule expiry for ${uid}:`, scheduleError);
+            }
+        }
+
+        return true;
     } catch (error) {
         logger.error(`[offerSafetyNet] Failed to fix offers for ${uid}:`, error);
         return false;

@@ -1,6 +1,6 @@
 import type * as admin from "firebase-admin";
 
-export type LeaderboardMetric = "trophies" | "careerCoins" | "totalWins";
+export type LeaderboardMetric = "trophies" | "careerCoins" | "totalWins" | "eliminationTrophies";
 
 export const LEADERBOARD_METRICS: Record<
   LeaderboardMetric,
@@ -9,6 +9,7 @@ export const LEADERBOARD_METRICS: Record<
   trophies: { field: "trophies", legacyType: 1 },
   careerCoins: { field: "careerCoins", legacyType: 2 },
   totalWins: { field: "totalWins", legacyType: 3 },
+  eliminationTrophies: { field: "eliminationTrophies", legacyType: 4 },
 };
 
 export interface PlayerClanSummary {
@@ -45,12 +46,14 @@ export interface PlayerProfileSeed {
   level?: number;
   trophies?: number;
   highestTrophies?: number;
+  eliminationTrophies?: number;
+  highestEliminationTrophies?: number;
   careerCoins?: number;
   totalWins?: number;
   totalRaces?: number;
   clanId?: string | null;
-   clanName?: string | null;
-   clanBadge?: string | null;
+  clanName?: string | null;
+  clanBadge?: string | null;
 }
 
 export interface SocialProfileDoc {

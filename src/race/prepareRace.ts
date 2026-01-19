@@ -16,7 +16,8 @@ import { playerClanStateRef, clanMembersCollection, clanRef } from "../clan/help
 import { ItemSku, CarLevel } from "../shared/types.js";
 import { SeededRNG } from "./lib/random.js";
 import { resolveCarStats, calculateBotStatsFromTrophies } from "./lib/stats.js";
-import { calculateLastPlaceDelta, DEFAULT_TROPHY_CONFIG } from "./economy.js";
+import { calculateLastPlaceDelta, DEFAULT_TROPHY_CONFIG, getTrophyConfigForGameMode } from "./economy.js";
+import { GameMode, resolveGameMode, getTrophyFields, shouldSyncClanTrophies } from "../shared/gamemode.js";
 import * as crypto from "crypto";
 
 const db = admin.firestore();
@@ -104,7 +105,11 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
   const uid = request.auth?.uid;
   if (!uid) throw new HttpsError("unauthenticated", "User must be authenticated.");
 
-  const { opId, laps = 3, botCount = 7, seed, trophyHint, trackId } = request.data ?? {};
+  const { opId, laps = 3, botCount = 7, seed, trophyHint, trackId, gamemode: rawGamemode } = request.data ?? {};
+  const gamemode: GameMode = resolveGameMode(rawGamemode);
+  const trophyFields = getTrophyFields(gamemode);
+  const trophyConfig = getTrophyConfigForGameMode(gamemode);
+
   if (typeof opId !== "string" || !opId) throw new HttpsError("invalid-argument", "opId is required.");
   if (typeof laps !== "number" || laps < 1) throw new HttpsError("invalid-argument", "laps must be >= 1");
   if (typeof botCount !== "number" || botCount < 0 || botCount > 15) throw new HttpsError("invalid-argument", "botCount out of range");
@@ -135,7 +140,7 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
     const profile = profileDoc.data() || {};
     const loadout = loadoutDoc.data() || {};
     const garage = garageDoc.data() || {};
-    const playerTrophies: number = typeof trophyHint === "number" ? trophyHint : Number(profile.trophies || 0);
+    const playerTrophies: number = typeof trophyHint === "number" ? trophyHint : Number(profile[trophyFields.current] || 0);
 
     // Fetch catalogs (cached by config.ts)
     const [
@@ -508,7 +513,7 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
     console.log(`  Sample aiLevels: [${bots.slice(0, 3).map(b => (b.carStats.real as any).aiLevel).join(', ')}]`);
 
     const lobbyRatings: number[] = [playerTrophies, ...bots.map((bot) => bot.trophies)];
-    const rawPreDeduct = calculateLastPlaceDelta(0, lobbyRatings, DEFAULT_TROPHY_CONFIG);
+    const rawPreDeduct = calculateLastPlaceDelta(0, lobbyRatings, trophyConfig);
     const normalizedPlayerTrophies = Math.max(
       0,
       Math.floor(Number.isFinite(playerTrophies) ? playerTrophies : 0),
@@ -564,7 +569,7 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
       ]);
 
       const currentTrophies = freshProfileSnap.exists
-        ? sanitizeTrophyCount(freshProfileSnap.data()?.trophies)
+        ? sanitizeTrophyCount(freshProfileSnap.data()?.[trophyFields.current])
         : playerTrophies;
 
       const appliedPreDeduction = preDeductedTrophies < 0
@@ -594,14 +599,14 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
       // 2. WRITES (All writes must happen after reads)
       // ─────────────────────────────────────────────────────────────────────────────
 
-      // Update Player Profile
+      // Update Player Profile with correct trophy field for gamemode
       transaction.update(freshProfileRef, {
-        trophies: trophiesAfterPreDeduct,
+        [trophyFields.current]: trophiesAfterPreDeduct,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      // Update Clan Trophies (if applicable)
-      if (memberRef && memberSnap && memberSnap.exists && clanRefDoc) {
+      // Update Clan Trophies (RANKED only - ELIMINATION does not affect clan trophies)
+      if (shouldSyncClanTrophies(gamemode) && memberRef && memberSnap && memberSnap.exists && clanRefDoc) {
         transaction.update(memberRef, {
           trophies: admin.firestore.FieldValue.increment(appliedPreDeduction),
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -617,6 +622,7 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
       const raceRef = db.doc(`/Races/${raceId}`);
       transaction.set(raceRef, {
         status: "pending",
+        gamemode,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         lobbySnapshot: [
@@ -630,6 +636,7 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
       // Create Participant Document
       const participantRef = db.doc(`/Races/${raceId}/Participants/${uid}`);
       transaction.set(participantRef, {
+        gamemode,
         preDeductedTrophies: appliedPreDeduction,
         playerIndex: 0,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),

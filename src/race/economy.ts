@@ -96,6 +96,31 @@ export const DEFAULT_TROPHY_CONFIG: TrophyConfig = {
   softCeilingLambda: 1 / 2000,
 };
 
+/**
+ * Trophy config for RANKED gamemode.
+ * Currently identical to DEFAULT_TROPHY_CONFIG.
+ */
+export const RANKED_TROPHY_CONFIG: TrophyConfig = { ...DEFAULT_TROPHY_CONFIG };
+
+/**
+ * Trophy config for ELIMINATION gamemode.
+ * Currently identical to RANKED - can be customized independently in the future.
+ */
+export const ELIMINATION_TROPHY_CONFIG: TrophyConfig = { ...DEFAULT_TROPHY_CONFIG };
+
+/**
+ * Get the trophy config for a specific gamemode.
+ */
+export const getTrophyConfigForGameMode = (mode: "RANKED" | "ELIMINATION"): TrophyConfig => {
+  switch (mode) {
+    case "ELIMINATION":
+      return ELIMINATION_TROPHY_CONFIG;
+    case "RANKED":
+    default:
+      return RANKED_TROPHY_CONFIG;
+  }
+};
+
 export const COIN_CAPS_BY_RANK: Record<string, number[]> = {
   "Unranked": [2000, 1500, 1200, 900, 900, 900, 900, 900],
   "Bronze I": [2200, 1650, 1300, 1000, 1000, 1000, 1000, 1000],

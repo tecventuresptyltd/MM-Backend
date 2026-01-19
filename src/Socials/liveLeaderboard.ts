@@ -29,13 +29,13 @@ const buildSummaryFromProfile = (
   const clan =
     clanId !== null
       ? {
-          clanId,
-          name:
-            typeof data.clanName === "string" && data.clanName.trim().length > 0
-              ? data.clanName.trim()
-              : "Clan",
-          badge: typeof data.clanBadge === "string" && data.clanBadge.trim().length > 0 ? data.clanBadge.trim() : null,
-        }
+        clanId,
+        name:
+          typeof data.clanName === "string" && data.clanName.trim().length > 0
+            ? data.clanName.trim()
+            : "Clan",
+        badge: typeof data.clanBadge === "string" && data.clanBadge.trim().length > 0 ? data.clanBadge.trim() : null,
+      }
       : null;
   return buildPlayerSummary(uid, data, clan);
 };
@@ -154,6 +154,7 @@ export const refreshPlayerLeaderboardSnapshots = async (uid: string): Promise<vo
     const profileData = profileSnap.data() ?? {};
     const values: Record<LeaderboardMetric, number> = {
       trophies: Number(profileData.trophies ?? 0),
+      eliminationTrophies: Number(profileData.eliminationTrophies ?? 0),
       careerCoins: Number(profileData.careerCoins ?? 0),
       totalWins: Number(profileData.totalWins ?? 0),
     };

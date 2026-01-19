@@ -44,6 +44,8 @@ const DEFAULT_PROFILE = (displayName: string, now: admin.firestore.FieldValue) =
     expProgressDisplay: `${levelInfo.expInLevel} / ${expRequiredForNextLevel}`,
     trophies: 0,
     highestTrophies: 0,
+    eliminationTrophies: 0,
+    highestEliminationTrophies: 0,
     careerCoins: 0,
     totalWins: 0,
     totalRaces: 0,

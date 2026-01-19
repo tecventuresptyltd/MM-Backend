@@ -26,6 +26,8 @@ import {
 } from "./economy.js";
 import { PlayerBoostersState } from "../shared/types.js";
 import { LeaderboardMetric } from "../Socials/types.js";
+import { GameMode, resolveGameMode, getTrophyFields, shouldSyncClanTrophies } from "../shared/gamemode.js";
+import { getTrophyConfigForGameMode } from "./economy.js";
 
 const db = admin.firestore();
 
@@ -268,7 +270,11 @@ export const startRace = onCall(callableOptions({ minInstances: getMinInstances(
     throw new HttpsError("unauthenticated", "User is not authenticated.");
   }
 
-  const { lobbyRatings, playerIndex } = request.data;
+  const { lobbyRatings, playerIndex, gamemode: rawGamemode } = request.data;
+  const gamemode: GameMode = resolveGameMode(rawGamemode);
+  const trophyConfig = getTrophyConfigForGameMode(gamemode);
+  const trophyFields = getTrophyFields(gamemode);
+
   if (typeof playerIndex !== "number") {
     throw new HttpsError("invalid-argument", "playerIndex must be a number.");
   }
@@ -279,7 +285,7 @@ export const startRace = onCall(callableOptions({ minInstances: getMinInstances(
   const raceId = db.collection("Races").doc().id;
   // NOTE: Trophy pre-deduction is handled by prepareRace, NOT startRace
   // This function only creates the race and participant documents
-  const preDeductedTrophies = calculateLastPlaceDelta(playerIndex, ratingVector, TROPHY_CONFIG);
+  const preDeductedTrophies = calculateLastPlaceDelta(playerIndex, ratingVector, trophyConfig);
 
   const result = await db.runTransaction(async (transaction) => {
     const profileRef = db.doc(`/Players/${uid}/Profile/Profile`);
@@ -291,7 +297,7 @@ export const startRace = onCall(callableOptions({ minInstances: getMinInstances(
       throw new HttpsError("failed-precondition", "Player profile not found.");
     }
 
-    const currentTrophies = sanitizeTrophyCount(profileSnap.data()?.trophies);
+    const currentTrophies = sanitizeTrophyCount(profileSnap.data()?.[trophyFields.current]);
     const appliedPreDeduction =
       preDeductedTrophies < 0 ? Math.max(preDeductedTrophies, -currentTrophies) : preDeductedTrophies;
 
@@ -302,12 +308,14 @@ export const startRace = onCall(callableOptions({ minInstances: getMinInstances(
       currentTrophiesFromProfile: currentTrophies,
       calculatedPreDeduction: preDeductedTrophies,
       appliedPreDeduction,
+      gamemode,
     });
 
     // Create Race document
     const raceRef = db.doc(`/Races/${raceId}`);
     transaction.set(raceRef, {
       status: "pending",
+      gamemode,
       createdAt: timestamp,
       updatedAt: timestamp,
       lobbySnapshot: lobbySnapshot.map((entry) => ({
@@ -322,6 +330,7 @@ export const startRace = onCall(callableOptions({ minInstances: getMinInstances(
     // We need to store the ORIGINAL pre-deduction value for recordRaceResult to settle correctly
     const participantRef = db.doc(`/Races/${raceId}/Participants/${uid}`);
     transaction.set(participantRef, {
+      gamemode,
       preDeductedTrophies: preDeductedTrophies, // Use raw ELO value, not re-capped value
       playerIndex,
       createdAt: timestamp,
@@ -390,12 +399,18 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
 
     const profileData = profileDoc.data()!;
     const participantData = participantDoc.data() ?? {};
+
+    // Get gamemode from participant doc (defaults to RANKED for backward compatibility)
+    const gamemode: GameMode = resolveGameMode(participantData.gamemode);
+    const trophyFields = getTrophyFields(gamemode);
+    const trophyConfig = getTrophyConfigForGameMode(gamemode);
+
     const playerIndex = Number(participantData.playerIndex);
     const lastPlaceDeltaApplied = Number.isFinite(Number(participantData.preDeductedTrophies))
       ? Math.floor(Number(participantData.preDeductedTrophies))
       : 0;
-    const currentTrophies = Number.isFinite(Number(profileData.trophies))
-      ? Math.floor(Number(profileData.trophies))
+    const currentTrophies = Number.isFinite(Number(profileData[trophyFields.current]))
+      ? Math.floor(Number(profileData[trophyFields.current]))
       : 0;
     const trophiesBeforeRace = Math.max(0, currentTrophies - lastPlaceDeltaApplied);
     if (!Number.isInteger(playerIndex)) {
@@ -460,7 +475,7 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
     };
     const rewards = computeRaceRewardsWithPrededuction(
       rewardInput,
-      TROPHY_CONFIG,
+      trophyConfig,
       COIN_CONFIG,
       EXP_CONFIG,
     );
@@ -474,7 +489,7 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
     const appliedTrophiesSettlement = appliedActualTrophiesDelta - lastPlaceDeltaApplied;
     const trophiesAfterSettlement = Math.max(0, currentTrophies + appliedTrophiesSettlement);
     const newHighestTrophies = Math.max(
-      sanitizeTrophyCount(profileData.highestTrophies),
+      sanitizeTrophyCount(profileData[trophyFields.highest]),
       trophiesAfterSettlement,
     );
 
@@ -502,18 +517,18 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
     }
     transaction.update(economyRef, economyUpdate);
 
-    // Update Profile/Profile (trophies belong here)
+    // Update Profile/Profile (trophies belong here - use gamemode-specific fields)
     const profileUpdate: {
       [key: string]: number | admin.firestore.FieldValue | string;
     } = {
-      trophies: trophiesAfterSettlement,
+      [trophyFields.current]: trophiesAfterSettlement,
       exp: xpAfter,
       level: afterInfo.level,
       expProgress: afterInfo.expInLevel,
       expToNextLevel: expRequiredForNextLevel,
       expProgressDisplay: `${afterInfo.expInLevel} / ${expRequiredForNextLevel}`,
       careerCoins: admin.firestore.FieldValue.increment(coinsGained),
-      highestTrophies: newHighestTrophies,
+      [trophyFields.highest]: newHighestTrophies,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
     // Increment race counters
@@ -542,6 +557,7 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
 
     return {
       success: true,
+      gamemode,
       rewards: {
         trophies: appliedActualTrophiesDelta,
         coins: coinsGained,
@@ -609,28 +625,31 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
   }
 
   // Sync clan member trophies with post-race profile trophies (SET, not INCREMENT, to prevent drift)
+  // Only sync for RANKED mode - ELIMINATION does not affect clan trophies
   let clanIdForLiveUpdate: string | null = null;
-  try {
-    const clanStateSnap = await playerClanStateRef(uid).get();
-    const clanId = clanStateSnap.data()?.clanId;
-    if (typeof clanId === "string" && clanId.length > 0) {
-      // Read the actual post-race trophies from profile
-      const profileSnap = await db.doc(`/Players/${uid}/Profile/Profile`).get();
-      const finalTrophies = Number(profileSnap.data()?.trophies ?? 0);
+  if (shouldSyncClanTrophies(result.gamemode)) {
+    try {
+      const clanStateSnap = await playerClanStateRef(uid).get();
+      const clanId = clanStateSnap.data()?.clanId;
+      if (typeof clanId === "string" && clanId.length > 0) {
+        // Read the actual post-race trophies from profile (always ranked trophies for clan)
+        const profileSnap = await db.doc(`/Players/${uid}/Profile/Profile`).get();
+        const finalTrophies = Number(profileSnap.data()?.trophies ?? 0);
 
-      // SET clan member trophies to match profile (not increment - prevents drift)
-      await updateClanMemberSnapshot(uid, { trophies: finalTrophies });
-      clanIdForLiveUpdate = clanId;
+        // SET clan member trophies to match profile (not increment - prevents drift)
+        await updateClanMemberSnapshot(uid, { trophies: finalTrophies });
+        clanIdForLiveUpdate = clanId;
 
-      logger.info("[recordRaceResult] Synced clan member trophies", {
-        uid,
-        raceId,
-        finalTrophies,
-        clanId,
-      });
+        logger.info("[recordRaceResult] Synced clan member trophies", {
+          uid,
+          raceId,
+          finalTrophies,
+          clanId,
+        });
+      }
+    } catch (error) {
+      logger.warn("Failed to sync clan member trophies after race", { uid, raceId, error });
     }
-  } catch (error) {
-    logger.warn("Failed to sync clan member trophies after race", { uid, raceId, error });
   }
 
   await refreshFriendSnapshots(uid);
@@ -641,8 +660,14 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
       const profileData = profileSnapshot.data() ?? {};
       const flags = profileData.top100Flags ?? {};
       const updates: Array<{ metric: LeaderboardMetric; value: number }> = [];
+
+      // Ranked trophies leaderboard
       if (flags?.trophies === true) {
         updates.push({ metric: "trophies", value: Number(profileData.trophies ?? 0) });
+      }
+      // Elimination trophies leaderboard
+      if (flags?.eliminationTrophies === true) {
+        updates.push({ metric: "eliminationTrophies", value: Number(profileData.eliminationTrophies ?? 0) });
       }
       if (flags?.careerCoins === true) {
         updates.push({ metric: "careerCoins", value: Number(profileData.careerCoins ?? 0) });

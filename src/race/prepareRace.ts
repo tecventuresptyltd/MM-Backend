@@ -17,7 +17,7 @@ import { ItemSku, CarLevel } from "../shared/types.js";
 import { SeededRNG } from "./lib/random.js";
 import { resolveCarStats, calculateBotStatsFromTrophies } from "./lib/stats.js";
 import { calculateLastPlaceDelta, DEFAULT_TROPHY_CONFIG, getTrophyConfigForGameMode } from "./economy.js";
-import { GameMode, resolveGameMode, getTrophyFields, shouldSyncClanTrophies } from "../shared/gamemode.js";
+import { GameMode, resolveGameMode, getTrophyFields, shouldSyncClanTrophies, shouldModifyTrophies } from "../shared/gamemode.js";
 import * as crypto from "crypto";
 
 const db = admin.firestore();
@@ -140,7 +140,19 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
     const profile = profileDoc.data() || {};
     const loadout = loadoutDoc.data() || {};
     const garage = garageDoc.data() || {};
-    const playerTrophies: number = typeof trophyHint === "number" ? trophyHint : Number(profile[trophyFields.current] || 0);
+    // Calculate player trophies based on gamemode:
+    // - UNRANKED: Always use RANKED trophies (for consistent bot difficulty)
+    // - RANKED: Use ranked trophies from profile
+    // - ELIMINATION: Use elimination trophies from profile
+    // NOTE: We ignore trophyHint and always use server-side authoritative values
+    let playerTrophies: number;
+    if (gamemode === "UNRANKED") {
+      // UNRANKED always uses ranked trophies for bot difficulty
+      playerTrophies = Number(profile.trophies || 0);
+    } else {
+      // For RANKED and ELIMINATION, use the gamemode-specific trophy field from server
+      playerTrophies = Number(profile[trophyFields.current] || 0);
+    }
 
     // Fetch catalogs (cached by config.ts)
     const [
@@ -600,22 +612,25 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
       // ─────────────────────────────────────────────────────────────────────────────
 
       // Update Player Profile with correct trophy field for gamemode
-      transaction.update(freshProfileRef, {
-        [trophyFields.current]: trophiesAfterPreDeduct,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
-
-      // Update Clan Trophies (RANKED only - ELIMINATION does not affect clan trophies)
-      if (shouldSyncClanTrophies(gamemode) && memberRef && memberSnap && memberSnap.exists && clanRefDoc) {
-        transaction.update(memberRef, {
-          trophies: admin.firestore.FieldValue.increment(appliedPreDeduction),
+      // Skip trophy modification for UNRANKED mode
+      if (shouldModifyTrophies(gamemode)) {
+        transaction.update(freshProfileRef, {
+          [trophyFields.current]: trophiesAfterPreDeduct,
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         });
 
-        transaction.update(clanRefDoc, {
-          "stats.trophies": admin.firestore.FieldValue.increment(appliedPreDeduction),
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
+        // Update Clan Trophies (RANKED only - ELIMINATION does not affect clan trophies)
+        if (shouldSyncClanTrophies(gamemode) && memberRef && memberSnap && memberSnap.exists && clanRefDoc) {
+          transaction.update(memberRef, {
+            trophies: admin.firestore.FieldValue.increment(appliedPreDeduction),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+
+          transaction.update(clanRefDoc, {
+            "stats.trophies": admin.firestore.FieldValue.increment(appliedPreDeduction),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+        }
       }
 
       // Create Race Document

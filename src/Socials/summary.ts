@@ -30,6 +30,7 @@ export const buildPlayerSummary = (
   uid: string,
   profile: PlayerProfileSeed | undefined,
   clan?: PlayerClanSummary | null,
+  trophyValue?: number,
 ): PlayerSummary | null => {
   if (!profile) {
     return null;
@@ -39,7 +40,7 @@ export const buildPlayerSummary = (
     displayName: normalizeString(profile.displayName, "Racer"),
     avatarId: normalizeNumber(profile.avatarId, 1),
     level: normalizeNumber(profile.level, 1),
-    trophies: normalizeNumber(profile.trophies, 0),
+    trophies: trophyValue !== undefined ? normalizeNumber(trophyValue, 0) : normalizeNumber(profile.trophies, 0),
     clan: clan ?? null,
   };
 };

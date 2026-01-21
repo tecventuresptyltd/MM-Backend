@@ -23,6 +23,8 @@ const normalizeEntries = (raw: unknown): LeaderboardEntry[] => {
 const buildSummaryFromProfile = (
   uid: string,
   profile: FirebaseFirestore.DocumentData | undefined,
+  metric: LeaderboardMetric,
+  metricValue: number,
 ): ReturnType<typeof buildPlayerSummary> => {
   const data = (profile ?? {}) as PlayerProfileSeed;
   const clanId = typeof data.clanId === "string" && data.clanId.trim().length > 0 ? data.clanId.trim() : null;
@@ -37,7 +39,7 @@ const buildSummaryFromProfile = (
         badge: typeof data.clanBadge === "string" && data.clanBadge.trim().length > 0 ? data.clanBadge.trim() : null,
       }
       : null;
-  return buildPlayerSummary(uid, data, clan);
+  return buildPlayerSummary(uid, data, clan, metricValue);
 };
 
 export const updatePlayerLeaderboardEntry = async (
@@ -63,7 +65,7 @@ export const updatePlayerLeaderboardEntry = async (
       top100Flags[key] = rawFlags[key] === true;
     });
 
-    const summary = buildSummaryFromProfile(uid, profileData);
+    const summary = buildSummaryFromProfile(uid, profileData, metric, sanitizedValue);
     if (!summary) {
       return;
     }

@@ -109,16 +109,32 @@ export const RANKED_TROPHY_CONFIG: TrophyConfig = { ...DEFAULT_TROPHY_CONFIG };
 export const ELIMINATION_TROPHY_CONFIG: TrophyConfig = { ...DEFAULT_TROPHY_CONFIG };
 
 /**
+ * Trophy config for UNRANKED gamemode.
+ * UNRANKED doesn't modify trophies, but still needs config for ELO calculations.
+ */
+export const UNRANKED_TROPHY_CONFIG: TrophyConfig = { ...DEFAULT_TROPHY_CONFIG };
+
+/**
  * Get the trophy config for a specific gamemode.
  */
-export const getTrophyConfigForGameMode = (mode: "RANKED" | "ELIMINATION"): TrophyConfig => {
+export const getTrophyConfigForGameMode = (mode: "RANKED" | "ELIMINATION" | "UNRANKED"): TrophyConfig => {
   switch (mode) {
     case "ELIMINATION":
       return ELIMINATION_TROPHY_CONFIG;
+    case "UNRANKED":
+      return UNRANKED_TROPHY_CONFIG;
     case "RANKED":
     default:
       return RANKED_TROPHY_CONFIG;
   }
+};
+
+/**
+ * Get the reward multiplier for a specific gamemode.
+ * UNRANKED mode provides 70% of normal rewards.
+ */
+export const getRewardMultiplierForGameMode = (mode: "RANKED" | "ELIMINATION" | "UNRANKED"): number => {
+  return mode === "UNRANKED" ? 0.7 : 1.0;
 };
 
 export const COIN_CAPS_BY_RANK: Record<string, number[]> = {
@@ -152,7 +168,48 @@ export const COIN_CAPS_BY_RANK: Record<string, number[]> = {
   "Hypersonic III": [41300, 31000, 24800, 18600, 18600, 18600, 18600, 18600],
 };
 
+/**
+ * ELIMINATION mode coin caps - reduced rewards for 5th-8th place.
+ * 8th place gets 30% of max (vs 45% in RANKED) to discourage farming quick eliminations.
+ */
+export const ELIMINATION_COIN_CAPS_BY_RANK: Record<string, number[]> = {
+  "Unranked": [2000, 1500, 1200, 900, 800, 740, 660, 600],
+  "Bronze I": [2200, 1650, 1300, 1000, 880, 814, 726, 660],
+  "Bronze II": [2500, 1900, 1500, 1100, 1000, 925, 825, 750],
+  "Bronze III": [2800, 2100, 1700, 1300, 1120, 1036, 924, 840],
+  "Silver I": [3100, 2300, 1900, 1400, 1240, 1147, 1023, 930],
+  "Silver II": [3500, 2600, 2100, 1600, 1400, 1295, 1155, 1050],
+  "Silver III": [3900, 2900, 2300, 1800, 1560, 1443, 1287, 1170],
+  "Gold I": [4300, 3200, 2600, 1900, 1720, 1591, 1419, 1290],
+  "Gold II": [4800, 3600, 2900, 2200, 1936, 1790, 1596, 1440],
+  "Gold III": [5400, 4100, 3200, 2400, 2160, 1998, 1782, 1620],
+  "Platinum I": [6000, 4500, 3600, 2700, 2400, 2220, 1980, 1800],
+  "Platinum II": [6700, 5000, 4000, 3000, 2680, 2479, 2211, 2010],
+  "Platinum III": [7500, 5600, 4500, 3400, 3000, 2775, 2475, 2250],
+  "Diamond I": [8400, 6300, 5000, 3800, 3360, 3108, 2772, 2520],
+  "Diamond II": [9400, 7100, 5600, 4200, 3760, 3478, 3102, 2820],
+  "Diamond III": [10500, 7900, 6300, 4700, 4200, 3885, 3465, 3150],
+  "Master I": [11800, 8900, 7100, 5300, 4720, 4366, 3894, 3540],
+  "Master II": [13200, 9900, 7900, 5900, 5280, 4884, 4356, 3960],
+  "Master III": [14800, 11100, 8900, 6600, 5920, 5478, 4884, 4440],
+  "Champion I": [16600, 12400, 10000, 7500, 6640, 6143, 5478, 4980],
+  "Champion II": [18600, 14000, 11200, 8400, 7440, 6882, 6138, 5580],
+  "Champion III": [20900, 15700, 12500, 9400, 8360, 7733, 6897, 6270],
+  "Ascendant I": [23400, 17600, 14000, 10500, 9360, 8658, 7722, 7020],
+  "Ascendant II": [26200, 19700, 15700, 11800, 10480, 9694, 8646, 7860],
+  "Ascendant III": [29400, 22100, 17600, 13200, 11760, 10878, 9702, 8820],
+  "Hypersonic I": [32900, 24700, 19700, 14800, 13160, 12173, 10857, 9870],
+  "Hypersonic II": [36900, 27700, 22100, 16600, 14760, 13657, 12177, 11070],
+  "Hypersonic III": [41300, 31000, 24800, 18600, 16520, 15286, 13629, 12390],
+};
+
 const EXP_PLACE_MULTS = [1.2, 1.142857, 1.085714, 1.028571, 0.971429, 0.914286, 0.857143, 0.8];
+
+/**
+ * ELIMINATION mode XP multipliers - reduced for 5th-8th place.
+ * 8th place gets 30% of max (vs 67% in RANKED).
+ */
+const ELIMINATION_EXP_PLACE_MULTS = [1.2, 1.14, 1.09, 1.03, 0.84, 0.72, 0.54, 0.36];
 
 const expBaseForRank = (rankLabel: string, baseMin: number, baseMax: number): number => {
   const idx = Math.max(0, RANK_LABELS.indexOf(rankLabel));
@@ -164,6 +221,16 @@ export const EXP_CAPS_BY_RANK: Record<string, number[]> = Object.fromEntries(
   RANK_LABELS.map((label) => [
     label,
     EXP_PLACE_MULTS.map((mult) => Math.round(expBaseForRank(label, 100, 208) * mult)),
+  ]),
+);
+
+/**
+ * ELIMINATION mode XP caps - using reduced multipliers for 5th-8th place.
+ */
+export const ELIMINATION_EXP_CAPS_BY_RANK: Record<string, number[]> = Object.fromEntries(
+  RANK_LABELS.map((label) => [
+    label,
+    ELIMINATION_EXP_PLACE_MULTS.map((mult) => Math.round(expBaseForRank(label, 100, 208) * mult)),
   ]),
 );
 
@@ -182,6 +249,43 @@ export const DEFAULT_EXP_CONFIG: ExpConfig = {
   posMaxMult: 1.2,
   boosterMultiplier: 1,
   rankPlaceCaps: EXP_CAPS_BY_RANK,
+};
+
+/**
+ * ELIMINATION mode coin config - uses reduced caps for lower placements.
+ */
+export const ELIMINATION_COIN_CONFIG: CoinConfig = {
+  rankMaxByPlace: ELIMINATION_COIN_CAPS_BY_RANK,
+  difficultyFloor: 0.85,
+  difficultyCeiling: 1.15,
+  roundTo: 100,
+  boosterMultiplier: 1,
+};
+
+/**
+ * ELIMINATION mode XP config - uses reduced multipliers for lower placements.
+ */
+export const ELIMINATION_EXP_CONFIG: ExpConfig = {
+  baseMin: 100,
+  baseMax: 208,
+  posMinMult: 0.8,
+  posMaxMult: 1.2,
+  boosterMultiplier: 1,
+  rankPlaceCaps: ELIMINATION_EXP_CAPS_BY_RANK,
+};
+
+/**
+ * Get the coin config for a specific gamemode.
+ */
+export const getCoinConfigForGameMode = (mode: "RANKED" | "ELIMINATION" | "UNRANKED"): CoinConfig => {
+  return mode === "ELIMINATION" ? ELIMINATION_COIN_CONFIG : DEFAULT_COIN_CONFIG;
+};
+
+/**
+ * Get the XP config for a specific gamemode.
+ */
+export const getExpConfigForGameMode = (mode: "RANKED" | "ELIMINATION" | "UNRANKED"): ExpConfig => {
+  return mode === "ELIMINATION" ? ELIMINATION_EXP_CONFIG : DEFAULT_EXP_CONFIG;
 };
 
 interface PrecomputedPlayerState {
@@ -417,6 +521,7 @@ export const computeRaceRewardsWithPrededuction = (
   trophyCfg: TrophyConfig,
   coinCfg: CoinConfig,
   expCfg: ExpConfig,
+  gamemode?: "RANKED" | "ELIMINATION" | "UNRANKED",
 ): RaceRewardsWithSettlement => {
   const oldTrophies = input.ratings[input.playerIndex] ?? 0;
   const oldRank = getRankForTrophies(oldTrophies);
@@ -453,6 +558,12 @@ export const computeRaceRewardsWithPrededuction = (
 
   const boosterCoins = coins - baseCoins;
 
+  // Apply gamemode reward multiplier (70% for UNRANKED)
+  const rewardMultiplier = gamemode ? getRewardMultiplierForGameMode(gamemode) : 1.0;
+  const adjustedCoins = Math.round(coins * rewardMultiplier);
+  const adjustedBaseCoins = Math.round(baseCoins * rewardMultiplier);
+  const adjustedBoosterCoins = adjustedCoins - adjustedBaseCoins;
+
   // Calculate base XP (multiplier = 1)
   const expCfgBase: ExpConfig = {
     ...expCfg,
@@ -485,6 +596,11 @@ export const computeRaceRewardsWithPrededuction = (
 
   const boosterXp = exp - baseXp;
 
+  // Apply gamemode reward multiplier to XP (70% for UNRANKED)
+  const adjustedExp = Math.round(exp * rewardMultiplier);
+  const adjustedBaseXp = Math.round(baseXp * rewardMultiplier);
+  const adjustedBoosterXp = adjustedExp - adjustedBaseXp;
+
   const settlement = settleTrophiesAfterFinish(
     input.playerIndex,
     input.finishOrder,
@@ -500,12 +616,12 @@ export const computeRaceRewardsWithPrededuction = (
   return {
     trophiesActual: settlement.actualTrophiesDelta,
     trophiesSettlement: settlement.settlementDelta,
-    coins,
-    exp,
-    baseCoins,
-    boosterCoins,
-    baseXp,
-    boosterXp,
+    coins: adjustedCoins,
+    exp: adjustedExp,
+    baseCoins: adjustedBaseCoins,
+    boosterCoins: adjustedBoosterCoins,
+    baseXp: adjustedBaseXp,
+    boosterXp: adjustedBoosterXp,
     oldRank,
     newRank,
     promoted: rankIndex(newRank) > rankIndex(oldRank),

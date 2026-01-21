@@ -23,10 +23,12 @@ import {
   getRankForTrophies,
   RANK_LABELS,
   toMillis,
+  getCoinConfigForGameMode,
+  getExpConfigForGameMode,
 } from "./economy.js";
 import { PlayerBoostersState } from "../shared/types.js";
 import { LeaderboardMetric } from "../Socials/types.js";
-import { GameMode, resolveGameMode, getTrophyFields, shouldSyncClanTrophies } from "../shared/gamemode.js";
+import { GameMode, resolveGameMode, getTrophyFields, shouldSyncClanTrophies, shouldModifyTrophies, hasLeaderboard } from "../shared/gamemode.js";
 import { getTrophyConfigForGameMode } from "./economy.js";
 
 const db = admin.firestore();
@@ -473,11 +475,17 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
       lastPlaceDeltaApplied,
       placeIndexForI: resolvedPlaceIndex,
     };
+
+    // Get gamemode-specific configs for rewards
+    const coinConfig = getCoinConfigForGameMode(gamemode);
+    const expConfig = getExpConfigForGameMode(gamemode);
+
     const rewards = computeRaceRewardsWithPrededuction(
       rewardInput,
       trophyConfig,
-      COIN_CONFIG,
-      EXP_CONFIG,
+      coinConfig,
+      expConfig,
+      gamemode,
     );
 
     const coinsGained = rewards.coins;
@@ -521,16 +529,19 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
     const profileUpdate: {
       [key: string]: number | admin.firestore.FieldValue | string;
     } = {
-      [trophyFields.current]: trophiesAfterSettlement,
       exp: xpAfter,
       level: afterInfo.level,
       expProgress: afterInfo.expInLevel,
       expToNextLevel: expRequiredForNextLevel,
       expProgressDisplay: `${afterInfo.expInLevel} / ${expRequiredForNextLevel}`,
       careerCoins: admin.firestore.FieldValue.increment(coinsGained),
-      [trophyFields.highest]: newHighestTrophies,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
+    // Add trophy fields only if gamemode modifies trophies (skip for UNRANKED)
+    if (shouldModifyTrophies(gamemode)) {
+      profileUpdate[trophyFields.current] = trophiesAfterSettlement;
+      profileUpdate[trophyFields.highest] = newHighestTrophies;
+    }
     // Increment race counters
     profileUpdate.totalRaces = admin.firestore.FieldValue.increment(1);
     if (place === 1) {
@@ -654,45 +665,48 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
 
   await refreshFriendSnapshots(uid);
 
-  try {
-    const profileSnapshot = await db.doc(`/Players/${uid}/Profile/Profile`).get();
-    if (profileSnapshot.exists) {
-      const profileData = profileSnapshot.data() ?? {};
-      const flags = profileData.top100Flags ?? {};
-      const updates: Array<{ metric: LeaderboardMetric; value: number }> = [];
-
-      // Ranked trophies leaderboard
-      if (flags?.trophies === true) {
-        updates.push({ metric: "trophies", value: Number(profileData.trophies ?? 0) });
-      }
-      // Elimination trophies leaderboard
-      if (flags?.eliminationTrophies === true) {
-        updates.push({ metric: "eliminationTrophies", value: Number(profileData.eliminationTrophies ?? 0) });
-      }
-      if (flags?.careerCoins === true) {
-        updates.push({ metric: "careerCoins", value: Number(profileData.careerCoins ?? 0) });
-      }
-      if (flags?.totalWins === true) {
-        updates.push({ metric: "totalWins", value: Number(profileData.totalWins ?? 0) });
-      }
-
-      if (updates.length > 0) {
-        await Promise.all(
-          updates.map(({ metric, value }) =>
-            updatePlayerLeaderboardEntry(metric, uid, Number.isFinite(value) ? value : 0),
-          ),
-        );
-      }
-    }
-  } catch (error) {
-    logger.warn("Failed to update player live leaderboard entry", { uid, raceId, error });
-  }
-
-  if (clanIdForLiveUpdate) {
+  // Update leaderboards (skip for UNRANKED mode)
+  if (hasLeaderboard(result.gamemode)) {
     try {
-      await updateClanLeaderboardEntry(clanIdForLiveUpdate);
+      const profileSnapshot = await db.doc(`/Players/${uid}/Profile/Profile`).get();
+      if (profileSnapshot.exists) {
+        const profileData = profileSnapshot.data() ?? {};
+        const flags = profileData.top100Flags ?? {};
+        const updates: Array<{ metric: LeaderboardMetric; value: number }> = [];
+
+        // Ranked trophies leaderboard
+        if (flags?.trophies === true) {
+          updates.push({ metric: "trophies", value: Number(profileData.trophies ?? 0) });
+        }
+        // Elimination trophies leaderboard
+        if (flags?.eliminationTrophies === true) {
+          updates.push({ metric: "eliminationTrophies", value: Number(profileData.eliminationTrophies ?? 0) });
+        }
+        if (flags?.careerCoins === true) {
+          updates.push({ metric: "careerCoins", value: Number(profileData.careerCoins ?? 0) });
+        }
+        if (flags?.totalWins === true) {
+          updates.push({ metric: "totalWins", value: Number(profileData.totalWins ?? 0) });
+        }
+
+        if (updates.length > 0) {
+          await Promise.all(
+            updates.map(({ metric, value }) =>
+              updatePlayerLeaderboardEntry(metric, uid, Number.isFinite(value) ? value : 0),
+            ),
+          );
+        }
+      }
     } catch (error) {
-      logger.warn("Failed to update clan leaderboard live entry", { uid, raceId, clanId: clanIdForLiveUpdate, error });
+      logger.warn("Failed to update player live leaderboard entry", { uid, raceId, error });
+    }
+
+    if (clanIdForLiveUpdate) {
+      try {
+        await updateClanLeaderboardEntry(clanIdForLiveUpdate);
+      } catch (error) {
+        logger.warn("Failed to update clan leaderboard live entry", { uid, raceId, clanId: clanIdForLiveUpdate, error });
+      }
     }
   }
 

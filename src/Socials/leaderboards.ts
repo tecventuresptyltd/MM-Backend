@@ -102,13 +102,24 @@ export const getMyLeaderboardRank = onCall(
         const rawValue = profile[metricField];
         const statValue = typeof rawValue === "number" && Number.isFinite(rawValue) ? rawValue : 0;
 
-        const countSnap = await db
-          .collectionGroup("Profile")
-          .where(metricField as string, ">", statValue)
-          .count()
-          .get();
+        let higherCount = 0;
+        try {
+          const countSnap = await db
+            .collectionGroup("Profile")
+            .where(metricField as string, ">", statValue)
+            .count()
+            .get();
 
-        const higherCount = countSnap.data().count ?? 0;
+          higherCount = countSnap.data().count ?? 0;
+        } catch (error) {
+          // If the query fails (e.g., field doesn't exist on many documents),
+          // default to rank 1 (no one has a higher value)
+          console.warn(
+            `[getMyLeaderboardRank] Failed to query ${metricField} for uid ${uid}:`,
+            error instanceof Error ? error.message : error
+          );
+          higherCount = 0;
+        }
 
         return {
           metric,

@@ -513,7 +513,19 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
     const demoted = rankIndex(newRankLabel) < rankIndex(oldRankLabel);
 
     // Resolve loot before any other writes to keep transaction read-before-write ordering valid.
-    const drops = await resolveRaceDrops(transaction, uid, botDisplayNames);
+    // Skip loot for UNRANKED mode
+    let drops: RaceDropResolution;
+    if (gamemode === "UNRANKED") {
+      drops = {
+        playerDrop: { type: "noreward", skuId: null },
+        botDrops: botDisplayNames.map((bot) => ({
+          bot,
+          drop: { type: "noreward", skuId: null },
+        })),
+      };
+    } else {
+      drops = await resolveRaceDrops(transaction, uid, botDisplayNames);
+    }
 
     // Update Economy/Stats (no trophies here)
     const economyUpdate: Record<string, admin.firestore.FieldValue> = {

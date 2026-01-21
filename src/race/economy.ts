@@ -112,7 +112,13 @@ export const ELIMINATION_TROPHY_CONFIG: TrophyConfig = { ...DEFAULT_TROPHY_CONFI
  * Trophy config for UNRANKED gamemode.
  * UNRANKED doesn't modify trophies, but still needs config for ELO calculations.
  */
-export const UNRANKED_TROPHY_CONFIG: TrophyConfig = { ...DEFAULT_TROPHY_CONFIG };
+export const UNRANKED_TROPHY_CONFIG: TrophyConfig = {
+  ...DEFAULT_TROPHY_CONFIG,
+  baseKBreakpoints: [[Number.POSITIVE_INFINITY, 0]],
+  CLAMP_MIN: 0,
+  CLAMP_MAX: 0,
+  PER_PAIR_CLIP: 0,
+};
 
 /**
  * Get the trophy config for a specific gamemode.

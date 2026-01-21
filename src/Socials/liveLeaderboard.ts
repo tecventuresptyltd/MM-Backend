@@ -104,10 +104,19 @@ export const updatePlayerLeaderboardEntry = async (
     const entries = normalizeEntries(leaderboardSnap.data()?.top100);
     const hasSpace = entries.length < MAX_ENTRIES;
     const isFlagged = top100Flags[metric] === true;
-    if (!isFlagged && !hasSpace) {
+
+    // Check if player beats the 100th place (last entry)
+    // Entries are already sorted by value descending, so last entry is 100th place
+    const lastEntry = entries.length > 0 ? entries[entries.length - 1] : null;
+    const beatsLastPlace = lastEntry ? sanitizedValue > lastEntry.value : true;
+
+    // Skip update only if: not flagged AND no space AND doesn't beat last place
+    if (!isFlagged && !hasSpace && !beatsLastPlace) {
       return;
     }
-    if (!isFlagged && hasSpace) {
+
+    // If player beats last place or has space, set the flag
+    if (!isFlagged && (hasSpace || beatsLastPlace)) {
       top100Flags[metric] = true;
       const isInTop100 = Object.values(top100Flags).some((value) => value === true);
       transaction.set(

@@ -40,7 +40,9 @@ interface OfferTransition {
     transitionType: "cooldown_end" | "purchase_delay_end" | "offer_expired";
     tier: number;
     createdAt: number;
+    retryCount?: number;
 }
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Queue Management
@@ -136,7 +138,19 @@ const processPlayerTransition = async (
     ladderIndex: OfferLadderIndex,
     now: number,
 ): Promise<boolean> => {
-    const { uid, tier } = transition;
+    const { uid, tier, retryCount = 0 } = transition;
+
+    // FUSE BREAKER: If retried too many times, drop it to prevent blocking the queue
+    if (retryCount >= 5) {
+        logger.error(`[offerScheduler] DROPPING transition for ${uid} after ${retryCount} failures.`);
+        try {
+            await db.collection(TRANSITION_QUEUE_PATH).doc(uid).delete();
+            // Optional: Write to DLQ here if we had one
+        } catch (e) {
+            logger.error(`[offerScheduler] Failed to clean up dropped transition for ${uid}`, e);
+        }
+        return false; // Considered "processed" (removed from queue)
+    }
 
     try {
         const result = await db.runTransaction(async (transaction): Promise<TransitionResult> => {
@@ -276,9 +290,20 @@ const processPlayerTransition = async (
         return true;
     } catch (error) {
         logger.error(`[offerScheduler] Failed to process transition for ${uid}:`, error);
+
+        // RETRY LOGIC: Increment retry count instead of just failing
+        try {
+            await db.collection(TRANSITION_QUEUE_PATH).doc(uid).update({
+                retryCount: (retryCount || 0) + 1
+            });
+        } catch (updateErr) {
+            logger.warn(`[offerScheduler] Failed to update retry count for ${uid}`, updateErr);
+        }
+
         return false;
     }
 };
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Scheduled Function

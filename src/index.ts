@@ -115,6 +115,8 @@ export {
   claimSpellResearchV2,
   skipSpellResearchV2,
   getLibraryStatusV2,
+  setSpellDeckV2,
+  selectActiveSpellDeckV2,
 } from "./spellsV2";
 
 // V2 Crates: Slot-based Unlock System

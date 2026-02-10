@@ -11,3 +11,9 @@ export {
     skipSpellResearchV2,
     getLibraryStatusV2,
 } from "./researchV2.js";
+
+// Spell Decks (3-spell system)
+export {
+    setSpellDeckV2,
+    selectActiveSpellDeckV2,
+} from "./deckV2.js";

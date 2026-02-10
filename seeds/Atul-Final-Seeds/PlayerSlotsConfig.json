@@ -1,0 +1,39 @@
+{
+    "version": "v1-player-slots",
+    "updatedAt": 1738616330000,
+    "notes": "Configuration for Pit Crew (car evolution) and Library (spell research) slots. Slots can be purchased with gems.",
+    "pitCrew": {
+        "description": "Pit Crew slots determine how many cars can evolve simultaneously",
+        "defaultSlots": 1,
+        "maxSlots": 3,
+        "purchasableSlotsConfig": [
+            {
+                "slotNumber": 2,
+                "gemCost": 500,
+                "displayName": "Second Pit Crew Bay"
+            },
+            {
+                "slotNumber": 3,
+                "gemCost": 1000,
+                "displayName": "Third Pit Crew Bay"
+            }
+        ]
+    },
+    "library": {
+        "description": "Library slots determine how many spells can be researched simultaneously",
+        "defaultSlots": 1,
+        "maxSlots": 3,
+        "purchasableSlotsConfig": [
+            {
+                "slotNumber": 2,
+                "gemCost": 300,
+                "displayName": "Second Research Chamber"
+            },
+            {
+                "slotNumber": 3,
+                "gemCost": 600,
+                "displayName": "Third Research Chamber"
+            }
+        ]
+    }
+}

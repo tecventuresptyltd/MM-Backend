@@ -92,4 +92,36 @@ export { verifyAdminStatus } from "./admin/verifyAdminStatus";
 export { getAdminMaintenanceStatus, getMaintenanceHistory } from "./admin/adminMaintenance";
 export { getAdminVersionStatus, getVersionHistory } from "./admin/adminVersion";
 
+// =============================================================================
+// V2 FUNCTIONS - Parallel Backend for New Game Design
+// =============================================================================
 
+// V2 Garage: Tier Licenses, Car Evolution (Pit Crew), Fuel System
+export {
+  purchaseTierLicenseV2,
+  getTierCatalogV2,
+  startCarEvolutionV2,
+  claimCarEvolutionV2,
+  skipCarEvolutionV2,
+  getPitCrewStatusV2,
+  refuelWithAdV2,
+  useFuelCellV2,
+  getCarFuelStatusV2,
+} from "./garageV2";
+
+// V2 Spells: Library (Spell Research)
+export {
+  startSpellResearchV2,
+  claimSpellResearchV2,
+  skipSpellResearchV2,
+  getLibraryStatusV2,
+} from "./spellsV2";
+
+// V2 Crates: Slot-based Unlock System
+export {
+  receiveCrateV2,
+  startCrateUnlockV2,
+  claimCrateRewardV2,
+  skipCrateUnlockV2,
+  getCrateSlotsStatusV2,
+} from "./cratesV2";

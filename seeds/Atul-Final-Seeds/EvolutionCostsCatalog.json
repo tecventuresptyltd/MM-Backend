@@ -1,0 +1,56 @@
+{
+    "version": "v1-evolution",
+    "updatedAt": 1738616330000,
+    "notes": "XP caps define when a car becomes XP-capped and requires evolution. Evolution costs define the coins and time required to star-up.",
+    "xpCaps": {
+        "0": 1000,
+        "1": 2500,
+        "2": 5000,
+        "3": 10000,
+        "4": 20000
+    },
+    "maxStarLevel": 5,
+    "evolutionCosts": {
+        "0": {
+            "targetStarLevel": 1,
+            "coins": 5000,
+            "durationSeconds": 3600,
+            "displayDuration": "1 hour"
+        },
+        "1": {
+            "targetStarLevel": 2,
+            "coins": 15000,
+            "durationSeconds": 7200,
+            "displayDuration": "2 hours"
+        },
+        "2": {
+            "targetStarLevel": 3,
+            "coins": 35000,
+            "durationSeconds": 14400,
+            "displayDuration": "4 hours"
+        },
+        "3": {
+            "targetStarLevel": 4,
+            "coins": 75000,
+            "durationSeconds": 28800,
+            "displayDuration": "8 hours"
+        },
+        "4": {
+            "targetStarLevel": 5,
+            "coins": 150000,
+            "durationSeconds": 57600,
+            "displayDuration": "16 hours"
+        }
+    },
+    "skipCost": {
+        "gemsPerHour": 50,
+        "minGems": 10
+    },
+    "statBonusPerStar": {
+        "topSpeed": 0.05,
+        "acceleration": 0.05,
+        "handling": 0.05,
+        "boostRegen": 0.05,
+        "boostPower": 0.05
+    }
+}

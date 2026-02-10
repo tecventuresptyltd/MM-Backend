@@ -1,0 +1,47 @@
+{
+    "version": "v1-crate-slots",
+    "updatedAt": 1738616330000,
+    "notes": "Crate slot configuration for the V2 unlock system. Players have limited slots and can only unlock one crate at a time.",
+    "maxSlots": 4,
+    "defaultSlots": 4,
+    "purchasableSlots": {
+        "enabled": false,
+        "maxPurchasable": 0,
+        "gemCostPerSlot": 500
+    },
+    "unlockDurations": {
+        "common": {
+            "durationSeconds": 1800,
+            "displayDuration": "30 minutes"
+        },
+        "rare": {
+            "durationSeconds": 10800,
+            "displayDuration": "3 hours"
+        },
+        "exotic": {
+            "durationSeconds": 28800,
+            "displayDuration": "8 hours"
+        },
+        "legendary": {
+            "durationSeconds": 43200,
+            "displayDuration": "12 hours"
+        },
+        "mythical": {
+            "durationSeconds": 86400,
+            "displayDuration": "24 hours"
+        }
+    },
+    "skipCost": {
+        "gemsPerHour": 20,
+        "minGems": 5
+    },
+    "slotFullFallback": {
+        "enabled": true,
+        "description": "When all slots are full, grant this instead of a crate",
+        "rewards": {
+            "coins": 100,
+            "spellShards": 10
+        }
+    },
+    "simultaneousUnlocks": 1
+}

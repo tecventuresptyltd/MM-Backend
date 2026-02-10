@@ -1,0 +1,32 @@
+{
+    "version": "v1-fuel",
+    "updatedAt": 1738616330000,
+    "notes": "Fuel is per-car. Each car has its own fuel bars that regenerate over time.",
+    "maxBars": 5,
+    "regenIntervalMinutes": 15,
+    "raceCostPerRace": 1,
+    "refillOptions": {
+        "ad": {
+            "type": "ad",
+            "refillAmount": 3,
+            "cooldownMinutes": 30,
+            "maxAdWatchesPerDay": 10
+        },
+        "fuelCell": {
+            "type": "item",
+            "skuId": "sku_fuel_cell",
+            "refillAmount": 5,
+            "description": "Instantly refills fuel to maximum"
+        },
+        "gems": {
+            "type": "premium",
+            "gemsPerBar": 10,
+            "refillAmount": 5
+        }
+    },
+    "fallbackReward": {
+        "description": "Awarded when attempting to race with no fuel and no refill options",
+        "enabled": false,
+        "coins": 0
+    }
+}

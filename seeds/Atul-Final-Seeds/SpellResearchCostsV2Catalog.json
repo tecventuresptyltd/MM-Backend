@@ -1,0 +1,54 @@
+{
+    "version": "v1-research",
+    "updatedAt": 1738616330000,
+    "notes": "Spell research costs define the Spell Shards and time required to level up spells. Level 1 is the unlock level (no cost).",
+    "maxSpellLevel": 5,
+    "researchCosts": {
+        "1": {
+            "targetLevel": 1,
+            "shards": 0,
+            "durationSeconds": 0,
+            "displayDuration": "Instant",
+            "description": "Spell unlocked"
+        },
+        "2": {
+            "targetLevel": 2,
+            "shards": 100,
+            "durationSeconds": 1800,
+            "displayDuration": "30 minutes"
+        },
+        "3": {
+            "targetLevel": 3,
+            "shards": 250,
+            "durationSeconds": 3600,
+            "displayDuration": "1 hour"
+        },
+        "4": {
+            "targetLevel": 4,
+            "shards": 500,
+            "durationSeconds": 7200,
+            "displayDuration": "2 hours"
+        },
+        "5": {
+            "targetLevel": 5,
+            "shards": 1000,
+            "durationSeconds": 14400,
+            "displayDuration": "4 hours"
+        }
+    },
+    "skipCost": {
+        "gemsPerHour": 25,
+        "minGems": 5
+    },
+    "spellXpConfig": {
+        "xpPerRace": 10,
+        "xpPerWin": 25,
+        "xpPerSpellCast": 5,
+        "xpCapPerLevel": {
+            "1": 100,
+            "2": 250,
+            "3": 500,
+            "4": 1000
+        }
+    }
+}

@@ -1,0 +1,161 @@
+{
+    "version": "v1-tiers",
+    "updatedAt": 1738616330000,
+    "tiers": {
+        "tier_1": {
+            "tierId": "tier_1",
+            "displayName": "Street License",
+            "i18n": {
+                "en": "Street License"
+            },
+            "order": 1,
+            "requirements": {
+                "masteryRank": 0,
+                "coins": 0
+            },
+            "bundledCars": [
+                {
+                    "carId": "car_h4ayzwf31g",
+                    "archetype": "tank",
+                    "displayName": "Mitsabi Eon"
+                },
+                {
+                    "carId": "car_1wp1gr2p",
+                    "archetype": "speedster",
+                    "displayName": "Doge Chaser"
+                },
+                {
+                    "carId": "car_4bbp20vv",
+                    "archetype": "specialist",
+                    "displayName": "Nisaro 360X"
+                }
+            ],
+            "starterLicense": true,
+            "description": "Entry-level street racing license. Granted to all new racers."
+        },
+        "tier_2": {
+            "tierId": "tier_2",
+            "displayName": "Sports License",
+            "i18n": {
+                "en": "Sports License"
+            },
+            "order": 2,
+            "requirements": {
+                "masteryRank": 5,
+                "coins": 100000
+            },
+            "bundledCars": [
+                {
+                    "carId": "car_3n27817s",
+                    "archetype": "tank",
+                    "displayName": "Mercian SLR Apex"
+                },
+                {
+                    "carId": "car_tier2_speedster",
+                    "archetype": "speedster",
+                    "displayName": "TBD Speedster"
+                },
+                {
+                    "carId": "car_tier2_specialist",
+                    "archetype": "specialist",
+                    "displayName": "TBD Specialist"
+                }
+            ],
+            "starterLicense": false,
+            "description": "Unlock faster sports cars with improved handling."
+        },
+        "tier_3": {
+            "tierId": "tier_3",
+            "displayName": "Super License",
+            "i18n": {
+                "en": "Super License"
+            },
+            "order": 3,
+            "requirements": {
+                "masteryRank": 10,
+                "coins": 250000
+            },
+            "bundledCars": [
+                {
+                    "carId": "car_tier3_tank",
+                    "archetype": "tank",
+                    "displayName": "TBD Tank"
+                },
+                {
+                    "carId": "car_tier3_speedster",
+                    "archetype": "speedster",
+                    "displayName": "TBD Speedster"
+                },
+                {
+                    "carId": "car_tier3_specialist",
+                    "archetype": "specialist",
+                    "displayName": "TBD Specialist"
+                }
+            ],
+            "starterLicense": false,
+            "description": "Access to high-performance supercars."
+        },
+        "tier_4": {
+            "tierId": "tier_4",
+            "displayName": "Hyper License",
+            "i18n": {
+                "en": "Hyper License"
+            },
+            "order": 4,
+            "requirements": {
+                "masteryRank": 20,
+                "coins": 500000
+            },
+            "bundledCars": [
+                {
+                    "carId": "car_tier4_tank",
+                    "archetype": "tank",
+                    "displayName": "TBD Tank"
+                },
+                {
+                    "carId": "car_tier4_speedster",
+                    "archetype": "speedster",
+                    "displayName": "TBD Speedster"
+                },
+                {
+                    "carId": "car_tier4_specialist",
+                    "archetype": "specialist",
+                    "displayName": "TBD Specialist"
+                }
+            ],
+            "starterLicense": false,
+            "description": "Elite hypercars for experienced racers."
+        },
+        "tier_5": {
+            "tierId": "tier_5",
+            "displayName": "Mythic License",
+            "i18n": {
+                "en": "Mythic License"
+            },
+            "order": 5,
+            "requirements": {
+                "masteryRank": 30,
+                "coins": 1000000
+            },
+            "bundledCars": [
+                {
+                    "carId": "car_tier5_tank",
+                    "archetype": "tank",
+                    "displayName": "TBD Tank"
+                },
+                {
+                    "carId": "car_tier5_speedster",
+                    "archetype": "speedster",
+                    "displayName": "TBD Speedster"
+                },
+                {
+                    "carId": "car_tier5_specialist",
+                    "archetype": "specialist",
+                    "displayName": "TBD Specialist"
+                }
+            ],
+            "starterLicense": false,
+            "description": "Legendary machines of unparalleled power."
+        }
+    }
+}

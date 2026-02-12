@@ -11,6 +11,7 @@ import { maybeGenerateStarterOffer } from "../shop/offers.js";
 import { STARTER_RACE_THRESHOLD } from "../shop/offerState.js";
 import { buildBotLoadout } from "../game-systems/botLoadoutHelper.js";
 import { applyClanTrophyDelta, playerClanStateRef, clanMembersCollection, clanRef, updateClanMemberSnapshot } from "../clan/helpers.js";
+import { getXpCapForStarLevel, getSpellResearchCostsCatalog } from "../core/configV2.js";
 import { updatePlayerLeaderboardEntry } from "../Socials/liveLeaderboard.js";
 import { updateClanLeaderboardEntry } from "../clan/liveLeaderboard.js";
 import {
@@ -389,10 +390,16 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
     const economyRef = db.doc(`/Players/${uid}/Economy/Stats`);
     const profileRef = db.doc(`/Players/${uid}/Profile/Profile`);
     const participantRef = db.doc(`/Races/${raceId}/Participants/${uid}`);
-    const [economyDoc, profileDoc, participantDoc] = await transaction.getAll(
+    const garageRef = db.doc(`/Players/${uid}/Garage/Cars`);
+    const spellDecksRef = db.doc(`/Players/${uid}/SpellDecks/Decks`);
+    const spellLevelsRef = db.doc(`/Players/${uid}/Spells/Levels`);
+    const [economyDoc, profileDoc, participantDoc, garageDoc, spellDecksDoc, spellLevelsDoc] = await transaction.getAll(
       economyRef,
       profileRef,
       participantRef,
+      garageRef,
+      spellDecksRef,
+      spellLevelsRef,
     );
 
     if (!economyDoc.exists || !profileDoc.exists || !participantDoc.exists) {
@@ -561,6 +568,105 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
     }
     transaction.update(profileRef, profileUpdate);
 
+    // --- Grant Car XP (same amount as player XP) ---
+    const raceCarId = participantData.carId as string | undefined;
+    let carXpResult: { newXp: number; isNowCapped: boolean; starLevel: number } | null = null;
+    if (raceCarId && garageDoc.exists) {
+      const garageData = garageDoc.data()!;
+      const carData = garageData.cars?.[raceCarId];
+      if (carData) {
+        const isXpCapped = carData.isXpCapped ?? false;
+        if (isXpCapped) {
+          // Car is already capped, no XP granted
+          carXpResult = {
+            newXp: carData.xp ?? 0,
+            isNowCapped: true,
+            starLevel: carData.starLevel ?? 0,
+          };
+        } else {
+          const currentXp = carData.xp ?? 0;
+          const starLevel = carData.starLevel ?? 0;
+          const xpCap = await getXpCapForStarLevel(starLevel);
+          let newXp = currentXp + xpGained;
+          let isNowCapped = false;
+          if (newXp >= xpCap) {
+            newXp = xpCap;
+            isNowCapped = true;
+          }
+          transaction.update(garageRef, {
+            [`cars.${raceCarId}.xp`]: newXp,
+            [`cars.${raceCarId}.isXpCapped`]: isNowCapped,
+            [`cars.${raceCarId}.updatedAt`]: admin.firestore.FieldValue.serverTimestamp(),
+          });
+          carXpResult = { newXp, isNowCapped, starLevel };
+        }
+      }
+    }
+
+    // --- Grant Spell XP to all equipped spells ---
+    const spellXpResults: Array<{ spellId: string; xpAwarded: number; newTotalXp: number; isXpCapped: boolean; level: number }> = [];
+    const raceDeckIndex = participantData.deckIndex as number | undefined;
+    if (spellDecksDoc.exists && raceDeckIndex !== undefined) {
+      const decksData = spellDecksDoc.data();
+      const levelsData = spellLevelsDoc.exists ? spellLevelsDoc.data() : {};
+      const deckSpells: string[] = decksData?.decks?.[String(raceDeckIndex)]?.spells ?? [];
+      // Read from nested spells.{spellId} structure, fallback to legacy levels map
+      const spellsMap = (levelsData?.spells ?? {}) as Record<string, { level?: number; xp?: number; isXpCapped?: boolean }>;
+      const legacyLevelsMap = (levelsData?.levels ?? {}) as Record<string, number>;
+
+      if (deckSpells.length > 0) {
+        const researchCatalog = await getSpellResearchCostsCatalog();
+        const xpConfig = researchCatalog.spellXpConfig;
+        const baseXp = xpConfig.xpPerRace ?? 10;
+        const winBonus = place === 1 ? (xpConfig.xpPerWin ?? 25) : 0;
+        const spellXpAmount = baseXp + winBonus;
+
+        const spellsNestedData: Record<string, { xp: number; isXpCapped: boolean; level: number }> = {};
+        for (const spellId of deckSpells) {
+          if (!spellId || typeof spellId !== "string") continue;
+          // Read from nested structure first, fallback to legacy
+          const spellData = spellsMap[spellId] ?? {};
+          const currentLevel = spellData.level ?? legacyLevelsMap[spellId] ?? 1;
+          const currentXp = spellData.xp ?? 0;
+          const isAlreadyCapped = spellData.isXpCapped ?? false;
+
+          if (isAlreadyCapped) {
+            spellXpResults.push({ spellId, xpAwarded: 0, newTotalXp: currentXp, isXpCapped: true, level: currentLevel });
+            continue;
+          }
+
+          const xpCap = xpConfig.xpCapPerLevel?.[String(currentLevel)] ?? 9999;
+          let newXp = currentXp + spellXpAmount;
+          let isNowCapped = false;
+          if (newXp >= xpCap) {
+            newXp = xpCap;
+            isNowCapped = true;
+          }
+
+          spellsNestedData[spellId] = { xp: newXp, isXpCapped: isNowCapped, level: currentLevel };
+          spellXpResults.push({ spellId, xpAwarded: spellXpAmount, newTotalXp: newXp, isXpCapped: isNowCapped, level: currentLevel });
+        }
+
+        if (Object.keys(spellsNestedData).length > 0) {
+          if (spellLevelsDoc.exists) {
+            // update() correctly interprets dot-notation as nested paths
+            const dotUpdate: Record<string, unknown> = {};
+            for (const [sid, sData] of Object.entries(spellsNestedData)) {
+              dotUpdate[`spells.${sid}`] = sData;
+            }
+            dotUpdate.updatedAt = admin.firestore.FieldValue.serverTimestamp();
+            transaction.update(spellLevelsRef, dotUpdate);
+          } else {
+            // Doc doesn't exist — use set() with real nested object
+            transaction.set(spellLevelsRef, {
+              spells: spellsNestedData,
+              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
+          }
+        }
+      }
+    }
+
     // Debug logging for trophy investigation
     logger.info("[recordRaceResult] Trophy calculation debug", {
       uid,
@@ -614,6 +720,14 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
         player: drops.playerDrop,
         bots: drops.botDrops,
       },
+      carXp: carXpResult && raceCarId ? {
+        carId: raceCarId,
+        xpAwarded: xpGained,
+        newTotalXp: carXpResult.newXp,
+        isXpCapped: carXpResult.isNowCapped,
+        starLevel: carXpResult.starLevel,
+      } : null,
+      spellXp: spellXpResults.length > 0 ? spellXpResults : null,
     };
   });
 

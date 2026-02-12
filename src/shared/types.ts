@@ -112,7 +112,7 @@ export interface Spell {
 
 export interface BaseItem {
   itemId: string;
-  type: "cosmetic" | "crate" | "key" | "booster" | "currency";
+  type: "cosmetic" | "crate" | "key" | "booster" | "speedup" | "currency";
   category?: BaseItem["type"] | string;
   displayName: string;
   rarity: ItemRarity;
@@ -150,13 +150,20 @@ export interface BoosterItem extends BaseItem {
   stackable: true;
 }
 
+export interface SpeedUpItem extends BaseItem {
+  type: "speedup";
+  subType: "speedup";
+  durationSeconds?: number;
+  stackable: true;
+}
+
 export interface CurrencyItem extends BaseItem {
   type: "currency";
   stackable: true;
   metadata?: Record<string, unknown> & { currency?: string };
 }
 
-export type Item = CosmeticItem | CrateItem | KeyItem | BoosterItem | CurrencyItem;
+export type Item = CosmeticItem | CrateItem | KeyItem | BoosterItem | SpeedUpItem | CurrencyItem;
 
 export interface ItemPurchasable {
   currency: "gems" | "coins";

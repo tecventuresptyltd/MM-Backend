@@ -98,7 +98,7 @@ function normaliseItemVariants(item: Item): ItemVariant[] {
     (item as Partial<Item> & { variant?: unknown }).variant,
   )
     ? ((item as Partial<Item> & { variant?: Record<string, unknown> }).variant ??
-        null)
+      null)
     : null;
   const baseMetadata = isPlainObject(item.metadata)
     ? (item.metadata as Record<string, unknown>)
@@ -147,26 +147,26 @@ function normaliseItemVariants(item: Item): ItemVariant[] {
       (entry as { assetRef?: unknown }).assetRef,
     )
       ? (clone(
-          (entry as { assetRef?: Record<string, unknown> }).assetRef,
-        ) as ItemVariant["assetRef"])
+        (entry as { assetRef?: Record<string, unknown> }).assetRef,
+      ) as ItemVariant["assetRef"])
       : baseAssetRef
-      ? clone(baseAssetRef)
-      : undefined;
+        ? clone(baseAssetRef)
+        : undefined;
     const variantVariant = isPlainObject(
       (entry as { variant?: unknown }).variant,
     )
       ? (clone(
-          (entry as { variant?: Record<string, unknown> | null }).variant ??
-            null,
-        ) as Record<string, unknown> | null)
+        (entry as { variant?: Record<string, unknown> | null }).variant ??
+        null,
+      ) as Record<string, unknown> | null)
       : cloneIfDefined(baseVariant) ?? null;
     const variantMetadata = isPlainObject(
       (entry as { metadata?: unknown }).metadata,
     )
       ? (clone(
-          (entry as { metadata?: Record<string, unknown> | null }).metadata ??
-            null,
-        ) as Record<string, unknown> | null)
+        (entry as { metadata?: Record<string, unknown> | null }).metadata ??
+        null,
+      ) as Record<string, unknown> | null)
       : cloneIfDefined(baseMetadata) ?? null;
     const variantTags =
       normaliseStringArray((entry as { tags?: unknown }).tags) ??
@@ -246,6 +246,13 @@ function normaliseItemsCatalogDoc(doc: ItemsCatalogDoc): ItemsCatalogDoc {
         stackable: rawItem.stackable,
       };
     } else if (rawItem.type === "booster") {
+      normalisedItem = {
+        ...rawItem,
+        itemId,
+        rarity: (itemIsDefaultNamed ? "Default" : rawItem.rarity) as Item["rarity"],
+        stackable: rawItem.stackable,
+      };
+    } else if (rawItem.type === "speedup") {
       normalisedItem = {
         ...rawItem,
         itemId,
@@ -389,14 +396,14 @@ function buildSkuContext(doc: ItemsCatalogDoc): ItemSkuContext {
         typeof variant.gemPrice === "number"
           ? variant.gemPrice
           : typeof item.gemPrice === "number"
-          ? item.gemPrice
-          : undefined;
+            ? item.gemPrice
+            : undefined;
       const purchasableFlag =
         typeof variant.purchasable === "boolean"
           ? variant.purchasable
           : typeof item.purchasable === "boolean"
-          ? item.purchasable
-          : false;
+            ? item.purchasable
+            : false;
       const purchasable =
         purchasableFlag && typeof resolvedGemPrice === "number" && resolvedGemPrice > 0
           ? { currency: "gems" as const, amount: resolvedGemPrice }
@@ -469,13 +476,13 @@ function normaliseCratesCatalogDoc(doc: CratesCatalogDoc): CratesCatalogDoc {
     }
     const dropTable = Array.isArray(crate.dropTable)
       ? crate.dropTable
-          .map((entry) => ({
-            itemId: entry?.itemId ?? "",
-            weight: Number(entry?.weight ?? 0),
-          }))
-          .filter(
-            (entry) => entry.itemId.length > 0 && Number.isFinite(entry.weight),
-          )
+        .map((entry) => ({
+          itemId: entry?.itemId ?? "",
+          weight: Number(entry?.weight ?? 0),
+        }))
+        .filter(
+          (entry) => entry.itemId.length > 0 && Number.isFinite(entry.weight),
+        )
       : [];
 
     crates[crateId] = {

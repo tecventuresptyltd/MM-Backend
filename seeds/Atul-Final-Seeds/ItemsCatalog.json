@@ -4588,6 +4588,135 @@
           }
         }
       ]
+    },
+    "spd_v8kn3qw2": {
+      "itemId": "spd_v8kn3qw2",
+      "displayName": "Speed Up",
+      "category": "speedup",
+      "type": "speedup",
+      "subType": "speedup",
+      "rarity": "special",
+      "stackable": true,
+      "purchasable": true,
+      "variants": [
+        {
+          "skuId": "sku_spd5m_r4x7",
+          "displayName": "Speed Up (5m)",
+          "rarity": "special",
+          "stackable": true,
+          "purchasable": true,
+          "gemPrice": 100,
+          "durationSeconds": 300,
+          "subType": "speedup",
+          "variant": {
+            "durationLabel": "5m"
+          }
+        },
+        {
+          "skuId": "sku_spd15m_j8k2",
+          "displayName": "Speed Up (15m)",
+          "rarity": "special",
+          "stackable": true,
+          "purchasable": true,
+          "gemPrice": 100,
+          "durationSeconds": 900,
+          "subType": "speedup",
+          "variant": {
+            "durationLabel": "15m"
+          }
+        },
+        {
+          "skuId": "sku_spd30m_w3n9",
+          "displayName": "Speed Up (30m)",
+          "rarity": "special",
+          "stackable": true,
+          "purchasable": true,
+          "gemPrice": 100,
+          "durationSeconds": 1800,
+          "subType": "speedup",
+          "variant": {
+            "durationLabel": "30m"
+          }
+        },
+        {
+          "skuId": "sku_spd1h_m5t6",
+          "displayName": "Speed Up (1h)",
+          "rarity": "special",
+          "stackable": true,
+          "purchasable": true,
+          "gemPrice": 100,
+          "durationSeconds": 3600,
+          "subType": "speedup",
+          "variant": {
+            "durationLabel": "1h"
+          }
+        },
+        {
+          "skuId": "sku_spd3h_q2v8",
+          "displayName": "Speed Up (3h)",
+          "rarity": "special",
+          "stackable": true,
+          "purchasable": true,
+          "gemPrice": 100,
+          "durationSeconds": 10800,
+          "subType": "speedup",
+          "variant": {
+            "durationLabel": "3h"
+          }
+        },
+        {
+          "skuId": "sku_spd8h_y7p4",
+          "displayName": "Speed Up (8h)",
+          "rarity": "special",
+          "stackable": true,
+          "purchasable": true,
+          "gemPrice": 100,
+          "durationSeconds": 28800,
+          "subType": "speedup",
+          "variant": {
+            "durationLabel": "8h"
+          }
+        },
+        {
+          "skuId": "sku_spd24h_b9f1",
+          "displayName": "Speed Up (24h)",
+          "rarity": "special",
+          "stackable": true,
+          "purchasable": true,
+          "gemPrice": 100,
+          "durationSeconds": 86400,
+          "subType": "speedup",
+          "variant": {
+            "durationLabel": "24h"
+          }
+        },
+        {
+          "skuId": "sku_spd3d_h6c3",
+          "displayName": "Speed Up (3d)",
+          "rarity": "special",
+          "stackable": true,
+          "purchasable": true,
+          "gemPrice": 100,
+          "durationSeconds": 259200,
+          "subType": "speedup",
+          "variant": {
+            "durationLabel": "3d"
+          }
+        },
+        {
+          "skuId": "sku_spd7d_e1g5",
+          "displayName": "Speed Up (7d)",
+          "rarity": "special",
+          "stackable": true,
+          "purchasable": true,
+          "gemPrice": 100,
+          "durationSeconds": 604800,
+          "subType": "speedup",
+          "variant": {
+            "durationLabel": "7d"
+          }
+        }
+      ]
     }
   },
   "index": {
@@ -5071,6 +5200,17 @@
       "sku_60fdgqkm",
       "sku_nhh7jtda",
       "sku_9pnmmjpscv"
+    ],
+    "family_spd_v8kn3qw2": [
+      "sku_spd5m_r4x7",
+      "sku_spd15m_j8k2",
+      "sku_spd30m_w3n9",
+      "sku_spd1h_m5t6",
+      "sku_spd3h_q2v8",
+      "sku_spd8h_y7p4",
+      "sku_spd24h_b9f1",
+      "sku_spd3d_h6c3",
+      "sku_spd7d_e1g5"
     ]
   }
 }

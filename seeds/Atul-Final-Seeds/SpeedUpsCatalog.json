@@ -1,0 +1,114 @@
+{
+    "version": "v3-bootstrap",
+    "updatedAt": 1739370263000,
+    "speedups": {
+        "sku_spd5m_r4x7": {
+            "skuId": "sku_spd5m_r4x7",
+            "itemId": "spd_v8kn3qw2",
+            "displayName": "Speed Up (5m)",
+            "category": "speedup",
+            "type": "speedup",
+            "rarity": "special",
+            "stackable": true,
+            "variant": null,
+            "subType": "speedup",
+            "durationSeconds": 300
+        },
+        "sku_spd15m_j8k2": {
+            "skuId": "sku_spd15m_j8k2",
+            "itemId": "spd_v8kn3qw2",
+            "displayName": "Speed Up (15m)",
+            "category": "speedup",
+            "type": "speedup",
+            "rarity": "special",
+            "stackable": true,
+            "variant": null,
+            "subType": "speedup",
+            "durationSeconds": 900
+        },
+        "sku_spd30m_w3n9": {
+            "skuId": "sku_spd30m_w3n9",
+            "itemId": "spd_v8kn3qw2",
+            "displayName": "Speed Up (30m)",
+            "category": "speedup",
+            "type": "speedup",
+            "rarity": "special",
+            "stackable": true,
+            "variant": null,
+            "subType": "speedup",
+            "durationSeconds": 1800
+        },
+        "sku_spd1h_m5t6": {
+            "skuId": "sku_spd1h_m5t6",
+            "itemId": "spd_v8kn3qw2",
+            "displayName": "Speed Up (1h)",
+            "category": "speedup",
+            "type": "speedup",
+            "rarity": "special",
+            "stackable": true,
+            "variant": null,
+            "subType": "speedup",
+            "durationSeconds": 3600
+        },
+        "sku_spd3h_q2v8": {
+            "skuId": "sku_spd3h_q2v8",
+            "itemId": "spd_v8kn3qw2",
+            "displayName": "Speed Up (3h)",
+            "category": "speedup",
+            "type": "speedup",
+            "rarity": "special",
+            "stackable": true,
+            "variant": null,
+            "subType": "speedup",
+            "durationSeconds": 10800
+        },
+        "sku_spd8h_y7p4": {
+            "skuId": "sku_spd8h_y7p4",
+            "itemId": "spd_v8kn3qw2",
+            "displayName": "Speed Up (8h)",
+            "category": "speedup",
+            "type": "speedup",
+            "rarity": "special",
+            "stackable": true,
+            "variant": null,
+            "subType": "speedup",
+            "durationSeconds": 28800
+        },
+        "sku_spd24h_b9f1": {
+            "skuId": "sku_spd24h_b9f1",
+            "itemId": "spd_v8kn3qw2",
+            "displayName": "Speed Up (24h)",
+            "category": "speedup",
+            "type": "speedup",
+            "rarity": "special",
+            "stackable": true,
+            "variant": null,
+            "subType": "speedup",
+            "durationSeconds": 86400
+        },
+        "sku_spd3d_h6c3": {
+            "skuId": "sku_spd3d_h6c3",
+            "itemId": "spd_v8kn3qw2",
+            "displayName": "Speed Up (3d)",
+            "category": "speedup",
+            "type": "speedup",
+            "rarity": "special",
+            "stackable": true,
+            "variant": null,
+            "subType": "speedup",
+            "durationSeconds": 259200
+        },
+        "sku_spd7d_e1g5": {
+            "skuId": "sku_spd7d_e1g5",
+            "itemId": "spd_v8kn3qw2",
+            "displayName": "Speed Up (7d)",
+            "category": "speedup",
+            "type": "speedup",
+            "rarity": "special",
+            "stackable": true,
+            "variant": null,
+            "subType": "speedup",
+            "durationSeconds": 604800
+        }
+    }
+}

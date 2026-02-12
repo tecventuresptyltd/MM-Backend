@@ -501,6 +501,17 @@
     ],
     "family_crt_y8fywbrs": [
       "sku_kgkjadrd79"
+    ],
+    "family_spd_v8kn3qw2": [
+      "sku_spd5m_r4x7",
+      "sku_spd15m_j8k2",
+      "sku_spd30m_w3n9",
+      "sku_spd1h_m5t6",
+      "sku_spd3h_q2v8",
+      "sku_spd8h_y7p4",
+      "sku_spd24h_b9f1",
+      "sku_spd3d_h6c3",
+      "sku_spd7d_e1g5"
     ]
   }
 }

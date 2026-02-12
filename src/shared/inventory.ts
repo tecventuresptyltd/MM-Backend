@@ -57,7 +57,7 @@ const extractSubType = (
   if (!item) {
     return null;
   }
-  if (item.type === "cosmetic" || item.type === "booster") {
+  if (item.type === "cosmetic" || item.type === "booster" || item.type === "speedup") {
     return item.subType ?? null;
   }
   return null;

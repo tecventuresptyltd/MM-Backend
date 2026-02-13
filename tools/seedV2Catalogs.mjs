@@ -44,8 +44,8 @@ const db = admin.firestore();
 // V2 Catalogs to upload (go to /GameData/v1/catalogs)
 const catalogs = [
     { file: "TiersCatalog.json", docName: "TiersCatalog" },
-    { file: "EvolutionCostsCatalog.json", docName: "EvolutionCostsCatalog" },
-    { file: "SpellResearchCostsV2Catalog.json", docName: "SpellResearchCostsV2Catalog" },
+    { file: "CarEvolutionV2Catalog.json", docName: "CarEvolutionV2Catalog" },
+    { file: "SpellEvolutionV2Catalog.json", docName: "SpellEvolutionV2Catalog" },
 ];
 
 // V2 Configs to upload (go to /GameData/v1/config)

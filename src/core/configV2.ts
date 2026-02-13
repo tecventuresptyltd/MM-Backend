@@ -9,8 +9,8 @@ import * as admin from "firebase-admin";
 import {
     TiersCatalog,
     TierDefinition,
-    EvolutionCostsCatalog,
-    SpellResearchCostsCatalog,
+    CarEvolutionV2Catalog,
+    SpellEvolutionV2Catalog,
     FuelConfig,
     CrateSlotsConfig,
     PlayerSlotsConfig,
@@ -91,34 +91,34 @@ export async function getStarterTier(): Promise<TierDefinition | null> {
 }
 
 // =============================================================================
-// EVOLUTION COSTS CATALOG
+// CAR EVOLUTION V2 CATALOG
 // =============================================================================
 
-let evolutionCatalogCache: CacheEntry<EvolutionCostsCatalog> | null = null;
+let carEvolutionCatalogCache: CacheEntry<CarEvolutionV2Catalog> | null = null;
 
-export async function getEvolutionCostsCatalog(): Promise<EvolutionCostsCatalog> {
+export async function getCarEvolutionV2Catalog(): Promise<CarEvolutionV2Catalog> {
     const now = Date.now();
-    if (evolutionCatalogCache && now - evolutionCatalogCache.lastFetched < CACHE_TTL_MS) {
-        return evolutionCatalogCache.data;
+    if (carEvolutionCatalogCache && now - carEvolutionCatalogCache.lastFetched < CACHE_TTL_MS) {
+        return carEvolutionCatalogCache.data;
     }
 
-    const docRef = CATALOGS_ROOT.doc("EvolutionCostsCatalog");
+    const docRef = CATALOGS_ROOT.doc("CarEvolutionV2Catalog");
     const doc = await docRef.get();
 
     if (!doc.exists) {
-        throw new Error("EvolutionCostsCatalog not found at /GameData/v1/catalogs/EvolutionCostsCatalog");
+        throw new Error("CarEvolutionV2Catalog not found at /GameData/v1/catalogs/CarEvolutionV2Catalog");
     }
 
-    const data = doc.data() as EvolutionCostsCatalog;
-    evolutionCatalogCache = { data, lastFetched: now };
-    console.log("[V2Config] Loaded EvolutionCostsCatalog");
+    const data = doc.data() as CarEvolutionV2Catalog;
+    carEvolutionCatalogCache = { data, lastFetched: now };
+    console.log("[V2Config] Loaded CarEvolutionV2Catalog");
     return data;
 }
 
 export async function getEvolutionCostForStarLevel(
     currentStarLevel: number,
 ): Promise<{ coins: number; durationSeconds: number } | null> {
-    const catalog = await getEvolutionCostsCatalog();
+    const catalog = await getCarEvolutionV2Catalog();
     const entry = catalog.evolutionCosts[String(currentStarLevel)];
     if (!entry) {
         return null;
@@ -130,41 +130,41 @@ export async function getEvolutionCostForStarLevel(
 }
 
 export async function getXpCapForStarLevel(starLevel: number): Promise<number> {
-    const catalog = await getEvolutionCostsCatalog();
+    const catalog = await getCarEvolutionV2Catalog();
     return catalog.xpCaps[String(starLevel)] ?? Infinity;
 }
 
 // =============================================================================
-// SPELL RESEARCH COSTS CATALOG
+// SPELL EVOLUTION CATALOG
 // =============================================================================
 
-let spellResearchCatalogCache: CacheEntry<SpellResearchCostsCatalog> | null = null;
+let spellEvolutionCatalogCache: CacheEntry<SpellEvolutionV2Catalog> | null = null;
 
-export async function getSpellResearchCostsCatalog(): Promise<SpellResearchCostsCatalog> {
+export async function getSpellEvolutionV2Catalog(): Promise<SpellEvolutionV2Catalog> {
     const now = Date.now();
-    if (spellResearchCatalogCache && now - spellResearchCatalogCache.lastFetched < CACHE_TTL_MS) {
-        return spellResearchCatalogCache.data;
+    if (spellEvolutionCatalogCache && now - spellEvolutionCatalogCache.lastFetched < CACHE_TTL_MS) {
+        return spellEvolutionCatalogCache.data;
     }
 
-    const docRef = CATALOGS_ROOT.doc("SpellResearchCostsV2Catalog");
+    const docRef = CATALOGS_ROOT.doc("SpellEvolutionV2Catalog");
     const doc = await docRef.get();
 
     if (!doc.exists) {
         throw new Error(
-            "SpellResearchCostsV2Catalog not found at /GameData/v1/catalogs/SpellResearchCostsV2Catalog",
+            "SpellEvolutionV2Catalog not found at /GameData/v1/catalogs/SpellEvolutionV2Catalog",
         );
     }
 
-    const data = doc.data() as SpellResearchCostsCatalog;
-    spellResearchCatalogCache = { data, lastFetched: now };
-    console.log("[V2Config] Loaded SpellResearchCostsV2Catalog");
+    const data = doc.data() as SpellEvolutionV2Catalog;
+    spellEvolutionCatalogCache = { data, lastFetched: now };
+    console.log("[V2Config] Loaded SpellEvolutionV2Catalog");
     return data;
 }
 
 export async function getResearchCostForLevel(
     targetLevel: number,
 ): Promise<{ shards: number; durationSeconds: number } | null> {
-    const catalog = await getSpellResearchCostsCatalog();
+    const catalog = await getSpellEvolutionV2Catalog();
     const entry = catalog.researchCosts[String(targetLevel)];
     if (!entry) {
         return null;
@@ -325,8 +325,8 @@ export function calculateFuelBars(
 
 export function __resetV2ConfigCacheForTests(): void {
     tiersCatalogCache = null;
-    evolutionCatalogCache = null;
-    spellResearchCatalogCache = null;
+    carEvolutionCatalogCache = null;
+    spellEvolutionCatalogCache = null;
     fuelConfigCache = null;
     crateSlotsConfigCache = null;
     playerSlotsConfigCache = null;

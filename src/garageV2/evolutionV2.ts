@@ -15,7 +15,7 @@ import { callableOptions, getMinInstances } from "../shared/callableOptions.js";
 import { checkIdempotency, createInProgressReceipt } from "../core/idempotency.js";
 import { runTransactionWithReceipt } from "../core/transactions.js";
 import {
-    getEvolutionCostsCatalog,
+    getCarEvolutionV2Catalog,
     getEvolutionCostForStarLevel,
     getXpCapForStarLevel,
     getPlayerSlotsConfig,
@@ -73,7 +73,7 @@ export const startCarEvolutionV2 = onCall(
 
         // Load configs
         const [evolutionCatalog, slotsConfig] = await Promise.all([
-            getEvolutionCostsCatalog(),
+            getCarEvolutionV2Catalog(),
             getPlayerSlotsConfig(),
         ]);
 
@@ -375,7 +375,7 @@ export const skipCarEvolutionV2 = onCall(
         await createInProgressReceipt(uid, opId, "skipCarEvolutionV2");
 
         // Load config
-        const evolutionCatalog = await getEvolutionCostsCatalog();
+        const evolutionCatalog = await getCarEvolutionV2Catalog();
 
         return await runTransactionWithReceipt<SkipCarEvolutionResponse>(
             uid,
@@ -505,7 +505,7 @@ export const getPitCrewStatusV2 = onCall(
         const [pitCrewDoc, profileDoc, evolutionCatalog, slotsConfig] = await Promise.all([
             db.doc(`/Players/${uid}/Queues/PitCrew`).get(),
             db.doc(`/Players/${uid}/Profile/Profile`).get(),
-            getEvolutionCostsCatalog(),
+            getCarEvolutionV2Catalog(),
             getPlayerSlotsConfig(),
         ]);
 

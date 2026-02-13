@@ -55,7 +55,7 @@ export interface UserLicensesDoc {
 }
 
 // =============================================================================
-// CAR EVOLUTION (PIT CREW) SYSTEM
+// CAR EVOLUTION V2 (PIT CREW) SYSTEM
 // =============================================================================
 
 export interface EvolutionCostEntry {
@@ -78,7 +78,7 @@ export interface StatBonusPerStar {
     boostPower: number;
 }
 
-export interface EvolutionCostsCatalog {
+export interface CarEvolutionV2Catalog {
     version: string;
     updatedAt: number;
     notes?: string;
@@ -119,7 +119,7 @@ export interface UserCarV2 {
 }
 
 // =============================================================================
-// SPELL RESEARCH (LIBRARY) SYSTEM
+// SPELL EVOLUTION (LIBRARY) SYSTEM
 // =============================================================================
 
 export interface ResearchCostEntry {
@@ -142,7 +142,7 @@ export interface SpellXpConfig {
     xpCapPerLevel: Record<string, number>;
 }
 
-export interface SpellResearchCostsCatalog {
+export interface SpellEvolutionV2Catalog {
     version: string;
     updatedAt: number;
     notes?: string;

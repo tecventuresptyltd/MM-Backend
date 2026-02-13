@@ -11,7 +11,7 @@ import { maybeGenerateStarterOffer } from "../shop/offers.js";
 import { STARTER_RACE_THRESHOLD } from "../shop/offerState.js";
 import { buildBotLoadout } from "../game-systems/botLoadoutHelper.js";
 import { applyClanTrophyDelta, playerClanStateRef, clanMembersCollection, clanRef, updateClanMemberSnapshot } from "../clan/helpers.js";
-import { getXpCapForStarLevel, getSpellResearchCostsCatalog } from "../core/configV2.js";
+import { getXpCapForStarLevel, getSpellEvolutionV2Catalog } from "../core/configV2.js";
 import { updatePlayerLeaderboardEntry } from "../Socials/liveLeaderboard.js";
 import { updateClanLeaderboardEntry } from "../clan/liveLeaderboard.js";
 import {
@@ -615,7 +615,7 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
       const legacyLevelsMap = (levelsData?.levels ?? {}) as Record<string, number>;
 
       if (deckSpells.length > 0) {
-        const researchCatalog = await getSpellResearchCostsCatalog();
+        const researchCatalog = await getSpellEvolutionV2Catalog();
         const xpConfig = researchCatalog.spellXpConfig;
         const baseXp = xpConfig.xpPerRace ?? 10;
         const winBonus = place === 1 ? (xpConfig.xpPerWin ?? 25) : 0;

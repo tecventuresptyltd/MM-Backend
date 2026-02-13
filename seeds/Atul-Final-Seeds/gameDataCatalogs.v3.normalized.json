@@ -17096,7 +17096,7 @@
     }
   },
   {
-    "path": "/GameData/v1/catalogs/EvolutionCostsCatalog",
+    "path": "/GameData/v1/catalogs/CarEvolutionV2Catalog",
     "data": {
       "version": "v1-evolution",
       "updatedAt": 1739370263000,
@@ -17190,7 +17190,7 @@
     }
   },
   {
-    "path": "/GameData/v1/catalogs/SpellResearchCostsV2Catalog",
+    "path": "/GameData/v1/catalogs/SpellEvolutionV2Catalog",
     "data": {
       "version": "v1-research",
       "updatedAt": 1738616330000,

@@ -14,7 +14,7 @@ import { callableOptions, getMinInstances } from "../shared/callableOptions.js";
 import { checkIdempotency, createInProgressReceipt } from "../core/idempotency.js";
 import { runTransactionWithReceipt } from "../core/transactions.js";
 import {
-    getSpellResearchCostsCatalog,
+    getSpellEvolutionV2Catalog,
     getResearchCostForLevel,
     getPlayerSlotsConfig,
     calculateSkipCost,
@@ -69,7 +69,7 @@ export const startSpellResearchV2 = onCall(
 
         // Load configs
         const [researchCatalog, slotsConfig] = await Promise.all([
-            getSpellResearchCostsCatalog(),
+            getSpellEvolutionV2Catalog(),
             getPlayerSlotsConfig(),
         ]);
 
@@ -355,7 +355,7 @@ export const skipSpellResearchV2 = onCall(
         await createInProgressReceipt(uid, opId, "skipSpellResearchV2");
 
         // Load config
-        const researchCatalog = await getSpellResearchCostsCatalog();
+        const researchCatalog = await getSpellEvolutionV2Catalog();
 
         return await runTransactionWithReceipt<SkipSpellResearchResponse>(
             uid,
@@ -485,7 +485,7 @@ export const getLibraryStatusV2 = onCall(
         const [libraryDoc, profileDoc, researchCatalog, slotsConfig] = await Promise.all([
             db.doc(`/Players/${uid}/Queues/Library`).get(),
             db.doc(`/Players/${uid}/Profile/Profile`).get(),
-            getSpellResearchCostsCatalog(),
+            getSpellEvolutionV2Catalog(),
             getPlayerSlotsConfig(),
         ]);
 

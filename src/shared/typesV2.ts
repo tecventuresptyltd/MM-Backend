@@ -142,6 +142,11 @@ export interface SpellXpConfig {
     xpCapPerLevel: Record<string, number>;
 }
 
+export interface ShardRewardsConfig {
+    byPosition: Record<string, number>; // "1" -> 10, "2" -> 7, "3" -> 4
+    defaultShards: number;              // fallback for positions not listed
+}
+
 export interface SpellEvolutionV2Catalog {
     version: string;
     updatedAt: number;
@@ -150,6 +155,7 @@ export interface SpellEvolutionV2Catalog {
     researchCosts: Record<string, ResearchCostEntry>; // targetLevel -> cost
     skipCost: ResearchSkipCost;
     spellXpConfig: SpellXpConfig;
+    shardRewards?: ShardRewardsConfig;
 }
 
 export interface LibrarySlotEntry {

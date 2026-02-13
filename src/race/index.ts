@@ -499,6 +499,13 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
     const xpGained = rewards.exp;
     const desiredTrophiesActual = rewards.trophiesActual;
 
+    // --- Calculate Spell Shard Reward (position-based from catalog) ---
+    const spellEvoCatalog = await getSpellEvolutionV2Catalog();
+    const shardConfig = spellEvoCatalog.shardRewards;
+    const shardsEarned = shardConfig
+      ? (shardConfig.byPosition[String(place)] ?? shardConfig.defaultShards)
+      : 0;
+
     // Apply a floor so trophy losses cannot push the player below zero (including pre-deducted losses).
     const appliedActualTrophiesDelta = Math.max(desiredTrophiesActual, -trophiesBeforeRace);
     const appliedTrophiesSettlement = appliedActualTrophiesDelta - lastPlaceDeltaApplied;
@@ -541,6 +548,9 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
     };
     if (levelsGained > 0) {
       economyUpdate.spellTokens = admin.firestore.FieldValue.increment(levelsGained);
+    }
+    if (shardsEarned > 0) {
+      economyUpdate.spellShards = admin.firestore.FieldValue.increment(shardsEarned);
     }
     transaction.update(economyRef, economyUpdate);
 
@@ -691,6 +701,7 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
         trophies: appliedActualTrophiesDelta,
         coins: coinsGained,
         xp: xpGained,
+        spellShards: shardsEarned,
         baseCoins: rewards.baseCoins,
         boosterCoins: rewards.boosterCoins,
         baseXp: rewards.baseXp,

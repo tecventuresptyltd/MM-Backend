@@ -50,5 +50,13 @@
             "3": 500,
             "4": 1000
         }
+    },
+    "shardRewards": {
+        "byPosition": {
+            "1": 10,
+            "2": 7,
+            "3": 4
+        },
+        "defaultShards": 1
     }
 }

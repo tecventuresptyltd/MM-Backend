@@ -127,3 +127,8 @@ export {
   skipCrateUnlockV2,
   getCrateSlotsStatusV2,
 } from "./cratesV2";
+
+// V2 Speedups: Use speedup items to reduce queue timers
+export {
+  useSpeedupV2,
+} from "./speedups";

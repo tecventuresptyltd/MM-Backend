@@ -497,3 +497,47 @@ export interface ClaimCrateRewardV2Response {
         quantity: number;
     };
 }
+
+// =============================================================================
+// SPEEDUP SYSTEM
+// =============================================================================
+
+export interface SpeedUpEntry {
+    skuId: string;
+    itemId: string;
+    displayName: string;
+    category: string;
+    type: string;
+    rarity: string;
+    stackable: boolean;
+    variant: string | null;
+    subType: string;
+    durationSeconds: number;
+}
+
+export interface SpeedUpsCatalog {
+    version: string;
+    updatedAt: number;
+    speedups: Record<string, SpeedUpEntry>;
+}
+
+export type SpeedupQueueType = "pitCrew" | "library";
+
+export interface UseSpeedupRequest {
+    queueType: SpeedupQueueType;
+    targetId: string; // carId or spellId
+    speedupSkuId: string;
+    opId: string;
+}
+
+export interface UseSpeedupResponse {
+    success: boolean;
+    opId: string;
+    queueType: SpeedupQueueType;
+    targetId: string;
+    speedupUsed: string;
+    secondsRemoved: number;
+    newCompletesAt: number;
+    isNowComplete: boolean;
+    newRemainingSeconds: number;
+}

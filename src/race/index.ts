@@ -11,7 +11,8 @@ import { maybeGenerateStarterOffer } from "../shop/offers.js";
 import { STARTER_RACE_THRESHOLD } from "../shop/offerState.js";
 import { buildBotLoadout } from "../game-systems/botLoadoutHelper.js";
 import { applyClanTrophyDelta, playerClanStateRef, clanMembersCollection, clanRef, updateClanMemberSnapshot } from "../clan/helpers.js";
-import { getXpCapForStarLevel, getSpellEvolutionV2Catalog } from "../core/configV2.js";
+import { getXpCapForStarLevel, getSpellEvolutionV2Catalog, getCrateSlotsConfig } from "../core/configV2.js";
+import { CrateSlotEntry, UserCrateSlotsDoc } from "../shared/typesV2.js";
 import { updatePlayerLeaderboardEntry } from "../Socials/liveLeaderboard.js";
 import { updateClanLeaderboardEntry } from "../clan/liveLeaderboard.js";
 import {
@@ -65,6 +66,17 @@ const RACE_REWARD_TABLE: Array<{ type: string; weight: number; skuId?: string | 
 
 const TOTAL_REWARD_WEIGHT = RACE_REWARD_TABLE.reduce((sum, entry) => sum + entry.weight, 0);
 
+// Map drop types to crate rarity for slot placement
+const CRATE_DROP_RARITY_MAP: Record<string, string> = {
+  commoncrate: "common",
+  rarecrate: "rare",
+  exoticcrate: "exotic",
+  legendarycrate: "legendary",
+  mythicalcrate: "mythical",
+};
+
+const isCrateDrop = (drop: RaceDrop): boolean => drop.type in CRATE_DROP_RARITY_MAP;
+
 const rollRaceDrop = (): RaceDrop => {
   const roll = Math.random() * TOTAL_REWARD_WEIGHT;
   let cursor = 0;
@@ -83,7 +95,9 @@ const resolveRaceDrops = async (
   botNames: string[],
 ): Promise<RaceDropResolution> => {
   const playerDrop = rollRaceDrop();
-  if (playerDrop.skuId) {
+  // Only grant non-crate drops to inventory (keys, etc.)
+  // Crates will be placed into crate slots separately
+  if (playerDrop.skuId && !isCrateDrop(playerDrop)) {
     await grantInventoryRewards(transaction, uid, [
       { skuId: playerDrop.skuId, quantity: 1 },
     ]);
@@ -541,6 +555,87 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
       drops = await resolveRaceDrops(transaction, uid, botDisplayNames);
     }
 
+    // --- Place crate into slot if the drop was a crate ---
+    let crateSlotResult: { slotIndex: number | null; fallbackGranted: boolean; fallbackRewards?: { coins?: number; spellShards?: number } } | null = null;
+
+    if (isCrateDrop(drops.playerDrop) && drops.playerDrop.skuId) {
+      const slotsConfig = await getCrateSlotsConfig();
+      const crateSlotsRef = db.doc(`/Players/${uid}/Crates/Slots`);
+      const crateSlotsDoc = await transaction.get(crateSlotsRef);
+      const timestamp = admin.firestore.FieldValue.serverTimestamp();
+
+      const slotsData = (
+        crateSlotsDoc.exists ? crateSlotsDoc.data() : { slots: [], maxSlots: slotsConfig.maxSlots }
+      ) as UserCrateSlotsDoc;
+
+      const currentSlots = (slotsData.slots ?? []).filter((s) => s !== null);
+      const maxSlots = slotsData.maxSlots ?? slotsConfig.maxSlots;
+      const crateRarity = CRATE_DROP_RARITY_MAP[drops.playerDrop.type] ?? "common";
+
+      if (currentSlots.length >= maxSlots) {
+        // All slots full — grant fallback currency
+        if (slotsConfig.slotFullFallback.enabled) {
+          const fallbackRewards = slotsConfig.slotFullFallback.rewards;
+          const fbUpdates: Record<string, FirebaseFirestore.FieldValue> = {};
+          if (fallbackRewards.coins) {
+            fbUpdates.coins = admin.firestore.FieldValue.increment(fallbackRewards.coins);
+          }
+          if (fallbackRewards.spellShards) {
+            fbUpdates.spellShards = admin.firestore.FieldValue.increment(fallbackRewards.spellShards);
+          }
+          if (Object.keys(fbUpdates).length > 0) {
+            fbUpdates.updatedAt = admin.firestore.FieldValue.serverTimestamp();
+            transaction.update(economyRef, fbUpdates);
+          }
+          crateSlotResult = { slotIndex: null, fallbackGranted: true, fallbackRewards };
+        } else {
+          crateSlotResult = { slotIndex: null, fallbackGranted: false };
+        }
+      } else {
+        // Place crate into first empty slot
+        const newSlotEntry: CrateSlotEntry = {
+          crateSkuId: drops.playerDrop.skuId,
+          crateId: drops.playerDrop.type,
+          rarity: crateRarity,
+          receivedAt: timestamp,
+          isUnlocking: false,
+          startedAt: null,
+          completesAt: null,
+        };
+
+        const newSlots: (CrateSlotEntry | null)[] = [];
+        let slotAssigned = false;
+        let assignedSlotIndex = -1;
+
+        for (let i = 0; i < maxSlots; i++) {
+          const existingSlot = slotsData.slots?.[i] ?? null;
+          if (existingSlot) {
+            newSlots.push(existingSlot as CrateSlotEntry);
+          } else if (!slotAssigned) {
+            newSlots.push(newSlotEntry);
+            slotAssigned = true;
+            assignedSlotIndex = i;
+          } else {
+            newSlots.push(null);
+          }
+        }
+
+        if (!slotAssigned) {
+          newSlots.push(newSlotEntry);
+          assignedSlotIndex = currentSlots.length;
+        }
+
+        if (crateSlotsDoc.exists) {
+          transaction.update(crateSlotsRef, { slots: newSlots, updatedAt: timestamp });
+        } else {
+          transaction.set(crateSlotsRef, { slots: newSlots, maxSlots, updatedAt: timestamp });
+        }
+
+        crateSlotResult = { slotIndex: assignedSlotIndex, fallbackGranted: false };
+        logger.info("[recordRaceResult] Crate placed in slot", { uid, slotIndex: assignedSlotIndex, rarity: crateRarity, skuId: drops.playerDrop.skuId });
+      }
+    }
+
     // Update Economy/Stats (no trophies here)
     const economyUpdate: Record<string, admin.firestore.FieldValue> = {
       coins: admin.firestore.FieldValue.increment(coinsGained),
@@ -739,6 +834,7 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
         starLevel: carXpResult.starLevel,
       } : null,
       spellXp: spellXpResults.length > 0 ? spellXpResults : null,
+      crateSlot: crateSlotResult,
     };
   });
 

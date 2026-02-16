@@ -76,7 +76,7 @@ export type ItemRarity =
 
 export type CosmeticSubType = "wheels" | "spoiler" | "underglow" | "decal" | "boost";
 
-export type BoosterSubType = "coin" | "exp";
+export type BoosterSubType = "coin" | "exp" | "shard";
 
 export interface ItemVariant {
   skuId: string;
@@ -370,6 +370,7 @@ export interface BoosterTimerState {
 export interface PlayerBoostersState {
   coin?: BoosterTimerState;
   exp?: BoosterTimerState;
+  shard?: BoosterTimerState;
 }
 
 export interface RewardInventoryGrant {

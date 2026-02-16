@@ -105,6 +105,12 @@ const BOOSTER_DURATION_BY_PRICE: Record<BoosterSubType, Record<number, number>> 
     500: 43200,
     800: 86400,
   },
+  shard: {
+    100: 3600,
+    300: 21600,
+    500: 43200,
+    800: 86400,
+  },
 };
 
 export const activateBooster = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true), async (request) => {
@@ -133,7 +139,7 @@ export const activateBooster = onCall(callableOptions({ minInstances: getMinInst
   }
   const boosterSubTypeRaw =
     (boosterVariant.subType ?? boosterSku.subType ?? "").toLowerCase();
-  if (boosterSubTypeRaw !== "coin" && boosterSubTypeRaw !== "exp") {
+  if (boosterSubTypeRaw !== "coin" && boosterSubTypeRaw !== "exp" && boosterSubTypeRaw !== "shard") {
     throw new HttpsError("failed-precondition", `Booster ${boosterSku.skuId} has invalid subtype.`);
   }
   let durationSeconds = Number(

@@ -476,6 +476,7 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
     const nowMs = Date.now();
     const hasCoinBooster = toMillis(boostersState.coin?.activeUntil) > nowMs;
     const hasExpBooster = toMillis(boostersState.exp?.activeUntil) > nowMs;
+    const hasShardBooster = toMillis(boostersState.shard?.activeUntil) > nowMs;
 
     const xpBefore = Number(profileData.exp ?? 0);
     const beforeInfo = getLevelInfo(xpBefore);
@@ -511,9 +512,14 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
     // --- Calculate Spell Shard Reward (position-based from catalog) ---
     const spellEvoCatalog = await getSpellEvolutionV2Catalog();
     const shardConfig = spellEvoCatalog.shardRewards;
-    const shardsEarned = shardConfig
+    const baseShards = shardConfig
       ? (shardConfig.byPosition[String(place)] ?? shardConfig.defaultShards)
       : 0;
+    
+    // Apply shard booster (2x multiplier if active)
+    const shardMultiplier = hasShardBooster ? 2 : 1;
+    const shardsEarned = Math.round(baseShards * shardMultiplier);
+    const boosterShards = shardsEarned - baseShards;
 
     // Apply a floor so trophy losses cannot push the player below zero (including pre-deducted losses).
     const appliedActualTrophiesDelta = Math.max(desiredTrophiesActual, -trophiesBeforeRace);
@@ -814,6 +820,7 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
         coins: coinsGained,
         xp: xpGained,
         spellShards: shardsEarned,
+        boosterShards: boosterShards,
         baseCoins: rewards.baseCoins,
         boosterCoins: rewards.boosterCoins,
         baseXp: rewards.baseXp,

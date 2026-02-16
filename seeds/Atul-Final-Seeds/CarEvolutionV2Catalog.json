@@ -15,6 +15,7 @@
         "9": 175000
     },
     "maxStarLevel": 10,
+    "levelsPerStar": 10,
     "evolutionCosts": {
         "0": {
             "targetStarLevel": 1,
@@ -80,12 +81,5 @@
     "skipCost": {
         "gemsPerHour": 50,
         "minGems": 10
-    },
-    "statBonusPerStar": {
-        "topSpeed": 0.05,
-        "acceleration": 0.05,
-        "handling": 0.05,
-        "boostRegen": 0.05,
-        "boostPower": 0.05
     }
 }

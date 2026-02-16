@@ -11,7 +11,7 @@ import { maybeGenerateStarterOffer } from "../shop/offers.js";
 import { STARTER_RACE_THRESHOLD } from "../shop/offerState.js";
 import { buildBotLoadout } from "../game-systems/botLoadoutHelper.js";
 import { applyClanTrophyDelta, playerClanStateRef, clanMembersCollection, clanRef, updateClanMemberSnapshot } from "../clan/helpers.js";
-import { getXpCapForStarLevel, getSpellEvolutionV2Catalog, getCrateSlotsConfig } from "../core/configV2.js";
+import { getXpCapForStarLevel, getSpellEvolutionV2Catalog, getCrateSlotsConfig, getCarEvolutionV2Catalog, calculateCarLevel } from "../core/configV2.js";
 import { CrateSlotEntry, UserCrateSlotsDoc } from "../shared/typesV2.js";
 import { updatePlayerLeaderboardEntry } from "../Socials/liveLeaderboard.js";
 import { updateClanLeaderboardEntry } from "../clan/liveLeaderboard.js";
@@ -57,11 +57,6 @@ const RACE_REWARD_TABLE: Array<{ type: string; weight: number; skuId?: string | 
   { type: "exoticcrate", weight: 5, skuId: "sku_e8e7jeba7v" },
   { type: "legendarycrate", weight: 2.5, skuId: "sku_n9hsc0wxxk" },
   { type: "mythicalcrate", weight: 1.5, skuId: "sku_kgkjadrd79" },
-  { type: "commonkey", weight: 20, skuId: "sku_rjwe5tdtc4" },
-  { type: "rarekey", weight: 7.5, skuId: "sku_p3yxnyhkpx" },
-  { type: "exotickey", weight: 5, skuId: "sku_zqqmqz7mwb" },
-  { type: "legendarykey", weight: 2.5, skuId: "sku_acxbr542j1" },
-  { type: "mythicalkey", weight: 0.6, skuId: "sku_hq5ywspmr5" },
 ];
 
 const TOTAL_REWARD_WEIGHT = RACE_REWARD_TABLE.reduce((sum, entry) => sum + entry.weight, 0);
@@ -562,7 +557,7 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
       const slotsConfig = await getCrateSlotsConfig();
       const crateSlotsRef = db.doc(`/Players/${uid}/Crates/Slots`);
       const crateSlotsDoc = await transaction.get(crateSlotsRef);
-      const timestamp = admin.firestore.FieldValue.serverTimestamp();
+      const nowTimestamp = admin.firestore.Timestamp.now();
 
       const slotsData = (
         crateSlotsDoc.exists ? crateSlotsDoc.data() : { slots: [], maxSlots: slotsConfig.maxSlots }
@@ -597,7 +592,7 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
           crateSkuId: drops.playerDrop.skuId,
           crateId: drops.playerDrop.type,
           rarity: crateRarity,
-          receivedAt: timestamp,
+          receivedAt: nowTimestamp,
           isUnlocking: false,
           startedAt: null,
           completesAt: null,
@@ -626,9 +621,9 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
         }
 
         if (crateSlotsDoc.exists) {
-          transaction.update(crateSlotsRef, { slots: newSlots, updatedAt: timestamp });
+          transaction.update(crateSlotsRef, { slots: newSlots, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
         } else {
-          transaction.set(crateSlotsRef, { slots: newSlots, maxSlots, updatedAt: timestamp });
+          transaction.set(crateSlotsRef, { slots: newSlots, maxSlots, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
         }
 
         crateSlotResult = { slotIndex: assignedSlotIndex, fallbackGranted: false };
@@ -675,35 +670,57 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
 
     // --- Grant Car XP (same amount as player XP) ---
     const raceCarId = participantData.carId as string | undefined;
-    let carXpResult: { newXp: number; isNowCapped: boolean; starLevel: number } | null = null;
+    let carXpResult: { newXp: number; isNowCapped: boolean; starLevel: number; carLevel: number } | null = null;
     if (raceCarId && garageDoc.exists) {
       const garageData = garageDoc.data()!;
       const carData = garageData.cars?.[raceCarId];
       if (carData) {
         const isXpCapped = carData.isXpCapped ?? false;
+
+        // Load catalog data for carLevel calculation
+        const starLevel = carData.starLevel ?? 0;
+        const currentXp = carData.xp ?? 0;
+        const xpCap = await getXpCapForStarLevel(starLevel);
+        const carEvoCatalog = await getCarEvolutionV2Catalog();
+        const levelsPerStar = carEvoCatalog.levelsPerStar ?? 10;
+
+        // Always calculate carLevel from current XP (even if capped)
+        const { carLevel } = calculateCarLevel(currentXp, xpCap, starLevel, levelsPerStar);
+
         if (isXpCapped) {
-          // Car is already capped, no XP granted
+          // Car is already capped, no XP granted, but update carLevel if needed
+          if (carData.carLevel !== carLevel) {
+            // carLevel was missing or incorrect, update it
+            transaction.update(garageRef, {
+              [`cars.${raceCarId}.carLevel`]: carLevel,
+              [`cars.${raceCarId}.updatedAt`]: admin.firestore.FieldValue.serverTimestamp(),
+            });
+          }
           carXpResult = {
-            newXp: carData.xp ?? 0,
+            newXp: currentXp,
             isNowCapped: true,
-            starLevel: carData.starLevel ?? 0,
+            starLevel,
+            carLevel,
           };
         } else {
-          const currentXp = carData.xp ?? 0;
-          const starLevel = carData.starLevel ?? 0;
-          const xpCap = await getXpCapForStarLevel(starLevel);
+          // Car is not capped, grant XP
           let newXp = currentXp + xpGained;
           let isNowCapped = false;
           if (newXp >= xpCap) {
             newXp = xpCap;
             isNowCapped = true;
           }
+
+          // Recalculate carLevel with new XP
+          const { carLevel: newCarLevel } = calculateCarLevel(newXp, xpCap, starLevel, levelsPerStar);
+
           transaction.update(garageRef, {
             [`cars.${raceCarId}.xp`]: newXp,
             [`cars.${raceCarId}.isXpCapped`]: isNowCapped,
+            [`cars.${raceCarId}.carLevel`]: newCarLevel,
             [`cars.${raceCarId}.updatedAt`]: admin.firestore.FieldValue.serverTimestamp(),
           });
-          carXpResult = { newXp, isNowCapped, starLevel };
+          carXpResult = { newXp, isNowCapped, starLevel, carLevel: newCarLevel };
         }
       }
     }
@@ -832,6 +849,7 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
         newTotalXp: carXpResult.newXp,
         isXpCapped: carXpResult.isNowCapped,
         starLevel: carXpResult.starLevel,
+        carLevel: carXpResult.carLevel,
       } : null,
       spellXp: spellXpResults.length > 0 ? spellXpResults : null,
       crateSlot: crateSlotResult,

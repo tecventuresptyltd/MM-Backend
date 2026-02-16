@@ -1,0 +1,51 @@
+{
+    "version": "v1-car-stats-budget",
+    "updatedAt": 1739616330000,
+    "notes": "Dynamic stat budget system. globalStatCap divided equally across tiers. Stars contribute starWeight%, car levels contribute levelWeight%. Archetype profiles define how the budget distributes across the 5 stats.",
+    "globalStatCap": 100,
+    "tierCount": 5,
+    "maxStarLevel": 10,
+    "maxCarLevel": 100,
+    "starWeight": 0.60,
+    "levelWeight": 0.40,
+    "statKeys": [
+        "topSpeed",
+        "acceleration",
+        "handling",
+        "boostRegen",
+        "boostPower"
+    ],
+    "archetypeProfiles": {
+        "tank": {
+            "description": "High durability, strong handling and boost regen. Lower top speed.",
+            "topSpeed": 0.15,
+            "acceleration": 0.15,
+            "handling": 0.25,
+            "boostRegen": 0.25,
+            "boostPower": 0.20
+        },
+        "speedster": {
+            "description": "Maximum top speed and acceleration. Weak handling and boost regen.",
+            "topSpeed": 0.30,
+            "acceleration": 0.25,
+            "handling": 0.15,
+            "boostRegen": 0.10,
+            "boostPower": 0.20
+        },
+        "specialist": {
+            "description": "Balanced across all stats. Jack of all trades.",
+            "topSpeed": 0.20,
+            "acceleration": 0.20,
+            "handling": 0.20,
+            "boostRegen": 0.20,
+            "boostPower": 0.20
+        }
+    },
+    "tierOverrides": {
+        "_comment": "Optional per-tier overrides. Leave empty to use even distribution. Keys are tier order (1-based).",
+        "_example_1": {
+            "budgetOverride": 22,
+            "floorOverride": 0
+        }
+    }
+}

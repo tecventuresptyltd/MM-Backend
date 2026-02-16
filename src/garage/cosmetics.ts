@@ -351,12 +351,17 @@ interface PurchaseCrateItemResponse {
   kind: PurchaseKind;
   skuId: string;
   quantity: number;
-  totalCostGems: number;
+  totalCostGems?: number;
   totalCostCoins?: number;
   gemsBefore: number;
   gemsAfter: number;
   coinsBefore?: number;
   coinsAfter?: number;
+  crateSlot?: {
+    slotIndex: number | null;
+    fallbackGranted: boolean;
+    fallbackRewards?: { coins?: number; spellShards?: number };
+  } | null;
 }
 
 const VALID_PURCHASE_KINDS: PurchaseKind[] = ["crate", "key"];

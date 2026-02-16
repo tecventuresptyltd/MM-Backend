@@ -7,6 +7,7 @@
  * - Spell Research (Library)
  * - Fuel System
  * - Crate Slots
+ * - Car Stats Budget System
  */
 
 // =============================================================================
@@ -84,9 +85,11 @@ export interface CarEvolutionV2Catalog {
     notes?: string;
     xpCaps: Record<string, number>; // starLevel -> XP cap
     maxStarLevel: number;
+    levelsPerStar: number; // Number of sub-levels within each star (default 10)
     evolutionCosts: Record<string, EvolutionCostEntry>; // currentStarLevel -> cost
     skipCost: EvolutionSkipCost;
     statBonusPerStar: StatBonusPerStar;
+    statBonusPerLevel: StatBonusPerStar; // Per car-level bonus (same shape, smaller values)
 }
 
 export interface PitCrewSlotEntry {
@@ -113,6 +116,7 @@ export interface UserCarV2 {
     // V2 Fields (nullable for backward compatibility)
     xp?: number;
     starLevel?: number;
+    carLevel?: number; // Sub-level within current star (0 to levelsPerStar-1)
     isXpCapped?: boolean;
     fuelBars?: number;
     fuelLastRefillAt?: FirebaseFirestore.Timestamp | FirebaseFirestore.FieldValue | null;
@@ -546,4 +550,98 @@ export interface UseSpeedupResponse {
     newCompletesAt: number;
     isNowComplete: boolean;
     newRemainingSeconds: number;
+}
+
+// =============================================================================
+// CAR STATS BUDGET SYSTEM
+// =============================================================================
+
+/**
+ * Per-archetype stat distribution profile.
+ * Values must sum to 1.0 — they represent what fraction of the
+ * total stat budget goes into each stat.
+ */
+export interface ArchetypeStatProfile {
+    description?: string;
+    topSpeed: number;
+    acceleration: number;
+    handling: number;
+    boostRegen: number;
+    boostPower: number;
+}
+
+/**
+ * Optional per-tier override. If present, overrides the evenly
+ * distributed budget for that specific tier.
+ */
+export interface TierBudgetOverride {
+    budgetOverride?: number;
+    floorOverride?: number;
+}
+
+/**
+ * Master config for the dynamic car stats budget system.
+ * Stored at /GameData/v1/config/CarStatsBudgetConfig
+ *
+ * The system evenly divides globalStatCap across tiers, then distributes
+ * each tier's budget across the 5 stats using archetype profiles.
+ * Stars contribute starWeight% and car levels contribute levelWeight%.
+ */
+export interface CarStatsBudgetConfig {
+    version: string;
+    updatedAt: number;
+    notes?: string;
+    /** Maximum stat value any car can reach (e.g. 100) */
+    globalStatCap: number;
+    /** Number of tiers in the game (e.g. 5) */
+    tierCount: number;
+    /** Maximum star level a car can reach (e.g. 10) */
+    maxStarLevel: number;
+    /** Maximum cumulative car level (e.g. 100) */
+    maxCarLevel: number;
+    /** Fraction of tier budget contributed by star levels (0.0 - 1.0) */
+    starWeight: number;
+    /** Fraction of tier budget contributed by car levels (0.0 - 1.0) */
+    levelWeight: number;
+    /** The 5 stat keys, in order */
+    statKeys: string[];
+    /** Distribution profiles per archetype (tank, speedster, specialist) */
+    archetypeProfiles: Record<string, ArchetypeStatProfile>;
+    /** Optional per-tier budget overrides */
+    tierOverrides?: Record<string, TierBudgetOverride>;
+}
+
+/**
+ * The computed stats for a car at a specific star level and car level.
+ */
+export interface ComputedCarStats {
+    topSpeed: number;
+    acceleration: number;
+    handling: number;
+    boostRegen: number;
+    boostPower: number;
+    /** Total stat budget at this progression point */
+    totalBudget: number;
+    /** Tier floor value */
+    tierFloor: number;
+    /** Tier ceiling value */
+    tierCeiling: number;
+    /** Budget allocated from star progression */
+    starContribution: number;
+    /** Budget allocated from car level progression */
+    levelContribution: number;
+}
+
+/**
+ * Input needed to compute a car's stats.
+ */
+export interface CarStatsInput {
+    /** Tier order (1-based: 1 = Street, 5 = Mythic) */
+    tierOrder: number;
+    /** Car archetype: "tank", "speedster", or "specialist" */
+    archetype: string;
+    /** Current star level (0 to maxStarLevel) */
+    starLevel: number;
+    /** Current cumulative car level (0 to maxCarLevel) */
+    carLevel: number;
 }

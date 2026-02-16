@@ -14,6 +14,10 @@ import {
     FuelConfig,
     CrateSlotsConfig,
     PlayerSlotsConfig,
+    CarStatsBudgetConfig,
+    CarStatsInput,
+    ComputedCarStats,
+    ArchetypeStatProfile,
 } from "../shared/typesV2.js";
 
 const db = admin.firestore();
@@ -277,6 +281,76 @@ export async function getLibrarySlotPurchaseCost(slotNumber: number): Promise<nu
 }
 
 // =============================================================================
+// HELPER: Calculate car level from XP and star level (CUMULATIVE)
+// =============================================================================
+
+/**
+ * Dynamically calculate the car's CUMULATIVE level across all stars.
+ *
+ * The car level is GLOBAL and never resets. It increments continuously:
+ *   Star 0: carLevel  0 → 10
+ *   Star 1: carLevel 10 → 20
+ *   Star 2: carLevel 20 → 30
+ *   ...
+ *   Star 9: carLevel 90 → 100
+ *
+ * Formula: carLevel = (starLevel × levelsPerStar) + localLevel
+ * Where:   localLevel = floor(xp / (xpCap / levelsPerStar))
+ *
+ * Example at Star 0 (xpCap=1000, levelsPerStar=10):
+ *   XP=0    → localLevel=0,  carLevel = (0×10) + 0  = 0
+ *   XP=100  → localLevel=1,  carLevel = (0×10) + 1  = 1
+ *   XP=500  → localLevel=5,  carLevel = (0×10) + 5  = 5
+ *   XP=1000 → localLevel=10, carLevel = (0×10) + 10 = 10
+ *
+ * Example at Star 3 (xpCap=10000, levelsPerStar=10):
+ *   XP=0    → localLevel=0,  carLevel = (3×10) + 0  = 30
+ *   XP=5000 → localLevel=5,  carLevel = (3×10) + 5  = 35
+ *   XP=10000→ localLevel=10, carLevel = (3×10) + 10 = 40
+ *
+ * Fully dynamic — if xpCap changes, levels recalculate automatically.
+ *
+ * @param currentXp - The car's current XP within this star
+ * @param xpCap - The XP cap for the current star level
+ * @param starLevel - The car's current star level
+ * @param levelsPerStar - How many sub-levels in each star (from catalog)
+ * @returns Object with carLevel (global), localLevel (within star), xpInLevel, xpPerLevel
+ */
+export function calculateCarLevel(
+    currentXp: number,
+    xpCap: number,
+    starLevel: number,
+    levelsPerStar: number,
+): { carLevel: number; localLevel: number; xpInLevel: number; xpPerLevel: number; xpToNextLevel: number } {
+    // Safety: ensure valid inputs
+    const safeXp = Math.max(0, Math.floor(currentXp));
+    const safeCap = Math.max(1, Math.floor(xpCap));
+    const safeStar = Math.max(0, Math.floor(starLevel));
+    const safeLevels = Math.max(1, Math.floor(levelsPerStar));
+
+    const xpPerLevel = safeCap / safeLevels;
+
+    // Calculate local level within this star (0 to levelsPerStar)
+    let localLevel = Math.floor(safeXp / xpPerLevel);
+    localLevel = Math.min(localLevel, safeLevels); // Cap at max
+
+    // Calculate cumulative (global) car level
+    const carLevel = (safeStar * safeLevels) + localLevel;
+
+    // XP progress within the current local level
+    const xpInLevel = localLevel >= safeLevels ? 0 : safeXp - (localLevel * xpPerLevel);
+    const xpToNextLevel = localLevel >= safeLevels ? 0 : xpPerLevel - xpInLevel;
+
+    return {
+        carLevel,
+        localLevel,
+        xpInLevel: Math.max(0, xpInLevel),
+        xpPerLevel,
+        xpToNextLevel: Math.max(0, xpToNextLevel),
+    };
+}
+
+// =============================================================================
 // HELPER: Calculate skip cost in gems
 // =============================================================================
 
@@ -320,6 +394,114 @@ export function calculateFuelBars(
 }
 
 // =============================================================================
+// CAR STATS BUDGET CONFIG
+// =============================================================================
+
+let carStatsBudgetConfigCache: CacheEntry<CarStatsBudgetConfig> | null = null;
+
+export async function getCarStatsBudgetConfig(): Promise<CarStatsBudgetConfig> {
+    const now = Date.now();
+    if (carStatsBudgetConfigCache && now - carStatsBudgetConfigCache.lastFetched < CACHE_TTL_MS) {
+        return carStatsBudgetConfigCache.data;
+    }
+
+    const docRef = CONFIG_ROOT.doc("CarStatsBudgetConfig");
+    const doc = await docRef.get();
+
+    if (!doc.exists) {
+        throw new Error("CarStatsBudgetConfig not found at /GameData/v1/config/CarStatsBudgetConfig");
+    }
+
+    const data = doc.data() as CarStatsBudgetConfig;
+    carStatsBudgetConfigCache = { data, lastFetched: now };
+    console.log("[V2Config] Loaded CarStatsBudgetConfig");
+    return data;
+}
+
+// =============================================================================
+// HELPER: Compute Car Stats from Budget Config (pure function)
+// =============================================================================
+
+/**
+ * Compute a car's 5 stats dynamically based on tier, archetype, star level,
+ * and car level. This is a pure function — no Firestore calls.
+ *
+ * How it works:
+ *   1. budgetPerTier = globalStatCap / tierCount        (e.g. 100/5 = 20)
+ *   2. tierFloor     = (tierOrder - 1) × budgetPerTier  (e.g. Tier 1 = 0, Tier 3 = 40)
+ *   3. tierCeiling   = tierOrder × budgetPerTier        (e.g. Tier 1 = 20, Tier 3 = 60)
+ *   4. starProgress  = starLevel / maxStarLevel         (0.0 to 1.0)
+ *   5. levelProgress = carLevel / maxCarLevel            (0.0 to 1.0)
+ *   6. starContrib   = budgetPerTier × starWeight × starProgress
+ *   7. levelContrib  = budgetPerTier × levelWeight × levelProgress
+ *   8. totalBudget   = tierFloor + starContrib + levelContrib
+ *   9. Each stat     = totalBudget × archetypeProfile[stat]
+ *
+ * @param input - The car's current state (tier, archetype, star, level)
+ * @param config - The CarStatsBudgetConfig from Firestore
+ * @returns Computed stats for all 5 stats plus debug info
+ */
+export function computeCarStats(
+    input: CarStatsInput,
+    config: CarStatsBudgetConfig,
+): ComputedCarStats {
+    const {
+        globalStatCap,
+        tierCount,
+        maxStarLevel,
+        maxCarLevel,
+        starWeight,
+        levelWeight,
+        archetypeProfiles,
+        tierOverrides,
+    } = config;
+
+    // --- Safety clamps ---
+    const safeTierOrder = Math.max(1, Math.min(input.tierOrder, tierCount));
+    const safeStarLevel = Math.max(0, Math.min(input.starLevel, maxStarLevel));
+    const safeCarLevel = Math.max(0, Math.min(input.carLevel, maxCarLevel));
+
+    // --- Tier budget ---
+    const defaultBudgetPerTier = globalStatCap / tierCount;
+    const tierKey = String(safeTierOrder);
+    const override = tierOverrides?.[tierKey];
+
+    const budgetPerTier = override?.budgetOverride ?? defaultBudgetPerTier;
+    const tierFloor = override?.floorOverride ?? (safeTierOrder - 1) * defaultBudgetPerTier;
+    const tierCeiling = tierFloor + budgetPerTier;
+
+    // --- Progression within tier ---
+    const starProgress = maxStarLevel > 0 ? safeStarLevel / maxStarLevel : 0;
+    const levelProgress = maxCarLevel > 0 ? safeCarLevel / maxCarLevel : 0;
+
+    const starContribution = budgetPerTier * starWeight * starProgress;
+    const levelContribution = budgetPerTier * levelWeight * levelProgress;
+
+    const totalBudget = tierFloor + starContribution + levelContribution;
+
+    // --- Archetype distribution ---
+    const profile: ArchetypeStatProfile = archetypeProfiles[input.archetype]
+        ?? archetypeProfiles.specialist
+        ?? { topSpeed: 0.2, acceleration: 0.2, handling: 0.2, boostRegen: 0.2, boostPower: 0.2 };
+
+    // Round to 2 decimal places for clean values
+    const round2 = (n: number) => Math.round(n * 100) / 100;
+
+    return {
+        topSpeed: round2(totalBudget * profile.topSpeed),
+        acceleration: round2(totalBudget * profile.acceleration),
+        handling: round2(totalBudget * profile.handling),
+        boostRegen: round2(totalBudget * profile.boostRegen),
+        boostPower: round2(totalBudget * profile.boostPower),
+        totalBudget: round2(totalBudget),
+        tierFloor: round2(tierFloor),
+        tierCeiling: round2(tierCeiling),
+        starContribution: round2(starContribution),
+        levelContribution: round2(levelContribution),
+    };
+}
+
+// =============================================================================
 // TEST HELPERS
 // =============================================================================
 
@@ -330,5 +512,6 @@ export function __resetV2ConfigCacheForTests(): void {
     fuelConfigCache = null;
     crateSlotsConfigCache = null;
     playerSlotsConfigCache = null;
+    carStatsBudgetConfigCache = null;
     v2ConfigCache.clear();
 }

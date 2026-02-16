@@ -53,6 +53,7 @@ const configs = [
     { file: "FuelConfig.json", docName: "FuelConfig" },
     { file: "CrateSlotsConfig.json", docName: "CrateSlotsConfig" },
     { file: "PlayerSlotsConfig.json", docName: "PlayerSlotsConfig" },
+    { file: "CarStatsBudgetConfig.json", docName: "CarStatsBudgetConfig" },
 ];
 
 async function seedV2Catalogs() {

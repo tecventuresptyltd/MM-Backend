@@ -20,6 +20,7 @@ import {
     getXpCapForStarLevel,
     getPlayerSlotsConfig,
     calculateSkipCost,
+    calculateCarLevel,
 } from "../core/configV2.js";
 import {
     StartCarEvolutionRequest,
@@ -319,10 +320,15 @@ export const claimCarEvolutionV2 = onCall(
                     updatedAt: timestamp,
                 });
 
-                // Update car: increment star level, reset XP
+                // Update car: increment star level, reset XP (carLevel is cumulative)
+                const evolutionCatalog = await getCarEvolutionV2Catalog();
+                const levelsPerStar = evolutionCatalog.levelsPerStar ?? 10;
+                const newCarLevel = slot.targetStarLevel * levelsPerStar;
+
                 transaction.update(garageRef, {
                     [`cars.${carId}.starLevel`]: slot.targetStarLevel,
                     [`cars.${carId}.xp`]: 0,
+                    [`cars.${carId}.carLevel`]: newCarLevel,
                     [`cars.${carId}.isXpCapped`]: false,
                     [`cars.${carId}.updatedAt`]: timestamp,
                 });
@@ -563,12 +569,16 @@ export const getPitCrewStatusV2 = onCall(
  * Grant XP to a car after a race.
  * Called internally by race result processing.
  *
+ * Also dynamically calculates and persists the `carLevel` field,
+ * which represents the sub-level within the current star level.
+ * The car level is derived from: floor(xp / (xpCap / levelsPerStar))
+ *
  * @param transaction - Firestore transaction
  * @param uid - Player UID
  * @param carId - Car to grant XP to
  * @param xpAmount - Amount of XP to grant
  * @param timestamp - Server timestamp
- * @returns Updated car state
+ * @returns Updated car state including carLevel
  */
 export async function grantCarXP(
     transaction: FirebaseFirestore.Transaction,
@@ -576,13 +586,13 @@ export async function grantCarXP(
     carId: string,
     xpAmount: number,
     timestamp: FirebaseFirestore.FieldValue,
-): Promise<{ newXp: number; isNowCapped: boolean; starLevel: number }> {
+): Promise<{ newXp: number; isNowCapped: boolean; starLevel: number; carLevel: number }> {
     const garageRef = db.doc(`/Players/${uid}/Garage/Cars`);
     const garageDoc = await transaction.get(garageRef);
 
     if (!garageDoc.exists) {
         console.warn(`[EvolutionV2] Garage not found for ${uid}`);
-        return { newXp: 0, isNowCapped: false, starLevel: 0 };
+        return { newXp: 0, isNowCapped: false, starLevel: 0, carLevel: 0 };
     }
 
     const garageData = garageDoc.data()!;
@@ -590,7 +600,7 @@ export async function grantCarXP(
 
     if (!carData) {
         console.warn(`[EvolutionV2] Car ${carId} not found for ${uid}`);
-        return { newXp: 0, isNowCapped: false, starLevel: 0 };
+        return { newXp: 0, isNowCapped: false, starLevel: 0, carLevel: 0 };
     }
 
     // Check if already capped
@@ -601,12 +611,17 @@ export async function grantCarXP(
             newXp: carData.xp ?? 0,
             isNowCapped: true,
             starLevel: carData.starLevel ?? 0,
+            carLevel: carData.carLevel ?? 0,
         };
     }
 
     const currentXp = carData.xp ?? 0;
     const starLevel = carData.starLevel ?? 0;
     const xpCap = await getXpCapForStarLevel(starLevel);
+
+    // Load levelsPerStar from catalog (default 10)
+    const evolutionCatalog = await getCarEvolutionV2Catalog();
+    const levelsPerStar = evolutionCatalog.levelsPerStar ?? 10;
 
     let newXp = currentXp + xpAmount;
     let isNowCapped = false;
@@ -616,12 +631,16 @@ export async function grantCarXP(
         isNowCapped = true;
     }
 
-    // Write update
+    // Dynamically calculate the cumulative car level
+    const { carLevel } = calculateCarLevel(newXp, xpCap, starLevel, levelsPerStar);
+
+    // Write update (includes carLevel)
     transaction.update(garageRef, {
         [`cars.${carId}.xp`]: newXp,
         [`cars.${carId}.isXpCapped`]: isNowCapped,
+        [`cars.${carId}.carLevel`]: carLevel,
         [`cars.${carId}.updatedAt`]: timestamp,
     });
 
-    return { newXp, isNowCapped, starLevel };
+    return { newXp, isNowCapped, starLevel, carLevel };
 }

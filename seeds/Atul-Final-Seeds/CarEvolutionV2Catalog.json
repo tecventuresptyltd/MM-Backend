@@ -15,7 +15,7 @@
         "9": 175000
     },
     "maxStarLevel": 10,
-    "levelsPerStar": 10,
+    "levelsPerStar": 5,
     "evolutionCosts": {
         "0": {
             "targetStarLevel": 1,

@@ -76,7 +76,7 @@ const buildDefaultSpellDecks = (
   defaultSpellIds: string[],
   now: admin.firestore.FieldValue,
 ) => {
-  const deckSize = 5;
+  const deckSize = 3;
   const starterDeck = Array.from(
     { length: deckSize },
     (_, idx) => defaultSpellIds[idx] ?? "",
@@ -85,10 +85,10 @@ const buildDefaultSpellDecks = (
     active: 1,
     decks: {
       "1": { name: "Starter", spells: starterDeck },
-      "2": { name: "Deck 2", spells: ["", "", "", "", ""] },
-      "3": { name: "Deck 3", spells: ["", "", "", "", ""] },
-      "4": { name: "Deck 4", spells: ["", "", "", "", ""] },
-      "5": { name: "Deck 5", spells: ["", "", "", "", ""] },
+      "2": { name: "Deck 2", spells: ["", "", ""] },
+      "3": { name: "Deck 3", spells: ["", "", ""] },
+      "4": { name: "Deck 4", spells: ["", "", ""] },
+      "5": { name: "Deck 5", spells: ["", "", ""] },
     },
     updatedAt: now,
   };
@@ -98,14 +98,23 @@ const buildDefaultSpells = (
   defaultSpellIds: string[],
   now: admin.firestore.FieldValue,
 ) => {
-  const levels: Record<string, number> = {};
+  // Only grant first 3 spells
+  const grantedSpells = defaultSpellIds.slice(0, 3);
+
+  const spells: Record<string, { xp: number; level: number; isXpCapped: boolean }> = {};
   const unlockedAt: Record<string, admin.firestore.FieldValue> = {};
-  defaultSpellIds.forEach((spellId) => {
-    levels[spellId] = 1;
+
+  grantedSpells.forEach((spellId) => {
+    spells[spellId] = {
+      xp: 0,
+      level: 1,
+      isXpCapped: false,
+    };
     unlockedAt[spellId] = now;
   });
+
   return {
-    levels,
+    spells,
     unlockedAt,
     updatedAt: now,
   };

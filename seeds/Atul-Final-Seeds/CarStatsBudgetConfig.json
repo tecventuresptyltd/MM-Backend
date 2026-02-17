@@ -5,7 +5,7 @@
     "globalStatCap": 100,
     "tierCount": 5,
     "maxStarLevel": 10,
-    "maxCarLevel": 100,
+    "maxCarLevel": 50,
     "starWeight": 0.60,
     "levelWeight": 0.40,
     "statKeys": [

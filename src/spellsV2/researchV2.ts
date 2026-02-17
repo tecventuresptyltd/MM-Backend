@@ -106,10 +106,14 @@ export const startSpellResearchV2 = onCall(
                     throw new HttpsError("not-found", "Player spells not found.");
                 }
                 const spellsData = spellsDoc.data()!;
-                const levelsMap = spellsData.levels ?? {};
+
+                // Read from nested structure first, fallback to legacy
+                const spellsMap = (spellsData.spells ?? {}) as Record<string, { level?: number; xp?: number; isXpCapped?: boolean }>;
+                const legacyLevelsMap = (spellsData.levels ?? {}) as Record<string, number>;
 
                 // Check player owns the spell
-                const currentLevel = levelsMap[spellId];
+                const spellData = spellsMap[spellId];
+                const currentLevel = spellData?.level ?? legacyLevelsMap[spellId];
                 if (currentLevel === undefined || currentLevel < 1) {
                     throw new HttpsError("not-found", `Player does not own spell: ${spellId}`);
                 }
@@ -296,9 +300,11 @@ export const claimSpellResearchV2 = onCall(
                     updatedAt: timestamp,
                 });
 
-                // Update spell level
+                // Update spell level in nested structure
                 transaction.update(spellsRef, {
-                    [`levels.${spellId}`]: slot.targetLevel,
+                    [`spells.${spellId}.level`]: slot.targetLevel,
+                    [`spells.${spellId}.xp`]: 0,
+                    [`spells.${spellId}.isXpCapped`]: false,
                     updatedAt: timestamp,
                 });
 

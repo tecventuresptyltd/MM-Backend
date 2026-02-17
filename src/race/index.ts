@@ -515,7 +515,7 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
     const baseShards = shardConfig
       ? (shardConfig.byPosition[String(place)] ?? shardConfig.defaultShards)
       : 0;
-    
+
     // Apply shard booster (2x multiplier if active)
     const shardMultiplier = hasShardBooster ? 2 : 1;
     const shardsEarned = Math.round(baseShards * shardMultiplier);
@@ -676,7 +676,12 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
 
     // --- Grant Car XP (same amount as player XP) ---
     const raceCarId = participantData.carId as string | undefined;
-    let carXpResult: { newXp: number; isNowCapped: boolean; starLevel: number; carLevel: number } | null = null;
+    let carXpResult: {
+      carLevel: number;
+      displayXp: string;
+      xpAwarded: number;
+      isXpCapped: boolean;
+    } | null = null;
     if (raceCarId && garageDoc.exists) {
       const garageData = garageDoc.data()!;
       const carData = garageData.cars?.[raceCarId];
@@ -688,12 +693,28 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
         const currentXp = carData.xp ?? 0;
         const xpCap = await getXpCapForStarLevel(starLevel);
         const carEvoCatalog = await getCarEvolutionV2Catalog();
-        const levelsPerStar = carEvoCatalog.levelsPerStar ?? 10;
+        const levelsPerStar = carEvoCatalog.levelsPerStar ?? 5;
+        const maxStarLevel = carEvoCatalog.maxStarLevel ?? 10;
 
         // Always calculate carLevel from current XP (even if capped)
-        const { carLevel } = calculateCarLevel(currentXp, xpCap, starLevel, levelsPerStar);
+        const { carLevel, xpInLevel, xpToNextLevel, localLevel } = calculateCarLevel(currentXp, xpCap, starLevel, levelsPerStar);
 
-        if (isXpCapped) {
+        // If car is at max star level, no XP gain at all
+        if (starLevel >= maxStarLevel) {
+          // Update carLevel if needed
+          if (carData.carLevel !== carLevel) {
+            transaction.update(garageRef, {
+              [`cars.${raceCarId}.carLevel`]: carLevel,
+              [`cars.${raceCarId}.updatedAt`]: admin.firestore.FieldValue.serverTimestamp(),
+            });
+          }
+          carXpResult = {
+            carLevel,
+            displayXp: `${Math.floor(currentXp)}xp / ${Math.floor(xpCap)}xp`,
+            xpAwarded: 0, // No XP awarded at max star level
+            isXpCapped: isXpCapped,
+          };
+        } else if (isXpCapped) {
           // Car is already capped, no XP granted, but update carLevel if needed
           if (carData.carLevel !== carLevel) {
             // carLevel was missing or incorrect, update it
@@ -702,11 +723,12 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
               [`cars.${raceCarId}.updatedAt`]: admin.firestore.FieldValue.serverTimestamp(),
             });
           }
+          // When capped, show current XP / current cap (not next level)
           carXpResult = {
-            newXp: currentXp,
-            isNowCapped: true,
-            starLevel,
             carLevel,
+            displayXp: `${Math.floor(currentXp)}xp / ${Math.floor(xpCap)}xp`,
+            xpAwarded: 0, // No XP awarded when capped
+            isXpCapped: true,
           };
         } else {
           // Car is not capped, grant XP
@@ -718,7 +740,7 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
           }
 
           // Recalculate carLevel with new XP
-          const { carLevel: newCarLevel } = calculateCarLevel(newXp, xpCap, starLevel, levelsPerStar);
+          const { carLevel: newCarLevel, xpInLevel: newXpInLevel, xpToNextLevel: newXpToNextLevel, localLevel: newLocalLevel } = calculateCarLevel(newXp, xpCap, starLevel, levelsPerStar);
 
           transaction.update(garageRef, {
             [`cars.${raceCarId}.xp`]: newXp,
@@ -726,13 +748,20 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
             [`cars.${raceCarId}.carLevel`]: newCarLevel,
             [`cars.${raceCarId}.updatedAt`]: admin.firestore.FieldValue.serverTimestamp(),
           });
-          carXpResult = { newXp, isNowCapped, starLevel, carLevel: newCarLevel };
+          const xpPerLevel = xpCap / levelsPerStar;
+          const xpNeededForNextLevel = (newLocalLevel + 1) * xpPerLevel;
+          carXpResult = {
+            carLevel: newCarLevel,
+            displayXp: `${Math.floor(newXp)}xp / ${Math.floor(xpNeededForNextLevel)}xp`,
+            xpAwarded: xpGained, // XP awarded when not capped
+            isXpCapped: isNowCapped,
+          };
         }
       }
     }
 
     // --- Grant Spell XP to all equipped spells ---
-    const spellXpResults: Array<{ spellId: string; xpAwarded: number; newTotalXp: number; isXpCapped: boolean; level: number }> = [];
+    const spellXpResults: Array<{ spellId: string; xpAwarded: number; newTotalXp: number; isXpCapped: boolean; level: number; displayXp: string; isMaxLevel: boolean }> = [];
     const raceDeckIndex = participantData.deckIndex as number | undefined;
     if (spellDecksDoc.exists && raceDeckIndex !== undefined) {
       const decksData = spellDecksDoc.data();
@@ -745,6 +774,7 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
       if (deckSpells.length > 0) {
         const researchCatalog = await getSpellEvolutionV2Catalog();
         const xpConfig = researchCatalog.spellXpConfig;
+        const maxSpellLevel = researchCatalog.maxSpellLevel;
         const baseXp = xpConfig.xpPerRace ?? 10;
         const winBonus = place === 1 ? (xpConfig.xpPerWin ?? 25) : 0;
         const spellXpAmount = baseXp + winBonus;
@@ -757,11 +787,24 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
           const currentLevel = spellData.level ?? legacyLevelsMap[spellId] ?? 1;
           const currentXp = spellData.xp ?? 0;
           const isAlreadyCapped = spellData.isXpCapped ?? false;
+          const isMaxLevel = currentLevel >= maxSpellLevel;
 
-          if (isAlreadyCapped) {
-            spellXpResults.push({ spellId, xpAwarded: 0, newTotalXp: currentXp, isXpCapped: true, level: currentLevel });
+
+          // If spell is at max level, no XP gain at all
+          if (isMaxLevel) {
+            const xpCap = xpConfig.xpCapPerLevel?.[String(currentLevel)] ?? 9999;
+            const displayXp = `${currentXp}xp / ${xpCap}xp`;
+            spellXpResults.push({ spellId, xpAwarded: 0, newTotalXp: currentXp, isXpCapped: isAlreadyCapped, level: currentLevel, displayXp, isMaxLevel: true });
             continue;
           }
+
+          if (isAlreadyCapped) {
+            const xpCap = xpConfig.xpCapPerLevel?.[String(currentLevel)] ?? 9999;
+            const displayXp = `${currentXp}xp / ${xpCap}xp`;
+            spellXpResults.push({ spellId, xpAwarded: 0, newTotalXp: currentXp, isXpCapped: true, level: currentLevel, displayXp, isMaxLevel: false });
+            continue;
+          }
+
 
           const xpCap = xpConfig.xpCapPerLevel?.[String(currentLevel)] ?? 9999;
           let newXp = currentXp + spellXpAmount;
@@ -772,7 +815,19 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
           }
 
           spellsNestedData[spellId] = { xp: newXp, isXpCapped: isNowCapped, level: currentLevel };
-          spellXpResults.push({ spellId, xpAwarded: spellXpAmount, newTotalXp: newXp, isXpCapped: isNowCapped, level: currentLevel });
+
+          // Create displayXp like car XP: "20xp / 100xp"
+          const displayXp = `${newXp}xp / ${xpCap}xp`;
+
+          spellXpResults.push({
+            spellId,
+            xpAwarded: spellXpAmount,
+            newTotalXp: newXp,
+            isXpCapped: isNowCapped,
+            level: currentLevel,
+            displayXp,
+            isMaxLevel: false,
+          });
         }
 
         if (Object.keys(spellsNestedData).length > 0) {
@@ -852,11 +907,10 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
       },
       carXp: carXpResult && raceCarId ? {
         carId: raceCarId,
-        xpAwarded: xpGained,
-        newTotalXp: carXpResult.newXp,
-        isXpCapped: carXpResult.isNowCapped,
-        starLevel: carXpResult.starLevel,
+        xpAwarded: carXpResult.xpAwarded,
         carLevel: carXpResult.carLevel,
+        displayXp: carXpResult.displayXp,
+        isXpCapped: carXpResult.isXpCapped,
       } : null,
       spellXp: spellXpResults.length > 0 ? spellXpResults : null,
       crateSlot: crateSlotResult,

@@ -473,7 +473,15 @@ export const claimCrateRewardV2 = onCall(
                 }
 
                 // ======================================================
-                // WRITES
+                // GRANT INVENTORY (must happen before other writes —
+                // grantInventoryRewards does internal reads)
+                // ======================================================
+                if (inventoryGrants.length > 0) {
+                    await grantInventoryRewards(transaction, uid, inventoryGrants, { timestamp });
+                }
+
+                // ======================================================
+                // WRITES (all reads are done, safe to write now)
                 // ======================================================
 
                 // Clear the slot
@@ -497,11 +505,6 @@ export const claimCrateRewardV2 = onCall(
                         economyUpdate.gems = admin.firestore.FieldValue.increment(economyChanges.gems);
                     }
                     transaction.update(economyRef, economyUpdate);
-                }
-
-                // Grant inventory items (cosmetics, boosters, speedups)
-                if (inventoryGrants.length > 0) {
-                    await grantInventoryRewards(transaction, uid, inventoryGrants, { timestamp });
                 }
 
                 return {

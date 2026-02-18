@@ -85,6 +85,10 @@ export const receiveCrateV2 = onCall(
         const [crateId, crate] = crateInfo;
         const rarity = crate.rarity || "common";
 
+        // Capture unlock duration at receive time so the frontend always has it,
+        // even before unlocking starts (when startedAt/completesAt are null).
+        const unlockDurationSeconds = await getUnlockDurationForRarity(rarity);
+
         return await runTransactionWithReceipt<ReceiveCrateV2Response>(
             uid,
             opId,
@@ -149,10 +153,11 @@ export const receiveCrateV2 = onCall(
                     crateSkuId,
                     crateId,
                     rarity,
-                    receivedAt: timestamp,
+                    receivedAt: admin.firestore.Timestamp.now(),
                     isUnlocking: false,
                     startedAt: null,
                     completesAt: null,
+                    unlockDurationSeconds,
                 };
 
                 // Create slots array with nulls for empty slots
@@ -293,7 +298,7 @@ export const startCrateUnlockV2 = onCall(
                 updatedSlots[slotIndex] = {
                     ...slot,
                     isUnlocking: true,
-                    startedAt: timestamp,
+                    startedAt: admin.firestore.Timestamp.fromMillis(now),
                     completesAt: completesAtTimestamp,
                 };
 
@@ -582,6 +587,8 @@ interface CrateSlotsStatusResponse {
         isComplete: boolean;
         remainingSeconds: number;
         skipCostGems: number;
+        /** Total unlock duration in seconds for this crate's rarity */
+        unlockDurationSeconds: number;
     }>;
     maxSlots: number;
     availableSlots: number;
@@ -621,6 +628,7 @@ export const getCrateSlotsStatusV2 = onCall(
                 isComplete: false,
                 remainingSeconds: 0,
                 skipCostGems: 0,
+                unlockDurationSeconds: 0,
             }));
 
             return {
@@ -654,6 +662,7 @@ export const getCrateSlotsStatusV2 = onCall(
                     isComplete: false,
                     remainingSeconds: 0,
                     skipCostGems: 0,
+                    unlockDurationSeconds: 0,
                 };
             }
 
@@ -689,6 +698,7 @@ export const getCrateSlotsStatusV2 = onCall(
                 isComplete,
                 remainingSeconds,
                 skipCostGems,
+                unlockDurationSeconds: slot.unlockDurationSeconds ?? 0,
             };
         });
 

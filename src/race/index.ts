@@ -11,7 +11,7 @@ import { maybeGenerateStarterOffer } from "../shop/offers.js";
 import { STARTER_RACE_THRESHOLD } from "../shop/offerState.js";
 import { buildBotLoadout } from "../game-systems/botLoadoutHelper.js";
 import { applyClanTrophyDelta, playerClanStateRef, clanMembersCollection, clanRef, updateClanMemberSnapshot } from "../clan/helpers.js";
-import { getXpCapForStarLevel, getSpellEvolutionV2Catalog, getCrateSlotsConfig, getCarEvolutionV2Catalog, calculateCarLevel } from "../core/configV2.js";
+import { getXpCapForStarLevel, getSpellEvolutionV2Catalog, getCrateSlotsConfig, getCarEvolutionV2Catalog, calculateCarLevel, getUnlockDurationForRarity } from "../core/configV2.js";
 import { CrateSlotEntry, UserCrateSlotsDoc } from "../shared/typesV2.js";
 import { updatePlayerLeaderboardEntry } from "../Socials/liveLeaderboard.js";
 import { updateClanLeaderboardEntry } from "../clan/liveLeaderboard.js";
@@ -594,6 +594,7 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
         }
       } else {
         // Place crate into first empty slot
+        const unlockDurationSeconds = await getUnlockDurationForRarity(crateRarity);
         const newSlotEntry: CrateSlotEntry = {
           crateSkuId: drops.playerDrop.skuId,
           crateId: drops.playerDrop.type,
@@ -602,6 +603,7 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
           isUnlocking: false,
           startedAt: null,
           completesAt: null,
+          unlockDurationSeconds,
         };
 
         const newSlots: (CrateSlotEntry | null)[] = [];
@@ -871,25 +873,19 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
       success: true,
       gamemode,
       rewards: {
-        trophies: appliedActualTrophiesDelta,
-        coins: coinsGained,
-        xp: xpGained,
-        spellShards: shardsEarned,
-        boosterShards: boosterShards,
         baseCoins: rewards.baseCoins,
         boosterCoins: rewards.boosterCoins,
-        baseXp: rewards.baseXp,
-        boosterXp: rewards.boosterXp,
+        spellShards: shardsEarned,
+        boosterShards: boosterShards,
       },
       xpProgress: {
-        xpBefore,
-        xpAfter,
+        xpGained: rewards.baseXp,
+        totalXp: xpGained,
+        boosterXp: rewards.boosterXp,
+        expProgress: afterInfo.expInLevel,
+        xpToNextLevel: expRequiredForNextLevel,
         levelBefore: beforeInfo.level,
         levelAfter: afterInfo.level,
-        expInLevelBefore: beforeInfo.expInLevel,
-        expInLevelAfter: afterInfo.expInLevel,
-        expToNextLevelBefore: expRequiredForNextLevelBefore,
-        expToNextLevel: expRequiredForNextLevel,
       },
       rank: {
         old: oldRankLabel,
@@ -923,7 +919,7 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
   logger.info("[recordRaceResult] POST-TRANSACTION VERIFICATION", {
     uid,
     raceId,
-    returnedTrophies: result.rewards?.trophies,
+    returnedTrophies: result.trophySettlement?.applied,
     verifiedTrophiesInFirestore: verifiedTrophies,
     expectedTrophies: result.trophySettlement?.applied !== undefined
       ? "should match returnedTrophies calculation"

@@ -280,6 +280,8 @@ export interface CrateSlotEntry {
     isUnlocking: boolean;
     startedAt?: FirebaseFirestore.Timestamp | FirebaseFirestore.FieldValue | null;
     completesAt?: FirebaseFirestore.Timestamp | FirebaseFirestore.FieldValue | null;
+    /** Total unlock duration in seconds for this crate's rarity, captured at receive time */
+    unlockDurationSeconds?: number;
 }
 
 export interface UserCrateSlotsDoc {

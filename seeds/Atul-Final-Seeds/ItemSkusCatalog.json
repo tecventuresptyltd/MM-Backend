@@ -4356,6 +4356,78 @@
       "gemPrice": 720,
       "durationSeconds": 86400
     },
+    "sku_shrd1h_p3x9": {
+      "skuId": "sku_shrd1h_p3x9",
+      "itemId": "bst_shrd7k9m",
+      "displayName": "Shard Booster (1h)",
+      "category": "booster",
+      "type": "booster",
+      "rarity": "special",
+      "stackable": true,
+      "variant": null,
+      "subType": "shard",
+      "purchasable": {
+        "currency": "gems",
+        "amount": 60
+      },
+      "metadata": null,
+      "gemPrice": 60,
+      "durationSeconds": 3600
+    },
+    "sku_shrd6h_k7w2": {
+      "skuId": "sku_shrd6h_k7w2",
+      "itemId": "bst_shrd7k9m",
+      "displayName": "Shard Booster (6h)",
+      "category": "booster",
+      "type": "booster",
+      "rarity": "special",
+      "stackable": true,
+      "variant": null,
+      "subType": "shard",
+      "purchasable": {
+        "currency": "gems",
+        "amount": 240
+      },
+      "metadata": null,
+      "gemPrice": 240,
+      "durationSeconds": 21600
+    },
+    "sku_shrd12h_m4v6": {
+      "skuId": "sku_shrd12h_m4v6",
+      "itemId": "bst_shrd7k9m",
+      "displayName": "Shard Booster (12h)",
+      "category": "booster",
+      "type": "booster",
+      "rarity": "special",
+      "stackable": true,
+      "variant": null,
+      "subType": "shard",
+      "purchasable": {
+        "currency": "gems",
+        "amount": 420
+      },
+      "metadata": null,
+      "gemPrice": 420,
+      "durationSeconds": 43200
+    },
+    "sku_shrd24h_n8t5": {
+      "skuId": "sku_shrd24h_n8t5",
+      "itemId": "bst_shrd7k9m",
+      "displayName": "Shard Booster (24h)",
+      "category": "booster",
+      "type": "booster",
+      "rarity": "special",
+      "stackable": true,
+      "variant": null,
+      "subType": "shard",
+      "purchasable": {
+        "currency": "gems",
+        "amount": 720
+      },
+      "metadata": null,
+      "gemPrice": 720,
+      "durationSeconds": 86400
+    },
     "sku_spd5m_r4x7": {
       "skuId": "sku_spd5m_r4x7",
       "itemId": "spd_v8kn3qw2",

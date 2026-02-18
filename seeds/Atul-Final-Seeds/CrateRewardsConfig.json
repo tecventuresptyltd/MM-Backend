@@ -27,6 +27,13 @@
                     "skuId": "sku_07hw4ry3"
                 },
                 {
+                    "type": "shardBooster",
+                    "displayName": "Shard Booster (1h)",
+                    "quantity": 1,
+                    "weight": 15,
+                    "skuId": "sku_shrd1h_p3x9"
+                },
+                {
                     "type": "coinBooster",
                     "displayName": "Coin Booster (1h)",
                     "quantity": 1,
@@ -78,6 +85,13 @@
                     "quantity": 1,
                     "weight": 10,
                     "skuId": "sku_60fdgqkm"
+                },
+                {
+                    "type": "shardBooster",
+                    "displayName": "Shard Booster (1h)",
+                    "quantity": 1,
+                    "weight": 10,
+                    "skuId": "sku_shrd1h_p3x9"
                 },
                 {
                     "type": "coinBooster",
@@ -140,6 +154,13 @@
                     "skuId": "sku_nhh7jtda"
                 },
                 {
+                    "type": "shardBooster",
+                    "displayName": "Shard Booster (6h)",
+                    "quantity": 1,
+                    "weight": 8,
+                    "skuId": "sku_shrd6h_k7w2"
+                },
+                {
                     "type": "coinBooster",
                     "displayName": "Coin Booster (6h)",
                     "quantity": 1,
@@ -200,6 +221,13 @@
                     "skuId": "sku_9pnmmjpscv"
                 },
                 {
+                    "type": "shardBooster",
+                    "displayName": "Shard Booster (12h)",
+                    "quantity": 1,
+                    "weight": 8,
+                    "skuId": "sku_shrd12h_m4v6"
+                },
+                {
                     "type": "coinBooster",
                     "displayName": "Coin Booster (12h)",
                     "quantity": 1,
@@ -251,6 +279,13 @@
                     "quantity": 1,
                     "weight": 12,
                     "skuId": "sku_9pnmmjpscv"
+                },
+                {
+                    "type": "shardBooster",
+                    "displayName": "Shard Booster (24h)",
+                    "quantity": 1,
+                    "weight": 10,
+                    "skuId": "sku_shrd24h_n8t5"
                 },
                 {
                     "type": "coinBooster",

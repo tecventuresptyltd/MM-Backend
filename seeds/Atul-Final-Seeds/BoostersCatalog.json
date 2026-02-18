@@ -89,6 +89,50 @@
       "stackable": true,
       "variant": null,
       "subType": "exp"
+    },
+    "sku_shrd1h_p3x9": {
+      "skuId": "sku_shrd1h_p3x9",
+      "itemId": "bst_shrd7k9m",
+      "displayName": "Shard Booster (1h)",
+      "category": "booster",
+      "type": "booster",
+      "rarity": "special",
+      "stackable": true,
+      "variant": null,
+      "subType": "shard"
+    },
+    "sku_shrd6h_k7w2": {
+      "skuId": "sku_shrd6h_k7w2",
+      "itemId": "bst_shrd7k9m",
+      "displayName": "Shard Booster (6h)",
+      "category": "booster",
+      "type": "booster",
+      "rarity": "special",
+      "stackable": true,
+      "variant": null,
+      "subType": "shard"
+    },
+    "sku_shrd12h_m4v6": {
+      "skuId": "sku_shrd12h_m4v6",
+      "itemId": "bst_shrd7k9m",
+      "displayName": "Shard Booster (12h)",
+      "category": "booster",
+      "type": "booster",
+      "rarity": "special",
+      "stackable": true,
+      "variant": null,
+      "subType": "shard"
+    },
+    "sku_shrd24h_n8t5": {
+      "skuId": "sku_shrd24h_n8t5",
+      "itemId": "bst_shrd7k9m",
+      "displayName": "Shard Booster (24h)",
+      "category": "booster",
+      "type": "booster",
+      "rarity": "special",
+      "stackable": true,
+      "variant": null,
+      "subType": "shard"
     }
   }
 }

@@ -4589,6 +4589,70 @@
         }
       ]
     },
+    "bst_shrd7k9m": {
+      "itemId": "bst_shrd7k9m",
+      "displayName": "Shard Booster",
+      "category": "booster",
+      "type": "booster",
+      "subType": "shard",
+      "rarity": "special",
+      "stackable": true,
+      "purchasable": true,
+      "variants": [
+        {
+          "skuId": "sku_shrd1h_p3x9",
+          "displayName": "Shard Booster (1h)",
+          "rarity": "special",
+          "stackable": true,
+          "purchasable": true,
+          "gemPrice": 60,
+          "durationSeconds": 3600,
+          "subType": "shard",
+          "variant": {
+            "durationLabel": "1h"
+          }
+        },
+        {
+          "skuId": "sku_shrd6h_k7w2",
+          "displayName": "Shard Booster (6h)",
+          "rarity": "special",
+          "stackable": true,
+          "purchasable": true,
+          "gemPrice": 240,
+          "durationSeconds": 21600,
+          "subType": "shard",
+          "variant": {
+            "durationLabel": "6h"
+          }
+        },
+        {
+          "skuId": "sku_shrd12h_m4v6",
+          "displayName": "Shard Booster (12h)",
+          "rarity": "special",
+          "stackable": true,
+          "purchasable": true,
+          "gemPrice": 420,
+          "durationSeconds": 43200,
+          "subType": "shard",
+          "variant": {
+            "durationLabel": "12h"
+          }
+        },
+        {
+          "skuId": "sku_shrd24h_n8t5",
+          "displayName": "Shard Booster (24h)",
+          "rarity": "special",
+          "stackable": true,
+          "purchasable": true,
+          "gemPrice": 720,
+          "subType": "shard",
+          "durationSeconds": 86400,
+          "variant": {
+            "durationLabel": "24h"
+          }
+        }
+      ]
+    },
     "spd_v8kn3qw2": {
       "itemId": "spd_v8kn3qw2",
       "displayName": "Speed Up",
@@ -5200,6 +5264,12 @@
       "sku_60fdgqkm",
       "sku_nhh7jtda",
       "sku_9pnmmjpscv"
+    ],
+    "family_bst_shrd7k9m": [
+      "sku_shrd1h_p3x9",
+      "sku_shrd6h_k7w2",
+      "sku_shrd12h_m4v6",
+      "sku_shrd24h_n8t5"
     ],
     "family_spd_v8kn3qw2": [
       "sku_spd5m_r4x7",

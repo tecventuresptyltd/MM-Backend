@@ -1,0 +1,279 @@
+{
+    "version": "1.0.0",
+    "updatedAt": 0,
+    "notes": "Crate reward pools per rarity. cosmeticCount = random cosmetics of that rarity, catalogItemCount = random picks from rewardPool. Edit this file and re-run the seeder to update rewards.",
+    "rewardsByRarity": {
+        "common": {
+            "cosmeticCount": 3,
+            "catalogItemCount": 3,
+            "rewardPool": [
+                {
+                    "type": "coins",
+                    "displayName": "Coins",
+                    "quantity": 500,
+                    "weight": 30
+                },
+                {
+                    "type": "gems",
+                    "displayName": "Gems",
+                    "quantity": 5,
+                    "weight": 10
+                },
+                {
+                    "type": "expBooster",
+                    "displayName": "EXP Booster (1h)",
+                    "quantity": 1,
+                    "weight": 20,
+                    "skuId": "sku_07hw4ry3"
+                },
+                {
+                    "type": "coinBooster",
+                    "displayName": "Coin Booster (1h)",
+                    "quantity": 1,
+                    "weight": 20,
+                    "skuId": "sku_amf7txny"
+                },
+                {
+                    "type": "speedUp",
+                    "displayName": "Speed Up (5m)",
+                    "quantity": 1,
+                    "weight": 20,
+                    "skuId": "sku_spd5m_r4x7"
+                },
+                {
+                    "type": "speedUp",
+                    "displayName": "Speed Up (15m)",
+                    "quantity": 1,
+                    "weight": 15,
+                    "skuId": "sku_spd15m_j8k2"
+                }
+            ]
+        },
+        "rare": {
+            "cosmeticCount": 3,
+            "catalogItemCount": 3,
+            "rewardPool": [
+                {
+                    "type": "coins",
+                    "displayName": "Coins",
+                    "quantity": 1000,
+                    "weight": 25
+                },
+                {
+                    "type": "gems",
+                    "displayName": "Gems",
+                    "quantity": 10,
+                    "weight": 12
+                },
+                {
+                    "type": "expBooster",
+                    "displayName": "EXP Booster (1h)",
+                    "quantity": 1,
+                    "weight": 15,
+                    "skuId": "sku_07hw4ry3"
+                },
+                {
+                    "type": "expBooster",
+                    "displayName": "EXP Booster (6h)",
+                    "quantity": 1,
+                    "weight": 10,
+                    "skuId": "sku_60fdgqkm"
+                },
+                {
+                    "type": "coinBooster",
+                    "displayName": "Coin Booster (1h)",
+                    "quantity": 1,
+                    "weight": 15,
+                    "skuId": "sku_amf7txny"
+                },
+                {
+                    "type": "coinBooster",
+                    "displayName": "Coin Booster (6h)",
+                    "quantity": 1,
+                    "weight": 10,
+                    "skuId": "sku_eqzbetwm"
+                },
+                {
+                    "type": "speedUp",
+                    "displayName": "Speed Up (15m)",
+                    "quantity": 1,
+                    "weight": 12,
+                    "skuId": "sku_spd15m_j8k2"
+                },
+                {
+                    "type": "speedUp",
+                    "displayName": "Speed Up (30m)",
+                    "quantity": 1,
+                    "weight": 10,
+                    "skuId": "sku_spd30m_w3n9"
+                }
+            ]
+        },
+        "exotic": {
+            "cosmeticCount": 3,
+            "catalogItemCount": 3,
+            "rewardPool": [
+                {
+                    "type": "coins",
+                    "displayName": "Coins",
+                    "quantity": 2000,
+                    "weight": 22
+                },
+                {
+                    "type": "gems",
+                    "displayName": "Gems",
+                    "quantity": 20,
+                    "weight": 15
+                },
+                {
+                    "type": "expBooster",
+                    "displayName": "EXP Booster (6h)",
+                    "quantity": 1,
+                    "weight": 12,
+                    "skuId": "sku_60fdgqkm"
+                },
+                {
+                    "type": "expBooster",
+                    "displayName": "EXP Booster (12h)",
+                    "quantity": 1,
+                    "weight": 8,
+                    "skuId": "sku_nhh7jtda"
+                },
+                {
+                    "type": "coinBooster",
+                    "displayName": "Coin Booster (6h)",
+                    "quantity": 1,
+                    "weight": 12,
+                    "skuId": "sku_eqzbetwm"
+                },
+                {
+                    "type": "coinBooster",
+                    "displayName": "Coin Booster (12h)",
+                    "quantity": 1,
+                    "weight": 8,
+                    "skuId": "sku_wkm0amtg"
+                },
+                {
+                    "type": "speedUp",
+                    "displayName": "Speed Up (30m)",
+                    "quantity": 1,
+                    "weight": 10,
+                    "skuId": "sku_spd30m_w3n9"
+                },
+                {
+                    "type": "speedUp",
+                    "displayName": "Speed Up (1h)",
+                    "quantity": 1,
+                    "weight": 8,
+                    "skuId": "sku_spd1h_m5t6"
+                }
+            ]
+        },
+        "legendary": {
+            "cosmeticCount": 3,
+            "catalogItemCount": 3,
+            "rewardPool": [
+                {
+                    "type": "coins",
+                    "displayName": "Coins",
+                    "quantity": 5000,
+                    "weight": 20
+                },
+                {
+                    "type": "gems",
+                    "displayName": "Gems",
+                    "quantity": 50,
+                    "weight": 15
+                },
+                {
+                    "type": "expBooster",
+                    "displayName": "EXP Booster (12h)",
+                    "quantity": 1,
+                    "weight": 10,
+                    "skuId": "sku_nhh7jtda"
+                },
+                {
+                    "type": "expBooster",
+                    "displayName": "EXP Booster (24h)",
+                    "quantity": 1,
+                    "weight": 8,
+                    "skuId": "sku_9pnmmjpscv"
+                },
+                {
+                    "type": "coinBooster",
+                    "displayName": "Coin Booster (12h)",
+                    "quantity": 1,
+                    "weight": 10,
+                    "skuId": "sku_wkm0amtg"
+                },
+                {
+                    "type": "coinBooster",
+                    "displayName": "Coin Booster (24h)",
+                    "quantity": 1,
+                    "weight": 8,
+                    "skuId": "sku_tpt3379j8p"
+                },
+                {
+                    "type": "speedUp",
+                    "displayName": "Speed Up (3h)",
+                    "quantity": 1,
+                    "weight": 10,
+                    "skuId": "sku_spd3h_q2v8"
+                },
+                {
+                    "type": "speedUp",
+                    "displayName": "Speed Up (8h)",
+                    "quantity": 1,
+                    "weight": 8,
+                    "skuId": "sku_spd8h_y7p4"
+                }
+            ]
+        },
+        "mythical": {
+            "cosmeticCount": 3,
+            "catalogItemCount": 3,
+            "rewardPool": [
+                {
+                    "type": "coins",
+                    "displayName": "Coins",
+                    "quantity": 10000,
+                    "weight": 18
+                },
+                {
+                    "type": "gems",
+                    "displayName": "Gems",
+                    "quantity": 100,
+                    "weight": 15
+                },
+                {
+                    "type": "expBooster",
+                    "displayName": "EXP Booster (24h)",
+                    "quantity": 1,
+                    "weight": 12,
+                    "skuId": "sku_9pnmmjpscv"
+                },
+                {
+                    "type": "coinBooster",
+                    "displayName": "Coin Booster (24h)",
+                    "quantity": 1,
+                    "weight": 12,
+                    "skuId": "sku_tpt3379j8p"
+                },
+                {
+                    "type": "speedUp",
+                    "displayName": "Speed Up (8h)",
+                    "quantity": 1,
+                    "weight": 10,
+                    "skuId": "sku_spd8h_y7p4"
+                },
+                {
+                    "type": "speedUp",
+                    "displayName": "Speed Up (24h)",
+                    "quantity": 1,
+                    "weight": 8,
+                    "skuId": "sku_spd24h_b9f1"
+                }
+            ]
+        }
+    }
+}

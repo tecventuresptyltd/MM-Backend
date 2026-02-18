@@ -13,6 +13,7 @@ import {
     SpellEvolutionV2Catalog,
     FuelConfig,
     CrateSlotsConfig,
+    CrateRewardsConfig,
     PlayerSlotsConfig,
     CarStatsBudgetConfig,
     CarStatsInput,
@@ -237,6 +238,31 @@ export async function getUnlockDurationForRarity(rarity: string): Promise<number
         return config.unlockDurations.common?.durationSeconds ?? 1800;
     }
     return duration.durationSeconds;
+}
+
+// =============================================================================
+// CRATE REWARDS CONFIG
+// =============================================================================
+
+let crateRewardsConfigCache: CacheEntry<CrateRewardsConfig> | null = null;
+
+export async function getCrateRewardsConfig(): Promise<CrateRewardsConfig> {
+    const now = Date.now();
+    if (crateRewardsConfigCache && now - crateRewardsConfigCache.lastFetched < CACHE_TTL_MS) {
+        return crateRewardsConfigCache.data;
+    }
+
+    const docRef = CONFIG_ROOT.doc("CrateRewardsConfig");
+    const doc = await docRef.get();
+
+    if (!doc.exists) {
+        throw new Error("CrateRewardsConfig not found at /GameData/v1/config/CrateRewardsConfig");
+    }
+
+    const data = doc.data() as CrateRewardsConfig;
+    crateRewardsConfigCache = { data, lastFetched: now };
+    console.log("[V2Config] Loaded CrateRewardsConfig");
+    return data;
 }
 
 // =============================================================================

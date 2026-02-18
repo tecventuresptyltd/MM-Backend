@@ -18,8 +18,9 @@ import {
     getCrateSlotsConfig,
     getUnlockDurationForRarity,
     calculateSkipCost,
+    getCrateRewardsConfig,
 } from "../core/configV2.js";
-import { getCratesCatalog } from "../core/config.js";
+import { getCratesCatalog, listSkusByFilter } from "../core/config.js";
 import {
     ReceiveCrateV2Request,
     ReceiveCrateV2Response,
@@ -29,7 +30,10 @@ import {
     ClaimCrateRewardV2Response,
     UserCrateSlotsDoc,
     CrateSlotEntry,
+    AwardedItem,
+    CrateRewardItem,
 } from "../shared/typesV2.js";
+import { grantInventoryRewards } from "../shared/inventoryAwards.js";
 
 const db = admin.firestore();
 
@@ -323,13 +327,15 @@ export const startCrateUnlockV2 = onCall(
 // =============================================================================
 
 /**
- * Claim rewards from an unlocked crate.
+ * Claim the reward from a fully unlocked crate.
  *
- * Check Logic:
- * 1. Verify slot has a crate
- * 2. Verify crate is unlocking and timer complete
- * 3. Roll rewards (reuse existing crate opening logic)
- * 4. Grant rewards and clear slot
+ * Reward Logic:
+ * 1. Verify slot has a crate and it's fully unlocked
+ * 2. Load CrateRewardsConfig for the crate's rarity
+ * 3. Roll N random cosmetics of that rarity from ItemsCatalog
+ * 4. Roll M random catalog items from the reward pool (weighted)
+ * 5. Grant all rewards (coins/gems to economy, inventory items via grant)
+ * 6. Clear the slot
  */
 export const claimCrateRewardV2 = onCall(
     callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
@@ -353,6 +359,10 @@ export const claimCrateRewardV2 = onCall(
 
         await createInProgressReceipt(uid, opId, "claimCrateRewardV2");
 
+        // Pre-load configs outside of transaction
+        const crateRewardsConfig = await getCrateRewardsConfig();
+        const cosmeticSkus = await listSkusByFilter({ category: "cosmetic" });
+
         return await runTransactionWithReceipt<ClaimCrateRewardV2Response>(
             uid,
             opId,
@@ -361,8 +371,9 @@ export const claimCrateRewardV2 = onCall(
                 const now = Date.now();
                 const timestamp = admin.firestore.FieldValue.serverTimestamp();
 
-                // Document ref
+                // Document refs
                 const slotsRef = db.doc(`/Players/${uid}/Crates/Slots`);
+                const economyRef = db.doc(`/Players/${uid}/Economy/Stats`);
                 const slotsDoc = await transaction.get(slotsRef);
 
                 if (!slotsDoc.exists) {
@@ -396,18 +407,76 @@ export const claimCrateRewardV2 = onCall(
                     );
                 }
 
-                // TODO: Integrate with existing crate reward rolling logic
-                // For now, return a placeholder reward
-                const awardedReward = {
-                    skuId: "sku_placeholder",
-                    itemId: "item_placeholder",
-                    type: "currency",
-                    rarity: slot.rarity,
-                    quantity: 100, // Placeholder coins
-                };
+                // ======================================================
+                // ROLL REWARDS
+                // ======================================================
+                const crateRarity = slot.rarity?.toLowerCase() ?? "common";
+                const rewardPool = crateRewardsConfig.rewardsByRarity[crateRarity]
+                    ?? crateRewardsConfig.rewardsByRarity["common"];
 
-                // --- WRITE ---
-                // Remove the crate from the slot
+                if (!rewardPool) {
+                    throw new HttpsError("internal", `No reward pool configured for rarity: ${crateRarity}`);
+                }
+
+                const awardedItems: AwardedItem[] = [];
+                const economyChanges: { coins: number; gems: number } = { coins: 0, gems: 0 };
+                const inventoryGrants: Array<{ skuId: string; quantity: number }> = [];
+
+                // --- 1. Roll random cosmetics of this rarity ---
+                const matchingCosmetics = cosmeticSkus.filter(
+                    (sku) => (sku.rarity?.toLowerCase() ?? "") === crateRarity
+                );
+
+                const cosmeticsToAward = Math.min(rewardPool.cosmeticCount, matchingCosmetics.length);
+                const shuffledCosmetics = shuffleArray([...matchingCosmetics]);
+                const selectedCosmetics = shuffledCosmetics.slice(0, cosmeticsToAward);
+
+                for (const cosmetic of selectedCosmetics) {
+                    awardedItems.push({
+                        type: "cosmetic",
+                        displayName: cosmetic.displayName ?? cosmetic.itemDisplayName ?? cosmetic.skuId,
+                        quantity: 1,
+                        rarity: cosmetic.rarity ?? crateRarity,
+                        skuId: cosmetic.skuId,
+                        itemId: cosmetic.itemId,
+                    });
+                    inventoryGrants.push({ skuId: cosmetic.skuId, quantity: 1 });
+                }
+
+                // --- 2. Roll random catalog items (weighted) ---
+                const catalogCount = rewardPool.catalogItemCount;
+                for (let i = 0; i < catalogCount; i++) {
+                    const picked = weightedRandomPick(rewardPool.rewardPool);
+                    if (!picked) continue;
+
+                    const item: AwardedItem = {
+                        type: picked.type,
+                        displayName: picked.displayName,
+                        quantity: picked.quantity,
+                    };
+
+                    if (picked.durationHours) {
+                        item.durationHours = picked.durationHours;
+                    }
+
+                    if (picked.type === "coins") {
+                        economyChanges.coins += picked.quantity;
+                    } else if (picked.type === "gems") {
+                        economyChanges.gems += picked.quantity;
+                    } else if (picked.skuId) {
+                        // Booster or SpeedUp — grant via inventory
+                        item.skuId = picked.skuId;
+                        inventoryGrants.push({ skuId: picked.skuId, quantity: picked.quantity });
+                    }
+
+                    awardedItems.push(item);
+                }
+
+                // ======================================================
+                // WRITES
+                // ======================================================
+
+                // Clear the slot
                 const updatedSlots = [...slots];
                 updatedSlots[slotIndex] = null;
 
@@ -416,18 +485,60 @@ export const claimCrateRewardV2 = onCall(
                     updatedAt: timestamp,
                 });
 
-                // TODO: Actually grant the rolled rewards
+                // Grant economy changes
+                if (economyChanges.coins > 0 || economyChanges.gems > 0) {
+                    const economyUpdate: Record<string, FirebaseFirestore.FieldValue> = {
+                        updatedAt: timestamp,
+                    };
+                    if (economyChanges.coins > 0) {
+                        economyUpdate.coins = admin.firestore.FieldValue.increment(economyChanges.coins);
+                    }
+                    if (economyChanges.gems > 0) {
+                        economyUpdate.gems = admin.firestore.FieldValue.increment(economyChanges.gems);
+                    }
+                    transaction.update(economyRef, economyUpdate);
+                }
+
+                // Grant inventory items (cosmetics, boosters, speedups)
+                if (inventoryGrants.length > 0) {
+                    await grantInventoryRewards(transaction, uid, inventoryGrants, { timestamp });
+                }
 
                 return {
                     success: true,
                     opId,
                     slotIndex,
-                    awarded: awardedReward,
+                    awarded: awardedItems,
+                    economyChanges: {
+                        ...(economyChanges.coins > 0 ? { coins: economyChanges.coins } : {}),
+                        ...(economyChanges.gems > 0 ? { gems: economyChanges.gems } : {}),
+                    },
                 };
             },
         );
     },
 );
+
+// --- Helper: Fisher-Yates shuffle ---
+function shuffleArray<T>(arr: T[]): T[] {
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+// --- Helper: Weighted random pick from pool ---
+function weightedRandomPick(pool: CrateRewardItem[]): CrateRewardItem | null {
+    if (pool.length === 0) return null;
+    const totalWeight = pool.reduce((sum, item) => sum + item.weight, 0);
+    let roll = Math.random() * totalWeight;
+    for (const item of pool) {
+        roll -= item.weight;
+        if (roll <= 0) return item;
+    }
+    return pool[pool.length - 1];
+}
 
 // =============================================================================
 // skipCrateUnlockV2

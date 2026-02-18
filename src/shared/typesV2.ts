@@ -497,16 +497,60 @@ export interface ClaimCrateRewardV2Request {
     opId: string;
 }
 
+/** A single reward item that can be awarded from a crate */
+export interface CrateRewardItem {
+    /** Reward type: "coins" | "gems" | "xpBooster" | "coinBooster" | "shardBooster" | "speedUp" */
+    type: string;
+    /** Display name for UI */
+    displayName: string;
+    /** Quantity to award */
+    quantity: number;
+    /** Duration in hours (for boosters/speedups) */
+    durationHours?: number;
+    /** Weight for random selection (higher = more likely) */
+    weight: number;
+    /** SKU ID to grant in inventory (for boosters/speedups) */
+    skuId?: string;
+}
+
+/** Reward pool for a specific crate rarity */
+export interface CrateRewardPool {
+    /** Number of cosmetic items to award */
+    cosmeticCount: number;
+    /** Number of random catalog items to award */
+    catalogItemCount: number;
+    /** Available catalog reward items to pick from */
+    rewardPool: CrateRewardItem[];
+}
+
+/** Config document at /GameData/v1/config/CrateRewardsConfig */
+export interface CrateRewardsConfig {
+    version: string;
+    updatedAt: number;
+    notes?: string;
+    /** Reward pools keyed by crate rarity (common, rare, exotic, legendary, mythical) */
+    rewardsByRarity: Record<string, CrateRewardPool>;
+}
+
+/** A single awarded item in the claim response */
+export interface AwardedItem {
+    type: string;
+    displayName: string;
+    quantity: number;
+    rarity?: string;
+    skuId?: string;
+    itemId?: string;
+    durationHours?: number;
+}
+
 export interface ClaimCrateRewardV2Response {
     success: boolean;
     opId: string;
     slotIndex: number;
-    awarded: {
-        skuId: string;
-        itemId: string;
-        type: string;
-        rarity: string;
-        quantity: number;
+    awarded: AwardedItem[];
+    economyChanges: {
+        coins?: number;
+        gems?: number;
     };
 }
 

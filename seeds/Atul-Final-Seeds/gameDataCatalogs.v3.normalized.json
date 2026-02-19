@@ -4720,6 +4720,70 @@
               }
             }
           ]
+        },
+        "bst_shrd7k9m": {
+          "itemId": "bst_shrd7k9m",
+          "displayName": "Shard Booster",
+          "category": "booster",
+          "type": "booster",
+          "subType": "shard",
+          "rarity": "special",
+          "stackable": true,
+          "purchasable": true,
+          "variants": [
+            {
+              "skuId": "sku_shrd1h_p3x9",
+              "displayName": "Shard Booster (1h)",
+              "rarity": "special",
+              "stackable": true,
+              "purchasable": true,
+              "gemPrice": 60,
+              "durationSeconds": 3600,
+              "subType": "shard",
+              "variant": {
+                "durationLabel": "1h"
+              }
+            },
+            {
+              "skuId": "sku_shrd6h_k7w2",
+              "displayName": "Shard Booster (6h)",
+              "rarity": "special",
+              "stackable": true,
+              "purchasable": true,
+              "gemPrice": 240,
+              "durationSeconds": 21600,
+              "subType": "shard",
+              "variant": {
+                "durationLabel": "6h"
+              }
+            },
+            {
+              "skuId": "sku_shrd12h_m4v6",
+              "displayName": "Shard Booster (12h)",
+              "rarity": "special",
+              "stackable": true,
+              "purchasable": true,
+              "gemPrice": 420,
+              "durationSeconds": 43200,
+              "subType": "shard",
+              "variant": {
+                "durationLabel": "12h"
+              }
+            },
+            {
+              "skuId": "sku_shrd24h_n8t5",
+              "displayName": "Shard Booster (24h)",
+              "rarity": "special",
+              "stackable": true,
+              "purchasable": true,
+              "gemPrice": 720,
+              "subType": "shard",
+              "durationSeconds": 86400,
+              "variant": {
+                "durationLabel": "24h"
+              }
+            }
+          ]
         }
       },
       "index": {
@@ -5218,6 +5282,12 @@
           "sku_spd24h_b9f1",
           "sku_spd3d_h6c3",
           "sku_spd7d_e1g5"
+        ],
+        "family_bst_shrd7k9m": [
+          "sku_shrd1h_p3x9",
+          "sku_shrd6h_k7w2",
+          "sku_shrd12h_m4v6",
+          "sku_shrd24h_n8t5"
         ]
       }
     }
@@ -5738,6 +5808,12 @@
           "sku_spd24h_b9f1",
           "sku_spd3d_h6c3",
           "sku_spd7d_e1g5"
+        ],
+        "family_bst_shrd7k9m": [
+          "sku_shrd1h_p3x9",
+          "sku_shrd6h_k7w2",
+          "sku_shrd12h_m4v6",
+          "sku_shrd24h_n8t5"
         ]
       }
     }
@@ -10263,6 +10339,78 @@
           "metadata": null,
           "gemPrice": 100,
           "durationSeconds": 604800
+        },
+        "sku_shrd1h_p3x9": {
+          "skuId": "sku_shrd1h_p3x9",
+          "itemId": "bst_shrd7k9m",
+          "displayName": "Shard Booster (1h)",
+          "category": "booster",
+          "type": "booster",
+          "rarity": "special",
+          "stackable": true,
+          "variant": null,
+          "subType": "shard",
+          "purchasable": {
+            "currency": "gems",
+            "amount": 60
+          },
+          "metadata": null,
+          "gemPrice": 60,
+          "durationSeconds": 3600
+        },
+        "sku_shrd6h_k7w2": {
+          "skuId": "sku_shrd6h_k7w2",
+          "itemId": "bst_shrd7k9m",
+          "displayName": "Shard Booster (6h)",
+          "category": "booster",
+          "type": "booster",
+          "rarity": "special",
+          "stackable": true,
+          "variant": null,
+          "subType": "shard",
+          "purchasable": {
+            "currency": "gems",
+            "amount": 240
+          },
+          "metadata": null,
+          "gemPrice": 240,
+          "durationSeconds": 21600
+        },
+        "sku_shrd12h_m4v6": {
+          "skuId": "sku_shrd12h_m4v6",
+          "itemId": "bst_shrd7k9m",
+          "displayName": "Shard Booster (12h)",
+          "category": "booster",
+          "type": "booster",
+          "rarity": "special",
+          "stackable": true,
+          "variant": null,
+          "subType": "shard",
+          "purchasable": {
+            "currency": "gems",
+            "amount": 420
+          },
+          "metadata": null,
+          "gemPrice": 420,
+          "durationSeconds": 43200
+        },
+        "sku_shrd24h_n8t5": {
+          "skuId": "sku_shrd24h_n8t5",
+          "itemId": "bst_shrd7k9m",
+          "displayName": "Shard Booster (24h)",
+          "category": "booster",
+          "type": "booster",
+          "rarity": "special",
+          "stackable": true,
+          "variant": null,
+          "subType": "shard",
+          "purchasable": {
+            "currency": "gems",
+            "amount": 720
+          },
+          "metadata": null,
+          "gemPrice": 720,
+          "durationSeconds": 86400
         }
       }
     }
@@ -17103,165 +17251,6 @@
           "productId": "com.tecventures.mysticmotors.gems.treasury",
           "sortOrder": 7
         }
-      }
-    }
-  },
-  {
-    "path": "/GameData/v1/catalogs/CarEvolutionV2Catalog",
-    "data": {
-      "version": "v1-evolution",
-      "updatedAt": 1739370263000,
-      "notes": "XP caps define when a car becomes XP-capped and requires evolution. Evolution costs define the coins and time required to star-up.",
-      "xpCaps": {
-        "0": 1000,
-        "1": 2500,
-        "2": 5000,
-        "3": 10000,
-        "4": 20000,
-        "5": 35000,
-        "6": 55000,
-        "7": 80000,
-        "8": 120000,
-        "9": 175000
-      },
-      "maxStarLevel": 10,
-      "evolutionCosts": {
-        "0": {
-          "targetStarLevel": 1,
-          "coins": 5000,
-          "durationSeconds": 3600,
-          "displayDuration": "1 hour"
-        },
-        "1": {
-          "targetStarLevel": 2,
-          "coins": 15000,
-          "durationSeconds": 7200,
-          "displayDuration": "2 hours"
-        },
-        "2": {
-          "targetStarLevel": 3,
-          "coins": 35000,
-          "durationSeconds": 14400,
-          "displayDuration": "4 hours"
-        },
-        "3": {
-          "targetStarLevel": 4,
-          "coins": 75000,
-          "durationSeconds": 28800,
-          "displayDuration": "8 hours"
-        },
-        "4": {
-          "targetStarLevel": 5,
-          "coins": 150000,
-          "durationSeconds": 57600,
-          "displayDuration": "16 hours"
-        },
-        "5": {
-          "targetStarLevel": 6,
-          "coins": 250000,
-          "durationSeconds": 86400,
-          "displayDuration": "24 hours"
-        },
-        "6": {
-          "targetStarLevel": 7,
-          "coins": 400000,
-          "durationSeconds": 129600,
-          "displayDuration": "36 hours"
-        },
-        "7": {
-          "targetStarLevel": 8,
-          "coins": 600000,
-          "durationSeconds": 172800,
-          "displayDuration": "48 hours"
-        },
-        "8": {
-          "targetStarLevel": 9,
-          "coins": 900000,
-          "durationSeconds": 259200,
-          "displayDuration": "72 hours"
-        },
-        "9": {
-          "targetStarLevel": 10,
-          "coins": 1500000,
-          "durationSeconds": 345600,
-          "displayDuration": "96 hours"
-        }
-      },
-      "skipCost": {
-        "gemsPerHour": 50,
-        "minGems": 10
-      },
-      "statBonusPerStar": {
-        "topSpeed": 0.05,
-        "acceleration": 0.05,
-        "handling": 0.05,
-        "boostRegen": 0.05,
-        "boostPower": 0.05
-      }
-    }
-  },
-  {
-    "path": "/GameData/v1/catalogs/SpellEvolutionV2Catalog",
-    "data": {
-      "version": "v1-research",
-      "updatedAt": 1738616330000,
-      "notes": "Spell research costs define the Spell Shards and time required to level up spells. Level 1 is the unlock level (no cost).",
-      "maxSpellLevel": 5,
-      "researchCosts": {
-        "1": {
-          "targetLevel": 1,
-          "shards": 0,
-          "durationSeconds": 0,
-          "displayDuration": "Instant",
-          "description": "Spell unlocked"
-        },
-        "2": {
-          "targetLevel": 2,
-          "shards": 100,
-          "durationSeconds": 1800,
-          "displayDuration": "30 minutes"
-        },
-        "3": {
-          "targetLevel": 3,
-          "shards": 250,
-          "durationSeconds": 3600,
-          "displayDuration": "1 hour"
-        },
-        "4": {
-          "targetLevel": 4,
-          "shards": 500,
-          "durationSeconds": 7200,
-          "displayDuration": "2 hours"
-        },
-        "5": {
-          "targetLevel": 5,
-          "shards": 1000,
-          "durationSeconds": 14400,
-          "displayDuration": "4 hours"
-        }
-      },
-      "skipCost": {
-        "gemsPerHour": 25,
-        "minGems": 5
-      },
-      "spellXpConfig": {
-        "xpPerRace": 10,
-        "xpPerWin": 25,
-        "xpPerSpellCast": 5,
-        "xpCapPerLevel": {
-          "1": 100,
-          "2": 250,
-          "3": 500,
-          "4": 1000
-        }
-      },
-      "shardRewards": {
-        "byPosition": {
-          "1": 10,
-          "2": 7,
-          "3": 4
-        },
-        "defaultShards": 1
       }
     }
   }

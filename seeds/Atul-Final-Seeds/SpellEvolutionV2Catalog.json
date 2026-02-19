@@ -1,7 +1,13 @@
 {
     "version": "v1-research",
     "updatedAt": 1738616330000,
-    "notes": "Spell research costs define the Spell Shards and time required to level up spells. Level 1 is the unlock level (no cost).",
+    "notes": "Spell research costs define the Spell Shards and time required to level up spells. Level 1 is the unlock level (no cost for starters, unlockCost for non-starters).",
+    "unlockCost": {
+        "shards": 100,
+        "durationSeconds": 60,
+        "displayDuration": "1 minute",
+        "description": "Initial unlock research for level-gated spells"
+    },
     "maxSpellLevel": 5,
     "researchCosts": {
         "1": {

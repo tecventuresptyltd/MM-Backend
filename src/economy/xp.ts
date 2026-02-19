@@ -4,6 +4,7 @@ import { ensureOp } from "../shared/idempotency.js";
 import { getLevelInfo } from "../shared/xp.js";
 import { updateClanMemberSnapshot } from "../clan/helpers.js";
 import { refreshFriendSnapshots } from "../Socials/updateSnapshots.js";
+import { loadSpellIdsForLevelRange } from "../shared/catalogHelpers.js";
 import {
   activeOffersRef,
   normaliseActiveOffers,
@@ -79,6 +80,15 @@ export const grantXP = onCall({ region: "us-central1" }, async (request) => {
       transaction.update(statsRef, economyUpdate);
     }
 
+    // Auto-grant spells unlocked at the new player level
+    let newlyAvailableSpellIds: string[] = [];
+    if (levelsGained > 0) {
+      newlyAvailableSpellIds = await loadSpellIdsForLevelRange(
+        beforeInfo.level,
+        afterInfo.level,
+      );
+    }
+
     // Update Profile/Profile
     const profileUpdate = {
       exp: xpAfter,
@@ -121,6 +131,8 @@ export const grantXP = onCall({ region: "us-central1" }, async (request) => {
       levelBefore: beforeInfo.level,
       levelAfter: afterInfo.level,
       leveledUp,
+      grantedSpellIds: [],
+      newlyAvailableSpellIds,
       expProgress: {
         before: {
           expInLevel: beforeInfo.expInLevel,

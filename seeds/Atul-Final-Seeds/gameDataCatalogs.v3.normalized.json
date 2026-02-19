@@ -13051,9 +13051,9 @@
           "displayName": "Storm Aura",
           "type": "AreaEffect",
           "description": "The car starts zapping other cars around it, slowing them down for a few seconds",
-          "requiredLevel": 0,
+          "requiredLevel": 5,
           "displayOrder": 4,
-          "isUnlocked": true,
+          "isUnlocked": false,
           "attributes": [
             {
               "name": "Max Targets",
@@ -13095,9 +13095,9 @@
           "displayName": "Void Blades",
           "type": "Melee",
           "description": "Surrounds the car with floating plasma blades which circle the player that uses the spells car for 6 seconds. Any car that enters melee range is instantly demo'd.",
-          "requiredLevel": 0,
+          "requiredLevel": 10,
           "displayOrder": 5,
-          "isUnlocked": true,
+          "isUnlocked": false,
           "attributes": [
             {
               "name": "Blades",
@@ -13129,6 +13129,7 @@
           "type": "AreaEffect",
           "description": "Channels powerful red telekinesis to lift all nearby enemy cars into the air. For 3 seconds, they float helplessly around the caster, before being slammed to the ground in a devastating magical explosion (a demolition)",
           "requiredLevel": -1,
+          "displayOrder": 14,
           "isUnlocked": false,
           "attributes": [
             {
@@ -13171,7 +13172,8 @@
           "displayName": "Fireball",
           "type": "TargetLock",
           "description": "Shoots a fireball at the target",
-          "requiredLevel": 30,
+          "requiredLevel": 35,
+          "displayOrder": 10,
           "isUnlocked": false,
           "attributes": [
             {
@@ -13204,6 +13206,7 @@
           "type": "Directional",
           "description": "Summons a magical war hammer that autonomously flies around the track at high speed, seeking out enemy cars and zapping them with lightning as it passes.",
           "requiredLevel": -1,
+          "displayOrder": 16,
           "isUnlocked": false,
           "attributes": [
             {
@@ -13246,7 +13249,8 @@
           "displayName": "Overdrive",
           "type": "Powerup",
           "description": "The car is able to have unlimited nitros for a period of time",
-          "requiredLevel": 12,
+          "requiredLevel": 20,
+          "displayOrder": 7,
           "isUnlocked": false,
           "attributes": [
             {
@@ -13268,6 +13272,7 @@
           "type": "Powerup",
           "description": "Summons 5 illusionary clones of the user (slightly invisible) car that follow their movement. They block targeting from single target spells and explode if they touch other players causing them to demo. They can pick up spells, boosts, coins and shields. If the clones touch the wall or barrier they also explode.",
           "requiredLevel": -1,
+          "displayOrder": 15,
           "isUnlocked": false,
           "attributes": [
             {
@@ -13288,7 +13293,8 @@
           "displayName": "Phase Shift",
           "type": "Powerup",
           "description": "Exchanges players car position with the targeted opponoents car position (targets the player in front).",
-          "requiredLevel": 35,
+          "requiredLevel": 40,
+          "displayOrder": 11,
           "isUnlocked": false,
           "attributes": [
             {
@@ -13310,6 +13316,7 @@
           "type": "TargetLock",
           "description": "Emits a screech that disables boosts and spells of everyone in the map for a period of time.",
           "requiredLevel": -1,
+          "displayOrder": 12,
           "isUnlocked": false,
           "attributes": [
             {
@@ -13341,7 +13348,8 @@
           "displayName": "Shockwave",
           "type": "AreaEffect",
           "description": "The car produces a supersonic blast around it and demolishes other cars around it",
-          "requiredLevel": 25,
+          "requiredLevel": 30,
+          "displayOrder": 9,
           "isUnlocked": false,
           "attributes": [
             {
@@ -13363,6 +13371,7 @@
           "type": "TargetLock",
           "description": "Lazer beam blasts player one, stunning them for a period of time",
           "requiredLevel": -1,
+          "displayOrder": 13,
           "isUnlocked": false,
           "attributes": [
             {
@@ -13383,7 +13392,8 @@
           "displayName": "Supersonic",
           "type": "Powerup",
           "description": "Turns the car into a jet for some time",
-          "requiredLevel": 5,
+          "requiredLevel": 15,
+          "displayOrder": 6,
           "isUnlocked": false,
           "attributes": [
             {
@@ -13415,7 +13425,8 @@
           "displayName": "Tiny Terror",
           "type": "Powerup",
           "description": "Shrinks down the car and the car is able to demo other cars",
-          "requiredLevel": 20,
+          "requiredLevel": 25,
+          "displayOrder": 8,
           "isUnlocked": false,
           "attributes": [
             {

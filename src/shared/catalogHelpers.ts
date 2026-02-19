@@ -43,14 +43,14 @@ const resolveV2StarterSpellIds = (catalog: Record<string, Spell>): string[] => {
     }
     seen.add(entry.spellId);
     selected.push(entry.spellId);
-    if (selected.length === 5) {
+    if (selected.length === 3) {
       break;
     }
   }
 
-  if (selected.length !== 5) {
+  if (selected.length !== 3) {
     throw new Error(
-      `Expected at least 5 starter spells in catalog, found ${selected.length}.`,
+      `Expected at least 3 starter spells in catalog, found ${selected.length}.`,
     );
   }
 
@@ -103,6 +103,49 @@ export const loadNonStarterSpells = async (): Promise<Spell[]> => {
 
 export const loadNonStarterSpellIds = async (): Promise<string[]> =>
   (await loadNonStarterSpells()).map((spell) => spell.spellId);
+
+/**
+ * Returns spell IDs whose requiredLevel is > levelBefore AND <= levelAfter.
+ * Used to auto-grant spells when a player levels up.
+ *
+ * Note: The catalog normaliser converts requiredLevel -1 → 100,
+ * so "coming soon" spells are effectively excluded for any realistic level range.
+ */
+export const loadSpellIdsForLevelRange = async (
+  levelBefore: number,
+  levelAfter: number,
+): Promise<string[]> => {
+  const catalog = await getSpellsCatalog();
+  const starterSet = new Set(await loadStarterSpellIds(catalog));
+
+  return Object.values(catalog)
+    .filter((spell) => {
+      const spellId =
+        typeof spell.spellId === "string" ? spell.spellId.trim() : "";
+      if (!spellId || starterSet.has(spellId)) {
+        return false;
+      }
+      const requiredLevel =
+        typeof spell.requiredLevel === "number" ? spell.requiredLevel : 0;
+      // requiredLevel must be within the newly crossed range
+      return requiredLevel > 0 && requiredLevel > levelBefore && requiredLevel <= levelAfter;
+    })
+    .sort((a, b) => {
+      const levelA =
+        typeof a.requiredLevel === "number" ? a.requiredLevel : Infinity;
+      const levelB =
+        typeof b.requiredLevel === "number" ? b.requiredLevel : Infinity;
+      if (levelA !== levelB) {
+        return levelA - levelB;
+      }
+      const orderA =
+        typeof a.displayOrder === "number" ? a.displayOrder : Infinity;
+      const orderB =
+        typeof b.displayOrder === "number" ? b.displayOrder : Infinity;
+      return orderA - orderB;
+    })
+    .map((spell) => spell.spellId);
+};
 
 export interface ResolvedOfferEntitlement {
   entitlement: OfferEntitlement;

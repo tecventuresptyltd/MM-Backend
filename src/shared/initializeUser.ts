@@ -341,13 +341,13 @@ export async function initializeUserIfNeeded(
       };
     }
 
-    if (starterSpellIds.length < 5) {
-      throw new Error("Starter spell catalog must provide at least 5 spells.");
+    if (starterSpellIds.length < 3) {
+      throw new Error("Starter spell catalog must provide at least 3 spells.");
     }
 
-    const defaultSpellIds = Array.from(new Set(starterSpellIds)).slice(0, 5);
-    if (defaultSpellIds.length < 5) {
-      throw new Error("Starter spell catalog must provide at least 5 unique spells.");
+    const defaultSpellIds = Array.from(new Set(starterSpellIds)).slice(0, 3);
+    if (defaultSpellIds.length < 3) {
+      throw new Error("Starter spell catalog must provide at least 3 unique spells.");
     }
 
     const shouldGrantFullInventory =

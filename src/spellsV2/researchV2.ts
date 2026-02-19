@@ -18,7 +18,9 @@ import {
     getResearchCostForLevel,
     getPlayerSlotsConfig,
     calculateSkipCost,
+    getUnlockResearchCost,
 } from "../core/configV2.js";
+import { getSpellsCatalog } from "../core/catalog.js";
 import {
     StartSpellResearchRequest,
     StartSpellResearchResponse,
@@ -68,9 +70,11 @@ export const startSpellResearchV2 = onCall(
         await createInProgressReceipt(uid, opId, "startSpellResearchV2");
 
         // Load configs
-        const [researchCatalog, slotsConfig] = await Promise.all([
+        const [researchCatalog, slotsConfig, spellsCatalog, unlockCost] = await Promise.all([
             getSpellEvolutionV2Catalog(),
             getPlayerSlotsConfig(),
+            getSpellsCatalog(),
+            getUnlockResearchCost(),
         ]);
 
         return await runTransactionWithReceipt<StartSpellResearchResponse>(
@@ -111,29 +115,53 @@ export const startSpellResearchV2 = onCall(
                 const spellsMap = (spellsData.spells ?? {}) as Record<string, { level?: number; xp?: number; isXpCapped?: boolean }>;
                 const legacyLevelsMap = (spellsData.levels ?? {}) as Record<string, number>;
 
-                // Check player owns the spell
+                // Check player owns the spell OR is eligible to unlock it
                 const spellData = spellsMap[spellId];
-                const currentLevel = spellData?.level ?? legacyLevelsMap[spellId];
-                if (currentLevel === undefined || currentLevel < 1) {
-                    throw new HttpsError("not-found", `Player does not own spell: ${spellId}`);
+                const currentLevel = spellData?.level ?? legacyLevelsMap[spellId] ?? 0;
+
+                // Determine if this is an unlock research (0 → 1)
+                const isUnlockResearch = currentLevel < 1;
+                let researchCost: { shards: number; durationSeconds: number };
+                let targetLevel: number;
+
+                if (isUnlockResearch) {
+                    // Player doesn't own the spell — check if they can unlock it
+                    const catalogSpell = spellsCatalog[spellId];
+                    if (!catalogSpell) {
+                        throw new HttpsError("not-found", `Spell ${spellId} not found in catalog.`);
+                    }
+
+                    // Check player level meets requirement
+                    const profileData = profileDoc.data() ?? {};
+                    const playerLevel = Number(profileData.level ?? 0);
+                    const requiredLevel = catalogSpell.requiredLevel ?? 0;
+                    if (requiredLevel <= 0 || playerLevel < requiredLevel) {
+                        throw new HttpsError(
+                            "failed-precondition",
+                            `Player level ${playerLevel} does not meet required level ${requiredLevel} for spell ${spellId}.`,
+                        );
+                    }
+
+                    targetLevel = 1;
+                    researchCost = unlockCost;
+                } else {
+                    // Normal level-up research
+                    const maxLevel = researchCatalog.maxSpellLevel;
+                    if (currentLevel >= maxLevel) {
+                        throw new HttpsError("failed-precondition", "Spell is already at maximum level.");
+                    }
+
+                    targetLevel = currentLevel + 1;
+                    const cost = researchCatalog.researchCosts[String(targetLevel)];
+                    if (!cost) {
+                        throw new HttpsError("internal", `Research cost not configured for level ${targetLevel}`);
+                    }
+                    researchCost = cost;
                 }
 
-                // Check max level
-                const maxLevel = researchCatalog.maxSpellLevel;
-                if (currentLevel >= maxLevel) {
-                    throw new HttpsError("failed-precondition", "Spell is already at maximum level.");
-                }
-
-                // Get research cost for next level
-                const targetLevel = currentLevel + 1;
-                const researchCost = researchCatalog.researchCosts[String(targetLevel)];
-                if (!researchCost) {
-                    throw new HttpsError("internal", `Research cost not configured for level ${targetLevel}`);
-                }
-
-                // Get player's library slots
-                const profileData = profileDoc.data() ?? {};
-                const playerLibrarySlots = profileData.librarySlots ?? slotsConfig.library.defaultSlots;
+                // Get player's library slots  
+                const profileData2 = profileDoc.data() ?? {};
+                const playerLibrarySlots = profileData2.librarySlots ?? slotsConfig.library.defaultSlots;
 
                 // Check library queue
                 const libraryData = (
@@ -300,13 +328,38 @@ export const claimSpellResearchV2 = onCall(
                     updatedAt: timestamp,
                 });
 
-                // Update spell level in nested structure
-                transaction.update(spellsRef, {
-                    [`spells.${spellId}.level`]: slot.targetLevel,
-                    [`spells.${spellId}.xp`]: 0,
-                    [`spells.${spellId}.isXpCapped`]: false,
-                    updatedAt: timestamp,
-                });
+                // Update spell level
+                const isUnlockClaim = slot.targetLevel === 1;
+                const spellsData = spellsDoc.exists ? spellsDoc.data() : {};
+                const spellsMap = ((spellsData as Record<string, unknown>)?.spells ?? {}) as Record<string, unknown>;
+                const existingSpell = spellsMap[spellId] as { level?: number } | undefined;
+                const existingLevel = existingSpell?.level ?? 0;
+
+                if (isUnlockClaim && existingLevel < 1) {
+                    // Brand new spell unlock: create the entry + set unlockedAt
+                    const timestamp2 = admin.firestore.FieldValue.serverTimestamp();
+                    if (spellsDoc.exists) {
+                        transaction.update(spellsRef, {
+                            [`spells.${spellId}`]: { level: 1, xp: 0, isXpCapped: false },
+                            [`unlockedAt.${spellId}`]: timestamp2,
+                            updatedAt: timestamp,
+                        });
+                    } else {
+                        transaction.set(spellsRef, {
+                            spells: { [spellId]: { level: 1, xp: 0, isXpCapped: false } },
+                            unlockedAt: { [spellId]: timestamp2 },
+                            updatedAt: timestamp,
+                        });
+                    }
+                } else {
+                    // Normal level-up: just update the existing entry
+                    transaction.update(spellsRef, {
+                        [`spells.${spellId}.level`]: slot.targetLevel,
+                        [`spells.${spellId}.xp`]: 0,
+                        [`spells.${spellId}.isXpCapped`]: false,
+                        updatedAt: timestamp,
+                    });
+                }
 
                 return {
                     success: true,

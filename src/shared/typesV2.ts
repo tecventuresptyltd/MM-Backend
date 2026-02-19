@@ -156,6 +156,7 @@ export interface SpellEvolutionV2Catalog {
     updatedAt: number;
     notes?: string;
     maxSpellLevel: number;
+    unlockCost?: ResearchCostEntry; // Cost to unlock a level-gated spell (0 → 1)
     researchCosts: Record<string, ResearchCostEntry>; // targetLevel -> cost
     skipCost: ResearchSkipCost;
     spellXpConfig: SpellXpConfig;

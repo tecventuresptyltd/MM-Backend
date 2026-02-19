@@ -180,6 +180,21 @@ export async function getResearchCostForLevel(
     };
 }
 
+/**
+ * Returns the cost to unlock a level-gated spell (level 0 → 1).
+ * Falls back to 100 shards / 60s if not configured in the catalog.
+ */
+export async function getUnlockResearchCost(): Promise<{ shards: number; durationSeconds: number }> {
+    const catalog = await getSpellEvolutionV2Catalog();
+    if (catalog.unlockCost) {
+        return {
+            shards: catalog.unlockCost.shards,
+            durationSeconds: catalog.unlockCost.durationSeconds,
+        };
+    }
+    return { shards: 100, durationSeconds: 60 };
+}
+
 // =============================================================================
 // FUEL CONFIG
 // =============================================================================

@@ -105,11 +105,8 @@ export const startSpellResearchV2 = onCall(
                 }
                 const economyData = economyDoc.data()!;
 
-                // Validate spells exist
-                if (!spellsDoc.exists) {
-                    throw new HttpsError("not-found", "Player spells not found.");
-                }
-                const spellsData = spellsDoc.data()!;
+                // Read spells data (may not exist for brand new players)
+                const spellsData = spellsDoc.exists ? spellsDoc.data()! : {};
 
                 // Read from nested structure first, fallback to legacy
                 const spellsMap = (spellsData.spells ?? {}) as Record<string, { level?: number; xp?: number; isXpCapped?: boolean }>;
@@ -197,7 +194,7 @@ export const startSpellResearchV2 = onCall(
 
                 // --- WRITES ---
 
-                // Deduct shards
+                // 1. Deduct shards
                 if (researchCost.shards > 0) {
                     transaction.update(economyRef, {
                         spellShards: admin.firestore.FieldValue.increment(-researchCost.shards),
@@ -205,10 +202,12 @@ export const startSpellResearchV2 = onCall(
                     });
                 }
 
-                // Add to library queue
+                // 2. Add to library queue (for UI timer display)
+                // NOTE: Cannot use FieldValue.serverTimestamp() inside arrays
+                const startedAtTimestamp = admin.firestore.Timestamp.fromMillis(now);
                 const newSlotEntry: LibrarySlotEntry = {
                     spellId,
-                    startedAt: timestamp,
+                    startedAt: startedAtTimestamp,
                     completesAt: completesAtTimestamp,
                     targetLevel,
                     shardsPaid: researchCost.shards,
@@ -226,6 +225,7 @@ export const startSpellResearchV2 = onCall(
                         updatedAt: timestamp,
                     });
                 }
+
 
                 return {
                     success: true,
@@ -335,8 +335,10 @@ export const claimSpellResearchV2 = onCall(
                 const existingSpell = spellsMap[spellId] as { level?: number } | undefined;
                 const existingLevel = existingSpell?.level ?? 0;
 
+
                 if (isUnlockClaim && existingLevel < 1) {
                     // Brand new spell unlock: create the entry + set unlockedAt
+
                     const timestamp2 = admin.firestore.FieldValue.serverTimestamp();
                     if (spellsDoc.exists) {
                         transaction.update(spellsRef, {

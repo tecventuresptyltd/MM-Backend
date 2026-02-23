@@ -17,7 +17,9 @@ import { runTransactionWithReceipt } from "../core/transactions.js";
 import {
     getCarEvolutionV2Catalog,
     getEvolutionCostForStarLevel,
+    getEvolutionCostForStarAndTier,
     getXpCapForStarLevel,
+    getXpCapForStarAndTier,
     getPlayerSlotsConfig,
     calculateSkipCost,
     calculateCarLevel,
@@ -136,9 +138,10 @@ export const startCarEvolutionV2 = onCall(
                     throw new HttpsError("failed-precondition", "Car is already at maximum star level.");
                 }
 
-                // Get evolution cost
-                const evolutionCost = evolutionCatalog.evolutionCosts[String(currentStarLevel)];
-                if (!evolutionCost) {
+                // Get evolution cost (tier-aware)
+                const tierOrder = carData.tierOrder ?? 1;
+                const tierAwareCost = await getEvolutionCostForStarAndTier(currentStarLevel, tierOrder);
+                if (!tierAwareCost) {
                     throw new HttpsError("internal", `Evolution cost not configured for star level ${currentStarLevel}`);
                 }
 
@@ -167,22 +170,22 @@ export const startCarEvolutionV2 = onCall(
 
                 // Check coin requirement
                 const playerCoins = economyData.coins ?? 0;
-                if (playerCoins < evolutionCost.coins) {
+                if (playerCoins < tierAwareCost.coins) {
                     throw new HttpsError(
                         "failed-precondition",
-                        `Insufficient coins. Required: ${evolutionCost.coins}, Available: ${playerCoins}.`,
+                        `Insufficient coins. Required: ${tierAwareCost.coins}, Available: ${playerCoins}.`,
                     );
                 }
 
                 // Calculate completesAt
-                const completesAtMs = now + evolutionCost.durationSeconds * 1000;
+                const completesAtMs = now + tierAwareCost.durationSeconds * 1000;
                 const completesAtTimestamp = admin.firestore.Timestamp.fromMillis(completesAtMs);
 
                 // --- WRITES ---
 
                 // Deduct coins
                 transaction.update(economyRef, {
-                    coins: admin.firestore.FieldValue.increment(-evolutionCost.coins),
+                    coins: admin.firestore.FieldValue.increment(-tierAwareCost.coins),
                     updatedAt: timestamp,
                 });
 
@@ -192,7 +195,7 @@ export const startCarEvolutionV2 = onCall(
                     startedAt: timestamp,
                     completesAt: completesAtTimestamp,
                     targetStarLevel: currentStarLevel + 1,
-                    coinsPaid: evolutionCost.coins,
+                    coinsPaid: tierAwareCost.coins,
                 };
 
                 if (pitCrewDoc.exists) {
@@ -214,7 +217,7 @@ export const startCarEvolutionV2 = onCall(
                     carId,
                     targetStarLevel: currentStarLevel + 1,
                     completesAt: completesAtMs,
-                    coinsSpent: evolutionCost.coins,
+                    coinsSpent: tierAwareCost.coins,
                 };
             },
         );

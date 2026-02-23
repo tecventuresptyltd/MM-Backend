@@ -11,7 +11,7 @@ import { maybeGenerateStarterOffer } from "../shop/offers.js";
 import { STARTER_RACE_THRESHOLD } from "../shop/offerState.js";
 import { buildBotLoadout } from "../game-systems/botLoadoutHelper.js";
 import { applyClanTrophyDelta, playerClanStateRef, clanMembersCollection, clanRef, updateClanMemberSnapshot } from "../clan/helpers.js";
-import { getXpCapForStarLevel, getSpellEvolutionV2Catalog, getCrateSlotsConfig, getCarEvolutionV2Catalog, calculateCarLevel, getUnlockDurationForRarity } from "../core/configV2.js";
+import { getXpCapForStarLevel, getXpCapForStarAndTier, getSpellEvolutionV2Catalog, getCrateSlotsConfig, getCarEvolutionV2Catalog, calculateCarLevel, getUnlockDurationForRarity, getMasteryConfig, getMasteryRank } from "../core/configV2.js";
 import { CrateSlotEntry, UserCrateSlotsDoc } from "../shared/typesV2.js";
 import { updatePlayerLeaderboardEntry } from "../Socials/liveLeaderboard.js";
 import { updateClanLeaderboardEntry } from "../clan/liveLeaderboard.js";
@@ -693,7 +693,8 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
         // Load catalog data for carLevel calculation
         const starLevel = carData.starLevel ?? 0;
         const currentXp = carData.xp ?? 0;
-        const xpCap = await getXpCapForStarLevel(starLevel);
+        const tierOrder = carData.tierOrder ?? 1;
+        const xpCap = await getXpCapForStarAndTier(starLevel, tierOrder);
         const carEvoCatalog = await getCarEvolutionV2Catalog();
         const levelsPerStar = carEvoCatalog.levelsPerStar ?? 5;
         const maxStarLevel = carEvoCatalog.maxStarLevel ?? 10;
@@ -852,6 +853,27 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
       }
     }
 
+    // --- Mastery XP Calculation ---
+    const masteryConfig = await getMasteryConfig();
+    const carXpForMastery = carXpResult?.xpAwarded ?? 0;
+    const totalSpellXpForMastery = spellXpResults.reduce((sum, s) => sum + s.xpAwarded, 0);
+    const masteryXpGained = Math.round(
+      (carXpForMastery * masteryConfig.carWeight) + (totalSpellXpForMastery * masteryConfig.spellWeight)
+    );
+
+    const currentMasteryXp = Number(profileData.masteryXp ?? 0);
+    const newMasteryXp = currentMasteryXp + masteryXpGained;
+    const oldMasteryRank = getMasteryRank(currentMasteryXp, masteryConfig);
+    const newMasteryRank = getMasteryRank(newMasteryXp, masteryConfig);
+
+    // Write mastery to profile (outside the profileUpdate that was already applied)
+    if (masteryXpGained > 0 || newMasteryRank !== oldMasteryRank) {
+      transaction.update(profileRef, {
+        masteryXp: newMasteryXp,
+        masteryRank: newMasteryRank,
+      });
+    }
+
     // Debug logging for trophy investigation
     logger.info("[recordRaceResult] Trophy calculation debug", {
       uid,
@@ -865,6 +887,9 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
       appliedTrophiesSettlement,
       trophiesAfterSettlement,
       newHighestTrophies,
+      masteryXpGained,
+      newMasteryXp,
+      newMasteryRank,
     });
 
     transaction.update(raceRef, { status: "settled", updatedAt: admin.firestore.FieldValue.serverTimestamp() });
@@ -886,6 +911,13 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
         xpToNextLevel: expRequiredForNextLevel,
         levelBefore: beforeInfo.level,
         levelAfter: afterInfo.level,
+      },
+      mastery: {
+        xpGained: masteryXpGained,
+        totalXp: newMasteryXp,
+        rankBefore: oldMasteryRank,
+        rankAfter: newMasteryRank,
+        rankUp: newMasteryRank > oldMasteryRank,
       },
       rank: {
         old: oldRankLabel,

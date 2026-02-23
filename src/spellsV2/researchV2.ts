@@ -128,14 +128,15 @@ export const startSpellResearchV2 = onCall(
                         throw new HttpsError("not-found", `Spell ${spellId} not found in catalog.`);
                     }
 
-                    // Check player level meets requirement
+                    // Check player mastery rank meets requirement
+                    // (requiredLevel in SpellsCatalog is now interpreted as requiredMasteryRank)
                     const profileData = profileDoc.data() ?? {};
-                    const playerLevel = Number(profileData.level ?? 0);
-                    const requiredLevel = catalogSpell.requiredLevel ?? 0;
-                    if (requiredLevel <= 0 || playerLevel < requiredLevel) {
+                    const playerMasteryRank = Number(profileData.masteryRank ?? 0);
+                    const requiredMasteryRank = catalogSpell.requiredLevel ?? 0;
+                    if (requiredMasteryRank <= 0 || playerMasteryRank < requiredMasteryRank) {
                         throw new HttpsError(
                             "failed-precondition",
-                            `Player level ${playerLevel} does not meet required level ${requiredLevel} for spell ${spellId}.`,
+                            `Mastery Rank ${playerMasteryRank} does not meet required rank ${requiredMasteryRank} for spell ${spellId}.`,
                         );
                     }
 

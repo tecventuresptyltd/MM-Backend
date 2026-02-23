@@ -19,6 +19,7 @@ import {
     CarStatsInput,
     ComputedCarStats,
     ArchetypeStatProfile,
+    MasteryConfig,
 } from "../shared/typesV2.js";
 
 const db = admin.firestore();
@@ -137,6 +138,40 @@ export async function getEvolutionCostForStarLevel(
 export async function getXpCapForStarLevel(starLevel: number): Promise<number> {
     const catalog = await getCarEvolutionV2Catalog();
     return catalog.xpCaps[String(starLevel)] ?? Infinity;
+}
+
+/**
+ * Get the XP cap for a star level, scaled by the car's tier.
+ * Tier scaling multiplies the base XP cap to create tier-specific pacing.
+ */
+export async function getXpCapForStarAndTier(starLevel: number, tierOrder: number): Promise<number> {
+    const catalog = await getCarEvolutionV2Catalog();
+    const baseCap = catalog.xpCaps[String(starLevel)] ?? Infinity;
+    const scaling = catalog.tierScaling?.[String(tierOrder)];
+    const multiplier = scaling?.xpMultiplier ?? 1.0;
+    return Math.round(baseCap * multiplier);
+}
+
+/**
+ * Get the evolution cost for a star level, scaled by the car's tier.
+ * Returns coins and duration both scaled by their respective tier multipliers.
+ */
+export async function getEvolutionCostForStarAndTier(
+    currentStarLevel: number,
+    tierOrder: number,
+): Promise<{ coins: number; durationSeconds: number } | null> {
+    const catalog = await getCarEvolutionV2Catalog();
+    const entry = catalog.evolutionCosts[String(currentStarLevel)];
+    if (!entry) {
+        return null;
+    }
+    const scaling = catalog.tierScaling?.[String(tierOrder)];
+    const coinMult = scaling?.coinMultiplier ?? 1.0;
+    const timerMult = scaling?.timerMultiplier ?? 1.0;
+    return {
+        coins: Math.round(entry.coins * coinMult),
+        durationSeconds: Math.max(1, Math.round(entry.durationSeconds * timerMult)),
+    };
 }
 
 // =============================================================================
@@ -543,6 +578,53 @@ export function computeCarStats(
 }
 
 // =============================================================================
+// MASTERY CONFIG
+// =============================================================================
+
+let masteryConfigCache: CacheEntry<MasteryConfig> | null = null;
+
+export async function getMasteryConfig(): Promise<MasteryConfig> {
+    const now = Date.now();
+    if (masteryConfigCache && now - masteryConfigCache.lastFetched < CACHE_TTL_MS) {
+        return masteryConfigCache.data;
+    }
+
+    const docRef = CONFIG_ROOT.doc("MasteryConfig");
+    const doc = await docRef.get();
+
+    if (!doc.exists) {
+        throw new Error("MasteryConfig not found at /GameData/v1/config/MasteryConfig");
+    }
+
+    const data = doc.data() as MasteryConfig;
+    masteryConfigCache = { data, lastFetched: now };
+    console.log("[V2Config] Loaded MasteryConfig");
+    return data;
+}
+
+/**
+ * Calculate mastery rank from cumulative mastery XP.
+ * Pure function — no Firestore calls.
+ *
+ * Scans thresholds from highest rank down to find the highest rank
+ * whose threshold the player has met.
+ */
+export function getMasteryRank(masteryXp: number, config: MasteryConfig): number {
+    const safeXp = Math.max(0, Math.floor(masteryXp));
+    let highestRank = 0;
+
+    for (let rank = config.maxRank; rank >= 1; rank--) {
+        const threshold = config.rankThresholds[String(rank)];
+        if (threshold !== undefined && safeXp >= threshold) {
+            highestRank = rank;
+            break;
+        }
+    }
+
+    return highestRank;
+}
+
+// =============================================================================
 // TEST HELPERS
 // =============================================================================
 
@@ -554,5 +636,6 @@ export function __resetV2ConfigCacheForTests(): void {
     crateSlotsConfigCache = null;
     playerSlotsConfigCache = null;
     carStatsBudgetConfigCache = null;
+    masteryConfigCache = null;
     v2ConfigCache.clear();
 }

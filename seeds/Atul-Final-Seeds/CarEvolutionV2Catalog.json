@@ -1,18 +1,18 @@
 {
-    "version": "v1-evolution",
-    "updatedAt": 1739370263000,
-    "notes": "XP caps define when a car becomes XP-capped and requires evolution. Evolution costs define the coins and time required to star-up.",
+    "version": "v2-evolution",
+    "updatedAt": 1740355200000,
+    "notes": "V2 50/10 System. Base values represent Tier 3 (midpoint). Multiply by tierScaling for actual values. Star 10 is capstone — no new levels, just final 60% stat bonus.",
     "xpCaps": {
         "0": 1000,
-        "1": 2500,
-        "2": 5000,
-        "3": 10000,
-        "4": 20000,
-        "5": 35000,
-        "6": 55000,
-        "7": 80000,
-        "8": 120000,
-        "9": 175000
+        "1": 1500,
+        "2": 2000,
+        "3": 3000,
+        "4": 4000,
+        "5": 5000,
+        "6": 7000,
+        "7": 10000,
+        "8": 15000,
+        "9": 20000
     },
     "maxStarLevel": 10,
     "levelsPerStar": 5,
@@ -25,61 +25,102 @@
         },
         "1": {
             "targetStarLevel": 2,
-            "coins": 15000,
+            "coins": 10000,
             "durationSeconds": 7200,
             "displayDuration": "2 hours"
         },
         "2": {
             "targetStarLevel": 3,
+            "coins": 20000,
+            "durationSeconds": 10800,
+            "displayDuration": "3 hours"
+        },
+        "3": {
+            "targetStarLevel": 4,
             "coins": 35000,
             "durationSeconds": 14400,
             "displayDuration": "4 hours"
         },
-        "3": {
-            "targetStarLevel": 4,
+        "4": {
+            "targetStarLevel": 5,
+            "coins": 50000,
+            "durationSeconds": 21600,
+            "displayDuration": "6 hours"
+        },
+        "5": {
+            "targetStarLevel": 6,
             "coins": 75000,
             "durationSeconds": 28800,
             "displayDuration": "8 hours"
         },
-        "4": {
-            "targetStarLevel": 5,
+        "6": {
+            "targetStarLevel": 7,
+            "coins": 100000,
+            "durationSeconds": 43200,
+            "displayDuration": "12 hours"
+        },
+        "7": {
+            "targetStarLevel": 8,
             "coins": 150000,
             "durationSeconds": 57600,
             "displayDuration": "16 hours"
         },
-        "5": {
-            "targetStarLevel": 6,
-            "coins": 250000,
-            "durationSeconds": 86400,
-            "displayDuration": "24 hours"
-        },
-        "6": {
-            "targetStarLevel": 7,
-            "coins": 400000,
-            "durationSeconds": 129600,
-            "displayDuration": "36 hours"
-        },
-        "7": {
-            "targetStarLevel": 8,
-            "coins": 600000,
-            "durationSeconds": 172800,
-            "displayDuration": "48 hours"
-        },
         "8": {
             "targetStarLevel": 9,
-            "coins": 900000,
-            "durationSeconds": 259200,
-            "displayDuration": "72 hours"
+            "coins": 200000,
+            "durationSeconds": 72000,
+            "displayDuration": "20 hours"
         },
         "9": {
             "targetStarLevel": 10,
-            "coins": 1500000,
-            "durationSeconds": 345600,
-            "displayDuration": "96 hours"
+            "coins": 300000,
+            "durationSeconds": 86400,
+            "displayDuration": "24 hours"
         }
     },
     "skipCost": {
         "gemsPerHour": 50,
         "minGems": 10
+    },
+    "tierScaling": {
+        "1": {
+            "xpMultiplier": 0.20,
+            "coinMultiplier": 0.05,
+            "timerMultiplier": 0.01
+        },
+        "2": {
+            "xpMultiplier": 0.50,
+            "coinMultiplier": 0.30,
+            "timerMultiplier": 0.15
+        },
+        "3": {
+            "xpMultiplier": 1.00,
+            "coinMultiplier": 1.00,
+            "timerMultiplier": 1.00
+        },
+        "4": {
+            "xpMultiplier": 2.00,
+            "coinMultiplier": 2.50,
+            "timerMultiplier": 2.50
+        },
+        "5": {
+            "xpMultiplier": 4.00,
+            "coinMultiplier": 5.00,
+            "timerMultiplier": 4.00
+        }
+    },
+    "statBonusPerStar": {
+        "topSpeed": 1.2,
+        "acceleration": 1.2,
+        "handling": 1.2,
+        "boostRegen": 1.2,
+        "boostPower": 1.2
+    },
+    "statBonusPerLevel": {
+        "topSpeed": 0.24,
+        "acceleration": 0.24,
+        "handling": 0.24,
+        "boostRegen": 0.24,
+        "boostPower": 0.24
     }
 }

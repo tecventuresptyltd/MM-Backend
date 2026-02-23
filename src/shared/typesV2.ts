@@ -79,17 +79,24 @@ export interface StatBonusPerStar {
     boostPower: number;
 }
 
+export interface TierScaling {
+    xpMultiplier: number;
+    coinMultiplier: number;
+    timerMultiplier: number;
+}
+
 export interface CarEvolutionV2Catalog {
     version: string;
     updatedAt: number;
     notes?: string;
-    xpCaps: Record<string, number>; // starLevel -> XP cap
+    xpCaps: Record<string, number>; // starLevel -> base XP cap (multiply by tierScaling)
     maxStarLevel: number;
-    levelsPerStar: number; // Number of sub-levels within each star (default 10)
-    evolutionCosts: Record<string, EvolutionCostEntry>; // currentStarLevel -> cost
+    levelsPerStar: number; // Number of sub-levels within each star (default 5)
+    evolutionCosts: Record<string, EvolutionCostEntry>; // currentStarLevel -> base cost (multiply by tierScaling)
     skipCost: EvolutionSkipCost;
     statBonusPerStar: StatBonusPerStar;
     statBonusPerLevel: StatBonusPerStar; // Per car-level bonus (same shape, smaller values)
+    tierScaling: Record<string, TierScaling>; // tierOrder -> scaling multipliers
 }
 
 export interface PitCrewSlotEntry {
@@ -116,10 +123,12 @@ export interface UserCarV2 {
     // V2 Fields (nullable for backward compatibility)
     xp?: number;
     starLevel?: number;
-    carLevel?: number; // Sub-level within current star (0 to levelsPerStar-1)
+    carLevel?: number; // Cumulative level across all stars (0 to maxCarLevel)
     isXpCapped?: boolean;
     fuelBars?: number;
     fuelLastRefillAt?: FirebaseFirestore.Timestamp | FirebaseFirestore.FieldValue | null;
+    tierOrder?: number; // Which tier this car belongs to (1-5)
+    archetype?: CarArchetype;
 }
 
 // =============================================================================
@@ -329,10 +338,25 @@ export interface PlayerSlotsConfig {
 
 export interface UserProfileV2Extensions {
     // V2 fields to add to existing Profile/Profile document
+    masteryXp?: number;
     masteryRank?: number;
     pitCrewSlots?: number;
     librarySlots?: number;
     fuelCellCount?: number;
+}
+
+// =============================================================================
+// MASTERY SYSTEM CONFIG
+// =============================================================================
+
+export interface MasteryConfig {
+    version: string;
+    updatedAt: number;
+    notes?: string;
+    carWeight: number;    // Multiplier for car XP contribution (1.0)
+    spellWeight: number;  // Multiplier for spell XP contribution (0.33)
+    maxRank: number;
+    rankThresholds: Record<string, number>; // rank -> cumulative MP required
 }
 
 // =============================================================================

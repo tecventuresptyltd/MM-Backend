@@ -147,6 +147,7 @@ export const purchaseTierLicenseV2 = onCall(
                             fuelBars: 5, // Start with full fuel
                             fuelLastRefillAt: timestamp,
                             archetype: bundledCar.archetype,
+                            tierOrder: tier.order,
                             acquiredVia: "tierLicense",
                             createdAt: timestamp,
                             updatedAt: timestamp,
@@ -326,6 +327,7 @@ export async function grantStarterTierLicense(
                 fuelBars: 5,
                 fuelLastRefillAt: timestamp,
                 archetype: bundledCar.archetype,
+                tierOrder: starterTier.order,
                 acquiredVia: "starterLicense",
                 createdAt: timestamp,
                 updatedAt: timestamp,

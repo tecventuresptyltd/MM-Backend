@@ -51,14 +51,14 @@
                     "displayName": "Mercian SLR Apex"
                 },
                 {
-                    "carId": "car_tier2_speedster",
+                    "carId": "car_xtm9htbs",
                     "archetype": "speedster",
-                    "displayName": "TBD Speedster"
+                    "displayName": "Nisaro Surya"
                 },
                 {
-                    "carId": "car_tier2_specialist",
+                    "carId": "car_a9x2mkp3",
                     "archetype": "specialist",
-                    "displayName": "TBD Specialist"
+                    "displayName": "Aster Marlin D9"
                 }
             ],
             "starterLicense": false,
@@ -77,19 +77,19 @@
             },
             "bundledCars": [
                 {
-                    "carId": "car_tier3_tank",
+                    "carId": "car_jh5tqxqk",
                     "archetype": "tank",
-                    "displayName": "TBD Tank"
+                    "displayName": "Mclovin MP3"
                 },
                 {
-                    "carId": "car_tier3_speedster",
+                    "carId": "car_0yhea29t",
                     "archetype": "speedster",
-                    "displayName": "TBD Speedster"
+                    "displayName": "Chevaro Camara"
                 },
                 {
-                    "carId": "car_tier3_specialist",
+                    "carId": "car_p4n7mm2z",
                     "archetype": "specialist",
-                    "displayName": "TBD Specialist"
+                    "displayName": "Aura R9"
                 }
             ],
             "starterLicense": false,
@@ -108,19 +108,19 @@
             },
             "bundledCars": [
                 {
-                    "carId": "car_tier4_tank",
+                    "carId": "car_8m8qttmy",
                     "archetype": "tank",
-                    "displayName": "TBD Tank"
+                    "displayName": "Nisaro GR-X"
                 },
                 {
-                    "carId": "car_tier4_speedster",
+                    "carId": "car_rqjrt91b",
                     "archetype": "speedster",
-                    "displayName": "TBD Speedster"
+                    "displayName": "Porza 919"
                 },
                 {
-                    "carId": "car_tier4_specialist",
+                    "carId": "car_kztq00ve",
                     "archetype": "specialist",
-                    "displayName": "TBD Specialist"
+                    "displayName": "Lambros Avenger"
                 }
             ],
             "starterLicense": false,
@@ -139,19 +139,19 @@
             },
             "bundledCars": [
                 {
-                    "carId": "car_tier5_tank",
+                    "carId": "car_d2ap3yms",
                     "archetype": "tank",
-                    "displayName": "TBD Tank"
+                    "displayName": "Ferano LaVita"
                 },
                 {
-                    "carId": "car_tier5_speedster",
+                    "carId": "car_enmdcw5t",
                     "archetype": "speedster",
-                    "displayName": "TBD Speedster"
+                    "displayName": "Bugarri Chronos"
                 },
                 {
-                    "carId": "car_tier5_specialist",
+                    "carId": "car_2n5hnes4",
                     "archetype": "specialist",
-                    "displayName": "TBD Specialist"
+                    "displayName": "Kosegg Agere"
                 }
             ],
             "starterLicense": false,

@@ -91,6 +91,9 @@ function normaliseItemVariants(item: Item): ItemVariant[] {
   const baseStackable = isCosmetic ? !isDefaultNamed : Boolean(item.stackable);
   const basePurchasable = normaliseBoolean(item.purchasable);
   const baseGemPrice = normaliseNumber(item.gemPrice);
+  const baseDurationSeconds = normaliseNumber(
+    (item as Partial<Item> & { durationSeconds?: unknown }).durationSeconds,
+  );
   const baseSubType = normaliseString(
     (item as Partial<Item> & { subType?: string }).subType,
   );
@@ -141,6 +144,9 @@ function normaliseItemVariants(item: Item): ItemVariant[] {
     const variantGemPrice =
       normaliseNumber((entry as { gemPrice?: unknown }).gemPrice) ??
       baseGemPrice;
+    const variantDurationSeconds =
+      normaliseNumber((entry as { durationSeconds?: unknown }).durationSeconds) ??
+      baseDurationSeconds;
     const variantSubType =
       normaliseString((entry as { subType?: unknown }).subType) ?? baseSubType;
     const variantAssetRef = isPlainObject(
@@ -181,6 +187,7 @@ function normaliseItemVariants(item: Item): ItemVariant[] {
       stackable: variantStackable,
       purchasable: variantPurchasable,
       gemPrice: variantGemPrice,
+      durationSeconds: variantDurationSeconds,
       subType: variantSubType,
       assetRef: variantAssetRef,
       variant: variantVariant,
@@ -201,6 +208,7 @@ function normaliseItemVariants(item: Item): ItemVariant[] {
       stackable: isCosmetic ? !variantHasDefaultName : baseStackable,
       purchasable: basePurchasable,
       gemPrice: baseGemPrice,
+      durationSeconds: baseDurationSeconds,
       subType: baseSubType,
       assetRef: cloneIfDefined(baseAssetRef) ?? undefined,
       variant: cloneIfDefined(baseVariant) ?? null,
@@ -417,6 +425,13 @@ function buildSkuContext(doc: ItemsCatalogDoc): ItemSkuContext {
         (variant.metadata ?? item.metadata ?? null) ?? null;
       const tagsSource = variant.tags ?? item.tags ?? undefined;
 
+      const resolvedDurationSeconds =
+        typeof variant.durationSeconds === "number"
+          ? variant.durationSeconds
+          : typeof (item as Partial<Item> & { durationSeconds?: number }).durationSeconds === "number"
+            ? (item as Partial<Item> & { durationSeconds?: number }).durationSeconds
+            : undefined;
+
       skus[skuId] = {
         skuId,
         itemId,
@@ -433,6 +448,7 @@ function buildSkuContext(doc: ItemsCatalogDoc): ItemSkuContext {
         tags: tagsSource ? [...tagsSource] : undefined,
         purchasable,
         gemPrice: resolvedGemPrice ?? null,
+        durationSeconds: resolvedDurationSeconds ?? null,
       };
 
       skuToItemVariant[skuId] = {

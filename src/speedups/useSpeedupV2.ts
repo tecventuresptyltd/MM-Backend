@@ -59,15 +59,19 @@ export const useSpeedupV2 = onCall(
             );
         }
 
-        if (queueType !== "pitCrew" && queueType !== "library") {
+        if (queueType !== "pitCrew" && queueType !== "library" && queueType !== "crateSlot") {
             throw new HttpsError(
                 "invalid-argument",
-                `Invalid queueType: ${queueType}. Must be "pitCrew" or "library".`,
+                `Invalid queueType: ${queueType}. Must be "pitCrew", "library", or "crateSlot".`,
             );
         }
 
         // Look up speedup SKU from the existing ItemSkusCatalog
         const sku = await resolveSkuOrThrow(speedupSkuId);
+
+        // === DEBUG: Log the full SKU object to see all fields ===
+        console.log(`[SpeedupV2-DEBUG] Resolved SKU object:`, JSON.stringify(sku, null, 2));
+        console.log(`[SpeedupV2-DEBUG] sku.durationSeconds = ${sku.durationSeconds} (type: ${typeof sku.durationSeconds})`);
 
         if (sku.type !== "speedup") {
             throw new HttpsError(
@@ -80,7 +84,7 @@ export const useSpeedupV2 = onCall(
         if (!durationSeconds || durationSeconds <= 0) {
             throw new HttpsError(
                 "internal",
-                `Speedup SKU ${speedupSkuId} has no valid durationSeconds.`,
+                `Speedup SKU ${speedupSkuId} has no valid durationSeconds. Full SKU: ${JSON.stringify(sku)}`,
             );
         }
 
@@ -125,6 +129,17 @@ export const useSpeedupV2 = onCall(
                 }
 
                 const slot = slots[slotIndex];
+
+                // For crate slots, verify the crate is actively unlocking
+                if (queueType === "crateSlot") {
+                    if (!slot.isUnlocking) {
+                        throw new HttpsError(
+                            "failed-precondition",
+                            "Crate is not unlocking. Start the unlock first before using a speedup.",
+                        );
+                    }
+                }
+
                 const currentCompletesAt = (slot.completesAt as admin.firestore.Timestamp).toMillis();
 
                 // Check if already complete
@@ -194,6 +209,8 @@ function resolveQueuePath(uid: string, queueType: SpeedupQueueType): string {
             return `/Players/${uid}/Queues/PitCrew`;
         case "library":
             return `/Players/${uid}/Queues/Library`;
+        case "crateSlot":
+            return `/Players/${uid}/Crates/Slots`;
         default:
             throw new HttpsError("invalid-argument", `Unknown queue type: ${queueType}`);
     }
@@ -209,6 +226,15 @@ function findSlotIndex(
             return slots.findIndex((s) => s.carId === targetId);
         case "library":
             return slots.findIndex((s) => s.spellId === targetId);
+        case "crateSlot": {
+            // targetId is the slot index as a string (e.g. "0", "1", "2", "3")
+            const idx = parseInt(targetId, 10);
+            if (isNaN(idx) || idx < 0 || idx >= slots.length) {
+                return -1;
+            }
+            // Only return if the slot actually has a crate
+            return slots[idx] ? idx : -1;
+        }
         default:
             return -1;
     }

@@ -602,11 +602,11 @@ export interface SpeedUpsCatalog {
     speedups: Record<string, SpeedUpEntry>;
 }
 
-export type SpeedupQueueType = "pitCrew" | "library";
+export type SpeedupQueueType = "pitCrew" | "library" | "crateSlot";
 
 export interface UseSpeedupRequest {
     queueType: SpeedupQueueType;
-    targetId: string; // carId or spellId
+    targetId: string; // carId, spellId, or slotIndex (as string, e.g. "0")
     speedupSkuId: string;
     opId: string;
 }

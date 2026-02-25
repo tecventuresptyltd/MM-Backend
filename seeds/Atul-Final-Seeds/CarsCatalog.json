@@ -10,7 +10,7 @@
         "type": "starter"
       },
       "levels": {
-        "0": {
+        "1": {
           "xpToNext": 200,
           "upgradeTimerSeconds": 36,
           "priceCoins": 0,
@@ -21,7 +21,7 @@
           "boostRegen": 1,
           "boostPower": 1
         },
-        "1": {
+        "2": {
           "xpToNext": 300,
           "upgradeTimerSeconds": 72,
           "priceCoins": 85,
@@ -32,7 +32,7 @@
           "boostRegen": 1,
           "boostPower": 1
         },
-        "2": {
+        "3": {
           "xpToNext": 400,
           "upgradeTimerSeconds": 108,
           "priceCoins": 95,
@@ -43,7 +43,7 @@
           "boostRegen": 1.25,
           "boostPower": 1.25
         },
-        "3": {
+        "4": {
           "xpToNext": 600,
           "upgradeTimerSeconds": 144,
           "priceCoins": 110,
@@ -54,7 +54,7 @@
           "boostRegen": 1.25,
           "boostPower": 1.25
         },
-        "4": {
+        "5": {
           "xpToNext": 800,
           "upgradeTimerSeconds": 216,
           "priceCoins": 120,
@@ -65,7 +65,7 @@
           "boostRegen": 1.25,
           "boostPower": 1.5
         },
-        "5": {
+        "6": {
           "xpToNext": 1000,
           "upgradeTimerSeconds": 288,
           "priceCoins": 130,
@@ -76,7 +76,7 @@
           "boostRegen": 1.5,
           "boostPower": 1.5
         },
-        "6": {
+        "7": {
           "xpToNext": 1400,
           "upgradeTimerSeconds": 432,
           "priceCoins": 140,
@@ -87,7 +87,7 @@
           "boostRegen": 1.5,
           "boostPower": 1.5
         },
-        "7": {
+        "8": {
           "xpToNext": 2000,
           "upgradeTimerSeconds": 576,
           "priceCoins": 150,
@@ -98,7 +98,7 @@
           "boostRegen": 1.75,
           "boostPower": 1.75
         },
-        "8": {
+        "9": {
           "xpToNext": 3000,
           "upgradeTimerSeconds": 720,
           "priceCoins": 160,
@@ -109,7 +109,7 @@
           "boostRegen": 1.75,
           "boostPower": 1.75
         },
-        "9": {
+        "10": {
           "xpToNext": 0,
           "upgradeTimerSeconds": 0,
           "priceCoins": 170,
@@ -141,7 +141,7 @@
         "minPlayerLevel": 3
       },
       "levels": {
-        "0": {
+        "1": {
           "xpToNext": 500,
           "upgradeTimerSeconds": 540,
           "priceCoins": 0,
@@ -152,7 +152,7 @@
           "boostRegen": 2,
           "boostPower": 2
         },
-        "1": {
+        "2": {
           "xpToNext": 750,
           "upgradeTimerSeconds": 1080,
           "priceCoins": 155,
@@ -163,7 +163,7 @@
           "boostRegen": 2,
           "boostPower": 2
         },
-        "2": {
+        "3": {
           "xpToNext": 1000,
           "upgradeTimerSeconds": 1620,
           "priceCoins": 175,
@@ -174,7 +174,7 @@
           "boostRegen": 2.25,
           "boostPower": 2.25
         },
-        "3": {
+        "4": {
           "xpToNext": 1500,
           "upgradeTimerSeconds": 2160,
           "priceCoins": 195,
@@ -185,7 +185,7 @@
           "boostRegen": 2.25,
           "boostPower": 2.25
         },
-        "4": {
+        "5": {
           "xpToNext": 2000,
           "upgradeTimerSeconds": 3240,
           "priceCoins": 210,
@@ -196,7 +196,7 @@
           "boostRegen": 2.25,
           "boostPower": 2.5
         },
-        "5": {
+        "6": {
           "xpToNext": 2500,
           "upgradeTimerSeconds": 4320,
           "priceCoins": 230,
@@ -207,7 +207,7 @@
           "boostRegen": 2.5,
           "boostPower": 2.5
         },
-        "6": {
+        "7": {
           "xpToNext": 3500,
           "upgradeTimerSeconds": 6480,
           "priceCoins": 250,
@@ -218,7 +218,7 @@
           "boostRegen": 2.5,
           "boostPower": 2.5
         },
-        "7": {
+        "8": {
           "xpToNext": 5000,
           "upgradeTimerSeconds": 8640,
           "priceCoins": 270,
@@ -229,7 +229,7 @@
           "boostRegen": 2.75,
           "boostPower": 2.75
         },
-        "8": {
+        "9": {
           "xpToNext": 7500,
           "upgradeTimerSeconds": 10800,
           "priceCoins": 290,
@@ -240,7 +240,7 @@
           "boostRegen": 2.75,
           "boostPower": 2.75
         },
-        "9": {
+        "10": {
           "xpToNext": 0,
           "upgradeTimerSeconds": 0,
           "priceCoins": 310,
@@ -273,7 +273,7 @@
         "minPlayerLevel": 7
       },
       "levels": {
-        "0": {
+        "1": {
           "xpToNext": 500,
           "upgradeTimerSeconds": 540,
           "priceCoins": 0,
@@ -284,7 +284,7 @@
           "boostRegen": 3,
           "boostPower": 3
         },
-        "1": {
+        "2": {
           "xpToNext": 750,
           "upgradeTimerSeconds": 1080,
           "priceCoins": 280,
@@ -295,7 +295,7 @@
           "boostRegen": 3,
           "boostPower": 3
         },
-        "2": {
+        "3": {
           "xpToNext": 1000,
           "upgradeTimerSeconds": 1620,
           "priceCoins": 320,
@@ -306,7 +306,7 @@
           "boostRegen": 3.25,
           "boostPower": 3.25
         },
-        "3": {
+        "4": {
           "xpToNext": 1500,
           "upgradeTimerSeconds": 2160,
           "priceCoins": 350,
@@ -317,7 +317,7 @@
           "boostRegen": 3.25,
           "boostPower": 3.25
         },
-        "4": {
+        "5": {
           "xpToNext": 2000,
           "upgradeTimerSeconds": 3240,
           "priceCoins": 380,
@@ -328,7 +328,7 @@
           "boostRegen": 3.25,
           "boostPower": 3.5
         },
-        "5": {
+        "6": {
           "xpToNext": 2500,
           "upgradeTimerSeconds": 4320,
           "priceCoins": 420,
@@ -339,7 +339,7 @@
           "boostRegen": 3.5,
           "boostPower": 3.5
         },
-        "6": {
+        "7": {
           "xpToNext": 3500,
           "upgradeTimerSeconds": 6480,
           "priceCoins": 450,
@@ -350,7 +350,7 @@
           "boostRegen": 3.5,
           "boostPower": 3.5
         },
-        "7": {
+        "8": {
           "xpToNext": 5000,
           "upgradeTimerSeconds": 8640,
           "priceCoins": 490,
@@ -361,7 +361,7 @@
           "boostRegen": 3.75,
           "boostPower": 3.75
         },
-        "8": {
+        "9": {
           "xpToNext": 7500,
           "upgradeTimerSeconds": 10800,
           "priceCoins": 520,
@@ -372,7 +372,7 @@
           "boostRegen": 3.75,
           "boostPower": 3.75
         },
-        "9": {
+        "10": {
           "xpToNext": 0,
           "upgradeTimerSeconds": 0,
           "priceCoins": 560,
@@ -405,7 +405,7 @@
         "minPlayerLevel": 12
       },
       "levels": {
-        "0": {
+        "1": {
           "xpToNext": 1000,
           "upgradeTimerSeconds": 3600,
           "priceCoins": 0,
@@ -416,7 +416,7 @@
           "boostRegen": 4,
           "boostPower": 4
         },
-        "1": {
+        "2": {
           "xpToNext": 1500,
           "upgradeTimerSeconds": 7200,
           "priceCoins": 510,
@@ -427,7 +427,7 @@
           "boostRegen": 4,
           "boostPower": 4
         },
-        "2": {
+        "3": {
           "xpToNext": 2000,
           "upgradeTimerSeconds": 10800,
           "priceCoins": 570,
@@ -438,7 +438,7 @@
           "boostRegen": 4.25,
           "boostPower": 4.25
         },
-        "3": {
+        "4": {
           "xpToNext": 3000,
           "upgradeTimerSeconds": 14400,
           "priceCoins": 630,
@@ -449,7 +449,7 @@
           "boostRegen": 4.25,
           "boostPower": 4.25
         },
-        "4": {
+        "5": {
           "xpToNext": 4000,
           "upgradeTimerSeconds": 21600,
           "priceCoins": 690,
@@ -460,7 +460,7 @@
           "boostRegen": 4.25,
           "boostPower": 4.5
         },
-        "5": {
+        "6": {
           "xpToNext": 5000,
           "upgradeTimerSeconds": 28800,
           "priceCoins": 750,
@@ -471,7 +471,7 @@
           "boostRegen": 4.5,
           "boostPower": 4.5
         },
-        "6": {
+        "7": {
           "xpToNext": 7000,
           "upgradeTimerSeconds": 43200,
           "priceCoins": 820,
@@ -482,7 +482,7 @@
           "boostRegen": 4.5,
           "boostPower": 4.5
         },
-        "7": {
+        "8": {
           "xpToNext": 10000,
           "upgradeTimerSeconds": 57600,
           "priceCoins": 880,
@@ -493,7 +493,7 @@
           "boostRegen": 4.75,
           "boostPower": 4.75
         },
-        "8": {
+        "9": {
           "xpToNext": 15000,
           "upgradeTimerSeconds": 72000,
           "priceCoins": 940,
@@ -504,7 +504,7 @@
           "boostRegen": 4.75,
           "boostPower": 4.75
         },
-        "9": {
+        "10": {
           "xpToNext": 0,
           "upgradeTimerSeconds": 0,
           "priceCoins": 1000,
@@ -536,7 +536,7 @@
         "minPlayerLevel": 18
       },
       "levels": {
-        "0": {
+        "1": {
           "xpToNext": 1000,
           "upgradeTimerSeconds": 3600,
           "priceCoins": 0,
@@ -547,7 +547,7 @@
           "boostRegen": 5,
           "boostPower": 5
         },
-        "1": {
+        "2": {
           "xpToNext": 1500,
           "upgradeTimerSeconds": 7200,
           "priceCoins": 910,
@@ -558,7 +558,7 @@
           "boostRegen": 5,
           "boostPower": 5
         },
-        "2": {
+        "3": {
           "xpToNext": 2000,
           "upgradeTimerSeconds": 10800,
           "priceCoins": 1000,
@@ -569,7 +569,7 @@
           "boostRegen": 5.25,
           "boostPower": 5.25
         },
-        "3": {
+        "4": {
           "xpToNext": 3000,
           "upgradeTimerSeconds": 14400,
           "priceCoins": 1100,
@@ -580,7 +580,7 @@
           "boostRegen": 5.25,
           "boostPower": 5.25
         },
-        "4": {
+        "5": {
           "xpToNext": 4000,
           "upgradeTimerSeconds": 21600,
           "priceCoins": 1200,
@@ -591,7 +591,7 @@
           "boostRegen": 5.25,
           "boostPower": 5.5
         },
-        "5": {
+        "6": {
           "xpToNext": 5000,
           "upgradeTimerSeconds": 28800,
           "priceCoins": 1400,
@@ -602,7 +602,7 @@
           "boostRegen": 5.5,
           "boostPower": 5.5
         },
-        "6": {
+        "7": {
           "xpToNext": 7000,
           "upgradeTimerSeconds": 43200,
           "priceCoins": 1500,
@@ -613,7 +613,7 @@
           "boostRegen": 5.5,
           "boostPower": 5.5
         },
-        "7": {
+        "8": {
           "xpToNext": 10000,
           "upgradeTimerSeconds": 57600,
           "priceCoins": 1600,
@@ -624,7 +624,7 @@
           "boostRegen": 5.75,
           "boostPower": 5.75
         },
-        "8": {
+        "9": {
           "xpToNext": 15000,
           "upgradeTimerSeconds": 72000,
           "priceCoins": 1700,
@@ -635,7 +635,7 @@
           "boostRegen": 5.75,
           "boostPower": 5.75
         },
-        "9": {
+        "10": {
           "xpToNext": 0,
           "upgradeTimerSeconds": 0,
           "priceCoins": 1800,
@@ -668,7 +668,7 @@
         "minPlayerLevel": 25
       },
       "levels": {
-        "0": {
+        "1": {
           "xpToNext": 2000,
           "upgradeTimerSeconds": 9000,
           "priceCoins": 0,
@@ -679,7 +679,7 @@
           "boostRegen": 6,
           "boostPower": 6
         },
-        "1": {
+        "2": {
           "xpToNext": 3000,
           "upgradeTimerSeconds": 18000,
           "priceCoins": 1600,
@@ -690,7 +690,7 @@
           "boostRegen": 6,
           "boostPower": 6
         },
-        "2": {
+        "3": {
           "xpToNext": 4000,
           "upgradeTimerSeconds": 27000,
           "priceCoins": 1800,
@@ -701,7 +701,7 @@
           "boostRegen": 6.25,
           "boostPower": 6.25
         },
-        "3": {
+        "4": {
           "xpToNext": 6000,
           "upgradeTimerSeconds": 36000,
           "priceCoins": 2000,
@@ -712,7 +712,7 @@
           "boostRegen": 6.25,
           "boostPower": 6.25
         },
-        "4": {
+        "5": {
           "xpToNext": 8000,
           "upgradeTimerSeconds": 54000,
           "priceCoins": 2200,
@@ -723,7 +723,7 @@
           "boostRegen": 6.25,
           "boostPower": 6.5
         },
-        "5": {
+        "6": {
           "xpToNext": 10000,
           "upgradeTimerSeconds": 72000,
           "priceCoins": 2400,
@@ -734,7 +734,7 @@
           "boostRegen": 6.5,
           "boostPower": 6.5
         },
-        "6": {
+        "7": {
           "xpToNext": 14000,
           "upgradeTimerSeconds": 108000,
           "priceCoins": 2600,
@@ -745,7 +745,7 @@
           "boostRegen": 6.5,
           "boostPower": 6.5
         },
-        "7": {
+        "8": {
           "xpToNext": 20000,
           "upgradeTimerSeconds": 144000,
           "priceCoins": 2800,
@@ -756,7 +756,7 @@
           "boostRegen": 6.75,
           "boostPower": 6.75
         },
-        "8": {
+        "9": {
           "xpToNext": 30000,
           "upgradeTimerSeconds": 180000,
           "priceCoins": 3000,
@@ -767,7 +767,7 @@
           "boostRegen": 6.75,
           "boostPower": 6.75
         },
-        "9": {
+        "10": {
           "xpToNext": 0,
           "upgradeTimerSeconds": 0,
           "priceCoins": 3200,
@@ -800,7 +800,7 @@
         "minPlayerLevel": 33
       },
       "levels": {
-        "0": {
+        "1": {
           "xpToNext": 2000,
           "upgradeTimerSeconds": 9000,
           "priceCoins": 0,
@@ -811,7 +811,7 @@
           "boostRegen": 7,
           "boostPower": 7
         },
-        "1": {
+        "2": {
           "xpToNext": 3000,
           "upgradeTimerSeconds": 18000,
           "priceCoins": 2900,
@@ -822,7 +822,7 @@
           "boostRegen": 7,
           "boostPower": 7
         },
-        "2": {
+        "3": {
           "xpToNext": 4000,
           "upgradeTimerSeconds": 27000,
           "priceCoins": 3300,
@@ -833,7 +833,7 @@
           "boostRegen": 7.25,
           "boostPower": 7.25
         },
-        "3": {
+        "4": {
           "xpToNext": 6000,
           "upgradeTimerSeconds": 36000,
           "priceCoins": 3700,
@@ -844,7 +844,7 @@
           "boostRegen": 7.25,
           "boostPower": 7.25
         },
-        "4": {
+        "5": {
           "xpToNext": 8000,
           "upgradeTimerSeconds": 54000,
           "priceCoins": 4000,
@@ -855,7 +855,7 @@
           "boostRegen": 7.25,
           "boostPower": 7.5
         },
-        "5": {
+        "6": {
           "xpToNext": 10000,
           "upgradeTimerSeconds": 72000,
           "priceCoins": 4400,
@@ -866,7 +866,7 @@
           "boostRegen": 7.5,
           "boostPower": 7.5
         },
-        "6": {
+        "7": {
           "xpToNext": 14000,
           "upgradeTimerSeconds": 108000,
           "priceCoins": 4800,
@@ -877,7 +877,7 @@
           "boostRegen": 7.5,
           "boostPower": 7.5
         },
-        "7": {
+        "8": {
           "xpToNext": 20000,
           "upgradeTimerSeconds": 144000,
           "priceCoins": 5100,
@@ -888,7 +888,7 @@
           "boostRegen": 7.75,
           "boostPower": 7.75
         },
-        "8": {
+        "9": {
           "xpToNext": 30000,
           "upgradeTimerSeconds": 180000,
           "priceCoins": 5500,
@@ -899,7 +899,7 @@
           "boostRegen": 7.75,
           "boostPower": 7.75
         },
-        "9": {
+        "10": {
           "xpToNext": 0,
           "upgradeTimerSeconds": 0,
           "priceCoins": 5800,
@@ -931,7 +931,7 @@
         "minPlayerLevel": 42
       },
       "levels": {
-        "0": {
+        "1": {
           "xpToNext": 2000,
           "upgradeTimerSeconds": 9000,
           "priceCoins": 0,
@@ -942,7 +942,7 @@
           "boostRegen": 8,
           "boostPower": 8
         },
-        "1": {
+        "2": {
           "xpToNext": 3000,
           "upgradeTimerSeconds": 18000,
           "priceCoins": 5300,
@@ -953,7 +953,7 @@
           "boostRegen": 8,
           "boostPower": 8
         },
-        "2": {
+        "3": {
           "xpToNext": 4000,
           "upgradeTimerSeconds": 27000,
           "priceCoins": 6000,
@@ -964,7 +964,7 @@
           "boostRegen": 8.25,
           "boostPower": 8.25
         },
-        "3": {
+        "4": {
           "xpToNext": 6000,
           "upgradeTimerSeconds": 36000,
           "priceCoins": 6600,
@@ -975,7 +975,7 @@
           "boostRegen": 8.25,
           "boostPower": 8.25
         },
-        "4": {
+        "5": {
           "xpToNext": 8000,
           "upgradeTimerSeconds": 54000,
           "priceCoins": 7300,
@@ -986,7 +986,7 @@
           "boostRegen": 8.25,
           "boostPower": 8.5
         },
-        "5": {
+        "6": {
           "xpToNext": 10000,
           "upgradeTimerSeconds": 72000,
           "priceCoins": 7900,
@@ -997,7 +997,7 @@
           "boostRegen": 8.5,
           "boostPower": 8.5
         },
-        "6": {
+        "7": {
           "xpToNext": 14000,
           "upgradeTimerSeconds": 108000,
           "priceCoins": 8600,
@@ -1008,7 +1008,7 @@
           "boostRegen": 8.5,
           "boostPower": 8.5
         },
-        "7": {
+        "8": {
           "xpToNext": 20000,
           "upgradeTimerSeconds": 144000,
           "priceCoins": 9200,
@@ -1019,7 +1019,7 @@
           "boostRegen": 8.75,
           "boostPower": 8.75
         },
-        "8": {
+        "9": {
           "xpToNext": 30000,
           "upgradeTimerSeconds": 180000,
           "priceCoins": 9900,
@@ -1030,7 +1030,7 @@
           "boostRegen": 8.75,
           "boostPower": 8.75
         },
-        "9": {
+        "10": {
           "xpToNext": 0,
           "upgradeTimerSeconds": 0,
           "priceCoins": 10500,
@@ -1063,7 +1063,7 @@
         "minPlayerLevel": 52
       },
       "levels": {
-        "0": {
+        "1": {
           "xpToNext": 4000,
           "upgradeTimerSeconds": 14400,
           "priceCoins": 0,
@@ -1074,7 +1074,7 @@
           "boostRegen": 9,
           "boostPower": 9
         },
-        "1": {
+        "2": {
           "xpToNext": 6000,
           "upgradeTimerSeconds": 28800,
           "priceCoins": 9600,
@@ -1085,7 +1085,7 @@
           "boostRegen": 9,
           "boostPower": 9
         },
-        "2": {
+        "3": {
           "xpToNext": 8000,
           "upgradeTimerSeconds": 43200,
           "priceCoins": 10700,
@@ -1096,7 +1096,7 @@
           "boostRegen": 9.25,
           "boostPower": 9.25
         },
-        "3": {
+        "4": {
           "xpToNext": 12000,
           "upgradeTimerSeconds": 57600,
           "priceCoins": 11900,
@@ -1107,7 +1107,7 @@
           "boostRegen": 9.25,
           "boostPower": 9.25
         },
-        "4": {
+        "5": {
           "xpToNext": 16000,
           "upgradeTimerSeconds": 86400,
           "priceCoins": 13100,
@@ -1118,7 +1118,7 @@
           "boostRegen": 9.25,
           "boostPower": 9.5
         },
-        "5": {
+        "6": {
           "xpToNext": 20000,
           "upgradeTimerSeconds": 115200,
           "priceCoins": 14300,
@@ -1129,7 +1129,7 @@
           "boostRegen": 9.5,
           "boostPower": 9.5
         },
-        "6": {
+        "7": {
           "xpToNext": 28000,
           "upgradeTimerSeconds": 172800,
           "priceCoins": 15400,
@@ -1140,7 +1140,7 @@
           "boostRegen": 9.5,
           "boostPower": 9.5
         },
-        "7": {
+        "8": {
           "xpToNext": 40000,
           "upgradeTimerSeconds": 230400,
           "priceCoins": 16600,
@@ -1151,7 +1151,7 @@
           "boostRegen": 9.75,
           "boostPower": 9.75
         },
-        "8": {
+        "9": {
           "xpToNext": 60000,
           "upgradeTimerSeconds": 288000,
           "priceCoins": 17800,
@@ -1162,7 +1162,7 @@
           "boostRegen": 9.75,
           "boostPower": 9.75
         },
-        "9": {
+        "10": {
           "xpToNext": 0,
           "upgradeTimerSeconds": 0,
           "priceCoins": 18900,
@@ -1195,7 +1195,7 @@
         "minPlayerLevel": 63
       },
       "levels": {
-        "0": {
+        "1": {
           "xpToNext": 4000,
           "upgradeTimerSeconds": 14400,
           "priceCoins": 0,
@@ -1206,7 +1206,7 @@
           "boostRegen": 10,
           "boostPower": 10
         },
-        "1": {
+        "2": {
           "xpToNext": 6000,
           "upgradeTimerSeconds": 28800,
           "priceCoins": 17200,
@@ -1217,7 +1217,7 @@
           "boostRegen": 10,
           "boostPower": 10
         },
-        "2": {
+        "3": {
           "xpToNext": 8000,
           "upgradeTimerSeconds": 43200,
           "priceCoins": 19300,
@@ -1228,7 +1228,7 @@
           "boostRegen": 10.25,
           "boostPower": 10.25
         },
-        "3": {
+        "4": {
           "xpToNext": 12000,
           "upgradeTimerSeconds": 57600,
           "priceCoins": 21400,
@@ -1239,7 +1239,7 @@
           "boostRegen": 10.25,
           "boostPower": 10.25
         },
-        "4": {
+        "5": {
           "xpToNext": 16000,
           "upgradeTimerSeconds": 86400,
           "priceCoins": 23500,
@@ -1250,7 +1250,7 @@
           "boostRegen": 10.25,
           "boostPower": 10.5
         },
-        "5": {
+        "6": {
           "xpToNext": 20000,
           "upgradeTimerSeconds": 115200,
           "priceCoins": 25700,
@@ -1261,7 +1261,7 @@
           "boostRegen": 10.5,
           "boostPower": 10.5
         },
-        "6": {
+        "7": {
           "xpToNext": 28000,
           "upgradeTimerSeconds": 172800,
           "priceCoins": 27800,
@@ -1272,7 +1272,7 @@
           "boostRegen": 10.5,
           "boostPower": 10.5
         },
-        "7": {
+        "8": {
           "xpToNext": 40000,
           "upgradeTimerSeconds": 230400,
           "priceCoins": 29900,
@@ -1283,7 +1283,7 @@
           "boostRegen": 10.75,
           "boostPower": 10.75
         },
-        "8": {
+        "9": {
           "xpToNext": 60000,
           "upgradeTimerSeconds": 288000,
           "priceCoins": 32000,
@@ -1294,7 +1294,7 @@
           "boostRegen": 10.75,
           "boostPower": 10.75
         },
-        "9": {
+        "10": {
           "xpToNext": 0,
           "upgradeTimerSeconds": 0,
           "priceCoins": 34100,
@@ -1327,7 +1327,7 @@
         "minPlayerLevel": 75
       },
       "levels": {
-        "0": {
+        "1": {
           "xpToNext": 4000,
           "upgradeTimerSeconds": 14400,
           "priceCoins": 0,
@@ -1338,7 +1338,7 @@
           "boostRegen": 11,
           "boostPower": 11
         },
-        "1": {
+        "2": {
           "xpToNext": 6000,
           "upgradeTimerSeconds": 28800,
           "priceCoins": 31000,
@@ -1349,7 +1349,7 @@
           "boostRegen": 11,
           "boostPower": 11
         },
-        "2": {
+        "3": {
           "xpToNext": 8000,
           "upgradeTimerSeconds": 43200,
           "priceCoins": 34800,
@@ -1360,7 +1360,7 @@
           "boostRegen": 11.25,
           "boostPower": 11.25
         },
-        "3": {
+        "4": {
           "xpToNext": 12000,
           "upgradeTimerSeconds": 57600,
           "priceCoins": 38600,
@@ -1371,7 +1371,7 @@
           "boostRegen": 11.25,
           "boostPower": 11.25
         },
-        "4": {
+        "5": {
           "xpToNext": 16000,
           "upgradeTimerSeconds": 86400,
           "priceCoins": 42400,
@@ -1382,7 +1382,7 @@
           "boostRegen": 11.25,
           "boostPower": 11.5
         },
-        "5": {
+        "6": {
           "xpToNext": 20000,
           "upgradeTimerSeconds": 115200,
           "priceCoins": 46200,
@@ -1393,7 +1393,7 @@
           "boostRegen": 11.5,
           "boostPower": 11.5
         },
-        "6": {
+        "7": {
           "xpToNext": 28000,
           "upgradeTimerSeconds": 172800,
           "priceCoins": 50000,
@@ -1404,7 +1404,7 @@
           "boostRegen": 11.5,
           "boostPower": 11.5
         },
-        "7": {
+        "8": {
           "xpToNext": 40000,
           "upgradeTimerSeconds": 230400,
           "priceCoins": 53800,
@@ -1415,7 +1415,7 @@
           "boostRegen": 11.75,
           "boostPower": 11.75
         },
-        "8": {
+        "9": {
           "xpToNext": 60000,
           "upgradeTimerSeconds": 288000,
           "priceCoins": 57600,
@@ -1426,7 +1426,7 @@
           "boostRegen": 11.75,
           "boostPower": 11.75
         },
-        "9": {
+        "10": {
           "xpToNext": 0,
           "upgradeTimerSeconds": 0,
           "priceCoins": 61400,
@@ -1459,7 +1459,7 @@
         "minPlayerLevel": 88
       },
       "levels": {
-        "0": {
+        "1": {
           "xpToNext": 4000,
           "upgradeTimerSeconds": 14400,
           "priceCoins": 0,
@@ -1470,7 +1470,7 @@
           "boostRegen": 12,
           "boostPower": 12
         },
-        "1": {
+        "2": {
           "xpToNext": 6000,
           "upgradeTimerSeconds": 28800,
           "priceCoins": 55700,
@@ -1481,7 +1481,7 @@
           "boostRegen": 12,
           "boostPower": 12
         },
-        "2": {
+        "3": {
           "xpToNext": 8000,
           "upgradeTimerSeconds": 43200,
           "priceCoins": 62600,
@@ -1492,7 +1492,7 @@
           "boostRegen": 12.25,
           "boostPower": 12.25
         },
-        "3": {
+        "4": {
           "xpToNext": 12000,
           "upgradeTimerSeconds": 57600,
           "priceCoins": 69400,
@@ -1503,7 +1503,7 @@
           "boostRegen": 12.25,
           "boostPower": 12.25
         },
-        "4": {
+        "5": {
           "xpToNext": 16000,
           "upgradeTimerSeconds": 86400,
           "priceCoins": 76300,
@@ -1514,7 +1514,7 @@
           "boostRegen": 12.25,
           "boostPower": 12.5
         },
-        "5": {
+        "6": {
           "xpToNext": 20000,
           "upgradeTimerSeconds": 115200,
           "priceCoins": 83100,
@@ -1525,7 +1525,7 @@
           "boostRegen": 12.5,
           "boostPower": 12.5
         },
-        "6": {
+        "7": {
           "xpToNext": 28000,
           "upgradeTimerSeconds": 172800,
           "priceCoins": 90000,
@@ -1536,7 +1536,7 @@
           "boostRegen": 12.5,
           "boostPower": 12.5
         },
-        "7": {
+        "8": {
           "xpToNext": 40000,
           "upgradeTimerSeconds": 230400,
           "priceCoins": 96800,
@@ -1547,7 +1547,7 @@
           "boostRegen": 12.75,
           "boostPower": 12.75
         },
-        "8": {
+        "9": {
           "xpToNext": 60000,
           "upgradeTimerSeconds": 288000,
           "priceCoins": 104000,
@@ -1558,7 +1558,7 @@
           "boostRegen": 12.75,
           "boostPower": 12.75
         },
-        "9": {
+        "10": {
           "xpToNext": 0,
           "upgradeTimerSeconds": 0,
           "priceCoins": 111000,
@@ -1591,7 +1591,7 @@
         "minPlayerLevel": 102
       },
       "levels": {
-        "0": {
+        "1": {
           "xpToNext": 4000,
           "upgradeTimerSeconds": 14400,
           "priceCoins": 0,
@@ -1602,7 +1602,7 @@
           "boostRegen": 13,
           "boostPower": 13
         },
-        "1": {
+        "2": {
           "xpToNext": 6000,
           "upgradeTimerSeconds": 28800,
           "priceCoins": 100000,
@@ -1613,7 +1613,7 @@
           "boostRegen": 13,
           "boostPower": 13
         },
-        "2": {
+        "3": {
           "xpToNext": 8000,
           "upgradeTimerSeconds": 43200,
           "priceCoins": 113000,
@@ -1624,7 +1624,7 @@
           "boostRegen": 13.25,
           "boostPower": 13.25
         },
-        "3": {
+        "4": {
           "xpToNext": 12000,
           "upgradeTimerSeconds": 57600,
           "priceCoins": 125000,
@@ -1635,7 +1635,7 @@
           "boostRegen": 13.25,
           "boostPower": 13.25
         },
-        "4": {
+        "5": {
           "xpToNext": 16000,
           "upgradeTimerSeconds": 86400,
           "priceCoins": 137000,
@@ -1646,7 +1646,7 @@
           "boostRegen": 13.25,
           "boostPower": 13.5
         },
-        "5": {
+        "6": {
           "xpToNext": 20000,
           "upgradeTimerSeconds": 115200,
           "priceCoins": 150000,
@@ -1657,7 +1657,7 @@
           "boostRegen": 13.5,
           "boostPower": 13.5
         },
-        "6": {
+        "7": {
           "xpToNext": 28000,
           "upgradeTimerSeconds": 172800,
           "priceCoins": 162000,
@@ -1668,7 +1668,7 @@
           "boostRegen": 13.5,
           "boostPower": 13.5
         },
-        "7": {
+        "8": {
           "xpToNext": 40000,
           "upgradeTimerSeconds": 230400,
           "priceCoins": 174000,
@@ -1679,7 +1679,7 @@
           "boostRegen": 13.75,
           "boostPower": 13.75
         },
-        "8": {
+        "9": {
           "xpToNext": 60000,
           "upgradeTimerSeconds": 288000,
           "priceCoins": 187000,
@@ -1690,7 +1690,7 @@
           "boostRegen": 13.75,
           "boostPower": 13.75
         },
-        "9": {
+        "10": {
           "xpToNext": 0,
           "upgradeTimerSeconds": 0,
           "priceCoins": 199000,
@@ -1723,7 +1723,7 @@
         "minPlayerLevel": 117
       },
       "levels": {
-        "0": {
+        "1": {
           "xpToNext": 4000,
           "upgradeTimerSeconds": 14400,
           "priceCoins": 0,
@@ -1734,7 +1734,7 @@
           "boostRegen": 14,
           "boostPower": 14
         },
-        "1": {
+        "2": {
           "xpToNext": 6000,
           "upgradeTimerSeconds": 28800,
           "priceCoins": 181000,
@@ -1745,7 +1745,7 @@
           "boostRegen": 14,
           "boostPower": 14
         },
-        "2": {
+        "3": {
           "xpToNext": 8000,
           "upgradeTimerSeconds": 43200,
           "priceCoins": 203000,
@@ -1756,7 +1756,7 @@
           "boostRegen": 14.25,
           "boostPower": 14.25
         },
-        "3": {
+        "4": {
           "xpToNext": 12000,
           "upgradeTimerSeconds": 57600,
           "priceCoins": 225000,
@@ -1767,7 +1767,7 @@
           "boostRegen": 14.25,
           "boostPower": 14.25
         },
-        "4": {
+        "5": {
           "xpToNext": 16000,
           "upgradeTimerSeconds": 86400,
           "priceCoins": 247000,
@@ -1778,7 +1778,7 @@
           "boostRegen": 14.25,
           "boostPower": 14.5
         },
-        "5": {
+        "6": {
           "xpToNext": 20000,
           "upgradeTimerSeconds": 115200,
           "priceCoins": 269000,
@@ -1789,7 +1789,7 @@
           "boostRegen": 14.5,
           "boostPower": 14.5
         },
-        "6": {
+        "7": {
           "xpToNext": 28000,
           "upgradeTimerSeconds": 172800,
           "priceCoins": 291000,
@@ -1800,7 +1800,7 @@
           "boostRegen": 14.5,
           "boostPower": 14.5
         },
-        "7": {
+        "8": {
           "xpToNext": 40000,
           "upgradeTimerSeconds": 230400,
           "priceCoins": 314000,
@@ -1811,7 +1811,7 @@
           "boostRegen": 14.75,
           "boostPower": 14.75
         },
-        "8": {
+        "9": {
           "xpToNext": 60000,
           "upgradeTimerSeconds": 288000,
           "priceCoins": 336000,
@@ -1822,7 +1822,7 @@
           "boostRegen": 14.75,
           "boostPower": 14.75
         },
-        "9": {
+        "10": {
           "xpToNext": 0,
           "upgradeTimerSeconds": 0,
           "priceCoins": 358000,
@@ -1855,7 +1855,7 @@
         "minPlayerLevel": 133
       },
       "levels": {
-        "0": {
+        "1": {
           "xpToNext": 4000,
           "upgradeTimerSeconds": 14400,
           "priceCoins": 0,
@@ -1866,7 +1866,7 @@
           "boostRegen": 15,
           "boostPower": 15
         },
-        "1": {
+        "2": {
           "xpToNext": 6000,
           "upgradeTimerSeconds": 28800,
           "priceCoins": 325000,
@@ -1877,7 +1877,7 @@
           "boostRegen": 15,
           "boostPower": 15
         },
-        "2": {
+        "3": {
           "xpToNext": 8000,
           "upgradeTimerSeconds": 43200,
           "priceCoins": 365000,
@@ -1888,7 +1888,7 @@
           "boostRegen": 15.25,
           "boostPower": 15.25
         },
-        "3": {
+        "4": {
           "xpToNext": 12000,
           "upgradeTimerSeconds": 57600,
           "priceCoins": 405000,
@@ -1899,7 +1899,7 @@
           "boostRegen": 15.25,
           "boostPower": 15.25
         },
-        "4": {
+        "5": {
           "xpToNext": 16000,
           "upgradeTimerSeconds": 86400,
           "priceCoins": 445000,
@@ -1910,7 +1910,7 @@
           "boostRegen": 15.25,
           "boostPower": 15.5
         },
-        "5": {
+        "6": {
           "xpToNext": 20000,
           "upgradeTimerSeconds": 115200,
           "priceCoins": 485000,
@@ -1921,7 +1921,7 @@
           "boostRegen": 15.5,
           "boostPower": 15.5
         },
-        "6": {
+        "7": {
           "xpToNext": 28000,
           "upgradeTimerSeconds": 172800,
           "priceCoins": 525000,
@@ -1932,7 +1932,7 @@
           "boostRegen": 15.5,
           "boostPower": 15.5
         },
-        "7": {
+        "8": {
           "xpToNext": 40000,
           "upgradeTimerSeconds": 230400,
           "priceCoins": 565000,
@@ -1943,7 +1943,7 @@
           "boostRegen": 15.75,
           "boostPower": 15.75
         },
-        "8": {
+        "9": {
           "xpToNext": 60000,
           "upgradeTimerSeconds": 288000,
           "priceCoins": 605000,
@@ -1954,7 +1954,7 @@
           "boostRegen": 15.75,
           "boostPower": 15.75
         },
-        "9": {
+        "10": {
           "xpToNext": 0,
           "upgradeTimerSeconds": 0,
           "priceCoins": 644000,

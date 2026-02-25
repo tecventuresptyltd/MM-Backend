@@ -15,8 +15,8 @@
             "displayDuration": "30 minutes"
         },
         "rare": {
-            "durationSeconds": 10800,
-            "displayDuration": "3 hours"
+            "durationSeconds": 7200,
+            "displayDuration": "2 hours"
         },
         "exotic": {
             "durationSeconds": 28800,

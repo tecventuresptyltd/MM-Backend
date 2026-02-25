@@ -141,8 +141,8 @@ export const purchaseTierLicenseV2 = onCall(
                             tuning: {},
                             // V2 fields
                             xp: 0,
-                            starLevel: 0,
-                            carLevel: 0,
+                            starLevel: 1, // start at level 1 (matches CarsCatalog key "1")
+                            carLevel: 1,
                             isXpCapped: false,
                             fuelBars: 5, // Start with full fuel
                             fuelLastRefillAt: timestamp,
@@ -321,8 +321,8 @@ export async function grantStarterTierLicense(
                 upgradeLevel: 0,
                 tuning: {},
                 xp: 0,
-                starLevel: 0,
-                carLevel: 0,
+                starLevel: 1, // start at level 1 (matches CarsCatalog key "1")
+                carLevel: 1,
                 isXpCapped: false,
                 fuelBars: 5,
                 fuelLastRefillAt: timestamp,

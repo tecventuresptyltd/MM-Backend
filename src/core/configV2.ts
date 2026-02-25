@@ -9,6 +9,7 @@ import * as admin from "firebase-admin";
 import {
     TiersCatalog,
     TierDefinition,
+    CarEvolutionV2Catalog,
     CarsCatalog,
     CarLevelData,
     CarCatalogEntry,
@@ -96,6 +97,52 @@ export async function getStarterTier(): Promise<TierDefinition | null> {
     return (
         Object.values(catalog.tiers).find((tier) => tier.starterLicense === true) ?? null
     );
+}
+
+// =============================================================================
+// CAR EVOLUTION V2 — XP CAP AND COST HELPERS (reads from CarsCatalog)
+// =============================================================================
+
+/**
+ * Get the XP cap (xpToNext) for a specific car at its current star/car level.
+ * Reads from CarsCatalog.cars[carId].levels[starLevel].xpToNext.
+ * starLevel matches CarsCatalog keys ("1"-"10").
+ *
+ * Returns 0 if car is at max level (xpToNext=0), Infinity if car/level not found.
+ */
+export async function getXpCapForCar(carId: string, starLevel: number): Promise<number> {
+    const catalog = await getCarsCatalog();
+    const levelData = catalog.cars?.[carId]?.levels?.[String(starLevel)];
+    if (!levelData) {
+        console.warn(`[V2Config] No level data for car ${carId} at star ${starLevel}, falling back to Infinity`);
+        return Infinity;
+    }
+    const xpToNext = levelData.xpToNext;
+    // xpToNext = 0 means max level — cap XP immediately
+    return xpToNext > 0 ? xpToNext : 0;
+}
+
+/**
+ * Get the evolution cost for a specific car at its current star level.
+ * Reads priceCoins and upgradeTimerSeconds from CarsCatalog per-car per-level.
+ * Returns null if the car is at max star level or config is missing.
+ */
+export async function getEvolutionCostForCar(
+    carId: string,
+    starLevel: number,
+): Promise<{ coins: number; durationSeconds: number; targetStarLevel: number } | null> {
+    const catalog = await getCarsCatalog();
+    const levelData = catalog.cars?.[carId]?.levels?.[String(starLevel)];
+    if (!levelData) return null;
+
+    // If this is the max level (xpToNext = 0), there's no next level to evolve to
+    if (levelData.xpToNext === 0) return null;
+
+    return {
+        targetStarLevel: starLevel + 1,
+        coins: levelData.priceCoins,
+        durationSeconds: levelData.upgradeTimerSeconds,
+    };
 }
 
 // =============================================================================
@@ -317,36 +364,22 @@ export async function getLibrarySlotPurchaseCost(slotNumber: number): Promise<nu
 // =============================================================================
 
 /**
- * Dynamically calculate the car's CUMULATIVE level across all stars.
+ * Calculate the car's current level from its XP and star level.
  *
- * The car level is GLOBAL and never resets. It increments continuously:
- *   Star 0: carLevel  0 → 10
- *   Star 1: carLevel 10 → 20
- *   Star 2: carLevel 20 → 30
- *   ...
- *   Star 9: carLevel 90 → 100
+ * MODEL: star level == car level (1:1 mapping, per CarsCatalog keys "1"-"10").
+ *   carLevel = starLevel  (XP is tracked within the star; level only increments on evolution)
  *
- * Formula: carLevel = (starLevel × levelsPerStar) + localLevel
- * Where:   localLevel = floor(xp / (xpCap / levelsPerStar))
+ * Returned fields:
+ *   carLevel    — equals starLevel (1-10)
+ *   localLevel  — always 0 (no sub-levels within a star)
+ *   xpInLevel   — XP earned so far within this star
+ *   xpPerLevel  — equals xpCap (xpToNext from CarsCatalog)
+ *   xpToNextLevel — xpCap - xpInLevel
  *
- * Example at Star 0 (xpCap=1000, levelsPerStar=10):
- *   XP=0    → localLevel=0,  carLevel = (0×10) + 0  = 0
- *   XP=100  → localLevel=1,  carLevel = (0×10) + 1  = 1
- *   XP=500  → localLevel=5,  carLevel = (0×10) + 5  = 5
- *   XP=1000 → localLevel=10, carLevel = (0×10) + 10 = 10
- *
- * Example at Star 3 (xpCap=10000, levelsPerStar=10):
- *   XP=0    → localLevel=0,  carLevel = (3×10) + 0  = 30
- *   XP=5000 → localLevel=5,  carLevel = (3×10) + 5  = 35
- *   XP=10000→ localLevel=10, carLevel = (3×10) + 10 = 40
- *
- * Fully dynamic — if xpCap changes, levels recalculate automatically.
- *
- * @param currentXp - The car's current XP within this star
- * @param xpCap - The XP cap for the current star level
- * @param starLevel - The car's current star level
- * @param levelsPerStar - How many sub-levels in each star (from catalog)
- * @returns Object with carLevel (global), localLevel (within star), xpInLevel, xpPerLevel
+ * @param currentXp   - Car's current XP within this star
+ * @param xpCap       - XP cap for this star (xpToNext from CarsCatalog)
+ * @param starLevel   - Car's current star level (1-10, matching CarsCatalog keys)
+ * @param levelsPerStar - Should be 1 per catalog (kept for signature compat)
  */
 export function calculateCarLevel(
     currentXp: number,
@@ -354,31 +387,25 @@ export function calculateCarLevel(
     starLevel: number,
     levelsPerStar: number,
 ): { carLevel: number; localLevel: number; xpInLevel: number; xpPerLevel: number; xpToNextLevel: number } {
-    // Safety: ensure valid inputs
     const safeXp = Math.max(0, Math.floor(currentXp));
     const safeCap = Math.max(1, Math.floor(xpCap));
-    const safeStar = Math.max(0, Math.floor(starLevel));
-    const safeLevels = Math.max(1, Math.floor(levelsPerStar));
+    const safeStar = Math.max(1, Math.floor(starLevel)); // 1-10, matching CarsCatalog keys
 
-    const xpPerLevel = safeCap / safeLevels;
+    // Star level IS the car level — 1:1 mapping
+    const carLevel = safeStar;
 
-    // Calculate local level within this star (0 to levelsPerStar)
-    let localLevel = Math.floor(safeXp / xpPerLevel);
-    localLevel = Math.min(localLevel, safeLevels); // Cap at max
+    // No sub-levels within a star (levelsPerStar = 1)
+    const localLevel = 0;
 
-    // Calculate cumulative (global) car level
-    const carLevel = (safeStar * safeLevels) + localLevel;
-
-    // XP progress within the current local level
-    const xpInLevel = localLevel >= safeLevels ? 0 : safeXp - (localLevel * xpPerLevel);
-    const xpToNextLevel = localLevel >= safeLevels ? 0 : xpPerLevel - xpInLevel;
+    const xpInLevel = Math.min(safeXp, safeCap);
+    const xpToNextLevel = Math.max(0, safeCap - xpInLevel);
 
     return {
         carLevel,
         localLevel,
-        xpInLevel: Math.max(0, xpInLevel),
-        xpPerLevel,
-        xpToNextLevel: Math.max(0, xpToNextLevel),
+        xpInLevel,
+        xpPerLevel: safeCap,
+        xpToNextLevel,
     };
 }
 
@@ -578,6 +605,51 @@ export function getMasteryRank(masteryXp: number, config: MasteryConfig): number
     }
 
     return highestRank;
+}
+
+/**
+ * Calculate mastery progress within the current rank.
+ * Pure function — no Firestore calls.
+ *
+ * Returns:
+ *   rank          - current mastery rank (0-50)
+ *   expProgress   - XP earned since start of this rank
+ *   expToNextLevel - total XP span of this rank (threshold[rank+1] - threshold[rank])
+ *   expProgressDisplay - e.g. "225 / 2000"
+ */
+export function getMasteryProgress(
+    masteryXp: number,
+    config: MasteryConfig,
+): { rank: number; expProgress: number; expToNextLevel: number; expProgressDisplay: string } {
+    const safeXp = Math.max(0, Math.floor(masteryXp));
+    const rank = getMasteryRank(safeXp, config);
+
+    // XP threshold for the current rank (floor)
+    const currentThreshold = config.rankThresholds[String(rank)] ?? 0;
+
+    // XP threshold for the next rank (ceiling)
+    const nextRank = rank + 1;
+    const nextThreshold = config.rankThresholds[String(nextRank)];
+
+    if (nextThreshold === undefined || rank >= config.maxRank) {
+        // At max rank
+        return {
+            rank,
+            expProgress: safeXp - currentThreshold,
+            expToNextLevel: 0,
+            expProgressDisplay: "Max Rank",
+        };
+    }
+
+    const expProgress = safeXp - currentThreshold;
+    const expToNextLevel = nextThreshold - currentThreshold;
+
+    return {
+        rank,
+        expProgress,
+        expToNextLevel,
+        expProgressDisplay: `${expProgress} / ${expToNextLevel}`,
+    };
 }
 
 // =============================================================================

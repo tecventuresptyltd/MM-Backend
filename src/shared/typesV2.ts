@@ -59,7 +59,47 @@ export interface UserLicensesDoc {
 // CAR EVOLUTION V2 (PIT CREW) SYSTEM
 // =============================================================================
 
-// (The old CarEvolutionV2Catalog, TierScaling, EvolutionCostEntry, etc. have been removed as progression is now handled per-car within the CarsCatalog)
+export interface TierScaling {
+    coinMultiplier: number;
+    timerMultiplier: number;
+}
+
+export interface EvolutionSkipCost {
+    gemsPerHour: number;
+    minGems: number;
+}
+
+export interface StatBonusPerStar {
+    topSpeed: number;
+    acceleration: number;
+    handling: number;
+    boostRegen: number;
+    boostPower: number;
+}
+
+/**
+ * Global car evolution config.
+ * XP caps, evolution costs, and timer values all live in CarsCatalog
+ * per-car per-level (keys "0"-"9"). This catalog holds only the
+ * shared global config: skip cost, stat bonuses, level shape.
+ *
+ * starLevel == carLevel (1:1). Star levels run 0-9 matching CarsCatalog keys.
+ * maxStarLevel = 9 = fully evolved.
+ */
+export interface CarEvolutionV2Catalog {
+    version: string;
+    updatedAt: number;
+    notes?: string;
+    maxStarLevel: number;    // 9 — 0-indexed, 10 levels total
+    levelsPerStar: number;   // 1 — star level and car level are the same thing
+    skipCost: EvolutionSkipCost;
+    statBonusPerStar: StatBonusPerStar;
+    statBonusPerLevel: StatBonusPerStar;
+    /** Coin and timer multipliers per tier order ("1"-"5"). Applied on top of CarsCatalog base values. */
+    tierScaling: Record<string, TierScaling>;
+}
+
+// XP-to-next and evolution costs live in CarsCatalog per car per level.
 
 export interface PitCrewSlotEntry {
     carId: string;
@@ -84,7 +124,8 @@ export interface UserCarV2 {
     updatedAt?: FirebaseFirestore.Timestamp | FirebaseFirestore.FieldValue;
     // V2 Fields (nullable for backward compatibility)
     xp?: number;
-    carLevel?: number; // 0 to 9
+    starLevel?: number; // 1 to 10 — current star (== carLevel, 1:1 mapping, matches CarsCatalog keys)
+    carLevel?: number; // 1 to 10 — mirrors starLevel
     isXpCapped?: boolean;
     fuelBars?: number;
     fuelLastRefillAt?: FirebaseFirestore.Timestamp | FirebaseFirestore.FieldValue | null;

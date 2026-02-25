@@ -292,8 +292,11 @@ export const startCrateUnlockV2 = onCall(
                     );
                 }
 
-                // Get unlock duration
-                const unlockDuration = await getUnlockDurationForRarity(slot.rarity);
+                // Use the unlock duration stored on the slot at receive time.
+                // Fall back to config if the stored value is missing (legacy slots).
+                const unlockDuration = (slot.unlockDurationSeconds && slot.unlockDurationSeconds > 0)
+                    ? slot.unlockDurationSeconds
+                    : await getUnlockDurationForRarity(slot.rarity);
                 const completesAtMs = now + unlockDuration * 1000;
                 const completesAtTimestamp = admin.firestore.Timestamp.fromMillis(completesAtMs);
 

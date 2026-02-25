@@ -18,6 +18,8 @@ import {
     getFuelConfig,
     getPlayerSlotsConfig,
     getCarsCatalog,
+    getXpCapForCar,
+    getEvolutionCostForCar,
     calculateSkipCost,
 } from "../core/configV2.js";
 import {
@@ -116,22 +118,18 @@ export const startCarEvolutionV2 = onCall(
                     throw new HttpsError("failed-precondition", "Car has not reached the XP cap for its current level.");
                 }
 
-                // Check evolution costs and target level
-                const currentCarLevel = carData.carLevel ?? 0;
+                // Check evolution costs from CarsCatalog (per-car, per-star-level)
+                const currentStarLevel = carData.starLevel ?? 1; // 1-10, matching CarsCatalog keys
 
-                const catalog = await getCarsCatalog();
-                const catalogCar = catalog.cars[carId];
-                if (!catalogCar || !catalogCar.levels) {
-                    throw new HttpsError("internal", `Config not found for car ${carId}.`);
-                }
-
-                const levelConfig = catalogCar.levels[String(currentCarLevel)];
-                if (!levelConfig) {
+                const evolutionCost = await getEvolutionCostForCar(carId, currentStarLevel);
+                if (!evolutionCost) {
                     throw new HttpsError(
                         "failed-precondition",
-                        `Car is fully upgraded. Level ${currentCarLevel} is the maximum.`,
+                        `Car is fully evolved. Star level ${currentStarLevel} is the maximum.`,
                     );
                 }
+
+                const { coins: requiredCoins, durationSeconds, targetStarLevel } = evolutionCost;
 
                 // Load slot config
                 const slotsConfig = await getPlayerSlotsConfig();
@@ -159,22 +157,22 @@ export const startCarEvolutionV2 = onCall(
 
                 // Check coin requirement
                 const playerCoins = economyData.coins ?? 0;
-                if (playerCoins < levelConfig.priceCoins) {
+                if (playerCoins < requiredCoins) {
                     throw new HttpsError(
                         "failed-precondition",
-                        `Insufficient coins. Required: ${levelConfig.priceCoins}, Available: ${playerCoins}.`,
+                        `Insufficient coins. Required: ${requiredCoins}, Available: ${playerCoins}.`,
                     );
                 }
 
                 // Calculate completesAt
-                const completesAtMs = now + levelConfig.upgradeTimerSeconds * 1000;
+                const completesAtMs = now + durationSeconds * 1000;
                 const completesAtTimestamp = admin.firestore.Timestamp.fromMillis(completesAtMs);
 
                 // --- WRITES ---
 
                 // Deduct coins
                 transaction.update(economyRef, {
-                    coins: admin.firestore.FieldValue.increment(-levelConfig.priceCoins),
+                    coins: admin.firestore.FieldValue.increment(-requiredCoins),
                     updatedAt: timestamp,
                 });
 
@@ -183,8 +181,8 @@ export const startCarEvolutionV2 = onCall(
                     carId,
                     startedAt: timestamp,
                     completesAt: completesAtTimestamp,
-                    targetCarLevel: currentCarLevel + 1, // Store the new level being researched
-                    coinsPaid: levelConfig.priceCoins,
+                    targetCarLevel: targetStarLevel, // targetStarLevel == targetCarLevel (1:1)
+                    coinsPaid: requiredCoins,
                 };
 
                 if (pitCrewDoc.exists) {
@@ -204,9 +202,9 @@ export const startCarEvolutionV2 = onCall(
                     success: true,
                     opId,
                     carId,
-                    targetCarLevel: currentCarLevel + 1,
+                    targetCarLevel: targetStarLevel,
                     completesAt: completesAtMs,
-                    coinsSpent: levelConfig.priceCoins,
+                    coinsSpent: requiredCoins,
                 };
             },
         );
@@ -312,9 +310,11 @@ export const claimCarEvolutionV2 = onCall(
                     updatedAt: timestamp,
                 });
 
-                // Update car: increment level, reset XP (carLevel is absolute now 0-9)
+                // Update car: increment starLevel and carLevel (1:1), reset XP
+                const newStarLevel = slot.targetCarLevel; // targetCarLevel == targetStarLevel (1:1)
                 transaction.update(garageRef, {
-                    [`cars.${carId}.carLevel`]: slot.targetCarLevel,
+                    [`cars.${carId}.starLevel`]: newStarLevel,
+                    [`cars.${carId}.carLevel`]: newStarLevel,
                     [`cars.${carId}.xp`]: 0,
                     [`cars.${carId}.isXpCapped`]: false,
                     [`cars.${carId}.updatedAt`]: timestamp,
@@ -324,7 +324,7 @@ export const claimCarEvolutionV2 = onCall(
                     success: true,
                     opId,
                     carId,
-                    newCarLevel: slot.targetCarLevel,
+                    newCarLevel: newStarLevel,
                 };
             },
         );
@@ -557,9 +557,8 @@ export const getPitCrewStatusV2 = onCall(
  * Grant XP to a car after a race.
  * Called internally by race result processing.
  *
- * Also dynamically calculates and persists the `carLevel` field,
- * which represents the sub-level within the current star level.
- * The car level is derived from: floor(xp / (xpCap / levelsPerStar))
+ * XP cap is looked up from CarsCatalog.cars[carId].levels[starLevel].xpToNext.
+ * starLevel runs 1-10 (matching CarsCatalog keys). carLevel == starLevel (1:1 mapping).
  *
  * @param transaction - Firestore transaction
  * @param uid - Player UID
@@ -580,51 +579,42 @@ export async function grantCarXP(
 
     if (!garageDoc.exists) {
         console.warn(`[EvolutionV2] Garage not found for ${uid}`);
-        return { newXp: 0, isNowCapped: false, carLevel: 0 };
+        return { newXp: 0, isNowCapped: false, carLevel: 1 };
     }
 
     const garageData = garageDoc.data()!;
     const carData = garageData.cars?.[carId];
     if (!carData) {
         console.warn(`[EvolutionV2] Car ${carId} not found in garage for ${uid}`);
-        return { newXp: 0, isNowCapped: false, carLevel: 0 };
+        return { newXp: 0, isNowCapped: false, carLevel: 1 };
     }
 
-    const currentCarLevel = carData.carLevel ?? 0;
+    // Use starLevel for CarsCatalog XP cap lookup (starLevel == carLevel, 1-10)
+    const starLevel = carData.starLevel ?? 1; // 1-10, matching CarsCatalog keys
     const currentXp = carData.xp ?? 0;
 
-    // Load car catalog to get xpToNext for this specific car and level
-    const catalog = await getCarsCatalog();
-    const catalogCar = catalog.cars[carId];
-
-    // Fallback cap if config is missing or level is maxed
-    let levelXpCap = Infinity;
-
-    // Read from the 10-level config dictionary
-    if (catalogCar && catalogCar.levels && catalogCar.levels[String(currentCarLevel)]) {
-        levelXpCap = catalogCar.levels[String(currentCarLevel)].xpToNext;
-    }
+    // Load XP cap from CarsCatalog (per-car, per-star-level)
+    const xpCap = await getXpCapForCar(carId, starLevel);
 
     // Determine new XP and capping status
-    const newXpRaw = currentXp + xpAmount;
-
-    // If xpToNext is 0 (as in the max level), cap immediately.
     let newXp: number;
     let isNowCapped: boolean;
 
-    if (levelXpCap <= 0) {
-        newXp = 0;
+    if (xpCap <= 0) {
+        // xpToNext=0 means max star level — no further XP gain
+        newXp = currentXp;
         isNowCapped = true;
     } else {
-        newXp = Math.min(newXpRaw, levelXpCap);
-        isNowCapped = newXp >= levelXpCap;
+        newXp = Math.min(currentXp + xpAmount, xpCap);
+        isNowCapped = newXp >= xpCap;
     }
 
     transaction.update(garageRef, {
         [`cars.${carId}.xp`]: newXp,
         [`cars.${carId}.isXpCapped`]: isNowCapped,
+        [`cars.${carId}.carLevel`]: starLevel, // carLevel == starLevel (1-10, 1:1)
         [`cars.${carId}.updatedAt`]: timestamp,
     });
 
-    return { newXp, isNowCapped, carLevel: currentCarLevel };
+    return { newXp, isNowCapped, carLevel: starLevel };
 }

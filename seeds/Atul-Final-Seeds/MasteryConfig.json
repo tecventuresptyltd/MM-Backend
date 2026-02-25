@@ -1,10 +1,10 @@
 {
     "version": "v1-mastery",
     "updatedAt": 1740355200000,
-    "notes": "Mastery system. carWeight=1.0, spellWeight=0.33. Rank thresholds use 70% rule: earn ~70% of prev tier's total MP to unlock next tier. Ranks 5/10/20/30 = Tier 2/3/4/5 gates.",
+    "notes": "Mastery system. carWeight=1.0, spellWeight=0.33. Rank thresholds use 70% rule: earn ~70% of prev tier's total MP to unlock next tier. Ranks 5/10/20/30/40 = Tier 2/3/4/5/6 gates.",
     "carWeight": 1.0,
     "spellWeight": 0.33,
-    "maxRank": 30,
+    "maxRank": 50,
     "rankThresholds": {
         "1": 2000,
         "2": 5000,
@@ -35,6 +35,26 @@
         "27": 562000,
         "28": 606000,
         "29": 642000,
-        "30": 680000
+        "30": 680000,
+        "31": 720000,
+        "32": 762000,
+        "33": 806000,
+        "34": 852000,
+        "35": 900000,
+        "36": 950000,
+        "37": 1002000,
+        "38": 1056000,
+        "39": 1112000,
+        "40": 1170000,
+        "41": 1230000,
+        "42": 1294000,
+        "43": 1360000,
+        "44": 1430000,
+        "45": 1504000,
+        "46": 1580000,
+        "47": 1660000,
+        "48": 1744000,
+        "49": 1832000,
+        "50": 1924000
     }
 }

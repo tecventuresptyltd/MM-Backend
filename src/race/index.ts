@@ -11,7 +11,7 @@ import { maybeGenerateStarterOffer } from "../shop/offers.js";
 import { STARTER_RACE_THRESHOLD } from "../shop/offerState.js";
 import { buildBotLoadout } from "../game-systems/botLoadoutHelper.js";
 import { applyClanTrophyDelta, playerClanStateRef, clanMembersCollection, clanRef, updateClanMemberSnapshot } from "../clan/helpers.js";
-import { getSpellEvolutionV2Catalog, getCrateSlotsConfig, getUnlockDurationForRarity, getMasteryConfig, getMasteryRank, getCarsCatalog } from "../core/configV2.js";
+import { getSpellEvolutionV2Catalog, getCrateSlotsConfig, getUnlockDurationForRarity, getMasteryConfig, getMasteryRank, getMasteryProgress, getXpCapForCar } from "../core/configV2.js";
 import { CrateSlotEntry, UserCrateSlotsDoc } from "../shared/typesV2.js";
 import { updatePlayerLeaderboardEntry } from "../Socials/liveLeaderboard.js";
 import { updateClanLeaderboardEntry } from "../clan/liveLeaderboard.js";
@@ -639,44 +639,36 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
       }
     }
 
-    // Update Economy/Stats (no trophies here)
+    // Update Economy/Stats (coins + shards; spellTokens handled separately via mastery rank below)
     const economyUpdate: Record<string, admin.firestore.FieldValue> = {
       coins: admin.firestore.FieldValue.increment(coinsGained),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
-    if (levelsGained > 0) {
-      economyUpdate.spellTokens = admin.firestore.FieldValue.increment(levelsGained);
-    }
     if (shardsEarned > 0) {
       economyUpdate.spellShards = admin.firestore.FieldValue.increment(shardsEarned);
     }
     transaction.update(economyRef, economyUpdate);
 
-    // Update Profile/Profile (trophies belong here - use gamemode-specific fields)
+    // Update Profile/Profile: trophies + race counters + career stats
+    // (exp kept for backward compat; mastery fields written later after car/spell XP known)
     const profileUpdate: {
       [key: string]: number | admin.firestore.FieldValue | string;
     } = {
-      exp: xpAfter,
-      level: afterInfo.level,
-      expProgress: afterInfo.expInLevel,
-      expToNextLevel: expRequiredForNextLevel,
-      expProgressDisplay: `${afterInfo.expInLevel} / ${expRequiredForNextLevel}`,
+      exp: xpAfter,               // kept for backward compat
       careerCoins: admin.firestore.FieldValue.increment(coinsGained),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
-    // Add trophy fields only if gamemode modifies trophies (skip for UNRANKED)
     if (shouldModifyTrophies(gamemode)) {
       profileUpdate[trophyFields.current] = trophiesAfterSettlement;
       profileUpdate[trophyFields.highest] = newHighestTrophies;
     }
-    // Increment race counters
     profileUpdate.totalRaces = admin.firestore.FieldValue.increment(1);
     if (place === 1) {
       profileUpdate.totalWins = admin.firestore.FieldValue.increment(1);
     }
     transaction.update(profileRef, profileUpdate);
 
-    // --- Grant Car XP (same amount as player XP) ---
+    // --- Grant Car XP (same amount as player XP, per-car XP cap from CarsCatalog) ---
     const raceCarId = participantData.carId as string | undefined;
     let carXpResult: {
       carLevel: number;
@@ -688,45 +680,42 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
       const garageData = garageDoc.data()!;
       const carData = garageData.cars?.[raceCarId];
       if (carData) {
-        // V2 Progression Logic
-        const isXpCapped = carData.isXpCapped ?? false;
-        const currentCarLevel = carData.carLevel ?? 0;
+        // V2 per-car XP progression (CarsCatalog keys "1"-"10")
+        const starLevel = carData.starLevel ?? 1;   // 1-10, matching CarsCatalog keys
         const currentXp = carData.xp ?? 0;
 
-        // Ensure we have car level data from the new 10-level catalog
-        const catalog = await getCarsCatalog();
-        const catalogCar = catalog.cars[raceCarId];
+        // Fetch XP cap from CarsCatalog for this specific car + star level
+        const xpCap = await getXpCapForCar(raceCarId, starLevel);
 
-        let xpCap = Infinity;
-        if (catalogCar?.levels?.[String(currentCarLevel)]) {
-          xpCap = catalogCar.levels[String(currentCarLevel)].xpToNext;
-        }
-
-        const totalXpRaw = currentXp + xpGained; // Changed xpGained from totalCarXp
-
-        // If xpCap is 0 (max level) we cap immediately
         let finalXpForDb: number;
         let finalIsCapped: boolean;
 
+        // xpCap = 0 means max star level (xpToNext=0 in CarsCatalog)
+        // xpCap = Infinity means missing config — treat as uncapped
         if (xpCap <= 0) {
-          finalXpForDb = 0;
+          finalXpForDb = currentXp;
           finalIsCapped = true;
+        } else if (xpCap === Infinity) {
+          // Config missing — still give XP but don't cap
+          finalXpForDb = currentXp + xpGained;
+          finalIsCapped = false;
         } else {
-          finalXpForDb = Math.min(totalXpRaw, xpCap);
+          finalXpForDb = Math.min(currentXp + xpGained, xpCap);
           finalIsCapped = finalXpForDb >= xpCap;
         }
 
         transaction.update(garageRef, {
           [`cars.${raceCarId}.xp`]: finalXpForDb,
           [`cars.${raceCarId}.isXpCapped`]: finalIsCapped,
-          [`cars.${raceCarId}.updatedAt`]: admin.firestore.FieldValue.serverTimestamp(), // Added this line
+          [`cars.${raceCarId}.carLevel`]: starLevel, // carLevel == starLevel (1-10, 1:1)
+          [`cars.${raceCarId}.updatedAt`]: admin.firestore.FieldValue.serverTimestamp(),
         });
 
-        console.log(`[Race] Car ${raceCarId} XP updated: ${currentXp} -> ${finalXpForDb} (Cap: ${xpCap})`);
+        console.log(`[Race] Car ${raceCarId} (star ${starLevel}) XP: ${currentXp} -> ${finalXpForDb} / ${xpCap === Infinity ? '∞' : xpCap}`);
 
         carXpResult = {
-          carLevel: currentCarLevel,
-          displayXp: xpCap > 0 ? `${Math.floor(finalXpForDb)}xp / ${Math.floor(xpCap)}xp` : "Max",
+          carLevel: starLevel,
+          displayXp: (xpCap > 0 && xpCap !== Infinity) ? `${Math.floor(finalXpForDb)}xp / ${Math.floor(xpCap)}xp` : (xpCap <= 0 ? "Max" : `${Math.floor(finalXpForDb)}xp`),
           xpAwarded: finalXpForDb - currentXp,
           isXpCapped: finalIsCapped,
         };
@@ -835,12 +824,27 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
     const newMasteryXp = currentMasteryXp + masteryXpGained;
     const oldMasteryRank = getMasteryRank(currentMasteryXp, masteryConfig);
     const newMasteryRank = getMasteryRank(newMasteryXp, masteryConfig);
+    const masteryRankGained = newMasteryRank - oldMasteryRank;
 
-    // Write mastery to profile (outside the profileUpdate that was already applied)
-    if (masteryXpGained > 0 || newMasteryRank !== oldMasteryRank) {
+    // Mastery progress within the new rank (for Firestore + response)
+    const masteryProgress = getMasteryProgress(newMasteryXp, masteryConfig);
+
+    // Write mastery + level fields to profile (mastery IS the player level now)
+    if (masteryXpGained > 0 || masteryRankGained !== 0) {
       transaction.update(profileRef, {
         masteryXp: newMasteryXp,
         masteryRank: newMasteryRank,
+        level: newMasteryRank,                                  // level = masteryRank (backward compat)
+        expProgress: masteryProgress.expProgress,               // mastery XP within current rank
+        expToNextLevel: masteryProgress.expToNextLevel,         // XP span for current rank
+        expProgressDisplay: masteryProgress.expProgressDisplay, // human readable
+      });
+    }
+
+    // Spell tokens: 1 per mastery rank gained (not old exp level)
+    if (masteryRankGained > 0) {
+      transaction.update(economyRef, {
+        spellTokens: admin.firestore.FieldValue.increment(masteryRankGained),
       });
     }
 
@@ -873,21 +877,15 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
         spellShards: shardsEarned,
         boosterShards: boosterShards,
       },
+      // Unified XP progress — Mastery IS the player level (mastery-system.md)
       xpProgress: {
-        xpGained: rewards.baseXp,
-        totalXp: xpGained,
-        boosterXp: rewards.boosterXp,
-        expProgress: afterInfo.expInLevel,
-        xpToNextLevel: expRequiredForNextLevel,
-        levelBefore: beforeInfo.level,
-        levelAfter: afterInfo.level,
-      },
-      mastery: {
-        xpGained: masteryXpGained,
-        totalXp: newMasteryXp,
-        rankBefore: oldMasteryRank,
-        rankAfter: newMasteryRank,
-        rankUp: newMasteryRank > oldMasteryRank,
+        xpGained: masteryXpGained,                    // mastery MP earned this race
+        totalXp: newMasteryXp,                        // cumulative mastery XP
+        expProgress: masteryProgress.expProgress,     // XP within current rank
+        xpToNextLevel: masteryProgress.expToNextLevel,// total XP span current→next rank
+        levelBefore: oldMasteryRank,                  // mastery rank before race
+        levelAfter: newMasteryRank,                   // mastery rank after race
+        levelUp: newMasteryRank > oldMasteryRank,     // true if ranked up
       },
       rank: {
         old: oldRankLabel,

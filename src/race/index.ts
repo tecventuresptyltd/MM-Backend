@@ -11,7 +11,7 @@ import { maybeGenerateStarterOffer } from "../shop/offers.js";
 import { STARTER_RACE_THRESHOLD } from "../shop/offerState.js";
 import { buildBotLoadout } from "../game-systems/botLoadoutHelper.js";
 import { applyClanTrophyDelta, playerClanStateRef, clanMembersCollection, clanRef, updateClanMemberSnapshot } from "../clan/helpers.js";
-import { getXpCapForStarLevel, getXpCapForStarAndTier, getSpellEvolutionV2Catalog, getCrateSlotsConfig, getCarEvolutionV2Catalog, calculateCarLevel, getUnlockDurationForRarity, getMasteryConfig, getMasteryRank } from "../core/configV2.js";
+import { getSpellEvolutionV2Catalog, getCrateSlotsConfig, getUnlockDurationForRarity, getMasteryConfig, getMasteryRank, getCarsCatalog } from "../core/configV2.js";
 import { CrateSlotEntry, UserCrateSlotsDoc } from "../shared/typesV2.js";
 import { updatePlayerLeaderboardEntry } from "../Socials/liveLeaderboard.js";
 import { updateClanLeaderboardEntry } from "../clan/liveLeaderboard.js";
@@ -688,78 +688,48 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
       const garageData = garageDoc.data()!;
       const carData = garageData.cars?.[raceCarId];
       if (carData) {
+        // V2 Progression Logic
         const isXpCapped = carData.isXpCapped ?? false;
-
-        // Load catalog data for carLevel calculation
-        const starLevel = carData.starLevel ?? 0;
+        const currentCarLevel = carData.carLevel ?? 0;
         const currentXp = carData.xp ?? 0;
-        const tierOrder = carData.tierOrder ?? 1;
-        const xpCap = await getXpCapForStarAndTier(starLevel, tierOrder);
-        const carEvoCatalog = await getCarEvolutionV2Catalog();
-        const levelsPerStar = carEvoCatalog.levelsPerStar ?? 5;
-        const maxStarLevel = carEvoCatalog.maxStarLevel ?? 10;
 
-        // Always calculate carLevel from current XP (even if capped)
-        const { carLevel, xpInLevel, xpToNextLevel, localLevel } = calculateCarLevel(currentXp, xpCap, starLevel, levelsPerStar);
+        // Ensure we have car level data from the new 10-level catalog
+        const catalog = await getCarsCatalog();
+        const catalogCar = catalog.cars[raceCarId];
 
-        // If car is at max star level, no XP gain at all
-        if (starLevel >= maxStarLevel) {
-          // Update carLevel if needed
-          if (carData.carLevel !== carLevel) {
-            transaction.update(garageRef, {
-              [`cars.${raceCarId}.carLevel`]: carLevel,
-              [`cars.${raceCarId}.updatedAt`]: admin.firestore.FieldValue.serverTimestamp(),
-            });
-          }
-          carXpResult = {
-            carLevel,
-            displayXp: `${Math.floor(currentXp)}xp / ${Math.floor(xpCap)}xp`,
-            xpAwarded: 0, // No XP awarded at max star level
-            isXpCapped: isXpCapped,
-          };
-        } else if (isXpCapped) {
-          // Car is already capped, no XP granted, but update carLevel if needed
-          if (carData.carLevel !== carLevel) {
-            // carLevel was missing or incorrect, update it
-            transaction.update(garageRef, {
-              [`cars.${raceCarId}.carLevel`]: carLevel,
-              [`cars.${raceCarId}.updatedAt`]: admin.firestore.FieldValue.serverTimestamp(),
-            });
-          }
-          // When capped, show current XP / current cap (not next level)
-          carXpResult = {
-            carLevel,
-            displayXp: `${Math.floor(currentXp)}xp / ${Math.floor(xpCap)}xp`,
-            xpAwarded: 0, // No XP awarded when capped
-            isXpCapped: true,
-          };
-        } else {
-          // Car is not capped, grant XP
-          let newXp = currentXp + xpGained;
-          let isNowCapped = false;
-          if (newXp >= xpCap) {
-            newXp = xpCap;
-            isNowCapped = true;
-          }
-
-          // Recalculate carLevel with new XP
-          const { carLevel: newCarLevel, xpInLevel: newXpInLevel, xpToNextLevel: newXpToNextLevel, localLevel: newLocalLevel } = calculateCarLevel(newXp, xpCap, starLevel, levelsPerStar);
-
-          transaction.update(garageRef, {
-            [`cars.${raceCarId}.xp`]: newXp,
-            [`cars.${raceCarId}.isXpCapped`]: isNowCapped,
-            [`cars.${raceCarId}.carLevel`]: newCarLevel,
-            [`cars.${raceCarId}.updatedAt`]: admin.firestore.FieldValue.serverTimestamp(),
-          });
-          const xpPerLevel = xpCap / levelsPerStar;
-          const xpNeededForNextLevel = (newLocalLevel + 1) * xpPerLevel;
-          carXpResult = {
-            carLevel: newCarLevel,
-            displayXp: `${Math.floor(newXp)}xp / ${Math.floor(xpNeededForNextLevel)}xp`,
-            xpAwarded: xpGained, // XP awarded when not capped
-            isXpCapped: isNowCapped,
-          };
+        let xpCap = Infinity;
+        if (catalogCar?.levels?.[String(currentCarLevel)]) {
+          xpCap = catalogCar.levels[String(currentCarLevel)].xpToNext;
         }
+
+        const totalXpRaw = currentXp + xpGained; // Changed xpGained from totalCarXp
+
+        // If xpCap is 0 (max level) we cap immediately
+        let finalXpForDb: number;
+        let finalIsCapped: boolean;
+
+        if (xpCap <= 0) {
+          finalXpForDb = 0;
+          finalIsCapped = true;
+        } else {
+          finalXpForDb = Math.min(totalXpRaw, xpCap);
+          finalIsCapped = finalXpForDb >= xpCap;
+        }
+
+        transaction.update(garageRef, {
+          [`cars.${raceCarId}.xp`]: finalXpForDb,
+          [`cars.${raceCarId}.isXpCapped`]: finalIsCapped,
+          [`cars.${raceCarId}.updatedAt`]: admin.firestore.FieldValue.serverTimestamp(), // Added this line
+        });
+
+        console.log(`[Race] Car ${raceCarId} XP updated: ${currentXp} -> ${finalXpForDb} (Cap: ${xpCap})`);
+
+        carXpResult = {
+          carLevel: currentCarLevel,
+          displayXp: xpCap > 0 ? `${Math.floor(finalXpForDb)}xp / ${Math.floor(xpCap)}xp` : "Max",
+          xpAwarded: finalXpForDb - currentXp,
+          isXpCapped: finalIsCapped,
+        };
       }
     }
 

@@ -9,7 +9,9 @@ import * as admin from "firebase-admin";
 import {
     TiersCatalog,
     TierDefinition,
-    CarEvolutionV2Catalog,
+    CarsCatalog,
+    CarLevelData,
+    CarCatalogEntry,
     SpellEvolutionV2Catalog,
     FuelConfig,
     CrateSlotsConfig,
@@ -97,81 +99,35 @@ export async function getStarterTier(): Promise<TierDefinition | null> {
 }
 
 // =============================================================================
-// CAR EVOLUTION V2 CATALOG
+// CARS CATALOG (10-LEVEL PROGRESSION)
 // =============================================================================
 
-let carEvolutionCatalogCache: CacheEntry<CarEvolutionV2Catalog> | null = null;
+let carsCatalogCache: CacheEntry<CarsCatalog> | null = null;
 
-export async function getCarEvolutionV2Catalog(): Promise<CarEvolutionV2Catalog> {
+export async function getCarsCatalog(): Promise<CarsCatalog> {
     const now = Date.now();
-    if (carEvolutionCatalogCache && now - carEvolutionCatalogCache.lastFetched < CACHE_TTL_MS) {
-        return carEvolutionCatalogCache.data;
+    if (carsCatalogCache && now - carsCatalogCache.lastFetched < CACHE_TTL_MS) {
+        return carsCatalogCache.data;
     }
 
-    const docRef = CATALOGS_ROOT.doc("CarEvolutionV2Catalog");
+    const docRef = CATALOGS_ROOT.doc("CarsCatalog");
     const doc = await docRef.get();
 
     if (!doc.exists) {
-        throw new Error("CarEvolutionV2Catalog not found at /GameData/v1/catalogs/CarEvolutionV2Catalog");
+        throw new Error("CarsCatalog not found at /GameData/v1/catalogs/CarsCatalog");
     }
 
-    const data = doc.data() as CarEvolutionV2Catalog;
-    carEvolutionCatalogCache = { data, lastFetched: now };
-    console.log("[V2Config] Loaded CarEvolutionV2Catalog");
+    const data = doc.data() as CarsCatalog;
+    carsCatalogCache = { data, lastFetched: now };
+    console.log("[V2Config] Loaded CarsCatalog");
     return data;
 }
 
-export async function getEvolutionCostForStarLevel(
-    currentStarLevel: number,
-): Promise<{ coins: number; durationSeconds: number } | null> {
-    const catalog = await getCarEvolutionV2Catalog();
-    const entry = catalog.evolutionCosts[String(currentStarLevel)];
-    if (!entry) {
-        return null;
-    }
-    return {
-        coins: entry.coins,
-        durationSeconds: entry.durationSeconds,
-    };
-}
-
-export async function getXpCapForStarLevel(starLevel: number): Promise<number> {
-    const catalog = await getCarEvolutionV2Catalog();
-    return catalog.xpCaps[String(starLevel)] ?? Infinity;
-}
-
-/**
- * Get the XP cap for a star level, scaled by the car's tier.
- * Tier scaling multiplies the base XP cap to create tier-specific pacing.
- */
-export async function getXpCapForStarAndTier(starLevel: number, tierOrder: number): Promise<number> {
-    const catalog = await getCarEvolutionV2Catalog();
-    const baseCap = catalog.xpCaps[String(starLevel)] ?? Infinity;
-    const scaling = catalog.tierScaling?.[String(tierOrder)];
-    const multiplier = scaling?.xpMultiplier ?? 1.0;
-    return Math.round(baseCap * multiplier);
-}
-
-/**
- * Get the evolution cost for a star level, scaled by the car's tier.
- * Returns coins and duration both scaled by their respective tier multipliers.
- */
-export async function getEvolutionCostForStarAndTier(
-    currentStarLevel: number,
-    tierOrder: number,
-): Promise<{ coins: number; durationSeconds: number } | null> {
-    const catalog = await getCarEvolutionV2Catalog();
-    const entry = catalog.evolutionCosts[String(currentStarLevel)];
-    if (!entry) {
-        return null;
-    }
-    const scaling = catalog.tierScaling?.[String(tierOrder)];
-    const coinMult = scaling?.coinMultiplier ?? 1.0;
-    const timerMult = scaling?.timerMultiplier ?? 1.0;
-    return {
-        coins: Math.round(entry.coins * coinMult),
-        durationSeconds: Math.max(1, Math.round(entry.durationSeconds * timerMult)),
-    };
+export async function getCarLevelData(carId: string, carLevel: number): Promise<CarLevelData | null> {
+    const catalog = await getCarsCatalog();
+    const car = catalog.cars[carId];
+    if (!car || !car.levels) return null;
+    return car.levels[String(carLevel)] ?? null;
 }
 
 // =============================================================================
@@ -630,7 +586,7 @@ export function getMasteryRank(masteryXp: number, config: MasteryConfig): number
 
 export function __resetV2ConfigCacheForTests(): void {
     tiersCatalogCache = null;
-    carEvolutionCatalogCache = null;
+    carsCatalogCache = null;
     spellEvolutionCatalogCache = null;
     fuelConfigCache = null;
     crateSlotsConfigCache = null;

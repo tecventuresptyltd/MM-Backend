@@ -59,51 +59,13 @@ export interface UserLicensesDoc {
 // CAR EVOLUTION V2 (PIT CREW) SYSTEM
 // =============================================================================
 
-export interface EvolutionCostEntry {
-    targetStarLevel: number;
-    coins: number;
-    durationSeconds: number;
-    displayDuration?: string;
-}
-
-export interface EvolutionSkipCost {
-    gemsPerHour: number;
-    minGems: number;
-}
-
-export interface StatBonusPerStar {
-    topSpeed: number;
-    acceleration: number;
-    handling: number;
-    boostRegen: number;
-    boostPower: number;
-}
-
-export interface TierScaling {
-    xpMultiplier: number;
-    coinMultiplier: number;
-    timerMultiplier: number;
-}
-
-export interface CarEvolutionV2Catalog {
-    version: string;
-    updatedAt: number;
-    notes?: string;
-    xpCaps: Record<string, number>; // starLevel -> base XP cap (multiply by tierScaling)
-    maxStarLevel: number;
-    levelsPerStar: number; // Number of sub-levels within each star (default 5)
-    evolutionCosts: Record<string, EvolutionCostEntry>; // currentStarLevel -> base cost (multiply by tierScaling)
-    skipCost: EvolutionSkipCost;
-    statBonusPerStar: StatBonusPerStar;
-    statBonusPerLevel: StatBonusPerStar; // Per car-level bonus (same shape, smaller values)
-    tierScaling: Record<string, TierScaling>; // tierOrder -> scaling multipliers
-}
+// (The old CarEvolutionV2Catalog, TierScaling, EvolutionCostEntry, etc. have been removed as progression is now handled per-car within the CarsCatalog)
 
 export interface PitCrewSlotEntry {
     carId: string;
     startedAt: FirebaseFirestore.Timestamp | FirebaseFirestore.FieldValue;
     completesAt: FirebaseFirestore.Timestamp | FirebaseFirestore.FieldValue;
-    targetStarLevel: number;
+    targetCarLevel: number;
     coinsPaid: number;
 }
 
@@ -122,8 +84,7 @@ export interface UserCarV2 {
     updatedAt?: FirebaseFirestore.Timestamp | FirebaseFirestore.FieldValue;
     // V2 Fields (nullable for backward compatibility)
     xp?: number;
-    starLevel?: number;
-    carLevel?: number; // Cumulative level across all stars (0 to maxCarLevel)
+    carLevel?: number; // 0 to 9
     isXpCapped?: boolean;
     fuelBars?: number;
     fuelLastRefillAt?: FirebaseFirestore.Timestamp | FirebaseFirestore.FieldValue | null;
@@ -396,7 +357,7 @@ export interface StartCarEvolutionResponse {
     success: boolean;
     opId: string;
     carId: string;
-    targetStarLevel: number;
+    targetCarLevel: number;
     completesAt: number; // Unix timestamp
     coinsSpent: number;
 }
@@ -410,7 +371,7 @@ export interface ClaimCarEvolutionResponse {
     success: boolean;
     opId: string;
     carId: string;
-    newStarLevel: number;
+    newCarLevel: number;
 }
 
 export interface SkipCarEvolutionRequest {
@@ -680,6 +641,47 @@ export interface CarStatsBudgetConfig {
     archetypeProfiles: Record<string, ArchetypeStatProfile>;
     /** Optional per-tier budget overrides */
     tierOverrides?: Record<string, TierBudgetOverride>;
+}
+
+export interface CarAbility {
+    id: string;
+    duration?: number;
+    cooldown?: number;
+    cooldownReduction?: number;
+    speedMultiplier?: number;
+}
+
+export interface CarLevelData {
+    xpToNext: number;
+    upgradeTimerSeconds: number;
+    priceCoins: number;
+    carRating: number;
+    topSpeed: number;
+    acceleration: number;
+    handling: number;
+    boostRegen: number;
+    boostPower: number;
+}
+
+export interface CarCatalogEntry {
+    carId?: string;
+    displayName?: string;
+    class?: string;
+    basePrice?: number;
+    ability?: CarAbility;
+    levels?: Record<string, CarLevelData>;
+    unlock?: {
+        type: string;
+        minPlayerLevel?: number;
+        seriesId?: string;
+    };
+    version?: string;
+}
+
+export interface CarsCatalog {
+    version: string;
+    updatedAt: number;
+    cars: Record<string, CarCatalogEntry>;
 }
 
 /**

@@ -177,9 +177,13 @@ export const startCarEvolutionV2 = onCall(
                 });
 
                 // Add to pit crew queue
+                // NOTE: FieldValue.serverTimestamp() cannot be used inside array elements.
+                // We use Timestamp.fromMillis(now) for startedAt — consistent with how
+                // completesAtTimestamp is built just above.
+                const startedAtTimestamp = admin.firestore.Timestamp.fromMillis(now);
                 const newSlotEntry: PitCrewSlotEntry = {
                     carId,
-                    startedAt: timestamp,
+                    startedAt: startedAtTimestamp,
                     completesAt: completesAtTimestamp,
                     targetCarLevel: targetStarLevel, // targetStarLevel == targetCarLevel (1:1)
                     coinsPaid: requiredCoins,

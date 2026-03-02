@@ -66,6 +66,27 @@ async function seedCatalogs() {
         }
     }
 
+    // Add ShopPricingConfig
+    const shopPricingFile = path.join(seedsRoot, 'ShopPricingConfig.json');
+    if (fs.existsSync(shopPricingFile)) {
+        const shopPricingData = JSON.parse(fs.readFileSync(shopPricingFile, 'utf-8'));
+        seedData.push({ path: '/GameData/v1/config/ShopPricingConfig', data: shopPricingData });
+    }
+
+    // Add MasteryConfig
+    const masteryConfigFile = path.join(seedsRoot, 'MasteryConfig.json');
+    if (fs.existsSync(masteryConfigFile)) {
+        const masteryConfigData = JSON.parse(fs.readFileSync(masteryConfigFile, 'utf-8'));
+        seedData.push({ path: '/GameData/v1/config/MasteryConfig', data: masteryConfigData });
+    }
+
+    // Add SpellEvolutionV2Catalog
+    const spellEvoFile = path.join(seedsRoot, 'SpellEvolutionV2Catalog.json');
+    if (fs.existsSync(spellEvoFile)) {
+        const spellEvoData = JSON.parse(fs.readFileSync(spellEvoFile, 'utf-8'));
+        seedData.push({ path: '/GameData/v1/config/SpellEvolutionV2Catalog', data: spellEvoData });
+    }
+
     console.log(`📦 Found ${seedData.length} catalogs to seed\n`);
 
     for (const catalog of seedData) {

@@ -509,16 +509,28 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
     const xpGained = rewards.exp;
     const desiredTrophiesActual = rewards.trophiesActual;
 
-    // --- Calculate Spell Shard Reward (position-based from catalog) ---
-    const spellEvoCatalog = await getSpellEvolutionV2Catalog();
-    const shardConfig = spellEvoCatalog.shardRewards;
-    const baseShards = shardConfig
-      ? (shardConfig.byPosition[String(place)] ?? shardConfig.defaultShards)
-      : 0;
+    // --- Calculate Spell Shard Reward (rank-scaled to prevent smurfing) ---
+    // Formula: shards = shardBase_for_rank * positionMultiplier
+    // Base scales 5 -> 25 across ranks 1 -> 50. (unranked=5)
+    let shardBase = 5; // Unranked base
+    if (gamemode !== "UNRANKED") {
+      const currentRankNumeric = rankIndex(getRankForTrophies(trophiesBeforeRace));
+      // Rank 1 (Bronze III) = ~5.4, Rank 50 (Hypersonic III) = 25
+      shardBase = 5 + (20 * (Math.max(1, currentRankNumeric) / 50));
+    }
+
+    // Use the same position multipliers as XP: [1.2, 1.14, 1.09, 1.03, 0.97, 0.91, 0.86, 0.80]
+    // Or Elimination: [1.2, 1.14, 1.09, 1.03, 0.84, 0.72, 0.54, 0.36]
+    const shardMultiplierArray = gamemode === "ELIMINATION"
+      ? [1.2, 1.14, 1.09, 1.03, 0.84, 0.72, 0.54, 0.36]
+      : [1.2, 1.14, 1.09, 1.03, 0.97, 0.91, 0.86, 0.80];
+
+    const positionMult = shardMultiplierArray[resolvedPlaceIndex] ?? 0.80;
+    const baseShards = Math.round(shardBase * positionMult);
 
     // Apply shard booster (2x multiplier if active)
-    const shardMultiplier = hasShardBooster ? 2 : 1;
-    const shardsEarned = Math.round(baseShards * shardMultiplier);
+    const shardBoosterMult = hasShardBooster ? 2 : 1;
+    const shardsEarned = Math.round(baseShards * shardBoosterMult);
     const boosterShards = shardsEarned - baseShards;
 
     // Apply a floor so trophy losses cannot push the player below zero (including pre-deducted losses).

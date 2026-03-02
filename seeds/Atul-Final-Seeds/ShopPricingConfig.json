@@ -1,0 +1,161 @@
+{
+    "version": "v1-shop-pricing",
+    "updatedAt": 1709164800000,
+    "notes": "Shop pricing for all purchasable items. Prices in gems. Time skips are universal (car/spell/crate). Boosters apply 2x multiplier.",
+    "timeSkips": {
+        "5min": {
+            "durationSeconds": 300,
+            "gems": 5,
+            "displayDuration": "5 Minutes"
+        },
+        "15min": {
+            "durationSeconds": 900,
+            "gems": 8,
+            "displayDuration": "15 Minutes"
+        },
+        "30min": {
+            "durationSeconds": 1800,
+            "gems": 12,
+            "displayDuration": "30 Minutes"
+        },
+        "1hr": {
+            "durationSeconds": 3600,
+            "gems": 20,
+            "displayDuration": "1 Hour"
+        },
+        "3hr": {
+            "durationSeconds": 10800,
+            "gems": 50,
+            "displayDuration": "3 Hours"
+        },
+        "8hr": {
+            "durationSeconds": 28800,
+            "gems": 120,
+            "displayDuration": "8 Hours"
+        },
+        "24hr": {
+            "durationSeconds": 86400,
+            "gems": 300,
+            "displayDuration": "24 Hours"
+        },
+        "3day": {
+            "durationSeconds": 259200,
+            "gems": 700,
+            "displayDuration": "3 Days"
+        },
+        "7day": {
+            "durationSeconds": 604800,
+            "gems": 1400,
+            "displayDuration": "7 Days"
+        }
+    },
+    "boosters": {
+        "coin": {
+            "multiplier": 2.0,
+            "durations": {
+                "6hr": {
+                    "durationSeconds": 21600,
+                    "gems": 80,
+                    "displayDuration": "6 Hours"
+                },
+                "12hr": {
+                    "durationSeconds": 43200,
+                    "gems": 130,
+                    "displayDuration": "12 Hours"
+                },
+                "24hr": {
+                    "durationSeconds": 86400,
+                    "gems": 200,
+                    "displayDuration": "24 Hours"
+                },
+                "7day": {
+                    "durationSeconds": 604800,
+                    "gems": 1000,
+                    "displayDuration": "7 Days"
+                }
+            }
+        },
+        "shard": {
+            "multiplier": 2.0,
+            "durations": {
+                "6hr": {
+                    "durationSeconds": 21600,
+                    "gems": 80,
+                    "displayDuration": "6 Hours"
+                },
+                "12hr": {
+                    "durationSeconds": 43200,
+                    "gems": 130,
+                    "displayDuration": "12 Hours"
+                },
+                "24hr": {
+                    "durationSeconds": 86400,
+                    "gems": 200,
+                    "displayDuration": "24 Hours"
+                },
+                "7day": {
+                    "durationSeconds": 604800,
+                    "gems": 1000,
+                    "displayDuration": "7 Days"
+                }
+            }
+        },
+        "xp": {
+            "multiplier": 2.0,
+            "durations": {
+                "6hr": {
+                    "durationSeconds": 21600,
+                    "gems": 60,
+                    "displayDuration": "6 Hours"
+                },
+                "12hr": {
+                    "durationSeconds": 43200,
+                    "gems": 100,
+                    "displayDuration": "12 Hours"
+                },
+                "24hr": {
+                    "durationSeconds": 86400,
+                    "gems": 160,
+                    "displayDuration": "24 Hours"
+                },
+                "7day": {
+                    "durationSeconds": 604800,
+                    "gems": 800,
+                    "displayDuration": "7 Days"
+                }
+            }
+        }
+    },
+    "crates": {
+        "common": {
+            "gems": 50,
+            "openTimerSeconds": 3600,
+            "displayOpenTimer": "1 Hour"
+        },
+        "rare": {
+            "gems": 150,
+            "openTimerSeconds": 10800,
+            "displayOpenTimer": "3 Hours"
+        },
+        "exotic": {
+            "gems": 400,
+            "openTimerSeconds": 28800,
+            "displayOpenTimer": "8 Hours"
+        },
+        "legendary": {
+            "gems": 1000,
+            "openTimerSeconds": 43200,
+            "displayOpenTimer": "12 Hours"
+        },
+        "mythical": {
+            "gems": 2500,
+            "openTimerSeconds": 86400,
+            "displayOpenTimer": "24 Hours"
+        }
+    },
+    "skipCostConfig": {
+        "gemsPerHour": 20,
+        "minGems": 5,
+        "notes": "Universal skip rate. Applied to car upgrades, spell research, and crate opening."
+    }
+}

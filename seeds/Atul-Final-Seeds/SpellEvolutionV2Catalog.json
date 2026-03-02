@@ -19,31 +19,31 @@
         },
         "2": {
             "targetLevel": 2,
-            "shards": 100,
+            "shards": 50,
             "durationSeconds": 1800,
             "displayDuration": "30 minutes"
         },
         "3": {
             "targetLevel": 3,
-            "shards": 250,
-            "durationSeconds": 3600,
-            "displayDuration": "1 hour"
-        },
-        "4": {
-            "targetLevel": 4,
-            "shards": 500,
+            "shards": 200,
             "durationSeconds": 7200,
             "displayDuration": "2 hours"
         },
+        "4": {
+            "targetLevel": 4,
+            "shards": 750,
+            "durationSeconds": 21600,
+            "displayDuration": "6 hours"
+        },
         "5": {
             "targetLevel": 5,
-            "shards": 1000,
-            "durationSeconds": 14400,
-            "displayDuration": "4 hours"
+            "shards": 2000,
+            "durationSeconds": 43200,
+            "displayDuration": "12 hours"
         }
     },
     "skipCost": {
-        "gemsPerHour": 25,
+        "gemsPerHour": 20,
         "minGems": 5
     },
     "spellXpConfig": {
@@ -58,11 +58,9 @@
         }
     },
     "shardRewards": {
-        "byPosition": {
-            "1": 10,
-            "2": 7,
-            "3": 4
-        },
-        "defaultShards": 1
+        "baseScale": {
+            "minRank": 5,
+            "maxRank": 25
+        }
     }
 }

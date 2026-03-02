@@ -415,16 +415,21 @@ export function calculateCarLevel(
 
 export function calculateSkipCost(
     remainingSeconds: number,
-    gemsPerHour: number,
+    gemsPerHour: number, // Base rate (e.g. 20)
     minGems: number,
 ): number {
     if (remainingSeconds <= 0) {
         return 0;
     }
     const remainingHours = remainingSeconds / 3600;
-    const calculatedCost = Math.ceil(remainingHours * gemsPerHour);
+
+    // Dynamic skip formula: gems = baseRate * (hours ^ 0.85)
+    // This provides a continuous volume discount where longer timers cost less per hour.
+    const calculatedCost = Math.ceil(gemsPerHour * Math.pow(remainingHours, 0.85));
+
     return Math.max(calculatedCost, minGems);
 }
+
 
 // =============================================================================
 // HELPER: Calculate fuel regeneration

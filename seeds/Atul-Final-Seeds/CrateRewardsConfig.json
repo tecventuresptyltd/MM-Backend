@@ -1,314 +1,420 @@
 {
-    "version": "1.0.0",
+    "version": "2.1.0",
     "updatedAt": 0,
-    "notes": "Crate reward pools per rarity. cosmeticCount = random cosmetics of that rarity, catalogItemCount = random picks from rewardPool. Edit this file and re-run the seeder to update rewards.",
-    "rewardsByRarity": {
+    "notes": "Clash Royale-style crate rewards. Every crate guarantees: rank-scaled coins + rank-scaled shards + cosmetics. Then 1-3 bonus utility items (boosters/time skips) via the multi-slot system.",
+    "slotActivation": {
         "common": {
-            "cosmeticCount": 3,
-            "catalogItemCount": 3,
-            "rewardPool": [
-                {
-                    "type": "coins",
-                    "displayName": "Coins",
-                    "quantity": 500,
-                    "weight": 30
-                },
-                {
-                    "type": "gems",
-                    "displayName": "Gems",
-                    "quantity": 5,
-                    "weight": 10
-                },
-                {
-                    "type": "expBooster",
-                    "displayName": "EXP Booster (1h)",
-                    "quantity": 1,
-                    "weight": 20,
-                    "skuId": "sku_07hw4ry3"
-                },
-                {
-                    "type": "shardBooster",
-                    "displayName": "Shard Booster (1h)",
-                    "quantity": 1,
-                    "weight": 15,
-                    "skuId": "sku_shrd1h_p3x9"
-                },
-                {
-                    "type": "coinBooster",
-                    "displayName": "Coin Booster (1h)",
-                    "quantity": 1,
-                    "weight": 20,
-                    "skuId": "sku_amf7txny"
-                },
-                {
-                    "type": "speedUp",
-                    "displayName": "Speed Up (5m)",
-                    "quantity": 1,
-                    "weight": 20,
-                    "skuId": "sku_spd5m_r4x7"
-                },
-                {
-                    "type": "speedUp",
-                    "displayName": "Speed Up (15m)",
-                    "quantity": 1,
-                    "weight": 15,
-                    "skuId": "sku_spd15m_j8k2"
-                }
-            ]
+            "slot2": 0.25,
+            "slot3": 0.03
         },
         "rare": {
-            "cosmeticCount": 3,
-            "catalogItemCount": 3,
-            "rewardPool": [
-                {
-                    "type": "coins",
-                    "displayName": "Coins",
-                    "quantity": 1000,
-                    "weight": 25
-                },
-                {
-                    "type": "gems",
-                    "displayName": "Gems",
-                    "quantity": 10,
-                    "weight": 12
-                },
-                {
-                    "type": "expBooster",
-                    "displayName": "EXP Booster (1h)",
-                    "quantity": 1,
-                    "weight": 15,
-                    "skuId": "sku_07hw4ry3"
-                },
-                {
-                    "type": "expBooster",
-                    "displayName": "EXP Booster (6h)",
-                    "quantity": 1,
-                    "weight": 10,
-                    "skuId": "sku_60fdgqkm"
-                },
-                {
-                    "type": "shardBooster",
-                    "displayName": "Shard Booster (1h)",
-                    "quantity": 1,
-                    "weight": 10,
-                    "skuId": "sku_shrd1h_p3x9"
-                },
-                {
-                    "type": "coinBooster",
-                    "displayName": "Coin Booster (1h)",
-                    "quantity": 1,
-                    "weight": 15,
-                    "skuId": "sku_amf7txny"
-                },
-                {
-                    "type": "coinBooster",
-                    "displayName": "Coin Booster (6h)",
-                    "quantity": 1,
-                    "weight": 10,
-                    "skuId": "sku_eqzbetwm"
-                },
-                {
-                    "type": "speedUp",
-                    "displayName": "Speed Up (15m)",
-                    "quantity": 1,
-                    "weight": 12,
-                    "skuId": "sku_spd15m_j8k2"
-                },
-                {
-                    "type": "speedUp",
-                    "displayName": "Speed Up (30m)",
-                    "quantity": 1,
-                    "weight": 10,
-                    "skuId": "sku_spd30m_w3n9"
-                }
-            ]
+            "slot2": 0.35,
+            "slot3": 0.06
         },
         "exotic": {
-            "cosmeticCount": 3,
-            "catalogItemCount": 3,
-            "rewardPool": [
-                {
-                    "type": "coins",
-                    "displayName": "Coins",
-                    "quantity": 2000,
-                    "weight": 22
-                },
-                {
-                    "type": "gems",
-                    "displayName": "Gems",
-                    "quantity": 20,
-                    "weight": 15
-                },
-                {
-                    "type": "expBooster",
-                    "displayName": "EXP Booster (6h)",
-                    "quantity": 1,
-                    "weight": 12,
-                    "skuId": "sku_60fdgqkm"
-                },
-                {
-                    "type": "expBooster",
-                    "displayName": "EXP Booster (12h)",
-                    "quantity": 1,
-                    "weight": 8,
-                    "skuId": "sku_nhh7jtda"
-                },
-                {
-                    "type": "shardBooster",
-                    "displayName": "Shard Booster (6h)",
-                    "quantity": 1,
-                    "weight": 8,
-                    "skuId": "sku_shrd6h_k7w2"
-                },
-                {
-                    "type": "coinBooster",
-                    "displayName": "Coin Booster (6h)",
-                    "quantity": 1,
-                    "weight": 12,
-                    "skuId": "sku_eqzbetwm"
-                },
-                {
-                    "type": "coinBooster",
-                    "displayName": "Coin Booster (12h)",
-                    "quantity": 1,
-                    "weight": 8,
-                    "skuId": "sku_wkm0amtg"
-                },
-                {
-                    "type": "speedUp",
-                    "displayName": "Speed Up (30m)",
-                    "quantity": 1,
-                    "weight": 10,
-                    "skuId": "sku_spd30m_w3n9"
-                },
-                {
-                    "type": "speedUp",
-                    "displayName": "Speed Up (1h)",
-                    "quantity": 1,
-                    "weight": 8,
-                    "skuId": "sku_spd1h_m5t6"
-                }
-            ]
+            "slot2": 0.45,
+            "slot3": 0.10
         },
         "legendary": {
-            "cosmeticCount": 3,
-            "catalogItemCount": 3,
-            "rewardPool": [
-                {
-                    "type": "coins",
-                    "displayName": "Coins",
-                    "quantity": 5000,
-                    "weight": 20
-                },
-                {
-                    "type": "gems",
-                    "displayName": "Gems",
-                    "quantity": 50,
-                    "weight": 15
-                },
-                {
-                    "type": "expBooster",
-                    "displayName": "EXP Booster (12h)",
-                    "quantity": 1,
-                    "weight": 10,
-                    "skuId": "sku_nhh7jtda"
-                },
-                {
-                    "type": "expBooster",
-                    "displayName": "EXP Booster (24h)",
-                    "quantity": 1,
-                    "weight": 8,
-                    "skuId": "sku_9pnmmjpscv"
-                },
-                {
-                    "type": "shardBooster",
-                    "displayName": "Shard Booster (12h)",
-                    "quantity": 1,
-                    "weight": 8,
-                    "skuId": "sku_shrd12h_m4v6"
-                },
-                {
-                    "type": "coinBooster",
-                    "displayName": "Coin Booster (12h)",
-                    "quantity": 1,
-                    "weight": 10,
-                    "skuId": "sku_wkm0amtg"
-                },
-                {
-                    "type": "coinBooster",
-                    "displayName": "Coin Booster (24h)",
-                    "quantity": 1,
-                    "weight": 8,
-                    "skuId": "sku_tpt3379j8p"
-                },
-                {
-                    "type": "speedUp",
-                    "displayName": "Speed Up (3h)",
-                    "quantity": 1,
-                    "weight": 10,
-                    "skuId": "sku_spd3h_q2v8"
-                },
-                {
-                    "type": "speedUp",
-                    "displayName": "Speed Up (8h)",
-                    "quantity": 1,
-                    "weight": 8,
-                    "skuId": "sku_spd8h_y7p4"
-                }
-            ]
+            "slot2": 0.55,
+            "slot3": 0.15
         },
         "mythical": {
-            "cosmeticCount": 3,
-            "catalogItemCount": 3,
-            "rewardPool": [
-                {
-                    "type": "coins",
-                    "displayName": "Coins",
-                    "quantity": 10000,
-                    "weight": 18
-                },
-                {
-                    "type": "gems",
-                    "displayName": "Gems",
-                    "quantity": 100,
-                    "weight": 15
-                },
-                {
-                    "type": "expBooster",
-                    "displayName": "EXP Booster (24h)",
-                    "quantity": 1,
-                    "weight": 12,
-                    "skuId": "sku_9pnmmjpscv"
-                },
-                {
-                    "type": "shardBooster",
-                    "displayName": "Shard Booster (24h)",
-                    "quantity": 1,
-                    "weight": 10,
-                    "skuId": "sku_shrd24h_n8t5"
-                },
-                {
-                    "type": "coinBooster",
-                    "displayName": "Coin Booster (24h)",
-                    "quantity": 1,
-                    "weight": 12,
-                    "skuId": "sku_tpt3379j8p"
-                },
-                {
-                    "type": "speedUp",
-                    "displayName": "Speed Up (8h)",
-                    "quantity": 1,
-                    "weight": 10,
-                    "skuId": "sku_spd8h_y7p4"
-                },
-                {
-                    "type": "speedUp",
-                    "displayName": "Speed Up (24h)",
-                    "quantity": 1,
-                    "weight": 8,
-                    "skuId": "sku_spd24h_b9f1"
-                }
-            ]
+            "slot2": 0.65,
+            "slot3": 0.20
         }
+    },
+    "slotRarityDistribution": {
+        "common": {
+            "slot2": {
+                "common": 70,
+                "rare": 30
+            },
+            "slot3": {
+                "common": 50,
+                "rare": 50
+            }
+        },
+        "rare": {
+            "slot2": {
+                "rare": 40,
+                "common": 50
+            },
+            "slot3": {
+                "rare": 25,
+                "common": 55
+            }
+        },
+        "exotic": {
+            "slot2": {
+                "exotic": 30,
+                "rare": 45,
+                "common": 25
+            },
+            "slot3": {
+                "exotic": 20,
+                "rare": 40,
+                "common": 40
+            }
+        },
+        "legendary": {
+            "slot2": {
+                "legendary": 25,
+                "exotic": 40,
+                "rare": 25,
+                "common": 10
+            },
+            "slot3": {
+                "legendary": 15,
+                "exotic": 35,
+                "rare": 30,
+                "common": 20
+            }
+        },
+        "mythical": {
+            "slot2": {
+                "mythical": 20,
+                "legendary": 35,
+                "exotic": 25,
+                "rare": 15,
+                "common": 5
+            },
+            "slot3": {
+                "mythical": 10,
+                "legendary": 30,
+                "exotic": 30,
+                "rare": 20,
+                "common": 10
+            }
+        }
+    },
+    "coinScaling": {
+        "multipliers": {
+            "common": 0.25,
+            "rare": 0.50,
+            "exotic": 1.0,
+            "legendary": 2.0,
+            "mythical": 4.0
+        },
+        "variance": 0.2,
+        "notes": "crateCoins = floor(COIN_CAPS_BY_RANK[rank][0] × multiplier × (0.8 + random(0.4)))"
+    },
+    "shardScaling": {
+        "multipliers": {
+            "common": 0.4,
+            "rare": 0.8,
+            "exotic": 1.5,
+            "legendary": 2.5,
+            "mythical": 4.0
+        },
+        "variance": 0.2,
+        "notes": "crateShards = floor(shardBase(rank) × multiplier × (0.8 + random(0.4))). shardBase = 5 + (20 × rankIndex/50). Scales 5× across ranks vs coins' 20× — intentionally slower so crates don't shortcut spell progression."
+    },
+    "cosmeticCount": 3,
+    "itemPoolsByRarity": {
+        "common": [
+            {
+                "type": "speedUp",
+                "displayName": "Speed Up (5m)",
+                "quantity": 1,
+                "weight": 30,
+                "skuId": "sku_spd5m_r4x7"
+            },
+            {
+                "type": "speedUp",
+                "displayName": "Speed Up (15m)",
+                "quantity": 1,
+                "weight": 25,
+                "skuId": "sku_spd15m_j8k2"
+            },
+            {
+                "type": "coinBooster",
+                "displayName": "Coin Booster (1h)",
+                "quantity": 1,
+                "weight": 18,
+                "skuId": "sku_amf7txny"
+            },
+            {
+                "type": "expBooster",
+                "displayName": "EXP Booster (1h)",
+                "quantity": 1,
+                "weight": 15,
+                "skuId": "sku_07hw4ry3"
+            },
+            {
+                "type": "shardBooster",
+                "displayName": "Shard Booster (1h)",
+                "quantity": 1,
+                "weight": 12,
+                "skuId": "sku_shrd1h_p3x9"
+            }
+        ],
+        "rare": [
+            {
+                "type": "speedUp",
+                "displayName": "Speed Up (15m)",
+                "quantity": 1,
+                "weight": 18,
+                "skuId": "sku_spd15m_j8k2"
+            },
+            {
+                "type": "speedUp",
+                "displayName": "Speed Up (1h)",
+                "quantity": 1,
+                "weight": 22,
+                "skuId": "sku_spd1h_m5t6"
+            },
+            {
+                "type": "coinBooster",
+                "displayName": "Coin Booster (1h)",
+                "quantity": 1,
+                "weight": 12,
+                "skuId": "sku_amf7txny"
+            },
+            {
+                "type": "coinBooster",
+                "displayName": "Coin Booster (6h)",
+                "quantity": 1,
+                "weight": 14,
+                "skuId": "sku_eqzbetwm"
+            },
+            {
+                "type": "expBooster",
+                "displayName": "EXP Booster (6h)",
+                "quantity": 1,
+                "weight": 12,
+                "skuId": "sku_60fdgqkm"
+            },
+            {
+                "type": "shardBooster",
+                "displayName": "Shard Booster (1h)",
+                "quantity": 1,
+                "weight": 10,
+                "skuId": "sku_shrd1h_p3x9"
+            },
+            {
+                "type": "shardBooster",
+                "displayName": "Shard Booster (6h)",
+                "quantity": 1,
+                "weight": 12,
+                "skuId": "sku_shrd6h_k7w2"
+            }
+        ],
+        "exotic": [
+            {
+                "type": "speedUp",
+                "displayName": "Speed Up (1h)",
+                "quantity": 1,
+                "weight": 16,
+                "skuId": "sku_spd1h_m5t6"
+            },
+            {
+                "type": "speedUp",
+                "displayName": "Speed Up (3h)",
+                "quantity": 1,
+                "weight": 20,
+                "skuId": "sku_spd3h_q2v8"
+            },
+            {
+                "type": "speedUp",
+                "displayName": "Speed Up (8h)",
+                "quantity": 1,
+                "weight": 10,
+                "skuId": "sku_spd8h_y7p4"
+            },
+            {
+                "type": "coinBooster",
+                "displayName": "Coin Booster (6h)",
+                "quantity": 1,
+                "weight": 12,
+                "skuId": "sku_eqzbetwm"
+            },
+            {
+                "type": "coinBooster",
+                "displayName": "Coin Booster (12h)",
+                "quantity": 1,
+                "weight": 8,
+                "skuId": "sku_wkm0amtg"
+            },
+            {
+                "type": "expBooster",
+                "displayName": "EXP Booster (6h)",
+                "quantity": 1,
+                "weight": 10,
+                "skuId": "sku_60fdgqkm"
+            },
+            {
+                "type": "expBooster",
+                "displayName": "EXP Booster (12h)",
+                "quantity": 1,
+                "weight": 6,
+                "skuId": "sku_nhh7jtda"
+            },
+            {
+                "type": "shardBooster",
+                "displayName": "Shard Booster (6h)",
+                "quantity": 1,
+                "weight": 10,
+                "skuId": "sku_shrd6h_k7w2"
+            },
+            {
+                "type": "shardBooster",
+                "displayName": "Shard Booster (12h)",
+                "quantity": 1,
+                "weight": 8,
+                "skuId": "sku_shrd12h_m4v6"
+            }
+        ],
+        "legendary": [
+            {
+                "type": "speedUp",
+                "displayName": "Speed Up (3h)",
+                "quantity": 1,
+                "weight": 14,
+                "skuId": "sku_spd3h_q2v8"
+            },
+            {
+                "type": "speedUp",
+                "displayName": "Speed Up (8h)",
+                "quantity": 1,
+                "weight": 20,
+                "skuId": "sku_spd8h_y7p4"
+            },
+            {
+                "type": "speedUp",
+                "displayName": "Speed Up (24h)",
+                "quantity": 1,
+                "weight": 10,
+                "skuId": "sku_spd24h_b9f1"
+            },
+            {
+                "type": "coinBooster",
+                "displayName": "Coin Booster (12h)",
+                "quantity": 1,
+                "weight": 10,
+                "skuId": "sku_wkm0amtg"
+            },
+            {
+                "type": "coinBooster",
+                "displayName": "Coin Booster (24h)",
+                "quantity": 1,
+                "weight": 8,
+                "skuId": "sku_tpt3379j8p"
+            },
+            {
+                "type": "expBooster",
+                "displayName": "EXP Booster (12h)",
+                "quantity": 1,
+                "weight": 8,
+                "skuId": "sku_nhh7jtda"
+            },
+            {
+                "type": "expBooster",
+                "displayName": "EXP Booster (24h)",
+                "quantity": 1,
+                "weight": 8,
+                "skuId": "sku_9pnmmjpscv"
+            },
+            {
+                "type": "shardBooster",
+                "displayName": "Shard Booster (12h)",
+                "quantity": 1,
+                "weight": 8,
+                "skuId": "sku_shrd12h_m4v6"
+            },
+            {
+                "type": "shardBooster",
+                "displayName": "Shard Booster (24h)",
+                "quantity": 1,
+                "weight": 8,
+                "skuId": "sku_shrd24h_n8t5"
+            },
+            {
+                "type": "coinBooster",
+                "displayName": "Coin Booster (7d)",
+                "quantity": 1,
+                "weight": 3,
+                "skuId": "sku_coin7d_q5r8"
+            },
+            {
+                "type": "expBooster",
+                "displayName": "EXP Booster (7d)",
+                "quantity": 1,
+                "weight": 3,
+                "skuId": "sku_exp7d_f2h6"
+            }
+        ],
+        "mythical": [
+            {
+                "type": "speedUp",
+                "displayName": "Speed Up (8h)",
+                "quantity": 1,
+                "weight": 14,
+                "skuId": "sku_spd8h_y7p4"
+            },
+            {
+                "type": "speedUp",
+                "displayName": "Speed Up (24h)",
+                "quantity": 1,
+                "weight": 20,
+                "skuId": "sku_spd24h_b9f1"
+            },
+            {
+                "type": "speedUp",
+                "displayName": "Speed Up (3d)",
+                "quantity": 1,
+                "weight": 12,
+                "skuId": "sku_spd3d_h6c3"
+            },
+            {
+                "type": "speedUp",
+                "displayName": "Speed Up (7d)",
+                "quantity": 1,
+                "weight": 6,
+                "skuId": "sku_spd7d_e1g5"
+            },
+            {
+                "type": "coinBooster",
+                "displayName": "Coin Booster (24h)",
+                "quantity": 1,
+                "weight": 10,
+                "skuId": "sku_tpt3379j8p"
+            },
+            {
+                "type": "coinBooster",
+                "displayName": "Coin Booster (7d)",
+                "quantity": 1,
+                "weight": 8,
+                "skuId": "sku_coin7d_q5r8"
+            },
+            {
+                "type": "expBooster",
+                "displayName": "EXP Booster (24h)",
+                "quantity": 1,
+                "weight": 8,
+                "skuId": "sku_9pnmmjpscv"
+            },
+            {
+                "type": "expBooster",
+                "displayName": "EXP Booster (7d)",
+                "quantity": 1,
+                "weight": 8,
+                "skuId": "sku_exp7d_f2h6"
+            },
+            {
+                "type": "shardBooster",
+                "displayName": "Shard Booster (24h)",
+                "quantity": 1,
+                "weight": 8,
+                "skuId": "sku_shrd24h_n8t5"
+            },
+            {
+                "type": "shardBooster",
+                "displayName": "Shard Booster (7d)",
+                "quantity": 1,
+                "weight": 8,
+                "skuId": "sku_shrd7d_w3j9"
+            }
+        ]
     }
 }

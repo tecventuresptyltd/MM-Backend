@@ -550,13 +550,42 @@ export interface CrateRewardPool {
     rewardPool: CrateRewardItem[];
 }
 
-/** Config document at /GameData/v1/config/CrateRewardsConfig */
+/** Slot activation probabilities for bonus/jackpot slots */
+export interface SlotActivation {
+    slot2: number;
+    slot3: number;
+}
+
+/** Rank-scaled coin reward configuration */
+export interface CoinScalingConfig {
+    /** Multiplier per rarity tier applied to COIN_CAPS_BY_RANK[rank][0] */
+    multipliers: Record<string, number>;
+    /** Random variance ± (e.g. 0.2 = ±20%) */
+    variance: number;
+}
+
+/** Config document at /GameData/v1/config/CrateRewardsConfig (v2.0 multi-slot) */
 export interface CrateRewardsConfig {
     version: string;
     updatedAt: number;
     notes?: string;
-    /** Reward pools keyed by crate rarity (common, rare, exotic, legendary, mythical) */
-    rewardsByRarity: Record<string, CrateRewardPool>;
+    /** Slot 2/3 activation probabilities per crate rarity */
+    slotActivation: Record<string, SlotActivation>;
+    /** Per-slot rarity distribution for bonus/jackpot slots */
+    slotRarityDistribution: Record<string, {
+        slot2: Record<string, number>;
+        slot3: Record<string, number>;
+    }>;
+    /** Rank-scaled coin reward configuration */
+    coinScaling: CoinScalingConfig;
+    /** Rank-scaled shard reward configuration (scales slower than coins) */
+    shardScaling: CoinScalingConfig;
+    /** Number of cosmetic items to award per crate */
+    cosmeticCount: number;
+    /** Item pools keyed by rarity tier (common, rare, exotic, legendary, mythical) */
+    itemPoolsByRarity: Record<string, CrateRewardItem[]>;
+    /** @deprecated Legacy v1 pools — kept for migration safety */
+    rewardsByRarity?: Record<string, CrateRewardPool>;
 }
 
 /** A single awarded item in the claim response */
@@ -578,6 +607,7 @@ export interface ClaimCrateRewardV2Response {
     economyChanges: {
         coins?: number;
         gems?: number;
+        spellShards?: number;
     };
 }
 

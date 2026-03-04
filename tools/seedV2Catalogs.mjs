@@ -52,9 +52,13 @@ const catalogs = [
 const configs = [
     { file: "FuelConfig.json", docName: "FuelConfig" },
     { file: "CrateSlotsConfig.json", docName: "CrateSlotsConfig" },
+    { file: "CrateRewardsConfig.json", docName: "CrateRewardsConfig" },
     { file: "PlayerSlotsConfig.json", docName: "PlayerSlotsConfig" },
     { file: "CarStatsBudgetConfig.json", docName: "CarStatsBudgetConfig" },
     { file: "MasteryConfig.json", docName: "MasteryConfig" },
+    { file: "BoostersCatalog.json", docName: "BoostersCatalog" },
+    { file: "SpeedUpsCatalog.json", docName: "SpeedUpsCatalog" },
+    { file: "OffersCatalog.json", docName: "OffersCatalog" },
 ];
 
 async function seedV2Catalogs() {

@@ -357,19 +357,64 @@ Cosmetic-only rewards. One crate can be opening at a time (Crate queue).
 
 Most earned crates are Common or Rare → optimal for the return loop.
 
-### 9.3 Crate Item Probabilities (What's inside)
+### 9.3 Multi-Slot Utility Rewards (Castle Clash Style)
 
-When a crate opens, it rolls for items from its specific reward pool. Higher rarity crates have better rewards and higher chances for time skips / boosters.
+Each crate awards **3 cosmetic items** of its rarity PLUS **1-3 utility items** via a 3-slot system:
 
-| Reward Type | Common | Rare | Exotic | Legendary | Mythical |
-|-------------|--------|------|--------|-----------|----------|
-| **Coins** | 23.0% (500) | 21.0% (1,000) | 22.0% (2k) | 20.2% (5k) | 19.3% (10k) |
-| **Gems** | 7.6% (5) | 10.1% (10) | 15.0% (20) | 15.1% (50) | 16.1% (100) |
-| **XP Booster** | 15.3% (1hr) | 21.0% (1-6h) | 20.0% (6-12h) | 18.1% (12-24h) | 12.9% (24hr) |
-| **Shard Booster** | 11.5% (1hr) | 8.4% (1hr) | 8.0% (6hr) | 8.0% (12hr) | 10.7% (24hr) |
-| **Coin Booster** | 15.3% (1hr) | 21.0% (1-6h) | 20.0% (6-12h) | 18.1% (12-24h) | 12.9% (24hr) |
-| **Time Skip** | 26.9% (5-15m)| 18.4% (15-30m)| 18.0% (30-1h) | 18.1% (3-8h) | 19.3% (8-24h) |
-| **Cosmetics** | 3 items | 3 items | 3 items | 3 items | 3 items |
+| Slot | Behaviour | Activation Chance (Common → Mythical) |
+|------|-----------|--------------------------------------|
+| **Slot 1** (Guaranteed) | Always fires. Rolls from crate's own rarity pool. | 100% |
+| **Slot 2** (Bonus) | Probabilistic. Rolls from a mixed rarity distribution. | 25% → 65% |
+| **Slot 3** (Jackpot) | Low probability. Rolls from a shifted-down rarity distribution. | 3% → 20% |
+
+#### Expected Items Per Crate
+
+| Crate | 1 item | 2 items | 3 items | **Avg** |
+|-------|--------|---------|---------|---------|
+| Common | 75% | 22% | 3% | **1.28** |
+| Rare | 63% | 31% | 6% | **1.41** |
+| Exotic | 50% | 40% | 10% | **1.55** |
+| Legendary | 38% | 47% | 15% | **1.70** |
+| Mythical | 28% | 52% | 20% | **1.85** |
+
+#### Utility Item Pools (booster durations scale with rarity)
+
+| Tier | Time Skips | Boosters | Coins |
+|------|-----------|----------|-------|
+| **Common** | 5m, 15m | 1hr (Coin/XP/Shard) | 0.25× rank |
+| **Rare** | 15m, 1hr | 1hr + 6hr | 0.50× rank |
+| **Exotic** | 1hr, 3hr, 8hr | 6hr + 12hr | 1.0× rank |
+| **Legendary** | 3hr, 8hr, 24hr | 12hr, 24hr, rare 7d | 2.0× rank |
+| **Mythical** | 8hr, 24hr, 3d, 7d | 24hr + 7d | 4.0× rank |
+
+#### Guaranteed Base Rewards (Clash Royale Style)
+
+Every crate always awards:
+
+**Rank-Scaled Coins:**
+```
+crateCoins = floor(COIN_CAPS_BY_RANK[rank][0] × tierMultiplier × (0.8 + random(0.4)))
+```
+Multipliers: Common=0.25×, Rare=0.50×, Exotic=1.0×, Legendary=2.0×, Mythical=4.0×
+
+**Rank-Scaled Spell Shards:**
+```
+crateShards = floor(shardBase(rank) × tierMultiplier × (0.8 + random(0.4)))
+shardBase = 5 + (20 × rankIndex/totalRanks)
+```
+Multipliers: Common=0.4×, Rare=0.8×, Exotic=1.5×, Legendary=2.5×, Mythical=4.0×
+
+Shards scale ~5× across ranks (vs coins' ~20×) — intentionally slower so crates don't shortcut spell progression.
+
+| Tier | Unranked Shards | Hypersonic III Shards |
+|------|----------------|---------------------|
+| Common | 1-2 | 4-6 |
+| Rare | 3-5 | 8-12 |
+| Exotic | 6-9 | 15-22 |
+| Legendary | 10-15 | 25-37 |
+| Mythical | 16-24 | 40-60 |
+
+Coins scale with the player's trophy rank so rewards remain proportional to earning capacity.
 
 ### 9.4 Crate Shop Prices (buy outright, instant open)
 

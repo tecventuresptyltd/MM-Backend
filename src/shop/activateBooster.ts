@@ -90,6 +90,7 @@ const BOOSTER_DURATION_BY_LABEL: Record<string, number> = {
   "6h": 21600,
   "12h": 43200,
   "24h": 86400,
+  "7d": 604800,
 };
 
 const BOOSTER_DURATION_BY_PRICE: Record<BoosterSubType, Record<number, number>> = {

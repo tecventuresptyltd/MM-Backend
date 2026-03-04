@@ -318,6 +318,70 @@ export async function getCrateRewardsConfig(): Promise<CrateRewardsConfig> {
     return data;
 }
 
+/**
+ * Calculate rank-scaled coin reward for a crate opening.
+ *
+ * Uses COIN_CAPS_BY_RANK[playerRank][0] (1st-place cap) as the base,
+ * multiplied by a rarity-specific factor with ±variance randomness.
+ *
+ * @param trophies - Player's current trophies (used to derive rank)
+ * @param rarity   - The item-pool rarity tier being rolled (common→mythical)
+ * @param config   - CoinScalingConfig from CrateRewardsConfig
+ */
+export function calculateCrateCoins(
+    trophies: number,
+    rarity: string,
+    config: CrateRewardsConfig["coinScaling"],
+): number {
+    // Import rank lookup lazily to avoid circular dependency issues
+    const { getRankForTrophies, COIN_CAPS_BY_RANK } = require("../race/economy.js");
+
+    const rank = getRankForTrophies(trophies);
+    const caps = COIN_CAPS_BY_RANK[rank] ?? COIN_CAPS_BY_RANK["Unranked"];
+    const maxCoinPerRace = caps[0]; // 1st place cap
+
+    const multiplier = config.multipliers[rarity] ?? config.multipliers["common"] ?? 0.25;
+    const variance = config.variance ?? 0.2;
+
+    // Random factor: (1 - variance) to (1 + variance)
+    const randomFactor = (1 - variance) + Math.random() * (2 * variance);
+
+    return Math.floor(maxCoinPerRace * multiplier * randomFactor);
+}
+
+/**
+ * Calculate rank-scaled shard reward for a crate opening.
+ *
+ * Uses the same shardBase formula as race rewards: `5 + (20 × rankIndex/50)`,
+ * multiplied by a rarity-specific factor with ±variance randomness.
+ * Shards scale ~5× across ranks (vs coins' ~20×) — intentionally slower
+ * so crates can't shortcut spell progression.
+ */
+export function calculateCrateShards(
+    trophies: number,
+    crateRarity: string,
+    config: CrateRewardsConfig["shardScaling"],
+): number {
+    const { getRankForTrophies, RANK_THRESHOLDS } = require("../race/economy.js");
+
+    const rank = getRankForTrophies(trophies);
+    const totalRanks = RANK_THRESHOLDS.length; // 28
+    const numericRank = RANK_THRESHOLDS.findIndex(
+        (t: { label: string }) => t.label === rank,
+    );
+    const safeIndex = numericRank >= 0 ? numericRank : 0;
+
+    // Same formula as race shards: shardBase = 5 + (20 × index/totalRanks)
+    const shardBase = 5 + (20 * (Math.max(1, safeIndex) / totalRanks));
+
+    const multiplier = config.multipliers[crateRarity] ?? config.multipliers["common"] ?? 0.4;
+    const variance = config.variance ?? 0.2;
+
+    const randomFactor = (1 - variance) + Math.random() * (2 * variance);
+
+    return Math.max(1, Math.floor(shardBase * multiplier * randomFactor));
+}
+
 // =============================================================================
 // PLAYER SLOTS CONFIG
 // =============================================================================

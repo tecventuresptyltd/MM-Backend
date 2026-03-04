@@ -133,6 +133,42 @@
       "stackable": true,
       "variant": null,
       "subType": "shard"
+    },
+    "sku_coin7d_q5r8": {
+      "skuId": "sku_coin7d_q5r8",
+      "itemId": "bst_kcemzpr4",
+      "displayName": "Coin Booster (7d)",
+      "category": "booster",
+      "type": "booster",
+      "rarity": "special",
+      "stackable": true,
+      "variant": null,
+      "subType": "coin",
+      "durationSeconds": 604800
+    },
+    "sku_exp7d_f2h6": {
+      "skuId": "sku_exp7d_f2h6",
+      "itemId": "bst_hhhb8w5q",
+      "displayName": "EXP Booster (7d)",
+      "category": "booster",
+      "type": "booster",
+      "rarity": "special",
+      "stackable": true,
+      "variant": null,
+      "subType": "exp",
+      "durationSeconds": 604800
+    },
+    "sku_shrd7d_w3j9": {
+      "skuId": "sku_shrd7d_w3j9",
+      "itemId": "bst_shrd7k9m",
+      "displayName": "Shard Booster (7d)",
+      "category": "booster",
+      "type": "booster",
+      "rarity": "special",
+      "stackable": true,
+      "variant": null,
+      "subType": "shard",
+      "durationSeconds": 604800
     }
   }
 }

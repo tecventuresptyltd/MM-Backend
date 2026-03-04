@@ -1,4 +1,16 @@
-import { createHash } from "node:crypto";
+/**
+ * openCrate — Instant Crate Open (No Keys, No Timers)
+ *
+ * Flow:
+ *  1. Player purchases a crate from the shop (crate SKU lands in inventory).
+ *  2. Player calls openCrate({ opId, crateId }).
+ *  3. Server consumes 1 crate SKU from inventory.
+ *  4. Rolls rewards using CrateRewardsConfig:
+ *     - N random cosmetics matching the crate's rarity
+ *     - M random catalog items (coins, gems, boosters, speed-ups)
+ *  5. Grants all rewards instantly (inventory + economy).
+ *  6. Returns the full list of awarded items.
+ */
 
 import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
@@ -6,46 +18,36 @@ import { HttpsError, onCall } from "firebase-functions/v2/https";
 
 import {
   getCratesCatalogDoc,
-  getItemSkusCatalog,
-  listSkusForItem,
-  resolveSkuOrThrow,
+  listSkusByFilter,
 } from "../core/config.js";
+import {
+  getCrateRewardsConfig,
+} from "../core/configV2.js";
 import { checkIdempotency, createInProgressReceipt } from "../core/idempotency.js";
-import { runReadThenWriteWithReceipt } from "../core/transactions.js";
+import { runTransactionWithReceipt } from "../core/transactions.js";
 import { db } from "../shared/firestore.js";
-import { REGION } from "../shared/region.js";
 import { callableOptions, getMinInstances } from "../shared/callableOptions.js";
-import { CrateDefinition, ItemSku } from "../shared/types.js";
+import { CrateDefinition } from "../shared/types.js";
+import {
+  AwardedItem,
+  CrateRewardItem,
+} from "../shared/typesV2.js";
+import { grantInventoryRewards } from "../shared/inventoryAwards.js";
 import {
   decSkuQtyOrThrowTx,
-  incSkuQtyTx,
-  txUpdateInventorySummary,
-  createTxInventorySummaryState,
-  TxSkuMutationContext,
 } from "../inventory/index.js";
-import { resolveInventoryContext } from "../shared/inventory.js";
 import { maybeTriggerFlashSales } from "../triggers/flashSales.js";
+
+// =============================================================================
+// TYPES
+// =============================================================================
+
+const MAX_CRATE_QUANTITY = 50;
 
 interface OpenCrateRequest {
   opId: unknown;
   crateId: unknown;
-}
-
-interface DropRollMetadata {
-  weight: number;
-  totalWeight: number;
-  roll: number;
-  variantRoll?: number;
-  sourceItemId?: string | null;
-  rarity?: string;
-  poolSize?: number;
-}
-
-interface PickedReward {
-  sku: ItemSku;
-  quantity: number;
-  metadata: DropRollMetadata;
-  sourceItemId: string | null;
+  quantity?: unknown;
 }
 
 interface OpenCrateResult {
@@ -53,142 +55,35 @@ interface OpenCrateResult {
   opId: string;
   crateId: string;
   crateSkuId: string;
-  awarded: {
-    skuId: string;
-    itemId: string;
-    type: ItemSku["type"];
-    rarity: string;
-    quantity: number;
-    alreadyOwned: boolean;
-    metadata: DropRollMetadata;
+  quantity: number;
+  cratesOpened: number;
+  awarded: AwardedItem[];
+  economyChanges: {
+    coins?: number;
+    gems?: number;
   };
-  counts: Record<string, number>;
 }
 
-const normaliseWeightValue = (value: unknown): number => {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed) || parsed <= 0) {
-    return 0;
-  }
-  return parsed;
-};
+// =============================================================================
+// INPUT VALIDATION
+// =============================================================================
 
-const normaliseSkuList = (value: unknown): string[] => {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-  const ids: string[] = [];
-  for (const entry of value) {
-    if (typeof entry === "string" && entry.trim().length > 0) {
-      ids.push(entry.trim());
-    }
-  }
-  return ids;
-};
-
-interface RarityPoolEntry {
-  rarity: string;
-  weight: number;
-  pool: string[];
-}
-
-const isDefaultSku = (sku: ItemSku | undefined): boolean =>
-  Boolean(sku?.displayName && sku.displayName.toLowerCase().includes("default"));
-
-const isCosmeticSku = (sku: ItemSku | undefined): boolean => sku?.type === "cosmetic";
-
-const extractRarityPoolEntries = (crate: CrateDefinition): RarityPoolEntry[] => {
-  const weights = crate.rarityWeights ?? {};
-  const pools = crate.poolsByRarity ?? {};
-  if (!weights || !pools) {
-    return [];
-  }
-  const entries: RarityPoolEntry[] = [];
-  for (const [rarity, weightValue] of Object.entries(weights)) {
-    const weight = normaliseWeightValue(weightValue);
-    if (weight <= 0) {
-      continue;
-    }
-    const pool = normaliseSkuList(pools[rarity as keyof typeof pools]);
-    if (pool.length === 0) {
-      continue;
-    }
-    entries.push({
-      rarity,
-      weight,
-      pool,
-    });
-  }
-  return entries;
-};
-
-const pickFromRarityPools = async (
-  crate: CrateDefinition,
-  seed: Buffer,
-  entries: RarityPoolEntry[],
-): Promise<PickedReward> => {
-  if (entries.length === 0) {
-    throw new HttpsError(
-      "failed-precondition",
-      `Crate ${crate.crateId} has no rarity pools configured.`,
-    );
-  }
-
-  const totalWeight = entries.reduce((sum, entry) => sum + entry.weight, 0);
-  if (totalWeight <= 0) {
-    throw new HttpsError(
-      "failed-precondition",
-      `Crate ${crate.crateId} has invalid rarity weights.`,
-    );
-  }
-
-  const baseRoll = seed.readUInt32BE(0);
-  const roll = (baseRoll / 0x100000000) * totalWeight;
-
-  let selected = entries[entries.length - 1];
-  let cursor = 0;
-  for (const entry of entries) {
-    cursor += entry.weight;
-    if (roll < cursor) {
-      selected = entry;
-      break;
-    }
-  }
-
-  const poolSeed = createHash("sha256")
-    .update(seed)
-    .update(`:${crate.crateId}:${selected.rarity}`)
-    .digest();
-  const poolRoll = poolSeed.readUInt32BE(0);
-  const selectedIndex = poolRoll % selected.pool.length;
-  const selectedSkuId = selected.pool[selectedIndex];
-  const sku = await resolveSkuOrThrow(selectedSkuId);
-  const sourceItemId = sku.itemId ?? null;
-
-  return {
-    sku,
-    quantity: 1,
-    sourceItemId,
-    metadata: {
-      weight: selected.weight,
-      totalWeight,
-      roll,
-      variantRoll: poolRoll,
-      sourceItemId,
-      rarity: selected.rarity,
-      poolSize: selected.pool.length,
-    },
-  };
-};
-
-const readRequest = (data: OpenCrateRequest): { opId: string; crateId: string } => {
+const readRequest = (data: OpenCrateRequest): { opId: string; crateId: string; quantity: number } => {
   if (typeof data.opId !== "string" || !data.opId.trim()) {
     throw new HttpsError("invalid-argument", "opId must be a non-empty string.");
   }
   if (typeof data.crateId !== "string" || !data.crateId.trim()) {
     throw new HttpsError("invalid-argument", "crateId must be a non-empty string.");
   }
-  return { opId: data.opId.trim(), crateId: data.crateId.trim() };
+  let quantity = 1;
+  if (data.quantity !== undefined && data.quantity !== null) {
+    const parsed = Math.floor(Number(data.quantity));
+    if (!Number.isFinite(parsed) || parsed < 1) {
+      throw new HttpsError("invalid-argument", "quantity must be a positive integer.");
+    }
+    quantity = Math.min(parsed, MAX_CRATE_QUANTITY);
+  }
+  return { opId: data.opId.trim(), crateId: data.crateId.trim(), quantity };
 };
 
 const ensureCrate = (
@@ -202,331 +97,219 @@ const ensureCrate = (
   return crate;
 };
 
-const resolveCrateSkuId = async (
-  crate: CrateDefinition,
-): Promise<string> => {
-  const candidateCrateSku =
-    typeof crate.crateSkuId === "string" && crate.crateSkuId.trim().length > 0
-      ? crate.crateSkuId.trim()
-      : null;
-  if (candidateCrateSku) {
-    await resolveSkuOrThrow(candidateCrateSku);
-    return candidateCrateSku;
+// =============================================================================
+// REWARD HELPERS
+// =============================================================================
+
+/** Fisher-Yates shuffle (in-place) */
+function shuffleArray<T>(arr: T[]): T[] {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
   }
-  const candidate = typeof crate.skuId === "string" && crate.skuId.trim().length > 0
-    ? crate.skuId.trim()
-    : null;
-  if (candidate) {
-    await resolveSkuOrThrow(candidate);
-    return candidate;
+  return arr;
+}
+
+/** Weighted random pick from a reward pool */
+function weightedRandomPick(pool: CrateRewardItem[]): CrateRewardItem | null {
+  if (pool.length === 0) return null;
+  const totalWeight = pool.reduce((sum, item) => sum + item.weight, 0);
+  let roll = Math.random() * totalWeight;
+  for (const item of pool) {
+    roll -= item.weight;
+    if (roll <= 0) return item;
   }
+  return pool[pool.length - 1];
+}
 
-  const legacyId = typeof crate.crateId === "string" ? crate.crateId.trim() : "";
-  if (!legacyId) {
-    throw new HttpsError(
-      "failed-precondition",
-      `Crate ${crate.crateId} is missing a skuId.`,
-    );
-  }
+// =============================================================================
+// MAIN FUNCTION
+// =============================================================================
 
-  const skus = await listSkusForItem(legacyId);
-  if (skus.length === 0) {
-    throw new HttpsError(
-      "failed-precondition",
-      `Crate ${crate.crateId} references unknown item ${legacyId}.`,
-    );
-  }
-  return skus[0].skuId;
-};
+export const openCrate = onCall(
+  callableOptions(
+    { minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 },
+    true,
+  ),
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "User must be authenticated.");
+    }
 
-const resolveKeySkuId = async (
-  crate: CrateDefinition,
-): Promise<string | null> => {
-  const direct = typeof crate.keySkuId === "string" ? crate.keySkuId.trim() : "";
-  if (direct) {
-    await resolveSkuOrThrow(direct);
-    return direct;
-  }
-  const legacy = typeof crate.keyItemId === "string" ? crate.keyItemId.trim() : "";
-  if (!legacy) {
-    return null;
-  }
-  const skus = await listSkusForItem(legacy);
-  if (skus.length === 0) {
-    throw new HttpsError(
-      "failed-precondition",
-      `Crate ${crate.crateId} references unknown key item ${legacy}.`,
-    );
-  }
-  return skus[0].skuId;
-};
+    const { opId, crateId, quantity } = readRequest(request.data as OpenCrateRequest);
 
-const pickFromCrate = async (
-  crate: CrateDefinition,
-  seed: Buffer,
-): Promise<PickedReward> => {
-  const rarityEntries = extractRarityPoolEntries(crate);
-  const itemSkusCatalog = await getItemSkusCatalog();
-  const filteredEntries = rarityEntries
-    .map((entry) => ({
-      ...entry,
-      pool: entry.pool.filter((skuId) => {
-        const sku = itemSkusCatalog[skuId];
-        if (!sku) {
-          return false;
-        }
-        if (isDefaultSku(sku)) {
-          return false;
-        }
-        return isCosmeticSku(sku);
-      }),
-    }))
-    .filter((entry) => entry.pool.length > 0);
-  if (filteredEntries.length === 0) {
-    throw new HttpsError(
-      "failed-precondition",
-      `Crate ${crate.crateId} has no cosmetic rarity-weighted pools configured.`,
-    );
-  }
-  return pickFromRarityPools(crate, seed, filteredEntries);
-};
+    // ── Idempotency ──
+    const cached = await checkIdempotency(uid, opId);
+    if (cached) {
+      return cached as OpenCrateResult;
+    }
+    await createInProgressReceipt(uid, opId, "openCrate");
 
-const applyDelta = (
-  target: Record<string, number>,
-  skuId: string,
-  delta: number,
-) => {
-  target[skuId] = (target[skuId] ?? 0) + delta;
-};
+    // ── Load configs (outside transaction) ──
+    const [cratesDoc, crateRewardsConfig, cosmeticSkus] = await Promise.all([
+      getCratesCatalogDoc(),
+      getCrateRewardsConfig(),
+      listSkusByFilter({ category: "cosmetic" }),
+    ]);
 
-export const openCrate = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true), async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "User must be authenticated.");
-  }
+    const crate = ensureCrate(cratesDoc, crateId);
+    const crateSkuId =
+      (typeof crate.crateSkuId === "string" && crate.crateSkuId.trim()) ||
+      (typeof crate.skuId === "string" && crate.skuId.trim()) ||
+      null;
 
-  const { opId, crateId } = readRequest(request.data as OpenCrateRequest);
-
-  const cached = await checkIdempotency(uid, opId);
-  if (cached) {
-    return cached as OpenCrateResult;
-  }
-
-  await createInProgressReceipt(uid, opId, "openCrate");
-
-  const cratesDoc = await getCratesCatalogDoc();
-  const crate = ensureCrate(cratesDoc, crateId);
-  const crateSkuId = await resolveCrateSkuId(crate);
-  const keySkuId = await resolveKeySkuId(crate);
-
-  const seed = createHash("sha256")
-    .update(`${uid}:${opId}:${crateId}`)
-    .digest();
-  const reward = await pickFromCrate(crate, seed);
-
-  const inventoryCtx = resolveInventoryContext(uid);
-  const crateRef = inventoryCtx.inventoryCollection.doc(crateSkuId);
-  const keyRef = keySkuId ? inventoryCtx.inventoryCollection.doc(keySkuId) : null;
-  const rewardRef = inventoryCtx.inventoryCollection.doc(reward.sku.skuId);
-  const summaryRef = inventoryCtx.summaryRef;
-
-  const result = await runReadThenWriteWithReceipt<{
-    timestamp: FirebaseFirestore.FieldValue;
-    crateContext: TxSkuMutationContext;
-    keyContext?: TxSkuMutationContext;
-    rewardContext: TxSkuMutationContext;
-    summaryState: ReturnType<typeof createTxInventorySummaryState>;
-    existingRewardQty: number;
-  }, OpenCrateResult>(
-    uid,
-    opId,
-    `openCrate.${crateId}`,
-    async (transaction) => {
-      const timestamp = admin.firestore.FieldValue.serverTimestamp();
-      const readRefs: Array<Promise<FirebaseFirestore.DocumentSnapshot>> = [
-        transaction.get(crateRef),
-      ];
-      if (keyRef) {
-        readRefs.push(transaction.get(keyRef));
-      }
-      readRefs.push(transaction.get(rewardRef));
-      readRefs.push(transaction.get(summaryRef));
-
-      const snapshots = await Promise.all(readRefs);
-      let index = 0;
-      const crateSnap = snapshots[index++];
-      const keySnap =
-        keyRef !== null ? snapshots[index++] : null;
-      const rewardSnap = snapshots[index++];
-      const summarySnap = snapshots[index++];
-
-      const readQuantity = (
-        snap: FirebaseFirestore.DocumentSnapshot,
-      ): number => {
-        const data = snap.data() ?? {};
-        const value = data.quantity ?? data.qty;
-        const parsed = Number(value);
-        if (!Number.isFinite(parsed) || parsed <= 0) {
-          return 0;
-        }
-        return Math.floor(parsed);
-      };
-
-      const crateContext: TxSkuMutationContext = {
-        quantity: readQuantity(crateSnap),
-        exists: crateSnap.exists,
-        createdAt: (crateSnap.data() ?? {}).createdAt,
-        timestamp,
-      };
-
-      let keyContext: TxSkuMutationContext | undefined;
-      if (keyRef && keySnap) {
-        keyContext = {
-          quantity: readQuantity(keySnap),
-          exists: keySnap.exists,
-          createdAt: (keySnap.data() ?? {}).createdAt,
-          timestamp,
-        };
-      }
-
-      const rewardQty = readQuantity(rewardSnap);
-      if (reward.sku.stackable === false && rewardQty > 0) {
-        throw new HttpsError(
-          "failed-precondition",
-          `SKU ${reward.sku.skuId} already owned; non-stackable rewards cannot be granted again.`,
-        );
-      }
-
-      const rewardContext: TxSkuMutationContext = {
-        quantity: rewardQty,
-        exists: rewardSnap.exists,
-        createdAt: (rewardSnap.data() ?? {}).createdAt,
-        timestamp,
-      };
-
-      const summaryState = createTxInventorySummaryState(summaryRef, summarySnap);
-
-      return {
-        timestamp,
-        crateContext,
-        keyContext,
-        rewardContext,
-        summaryState,
-        existingRewardQty: rewardQty,
-      };
-    },
-    async (transaction, reads) => {
-      const rewardMetadata = {
-        weight: reward.metadata.weight,
-        totalWeight: reward.metadata.totalWeight,
-        roll: reward.metadata.roll,
-        sourceItemId: reward.metadata.sourceItemId ?? null,
-        ...(reward.metadata.variantRoll !== undefined
-          ? { variantRoll: reward.metadata.variantRoll }
-          : {}),
-      };
-
-      const summaryChanges: Record<string, number> = {};
-      const countsAfter: Record<string, number> = {};
-
-      let crateAdj;
-      try {
-        crateAdj = await decSkuQtyOrThrowTx(
-          transaction,
-          db,
-          uid,
-          crateSkuId,
-          1,
-          reads.crateContext,
-        );
-      } catch (error) {
-        const rawMessage =
-          error instanceof Error && typeof error.message === "string" && error.message.trim().length > 0
-            ? error.message
-            : String(error ?? "Insufficient quantity");
-        const normalizedMessage = /Insufficient quantity/i.test(rawMessage)
-          ? rawMessage
-          : "Insufficient quantity";
-        if (/Insufficient quantity/i.test(normalizedMessage)) {
-          throw new HttpsError("failed-precondition", normalizedMessage);
-        }
-        throw error;
-      }
-      countsAfter[crateSkuId] = crateAdj.after;
-      applyDelta(summaryChanges, crateSkuId, -1);
-
-      if (keySkuId && reads.keyContext) {
-        let keyAdj;
-        try {
-          keyAdj = await decSkuQtyOrThrowTx(
-            transaction,
-            db,
-            uid,
-            keySkuId,
-            1,
-            reads.keyContext,
-          );
-        } catch (error) {
-          const rawMessage =
-            error instanceof Error && typeof error.message === "string" && error.message.trim().length > 0
-              ? error.message
-              : String(error ?? "Insufficient quantity");
-          const normalizedMessage = /Insufficient quantity/i.test(rawMessage)
-            ? rawMessage
-            : "Insufficient quantity";
-          if (/Insufficient quantity/i.test(normalizedMessage)) {
-            throw new HttpsError("failed-precondition", normalizedMessage);
-          }
-          throw error;
-        }
-        countsAfter[keySkuId] = keyAdj.after;
-        applyDelta(summaryChanges, keySkuId, -1);
-      }
-
-      const rewardAdj = await incSkuQtyTx(
-        transaction,
-        db,
-        uid,
-        reward.sku.skuId,
-        reward.quantity,
-        reads.rewardContext,
+    if (!crateSkuId) {
+      throw new HttpsError(
+        "failed-precondition",
+        `Crate ${crateId} is missing a crateSkuId / skuId.`,
       );
-      countsAfter[reward.sku.skuId] = rewardAdj.after;
-      applyDelta(summaryChanges, reward.sku.skuId, reward.quantity);
+    }
 
-      if (Object.keys(summaryChanges).length > 0) {
-        await txUpdateInventorySummary(transaction, db, uid, summaryChanges, {
-          state: reads.summaryState,
-          timestamp: reads.timestamp,
+    const crateRarity = (crate.rarity ?? "common").toLowerCase();
+
+    // ── Determine reward pool ──
+    const rewardPool =
+      crateRewardsConfig.rewardsByRarity[crateRarity] ??
+      crateRewardsConfig.rewardsByRarity["common"];
+
+    if (!rewardPool) {
+      throw new HttpsError("internal", `No reward pool configured for rarity: ${crateRarity}`);
+    }
+
+    // ── Roll rewards for ALL crates ──
+    const matchingCosmetics = cosmeticSkus.filter(
+      (sku) => (sku.rarity?.toLowerCase() ?? "") === crateRarity,
+    );
+
+    const awardedItems: AwardedItem[] = [];
+    const inventoryGrants: Array<{ skuId: string; quantity: number }> = [];
+    const economyChanges: { coins: number; gems: number } = { coins: 0, gems: 0 };
+
+    for (let c = 0; c < quantity; c++) {
+      // 1. Pick random cosmetics of this rarity (fresh shuffle per crate)
+      const cosmeticsToAward = Math.min(rewardPool.cosmeticCount, matchingCosmetics.length);
+      const selectedCosmetics = shuffleArray([...matchingCosmetics]).slice(0, cosmeticsToAward);
+
+      for (const cosmetic of selectedCosmetics) {
+        awardedItems.push({
+          type: "cosmetic",
+          displayName: cosmetic.displayName ?? cosmetic.itemDisplayName ?? cosmetic.skuId,
+          quantity: 1,
+          rarity: cosmetic.rarity ?? crateRarity,
+          skuId: cosmetic.skuId,
+          itemId: cosmetic.itemId,
         });
+        inventoryGrants.push({ skuId: cosmetic.skuId, quantity: 1 });
       }
 
-      const alreadyOwned = reads.existingRewardQty > 0;
+      // 2. Pick random catalog items (coins, gems, boosters, speed-ups)
+      for (let i = 0; i < rewardPool.catalogItemCount; i++) {
+        const picked = weightedRandomPick(rewardPool.rewardPool);
+        if (!picked) continue;
 
-      return {
-        success: true,
-        opId,
-        crateId,
-        crateSkuId,
-        awarded: {
-          skuId: reward.sku.skuId,
-          itemId: reward.sku.itemId,
-          type: reward.sku.type,
-          rarity: reward.sku.rarity,
-          quantity: reward.quantity,
-          alreadyOwned,
-          metadata: rewardMetadata,
-        },
-        counts: countsAfter,
-      };
-    },
-  );
+        const item: AwardedItem = {
+          type: picked.type,
+          displayName: picked.displayName,
+          quantity: picked.quantity,
+        };
 
-  try {
-    await maybeTriggerFlashSales({ uid });
-  } catch (error) {
-    logger.warn("Flash sale trigger failed after crate open", { uid, error });
-  }
+        if (picked.durationHours) {
+          item.durationHours = picked.durationHours;
+        }
 
-  return result;
-});
+        if (picked.type === "coins") {
+          economyChanges.coins += picked.quantity;
+        } else if (picked.type === "gems") {
+          economyChanges.gems += picked.quantity;
+        } else if (picked.skuId) {
+          item.skuId = picked.skuId;
+          inventoryGrants.push({ skuId: picked.skuId, quantity: picked.quantity });
+        }
+
+        awardedItems.push(item);
+      }
+    }
+
+    // ── Transaction: consume crates + grant everything ──
+    //
+    // IMPORTANT: Firestore requires ALL reads before ANY writes.
+    // Order: 1. Pre-read crate doc (READ)
+    //        2. grantInventoryRewards — reads reward docs + summary (READS), then writes them (WRITES)
+    //        3. decSkuQtyOrThrowTx with pre-read context — write only (WRITE)
+    //        4. Economy update — write only (WRITE)
+    //
+    const result = await runTransactionWithReceipt<OpenCrateResult>(
+      uid,
+      opId,
+      "openCrate",
+      async (transaction) => {
+        const timestamp = admin.firestore.FieldValue.serverTimestamp();
+        const economyRef = db.doc(`/Players/${uid}/Economy/Stats`);
+        const inventoryCtx = db.doc(`/Players/${uid}/Inventory/${crateSkuId}`);
+
+        // ── PHASE 1: PRE-READ the crate doc (before any writes happen) ──
+        const crateSnap = await transaction.get(inventoryCtx);
+        const crateData = crateSnap.data() ?? {};
+        const crateQty = Math.floor(Number(crateData.quantity ?? crateData.qty ?? 0));
+
+        if (!Number.isFinite(crateQty) || crateQty < quantity) {
+          throw new HttpsError(
+            "failed-precondition",
+            `Insufficient quantity: need ${quantity}, have ${crateQty} of crate SKU ${crateSkuId}.`,
+          );
+        }
+
+        // ── PHASE 2: grantInventoryRewards (reads reward docs + summary, then writes them) ──
+        if (inventoryGrants.length > 0) {
+          await grantInventoryRewards(transaction, uid, inventoryGrants, { timestamp });
+        }
+
+        // ── PHASE 3: Decrement crate with pre-read context (WRITE ONLY, no read needed) ──
+        await decSkuQtyOrThrowTx(transaction, db, uid, crateSkuId, quantity, {
+          quantity: crateQty,
+          exists: crateSnap.exists,
+          createdAt: crateData.createdAt,
+          timestamp,
+        });
+
+        // ── PHASE 4: Economy changes (WRITE ONLY) ──
+        if (economyChanges.coins > 0 || economyChanges.gems > 0) {
+          const economyUpdate: Record<string, FirebaseFirestore.FieldValue> = {
+            updatedAt: timestamp,
+          };
+          if (economyChanges.coins > 0) {
+            economyUpdate.coins = admin.firestore.FieldValue.increment(economyChanges.coins);
+          }
+          if (economyChanges.gems > 0) {
+            economyUpdate.gems = admin.firestore.FieldValue.increment(economyChanges.gems);
+          }
+          transaction.update(economyRef, economyUpdate);
+        }
+
+        return {
+          success: true as const,
+          opId,
+          crateId,
+          crateSkuId,
+          quantity,
+          cratesOpened: quantity,
+          awarded: awardedItems,
+          economyChanges: {
+            ...(economyChanges.coins > 0 ? { coins: economyChanges.coins } : {}),
+            ...(economyChanges.gems > 0 ? { gems: economyChanges.gems } : {}),
+          },
+        };
+      },
+    );
+
+    // Fire-and-forget: check flash sale triggers
+    try {
+      await maybeTriggerFlashSales({ uid });
+    } catch (error) {
+      logger.warn("Flash sale trigger failed after crate open", { uid, error });
+    }
+
+    return result;
+  },
+);

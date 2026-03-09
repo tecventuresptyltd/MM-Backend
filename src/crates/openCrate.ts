@@ -170,8 +170,8 @@ export const openCrate = onCall(
 
     // ── Determine reward pool ──
     const rewardPool =
-      crateRewardsConfig.rewardsByRarity[crateRarity] ??
-      crateRewardsConfig.rewardsByRarity["common"];
+      crateRewardsConfig?.rewardsByRarity?.[crateRarity] ??
+      crateRewardsConfig?.rewardsByRarity?.["common"];
 
     if (!rewardPool) {
       throw new HttpsError("internal", `No reward pool configured for rarity: ${crateRarity}`);

@@ -38,7 +38,7 @@ const db = admin.firestore();
  * 6. Record license ownership
  */
 export const purchaseTierLicenseV2 = onCall(
-    callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
+    callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
     async (request) => {
         const { tierId, opId } = request.data as PurchaseTierLicenseRequest;
         const uid = request.auth?.uid;

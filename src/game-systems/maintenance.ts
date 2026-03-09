@@ -46,7 +46,7 @@ interface ClaimMaintenanceRewardResponse {
   gemsGranted: number;
 }
 
-export const claimMaintenanceReward = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true), async (request) => {
+export const claimMaintenanceReward = onCall(callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true), async (request) => {
   const { opId } = request.data as ClaimMaintenanceRewardRequest;
   const uid = request.auth?.uid;
 

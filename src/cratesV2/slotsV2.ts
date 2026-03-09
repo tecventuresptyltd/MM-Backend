@@ -53,7 +53,7 @@ const db = admin.firestore();
  * 3. If full, grant fallback currency instead
  */
 export const receiveCrateV2 = onCall(
-    callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
+    callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
     async (request) => {
         const { crateSkuId, opId } = request.data as ReceiveCrateV2Request;
         const uid = request.auth?.uid;
@@ -229,7 +229,7 @@ export const receiveCrateV2 = onCall(
  * 3. Set isUnlocking and completesAt
  */
 export const startCrateUnlockV2 = onCall(
-    callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
+    callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
     async (request) => {
         const { slotIndex, opId } = request.data as StartCrateUnlockRequest;
         const uid = request.auth?.uid;
@@ -344,7 +344,7 @@ export const startCrateUnlockV2 = onCall(
  * 6. Clear the slot
  */
 export const claimCrateRewardV2 = onCall(
-    callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
+    callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
     async (request) => {
         const { slotIndex, opId } = request.data as ClaimCrateRewardV2Request;
         const uid = request.auth?.uid;
@@ -652,7 +652,7 @@ interface SkipCrateUnlockResponse {
  * Pay gems to instantly unlock a crate.
  */
 export const skipCrateUnlockV2 = onCall(
-    callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
+    callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
     async (request) => {
         const { slotIndex, opId } = request.data as SkipCrateUnlockRequest;
         const uid = request.auth?.uid;

@@ -48,7 +48,7 @@ const db = admin.firestore();
  * 6. Add to Library queue with completesAt timestamp
  */
 export const startSpellResearchV2 = onCall(
-    callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
+    callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
     async (request) => {
         const { spellId, opId } = request.data as StartSpellResearchRequest;
         const uid = request.auth?.uid;
@@ -255,7 +255,7 @@ export const startSpellResearchV2 = onCall(
  * 4. Remove from queue
  */
 export const claimSpellResearchV2 = onCall(
-    callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
+    callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
     async (request) => {
         const { spellId, opId } = request.data as ClaimSpellResearchRequest;
         const uid = request.auth?.uid;
@@ -395,7 +395,7 @@ interface SkipSpellResearchResponse {
  * Pay gems to instantly complete spell research.
  */
 export const skipSpellResearchV2 = onCall(
-    callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
+    callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
     async (request) => {
         const { spellId, opId } = request.data as SkipSpellResearchRequest;
         const uid = request.auth?.uid;

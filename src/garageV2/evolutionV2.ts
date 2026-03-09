@@ -51,7 +51,7 @@ const db = admin.firestore();
  * 6. Add to Pit Crew queue with completesAt timestamp
  */
 export const startCarEvolutionV2 = onCall(
-    callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
+    callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
     async (request) => {
         const { carId, opId } = request.data as StartCarEvolutionRequest;
         const uid = request.auth?.uid;
@@ -230,7 +230,7 @@ export const startCarEvolutionV2 = onCall(
  * 5. Remove from queue
  */
 export const claimCarEvolutionV2 = onCall(
-    callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
+    callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
     async (request) => {
         const { carId, opId } = request.data as ClaimCarEvolutionRequest;
         const uid = request.auth?.uid;
@@ -350,7 +350,7 @@ export const claimCarEvolutionV2 = onCall(
  * 5. Set completesAt to now
  */
 export const skipCarEvolutionV2 = onCall(
-    callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
+    callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
     async (request) => {
         const { carId, opId } = request.data as SkipCarEvolutionRequest;
         const uid = request.auth?.uid;

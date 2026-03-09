@@ -22,7 +22,7 @@ interface AcknowledgeReferralRewardsResponse {
  * @param eventIds - Optional array of event IDs to acknowledge. Empty/omitted = acknowledge all.
  * @returns Number of rewards acknowledged and number remaining.
  */
-export const acknowledgeReferralRewards = onCall({ region: REGION, minInstances: getMinInstances(true), memory: "256MiB" }, async (rawRequest) => {
+export const acknowledgeReferralRewards = onCall({ region: REGION, minInstances: getMinInstances(false), memory: "256MiB" }, async (rawRequest) => {
     const uid = rawRequest.auth?.uid;
     if (!uid) {
         throw new HttpsError("unauthenticated", "Authentication required.");

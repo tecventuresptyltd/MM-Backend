@@ -8,7 +8,7 @@ import { callableOptions, getMinInstances } from "../shared/callableOptions.js";
  * Always returns success to avoid user enumeration.
  */
 export const requestPasswordReset = onCall(
-  callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
+  callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
   async (request) => {
     const { email } = (request.data ?? {}) as { email?: unknown };
     if (typeof email !== "string" || !email.trim()) {

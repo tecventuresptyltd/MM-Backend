@@ -10,7 +10,7 @@ import { callableOptions, getMinInstances } from "../shared/callableOptions.js";
 // TEMPORARY: Disabled App Check until Firebase Authentication service sends tokens
 // TODO: Re-enable once Authentication shows >90% verified requests
 export const signupGoogle = onCall(
-  callableOptions({ enforceAppCheck: false, minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
+  callableOptions({ enforceAppCheck: false, minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
   async (request) => {
     const { idToken, opId, platform, appVersion, deviceAnchor } = (request.data ?? {}) as {
       idToken?: string; opId?: string; platform?: string; appVersion?: string; deviceAnchor?: string;

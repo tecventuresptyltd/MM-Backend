@@ -34,7 +34,7 @@ const db = admin.firestore();
  * @throws {HttpsError} invalid-argument - If arguments are invalid or spells array is not exactly 3 items
  */
 export const setSpellDeckV2 = onCall(
-  callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
+  callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -90,7 +90,7 @@ export const setSpellDeckV2 = onCall(
  * @throws {HttpsError} invalid-argument - If arguments are invalid
  */
 export const selectActiveSpellDeckV2 = onCall(
-  callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
+  callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -109,9 +109,9 @@ export const selectActiveSpellDeckV2 = onCall(
 
     // Use same path as legacy function
     const loadoutRef = db.doc(`/Players/${uid}/Loadouts/Active`);
-    await loadoutRef.update({ 
-      activeSpellDeck: deckNo, 
-      updatedAt: admin.firestore.FieldValue.serverTimestamp() 
+    await loadoutRef.update({
+      activeSpellDeck: deckNo,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
     });
 
     return { success: true };

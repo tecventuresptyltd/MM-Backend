@@ -276,7 +276,7 @@ const buildFinishOrderIndexes = (
   return resolved;
 };
 
-export const startRace = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true), async (request) => {
+export const startRace = onCall(callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true), async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "User is not authenticated.");
@@ -376,7 +376,7 @@ export const generateBotLoadout = onCall(callableOptions({ cpu: 1, concurrency: 
   };
 });
 
-export const recordRaceResult = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true), async (request) => {
+export const recordRaceResult = onCall(callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true), async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "User is not authenticated.");

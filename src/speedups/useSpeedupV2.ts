@@ -43,7 +43,7 @@ const db = admin.firestore();
  * 6. If new completesAt is in the past, clamp to now (instantly claimable)
  */
 export const useSpeedupV2 = onCall(
-    callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
+    callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
     async (request) => {
         const { queueType, targetId, speedupSkuId, opId } = request.data as UseSpeedupRequest;
         const uid = request.auth?.uid;

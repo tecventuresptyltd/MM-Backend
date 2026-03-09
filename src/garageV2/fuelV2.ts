@@ -166,7 +166,7 @@ export async function consumeFuel(
  * Grants partial refill (+3 bars by default).
  */
 export const refuelWithAdV2 = onCall(
-    callableOptions({ minInstances: getMinInstances(true), memory: "256MiB", cpu: 1, concurrency: 80 }, true),
+    callableOptions({ minInstances: getMinInstances(false), memory: "256MiB", cpu: 1, concurrency: 80 }, true),
     async (request) => {
         const { carId, opId } = request.data as RefuelWithAdRequest;
         const uid = request.auth?.uid;
@@ -251,7 +251,7 @@ export const refuelWithAdV2 = onCall(
  * Use a Fuel Cell item to fully refuel a car.
  */
 export const useFuelCellV2 = onCall(
-    callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
+    callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
     async (request) => {
         const { carId, opId } = request.data as UseFuelCellRequest;
         const uid = request.auth?.uid;

@@ -14,7 +14,7 @@ interface ResponseData {
 // TEMPORARY: Disabled App Check until Firebase Authentication service sends tokens
 // TODO: Re-enable once Authentication shows >90% verified requests
 export const checkEmailExists = onCall<RequestData>(
-  callableOptions({ enforceAppCheck: false, minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
+  callableOptions({ enforceAppCheck: false, minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
   async (request): Promise<ResponseData> => {
     const { email } = request.data;
 

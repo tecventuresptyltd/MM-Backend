@@ -19,7 +19,7 @@ const normalizeProvider = (value: unknown): ProviderName | null => {
 };
 
 export const claimBindingReward = onCall(
-  callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
+  callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

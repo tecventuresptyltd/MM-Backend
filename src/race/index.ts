@@ -680,6 +680,16 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
     }
     transaction.update(profileRef, profileUpdate);
 
+    // Update Participant doc with base rewards for potential double reward claim
+    transaction.update(participantRef, {
+      rewardsEarned: {
+        coins: rewards.baseCoins,
+        shards: baseShards,
+      },
+      doubleRewardClaimed: false,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
     // --- Grant Car XP (same amount as player XP, per-car XP cap from CarsCatalog) ---
     const raceCarId = participantData.carId as string | undefined;
     let carXpResult: {
@@ -1029,6 +1039,104 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
       }
     }
   }
+
+  return result;
+});
+
+export const claimDoubleReward = onCall(callableOptions({ memory: "256MiB", cpu: 1, concurrency: 80 }, true), async (request) => {
+  const uid = request.auth?.uid;
+  if (!uid) {
+    throw new HttpsError("unauthenticated", "User is not authenticated.");
+  }
+
+  const { raceId } = request.data;
+  if (typeof raceId !== "string" || !raceId) {
+    throw new HttpsError("invalid-argument", "Valid raceId string is required.");
+  }
+
+  const result = await db.runTransaction(async (transaction) => {
+    const raceRef = db.doc(`/Races/${raceId}`);
+    const participantRef = db.doc(`/Races/${raceId}/Participants/${uid}`);
+    const economyRef = db.doc(`/Players/${uid}/Economy/Stats`);
+    const profileRef = db.doc(`/Players/${uid}/Profile/Profile`);
+
+    const [raceDoc, participantDoc, economyDoc, profileDoc] = await transaction.getAll(
+      raceRef,
+      participantRef,
+      economyRef,
+      profileRef
+    );
+
+    if (!raceDoc.exists) {
+      throw new HttpsError("not-found", "Race not found.");
+    }
+
+    if (raceDoc.data()?.status !== "settled") {
+      throw new HttpsError("failed-precondition", "Race is not fully processed/settled yet.");
+    }
+
+    if (!participantDoc.exists) {
+      throw new HttpsError("not-found", "Participant data not found for this race.");
+    }
+
+    const participantData = participantDoc.data()!;
+
+    if (participantData.doubleRewardClaimed === true) {
+      throw new HttpsError("already-exists", "Double reward already claimed for this race.");
+    }
+
+    const rewardsEarned = participantData.rewardsEarned;
+    if (!rewardsEarned || typeof rewardsEarned.coins !== "number" || typeof rewardsEarned.shards !== "number") {
+      throw new HttpsError("failed-precondition", "Base rewards data is missing or invalid for this race.");
+    }
+
+    if (!economyDoc.exists || !profileDoc.exists) {
+      throw new HttpsError("not-found", "Player profile or economy data not found.");
+    }
+
+    // Add exactly the base values again to simulate "doubling" the base.
+    const coinsToAdd = rewardsEarned.coins;
+    const shardsToAdd = rewardsEarned.shards;
+
+    const economyUpdate: Record<string, admin.firestore.FieldValue> = {
+      coins: admin.firestore.FieldValue.increment(coinsToAdd),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+    if (shardsToAdd > 0) {
+      economyUpdate.spellShards = admin.firestore.FieldValue.increment(shardsToAdd);
+    }
+    
+    transaction.update(economyRef, economyUpdate);
+
+    // Update Career Stats for the profile to mirror the extra coins gained
+    if (coinsToAdd > 0) {
+      transaction.update(profileRef, {
+        careerCoins: admin.firestore.FieldValue.increment(coinsToAdd),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+
+    // Mark as claimed
+    transaction.update(participantRef, {
+      doubleRewardClaimed: true,
+      doubleRewardClaimedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return { 
+      success: true, 
+      rewards: {
+        coinsAdded: coinsToAdd,
+        shardsAdded: shardsToAdd
+      } 
+    };
+  });
+
+  logger.info("[claimDoubleReward] Reward claimed successfully", {
+    uid,
+    raceId,
+    rewards: result.rewards,
+  });
 
   return result;
 });

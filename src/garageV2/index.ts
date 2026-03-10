@@ -14,7 +14,6 @@ export {
 // Car Evolution (Pit Crew)
 export {
     startCarEvolutionV2,
-    claimCarEvolutionV2,
     skipCarEvolutionV2,
     getPitCrewStatusV2,
     grantCarXP,

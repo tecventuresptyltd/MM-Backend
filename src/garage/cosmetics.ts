@@ -366,7 +366,7 @@ interface PurchaseCrateItemResponse {
 
 const VALID_PURCHASE_KINDS: PurchaseKind[] = ["crate", "key"];
 
-export const purchaseCrateItem = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true), async (request) => {
+export const purchaseCrateItem = onCall(callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true), async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "User must be authenticated.");

@@ -32,6 +32,7 @@ import {
     UserPitCrewDoc,
     PitCrewSlotEntry,
 } from "../shared/typesV2.js";
+import { scheduleUpgradeCompletion, cancelUpgradeCompletion } from "../upgrades/upgradeScheduler.js";
 
 const db = admin.firestore();
 
@@ -72,7 +73,7 @@ export const startCarEvolutionV2 = onCall(
 
         await createInProgressReceipt(uid, opId, "startCarEvolutionV2");
 
-        return await runTransactionWithReceipt<StartCarEvolutionResponse>(
+        const result = await runTransactionWithReceipt<StartCarEvolutionResponse>(
             uid,
             opId,
             "startCarEvolutionV2",
@@ -212,6 +213,24 @@ export const startCarEvolutionV2 = onCall(
                 };
             },
         );
+
+        // Side-effect: schedule auto-completion (outside transaction per Transaction Metadata Return pattern)
+        if (result && result.success) {
+            try {
+                await scheduleUpgradeCompletion({
+                    uid,
+                    upgradeType: "carEvolution",
+                    targetId: carId,
+                    targetLevel: result.targetCarLevel,
+                    completesAt: result.completesAt,
+                    createdAt: Date.now(),
+                });
+            } catch (error) {
+                console.warn(`[EvolutionV2] Failed to schedule auto-completion for ${uid}/${carId}`, error);
+            }
+        }
+
+        return result;
     },
 );
 
@@ -251,7 +270,7 @@ export const claimCarEvolutionV2 = onCall(
 
         await createInProgressReceipt(uid, opId, "claimCarEvolutionV2");
 
-        return await runTransactionWithReceipt<ClaimCarEvolutionResponse>(
+        const result = await runTransactionWithReceipt<ClaimCarEvolutionResponse>(
             uid,
             opId,
             "claimCarEvolutionV2",
@@ -332,6 +351,17 @@ export const claimCarEvolutionV2 = onCall(
                 };
             },
         );
+
+        // Side-effect: cancel auto-completion queue entry (player claimed manually)
+        if (result && result.success) {
+            try {
+                await cancelUpgradeCompletion(uid, "carEvolution", carId);
+            } catch (error) {
+                console.warn(`[EvolutionV2] Failed to cancel auto-completion on claim for ${uid}/${carId}`, error);
+            }
+        }
+
+        return result;
     },
 );
 
@@ -374,7 +404,7 @@ export const skipCarEvolutionV2 = onCall(
         // evolutionCatalog replaced with hardcoded bypass
         // const evolutionCatalog = await getCarEvolutionV2Catalog();
 
-        return await runTransactionWithReceipt<SkipCarEvolutionResponse>(
+        const result = await runTransactionWithReceipt<SkipCarEvolutionResponse>(
             uid,
             opId,
             "skipCarEvolutionV2",
@@ -467,6 +497,17 @@ export const skipCarEvolutionV2 = onCall(
                 };
             },
         );
+
+        // Side-effect: cancel auto-completion since the upgrade was skipped (instant)
+        if (result && result.success) {
+            try {
+                await cancelUpgradeCompletion(uid, "carEvolution", carId);
+            } catch (error) {
+                console.warn(`[EvolutionV2] Failed to cancel auto-completion for ${uid}/${carId}`, error);
+            }
+        }
+
+        return result;
     },
 );
 

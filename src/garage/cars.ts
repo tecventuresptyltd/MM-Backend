@@ -21,7 +21,7 @@ interface PurchaseCarResponse {
   carId: string;
 }
 
-export const purchaseCar = onCall(callableOptions({ minInstances: getMinInstances(true), memory: "512MiB", cpu: 1, concurrency: 80 }, true), async (request) => {
+export const purchaseCar = onCall(callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true), async (request) => {
   const { carId, opId } = request.data as PurchaseCarRequest;
   const uid = request.auth?.uid;
 

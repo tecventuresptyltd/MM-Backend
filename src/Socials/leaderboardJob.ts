@@ -2,6 +2,7 @@ import { onSchedule } from "firebase-functions/v2/scheduler";
 import { REGION } from "../shared/region.js";
 import { db } from "../shared/firestore.js";
 import { leaderboardDocRef, playerProfileRef } from "./refs.js";
+import * as logger from "firebase-functions/logger";
 import {
   LEADERBOARD_METRICS,
   LeaderboardEntry,
@@ -45,25 +46,6 @@ const sanitizeMetricValue = (value: unknown): number => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
-const fetchAllPlayerProfiles = async (): Promise<Map<string, ProfileData>> => {
-  const playersSnapshot = await db.collection("Players").get();
-  const uids = playersSnapshot.docs.map((doc) => doc.id);
-  const profiles = new Map<string, ProfileData>();
-
-  for (let i = 0; i < uids.length; i += PLAYER_PROFILE_BATCH) {
-    const slice = uids.slice(i, i + PLAYER_PROFILE_BATCH);
-    const refs = slice.map((uid) => playerProfileRef(uid));
-    const snapshots = await db.getAll(...refs);
-    snapshots.forEach((snap, idx) => {
-      if (snap.exists) {
-        profiles.set(slice[idx], snap.data() ?? {});
-      }
-    });
-  }
-
-  return profiles;
-};
-
 const loadClanSummaries = async (
   clanIds: Set<string>,
 ): Promise<Map<string, PlayerSummary["clan"]>> => {
@@ -86,39 +68,52 @@ const loadClanSummaries = async (
   return map;
 };
 
-const toLeaderboardEntries = async (
+/**
+ * Fetch top entries for a metric using a collectionGroup query.
+ *
+ * Instead of scanning ALL player profiles (5-10k+ reads), this uses Firestore's
+ * built-in indexes to retrieve only the top MAX_ENTRIES docs (~100 reads).
+ *
+ * NOTE: Requires collectionGroup indexes on "Profile" for each metric field.
+ * Firestore will provide a clickable link to create the index on first run.
+ */
+const fetchTopEntriesForMetric = async (
   metric: LeaderboardMetric,
-  profiles: Map<string, ProfileData>,
 ): Promise<LeaderboardEntry[]> => {
   const metricField = LEADERBOARD_METRICS[metric].field;
-  const candidates = Array.from(profiles.entries())
-    .map(([uid, profile]) => ({
-      uid,
-      profile,
-      value: sanitizeMetricValue(profile[metricField]),
-    }))
-    .filter((entry) => entry.value >= 0)
-    .sort((a, b) => b.value - a.value)
-    .slice(0, MAX_ENTRIES);
 
+  // CollectionGroup query — reads ONLY top N docs, not the entire Players collection!
+  const topProfilesSnap = await db.collectionGroup("Profile")
+    .orderBy(metricField, "desc")
+    .limit(MAX_ENTRIES)
+    .get();
+
+  // Extract candidates with UIDs from parent path (Players/{uid}/Profile/Profile)
+  const candidates = topProfilesSnap.docs
+    .map((doc) => {
+      const uid = doc.ref.parent.parent?.id;
+      if (!uid) return null;
+      const data = doc.data();
+      return { uid, profile: data, value: sanitizeMetricValue(data[metricField]) };
+    })
+    .filter((e): e is NonNullable<typeof e> => e !== null && e.value > 0);
+
+  // Load clan summaries for matched players only
   const clanIds = new Set<string>();
-  candidates.forEach((entry) => {
-    const clanId = extractClanId(entry.profile?.clanId);
-    if (clanId) {
-      clanIds.add(clanId);
-    }
+  candidates.forEach((c) => {
+    const clanId = extractClanId(c.profile?.clanId);
+    if (clanId) clanIds.add(clanId);
   });
   const clanSnapshots = await loadClanSummaries(clanIds);
 
+  // Build LeaderboardEntry[] (same format as before)
   const entries: LeaderboardEntry[] = [];
   let rank = 1;
   for (const candidate of candidates) {
     const clanId = extractClanId(candidate.profile?.clanId);
     const playerClanSummary = clanId ? clanSnapshots.get(clanId) ?? null : null;
     const summary = buildPlayerSummary(candidate.uid, candidate.profile, playerClanSummary);
-    if (!summary) {
-      continue;
-    }
+    if (!summary) continue;
     entries.push({
       uid: candidate.uid,
       value: candidate.value,
@@ -127,6 +122,8 @@ const toLeaderboardEntries = async (
     });
     rank += 1;
   }
+
+  logger.info(`[leaderboards] Fetched top ${entries.length} for metric=${metric} using collectionGroup query (${topProfilesSnap.size} docs read)`);
   return entries;
 };
 
@@ -219,13 +216,12 @@ const syncPlayerTop100Flags = async (
 };
 
 export const refreshLeaderboards = async (): Promise<{ metrics: number }> => {
-  const profiles = await fetchAllPlayerProfiles();
   for (const metric of Object.keys(LEADERBOARD_METRICS) as LeaderboardMetric[]) {
     const previousEntries = await loadPreviousEntries(metric);
-    const entries = await toLeaderboardEntries(metric, profiles);
+    const entries = await fetchTopEntriesForMetric(metric);
     await persistEntries(metric, entries);
     await syncPlayerTop100Flags(metric, entries, previousEntries);
-    console.log(
+    logger.info(
       `[leaderboards.refreshAll] Updated metric=${metric} with ${entries.length} entries`,
     );
   }

@@ -17,7 +17,7 @@ export const offers = onCall(
 );
 
 export const exchangeGemsForCoins = onCall(
-  callableOptions({ minInstances: getMinInstances(true), memory: "256MiB" }, true),
+  callableOptions({ minInstances: getMinInstances(false), memory: "256MiB" }, true),
   async (request) => {
     const { data, auth } = request;
     const uid = auth?.uid;
@@ -91,7 +91,7 @@ export const exchangeGemsForCoins = onCall(
 );
 
 export const claimRankUpReward = onCall(
-  callableOptions({ minInstances: getMinInstances(true), memory: "256MiB" }, true),
+  callableOptions({ minInstances: getMinInstances(false), memory: "256MiB" }, true),
   async (request) => {
     const { data, auth } = request;
     const uid = auth?.uid;

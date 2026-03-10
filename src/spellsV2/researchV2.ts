@@ -29,6 +29,7 @@ import {
     UserLibraryDoc,
     LibrarySlotEntry,
 } from "../shared/typesV2.js";
+import { scheduleUpgradeCompletion, cancelUpgradeCompletion } from "../upgrades/upgradeScheduler.js";
 
 const db = admin.firestore();
 
@@ -77,7 +78,7 @@ export const startSpellResearchV2 = onCall(
             getUnlockResearchCost(),
         ]);
 
-        return await runTransactionWithReceipt<StartSpellResearchResponse>(
+        const result = await runTransactionWithReceipt<StartSpellResearchResponse>(
             uid,
             opId,
             "startSpellResearchV2",
@@ -238,6 +239,24 @@ export const startSpellResearchV2 = onCall(
                 };
             },
         );
+
+        // Side-effect: schedule auto-completion (outside transaction per Transaction Metadata Return pattern)
+        if (result && result.success) {
+            try {
+                await scheduleUpgradeCompletion({
+                    uid,
+                    upgradeType: "spellResearch",
+                    targetId: spellId,
+                    targetLevel: result.targetLevel,
+                    completesAt: result.completesAt,
+                    createdAt: Date.now(),
+                });
+            } catch (error) {
+                console.warn(`[ResearchV2] Failed to schedule auto-completion for ${uid}/${spellId}`, error);
+            }
+        }
+
+        return result;
     },
 );
 
@@ -276,7 +295,7 @@ export const claimSpellResearchV2 = onCall(
 
         await createInProgressReceipt(uid, opId, "claimSpellResearchV2");
 
-        return await runTransactionWithReceipt<ClaimSpellResearchResponse>(
+        const result = await runTransactionWithReceipt<ClaimSpellResearchResponse>(
             uid,
             opId,
             "claimSpellResearchV2",
@@ -372,6 +391,17 @@ export const claimSpellResearchV2 = onCall(
                 };
             },
         );
+
+        // Side-effect: cancel auto-completion queue entry (player claimed manually)
+        if (result && result.success) {
+            try {
+                await cancelUpgradeCompletion(uid, "spellResearch", spellId);
+            } catch (error) {
+                console.warn(`[ResearchV2] Failed to cancel auto-completion on claim for ${uid}/${spellId}`, error);
+            }
+        }
+
+        return result;
     },
 );
 
@@ -419,7 +449,7 @@ export const skipSpellResearchV2 = onCall(
         // Load config
         const researchCatalog = await getSpellEvolutionV2Catalog();
 
-        return await runTransactionWithReceipt<SkipSpellResearchResponse>(
+        const result = await runTransactionWithReceipt<SkipSpellResearchResponse>(
             uid,
             opId,
             "skipSpellResearchV2",
@@ -510,6 +540,17 @@ export const skipSpellResearchV2 = onCall(
                 };
             },
         );
+
+        // Side-effect: cancel auto-completion since the research was skipped (instant)
+        if (result && result.success) {
+            try {
+                await cancelUpgradeCompletion(uid, "spellResearch", spellId);
+            } catch (error) {
+                console.warn(`[ResearchV2] Failed to cancel auto-completion for ${uid}/${spellId}`, error);
+            }
+        }
+
+        return result;
     },
 );
 

@@ -20,10 +20,12 @@ import {
     UseSpeedupRequest,
     UseSpeedupResponse,
     SpeedupQueueType,
+    UpgradeType,
 } from "../shared/typesV2.js";
 import {
     decSkuQtyOrThrowTx,
 } from "../inventory/index.js";
+import { updateUpgradeCompletionTime } from "../upgrades/upgradeScheduler.js";
 
 const db = admin.firestore();
 
@@ -94,7 +96,7 @@ export const useSpeedupV2 = onCall(
             `[SpeedupV2] uid=${uid} queue=${queueType} target=${targetId} sku=${speedupSkuId} duration=${durationSeconds}s`,
         );
 
-        return await runTransactionWithReceipt<UseSpeedupResponse>(
+        const result = await runTransactionWithReceipt<UseSpeedupResponse>(
             uid,
             opId,
             "useSpeedupV2",
@@ -196,6 +198,18 @@ export const useSpeedupV2 = onCall(
                 };
             },
         );
+
+        // Side-effect: update completion queue for pitCrew/library (not crateSlot)
+        if (result && result.success && (queueType === "pitCrew" || queueType === "library")) {
+            const upgradeType: UpgradeType = queueType === "pitCrew" ? "carEvolution" : "spellResearch";
+            try {
+                await updateUpgradeCompletionTime(uid, upgradeType, targetId, result.newCompletesAt);
+            } catch (error) {
+                console.warn(`[SpeedupV2] Failed to update completion queue for ${uid}/${targetId}`, error);
+            }
+        }
+
+        return result;
     },
 );
 

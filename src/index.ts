@@ -101,7 +101,6 @@ export {
   purchaseTierLicenseV2,
   getTierCatalogV2,
   startCarEvolutionV2,
-  claimCarEvolutionV2,
   skipCarEvolutionV2,
   getPitCrewStatusV2,
   refuelWithAdV2,
@@ -112,7 +111,6 @@ export {
 // V2 Spells: Library (Spell Research)
 export {
   startSpellResearchV2,
-  claimSpellResearchV2,
   skipSpellResearchV2,
   getLibraryStatusV2,
   setSpellDeckV2,
@@ -132,3 +130,8 @@ export {
 export {
   useSpeedupV2,
 } from "./speedups";
+
+// V2 Upgrade Completion: Auto-complete timer-based upgrades
+export {
+  upgradeCompletionJob,
+} from "./upgrades";

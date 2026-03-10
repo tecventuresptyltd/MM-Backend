@@ -789,3 +789,30 @@ export interface CarStatsInput {
     /** Current cumulative car level (0 to maxCarLevel) */
     carLevel: number;
 }
+
+// =============================================================================
+// UPGRADE COMPLETION QUEUE
+// =============================================================================
+
+export type UpgradeType = "carEvolution" | "spellResearch";
+
+/**
+ * Document stored at System/Upgrades/CompletionQueue/{uid}_{upgradeType}_{targetId}
+ * Used by the scheduled upgradeCompletionJob to auto-complete upgrades when timers expire.
+ */
+export interface UpgradeCompletionEntry {
+    /** Player UID */
+    uid: string;
+    /** Type of upgrade: car evolution or spell research */
+    upgradeType: UpgradeType;
+    /** The carId or spellId being upgraded */
+    targetId: string;
+    /** Target star level (car) or spell level */
+    targetLevel: number;
+    /** Unix timestamp (ms) when the upgrade completes — indexed for queries */
+    completesAt: number;
+    /** Unix timestamp (ms) when this queue entry was created */
+    createdAt: number;
+    /** Incremented on processing failure; fuse breaker drops at >= 5 */
+    retryCount?: number;
+}

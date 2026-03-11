@@ -13738,7 +13738,7 @@
           "version": "v2025.10.24",
           "carId": "car_h4ayzwf31g",
           "ability": {
-            "id": "guardianShield",
+            "id": "guardian",
             "duration": 7,
             "cooldown": 20
           }
@@ -13869,7 +13869,7 @@
           "version": "v2025.10.24",
           "carId": "car_1wp1gr2p",
           "ability": {
-            "id": "phantomDash",
+            "id": "phantom",
             "speedMultiplier": 1.3,
             "duration": 5,
             "cooldown": 15
@@ -14001,7 +14001,7 @@
           "version": "v2025.10.24",
           "carId": "car_4bbp20vv",
           "ability": {
-            "id": "spellReduction",
+            "id": "arcanist",
             "cooldownReduction": 2,
             "duration": 10,
             "cooldown": 5
@@ -14133,7 +14133,7 @@
           "version": "v2025.10.24",
           "carId": "car_3n27817s",
           "ability": {
-            "id": "guardianShield",
+            "id": "guardian",
             "duration": 7,
             "cooldown": 20
           }
@@ -14264,7 +14264,7 @@
           "version": "v2025.10.24",
           "carId": "car_xtm9htbs",
           "ability": {
-            "id": "phantomDash",
+            "id": "phantom",
             "speedMultiplier": 1.3,
             "duration": 5,
             "cooldown": 15
@@ -14396,7 +14396,7 @@
           "version": "v2025.10.24",
           "carId": "car_a9x2mkp3",
           "ability": {
-            "id": "spellReduction",
+            "id": "arcanist",
             "cooldownReduction": 2,
             "duration": 10,
             "cooldown": 5
@@ -14528,7 +14528,7 @@
           "version": "v2025.10.24",
           "carId": "car_jh5tqxqk",
           "ability": {
-            "id": "guardianShield",
+            "id": "guardian",
             "duration": 7,
             "cooldown": 20
           }
@@ -14659,7 +14659,7 @@
           "version": "v2025.10.24",
           "carId": "car_0yhea29t",
           "ability": {
-            "id": "phantomDash",
+            "id": "phantom",
             "speedMultiplier": 1.3,
             "duration": 5,
             "cooldown": 15
@@ -14791,7 +14791,7 @@
           "version": "v2025.10.24",
           "carId": "car_p4n7mm2z",
           "ability": {
-            "id": "spellReduction",
+            "id": "arcanist",
             "cooldownReduction": 2,
             "duration": 10,
             "cooldown": 5
@@ -14923,10 +14923,9 @@
           "version": "v2025.10.24",
           "carId": "car_8m8qttmy",
           "ability": {
-            "id": "spellReduction",
-            "cooldownReduction": 2,
-            "duration": 10,
-            "cooldown": 5
+            "id": "guardian",
+            "duration": 7,
+            "cooldown": 20
           }
         },
         "car_rqjrt91b": {
@@ -15055,10 +15054,10 @@
           "version": "v2025.10.24",
           "carId": "car_rqjrt91b",
           "ability": {
-            "id": "spellReduction",
-            "cooldownReduction": 2,
-            "duration": 10,
-            "cooldown": 5
+            "id": "phantom",
+            "speedMultiplier": 1.3,
+            "duration": 5,
+            "cooldown": 15
           }
         },
         "car_kztq00ve": {
@@ -15187,7 +15186,7 @@
           "version": "v2025.10.24",
           "carId": "car_kztq00ve",
           "ability": {
-            "id": "spellReduction",
+            "id": "arcanist",
             "cooldownReduction": 2,
             "duration": 10,
             "cooldown": 5
@@ -15319,10 +15318,9 @@
           "version": "v2025.10.24",
           "carId": "car_d2ap3yms",
           "ability": {
-            "id": "spellReduction",
-            "cooldownReduction": 2,
-            "duration": 10,
-            "cooldown": 5
+            "id": "guardian",
+            "duration": 7,
+            "cooldown": 20
           }
         },
         "car_enmdcw5t": {
@@ -15451,10 +15449,10 @@
           "version": "v2025.10.24",
           "carId": "car_enmdcw5t",
           "ability": {
-            "id": "spellReduction",
-            "cooldownReduction": 2,
-            "duration": 10,
-            "cooldown": 5
+            "id": "phantom",
+            "speedMultiplier": 1.3,
+            "duration": 5,
+            "cooldown": 15
           }
         },
         "car_2n5hnes4": {
@@ -15583,7 +15581,7 @@
           "version": "v2025.10.24",
           "carId": "car_2n5hnes4",
           "ability": {
-            "id": "spellReduction",
+            "id": "arcanist",
             "cooldownReduction": 2,
             "duration": 10,
             "cooldown": 5

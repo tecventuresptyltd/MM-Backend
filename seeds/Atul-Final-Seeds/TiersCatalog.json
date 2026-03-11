@@ -16,17 +16,17 @@
             "bundledCars": [
                 {
                     "carId": "car_h4ayzwf31g",
-                    "archetype": "tank",
+                    "archetype": "guardian",
                     "displayName": "Mitsabi Eon"
                 },
                 {
                     "carId": "car_1wp1gr2p",
-                    "archetype": "speedster",
+                    "archetype": "phantom",
                     "displayName": "Doge Chaser"
                 },
                 {
                     "carId": "car_4bbp20vv",
-                    "archetype": "specialist",
+                    "archetype": "arcanist",
                     "displayName": "Nisaro 360X"
                 }
             ],
@@ -47,17 +47,17 @@
             "bundledCars": [
                 {
                     "carId": "car_3n27817s",
-                    "archetype": "tank",
+                    "archetype": "guardian",
                     "displayName": "Mercian SLR Apex"
                 },
                 {
                     "carId": "car_xtm9htbs",
-                    "archetype": "speedster",
+                    "archetype": "phantom",
                     "displayName": "Nisaro Surya"
                 },
                 {
                     "carId": "car_a9x2mkp3",
-                    "archetype": "specialist",
+                    "archetype": "arcanist",
                     "displayName": "Aster Marlin D9"
                 }
             ],
@@ -78,17 +78,17 @@
             "bundledCars": [
                 {
                     "carId": "car_jh5tqxqk",
-                    "archetype": "tank",
+                    "archetype": "guardian",
                     "displayName": "Mclovin MP3"
                 },
                 {
                     "carId": "car_0yhea29t",
-                    "archetype": "speedster",
+                    "archetype": "phantom",
                     "displayName": "Chevaro Camara"
                 },
                 {
                     "carId": "car_p4n7mm2z",
-                    "archetype": "specialist",
+                    "archetype": "arcanist",
                     "displayName": "Aura R9"
                 }
             ],
@@ -109,17 +109,17 @@
             "bundledCars": [
                 {
                     "carId": "car_8m8qttmy",
-                    "archetype": "tank",
+                    "archetype": "guardian",
                     "displayName": "Nisaro GR-X"
                 },
                 {
                     "carId": "car_rqjrt91b",
-                    "archetype": "speedster",
+                    "archetype": "phantom",
                     "displayName": "Porza 919"
                 },
                 {
                     "carId": "car_kztq00ve",
-                    "archetype": "specialist",
+                    "archetype": "arcanist",
                     "displayName": "Lambros Avenger"
                 }
             ],
@@ -140,17 +140,17 @@
             "bundledCars": [
                 {
                     "carId": "car_d2ap3yms",
-                    "archetype": "tank",
+                    "archetype": "guardian",
                     "displayName": "Ferano LaVita"
                 },
                 {
                     "carId": "car_enmdcw5t",
-                    "archetype": "speedster",
+                    "archetype": "phantom",
                     "displayName": "Bugarri Chronos"
                 },
                 {
                     "carId": "car_2n5hnes4",
-                    "archetype": "specialist",
+                    "archetype": "arcanist",
                     "displayName": "Kosegg Agere"
                 }
             ],

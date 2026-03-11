@@ -611,7 +611,7 @@ export function computeCarStats(
 
     // --- Archetype distribution ---
     const profile: ArchetypeStatProfile = archetypeProfiles[input.archetype]
-        ?? archetypeProfiles.specialist
+        ?? archetypeProfiles.arcanist
         ?? { topSpeed: 0.2, acceleration: 0.2, handling: 0.2, boostRegen: 0.2, boostPower: 0.2 };
 
     // Round to 2 decimal places for clean values

@@ -14,7 +14,7 @@
 // TIER LICENSE SYSTEM
 // =============================================================================
 
-export type CarArchetype = "tank" | "speedster" | "specialist";
+export type CarArchetype = "guardian" | "phantom" | "arcanist";
 
 export interface TierBundledCar {
     carId: string;
@@ -717,7 +717,7 @@ export interface CarStatsBudgetConfig {
     levelWeight: number;
     /** The 5 stat keys, in order */
     statKeys: string[];
-    /** Distribution profiles per archetype (tank, speedster, specialist) */
+    /** Distribution profiles per archetype (guardian, phantom, arcanist) */
     archetypeProfiles: Record<string, ArchetypeStatProfile>;
     /** Optional per-tier budget overrides */
     tierOverrides?: Record<string, TierBudgetOverride>;
@@ -791,7 +791,7 @@ export interface ComputedCarStats {
 export interface CarStatsInput {
     /** Tier order (1-based: 1 = Street, 5 = Mythic) */
     tierOrder: number;
-    /** Car archetype: "tank", "speedster", or "specialist" */
+    /** Car archetype: "guardian", "phantom", or "arcanist" */
     archetype: string;
     /** Current star level (0 to maxStarLevel) */
     starLevel: number;

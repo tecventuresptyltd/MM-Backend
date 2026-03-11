@@ -4440,10 +4440,10 @@
       "subType": "speedup",
       "purchasable": {
         "currency": "gems",
-        "amount": 100
+        "amount": 60
       },
       "metadata": null,
-      "gemPrice": 100,
+      "gemPrice": 60,
       "durationSeconds": 300
     },
     "sku_spd15m_j8k2": {
@@ -4458,10 +4458,10 @@
       "subType": "speedup",
       "purchasable": {
         "currency": "gems",
-        "amount": 100
+        "amount": 120
       },
       "metadata": null,
-      "gemPrice": 100,
+      "gemPrice": 120,
       "durationSeconds": 900
     },
     "sku_spd30m_w3n9": {
@@ -4476,10 +4476,10 @@
       "subType": "speedup",
       "purchasable": {
         "currency": "gems",
-        "amount": 100
+        "amount": 180
       },
       "metadata": null,
-      "gemPrice": 100,
+      "gemPrice": 180,
       "durationSeconds": 1800
     },
     "sku_spd1h_m5t6": {
@@ -4494,10 +4494,10 @@
       "subType": "speedup",
       "purchasable": {
         "currency": "gems",
-        "amount": 100
+        "amount": 240
       },
       "metadata": null,
-      "gemPrice": 100,
+      "gemPrice": 240,
       "durationSeconds": 3600
     },
     "sku_spd3h_q2v8": {
@@ -4512,10 +4512,10 @@
       "subType": "speedup",
       "purchasable": {
         "currency": "gems",
-        "amount": 100
+        "amount": 300
       },
       "metadata": null,
-      "gemPrice": 100,
+      "gemPrice": 300,
       "durationSeconds": 10800
     },
     "sku_spd8h_y7p4": {
@@ -4530,10 +4530,10 @@
       "subType": "speedup",
       "purchasable": {
         "currency": "gems",
-        "amount": 100
+        "amount": 360
       },
       "metadata": null,
-      "gemPrice": 100,
+      "gemPrice": 360,
       "durationSeconds": 28800
     },
     "sku_spd24h_b9f1": {
@@ -4548,10 +4548,10 @@
       "subType": "speedup",
       "purchasable": {
         "currency": "gems",
-        "amount": 100
+        "amount": 420
       },
       "metadata": null,
-      "gemPrice": 100,
+      "gemPrice": 420,
       "durationSeconds": 86400
     },
     "sku_spd3d_h6c3": {
@@ -4566,10 +4566,10 @@
       "subType": "speedup",
       "purchasable": {
         "currency": "gems",
-        "amount": 100
+        "amount": 480
       },
       "metadata": null,
-      "gemPrice": 100,
+      "gemPrice": 480,
       "durationSeconds": 259200
     },
     "sku_spd7d_e1g5": {
@@ -4584,10 +4584,10 @@
       "subType": "speedup",
       "purchasable": {
         "currency": "gems",
-        "amount": 100
+        "amount": 540
       },
       "metadata": null,
-      "gemPrice": 100,
+      "gemPrice": 540,
       "durationSeconds": 604800
     }
   }

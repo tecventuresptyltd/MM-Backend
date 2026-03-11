@@ -12,7 +12,8 @@
             "stackable": true,
             "variant": null,
             "subType": "speedup",
-            "durationSeconds": 300
+            "durationSeconds": 300,
+            "gemPrice": 60
         },
         "sku_spd15m_j8k2": {
             "skuId": "sku_spd15m_j8k2",
@@ -24,7 +25,8 @@
             "stackable": true,
             "variant": null,
             "subType": "speedup",
-            "durationSeconds": 900
+            "durationSeconds": 900,
+            "gemPrice": 120
         },
         "sku_spd30m_w3n9": {
             "skuId": "sku_spd30m_w3n9",
@@ -36,7 +38,8 @@
             "stackable": true,
             "variant": null,
             "subType": "speedup",
-            "durationSeconds": 1800
+            "durationSeconds": 1800,
+            "gemPrice": 180
         },
         "sku_spd1h_m5t6": {
             "skuId": "sku_spd1h_m5t6",
@@ -48,7 +51,8 @@
             "stackable": true,
             "variant": null,
             "subType": "speedup",
-            "durationSeconds": 3600
+            "durationSeconds": 3600,
+            "gemPrice": 240
         },
         "sku_spd3h_q2v8": {
             "skuId": "sku_spd3h_q2v8",
@@ -60,7 +64,8 @@
             "stackable": true,
             "variant": null,
             "subType": "speedup",
-            "durationSeconds": 10800
+            "durationSeconds": 10800,
+            "gemPrice": 300
         },
         "sku_spd8h_y7p4": {
             "skuId": "sku_spd8h_y7p4",
@@ -72,7 +77,8 @@
             "stackable": true,
             "variant": null,
             "subType": "speedup",
-            "durationSeconds": 28800
+            "durationSeconds": 28800,
+            "gemPrice": 360
         },
         "sku_spd24h_b9f1": {
             "skuId": "sku_spd24h_b9f1",
@@ -84,7 +90,8 @@
             "stackable": true,
             "variant": null,
             "subType": "speedup",
-            "durationSeconds": 86400
+            "durationSeconds": 86400,
+            "gemPrice": 420
         },
         "sku_spd3d_h6c3": {
             "skuId": "sku_spd3d_h6c3",
@@ -96,7 +103,8 @@
             "stackable": true,
             "variant": null,
             "subType": "speedup",
-            "durationSeconds": 259200
+            "durationSeconds": 259200,
+            "gemPrice": 480
         },
         "sku_spd7d_e1g5": {
             "skuId": "sku_spd7d_e1g5",
@@ -108,7 +116,8 @@
             "stackable": true,
             "variant": null,
             "subType": "speedup",
-            "durationSeconds": 604800
+            "durationSeconds": 604800,
+            "gemPrice": 540
         }
     }
 }

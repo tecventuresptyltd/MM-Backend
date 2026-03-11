@@ -425,6 +425,7 @@ export interface SkipCarEvolutionResponse {
     opId: string;
     carId: string;
     gemsSpent: number;
+    newCarLevel?: number;
 }
 
 // Spell Research
@@ -452,6 +453,14 @@ export interface ClaimSpellResearchResponse {
     opId: string;
     spellId: string;
     newLevel: number;
+}
+
+export interface SkipSpellResearchResponse {
+    success: boolean;
+    opId: string;
+    spellId: string;
+    gemsSpent: number;
+    newLevel?: number;
 }
 
 // Fuel

@@ -460,11 +460,13 @@ export const skipSpellResearchV2 = onCall(
                 // Document refs
                 const economyRef = db.doc(`/Players/${uid}/Economy/Stats`);
                 const libraryRef = db.doc(`/Players/${uid}/Queues/Library`);
+                const spellsRef = db.doc(`/Players/${uid}/Spells/Levels`);
 
                 // Read documents
-                const [economyDoc, libraryDoc] = await Promise.all([
+                const [economyDoc, libraryDoc, spellsDoc] = await Promise.all([
                     transaction.get(economyRef),
                     transaction.get(libraryRef),
+                    transaction.get(spellsRef),
                 ]);
 
                 // Validate economy
@@ -520,23 +522,52 @@ export const skipSpellResearchV2 = onCall(
                     updatedAt: timestamp,
                 });
 
-                // Update slot to complete immediately
-                const updatedSlots = [...currentSlots];
-                updatedSlots[slotIndex] = {
-                    ...slot,
-                    completesAt: admin.firestore.Timestamp.fromMillis(now),
-                };
-
+                // Remove from queue completely since it's instantly finished
+                const updatedSlots = currentSlots.filter((_, idx) => idx !== slotIndex);
                 transaction.update(libraryRef, {
                     slots: updatedSlots,
                     updatedAt: timestamp,
                 });
+
+                // Update spell level
+                const isUnlockClaim = slot.targetLevel === 1;
+                const spellsData = spellsDoc.exists ? spellsDoc.data() : {};
+                const spellsMap = ((spellsData as Record<string, unknown>)?.spells ?? {}) as Record<string, unknown>;
+                const existingSpell = spellsMap[spellId] as { level?: number } | undefined;
+                const existingLevel = existingSpell?.level ?? 0;
+
+                if (isUnlockClaim && existingLevel < 1) {
+                    // Brand new spell unlock: create the entry + set unlockedAt
+                    const timestamp2 = admin.firestore.FieldValue.serverTimestamp();
+                    if (spellsDoc.exists) {
+                        transaction.update(spellsRef, {
+                            [`spells.${spellId}`]: { level: 1, xp: 0, isXpCapped: false },
+                            [`unlockedAt.${spellId}`]: timestamp2,
+                            updatedAt: timestamp,
+                        });
+                    } else {
+                        transaction.set(spellsRef, {
+                            spells: { [spellId]: { level: 1, xp: 0, isXpCapped: false } },
+                            unlockedAt: { [spellId]: timestamp2 },
+                            updatedAt: timestamp,
+                        });
+                    }
+                } else {
+                    // Normal level-up: just update the existing entry
+                    transaction.update(spellsRef, {
+                        [`spells.${spellId}.level`]: slot.targetLevel,
+                        [`spells.${spellId}.xp`]: 0,
+                        [`spells.${spellId}.isXpCapped`]: false,
+                        updatedAt: timestamp,
+                    });
+                }
 
                 return {
                     success: true,
                     opId,
                     spellId,
                     gemsSpent: skipCost,
+                    newLevel: slot.targetLevel,
                 };
             },
         );

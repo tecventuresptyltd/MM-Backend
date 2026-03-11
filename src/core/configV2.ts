@@ -331,7 +331,7 @@ export async function getCrateRewardsConfig(): Promise<CrateRewardsConfig> {
 export function calculateCrateCoins(
     trophies: number,
     rarity: string,
-    config: CrateRewardsConfig["coinScaling"],
+    config: CrateRewardsConfig["coinScaling"] | undefined,
 ): number {
     // Import rank lookup lazily to avoid circular dependency issues
     const { getRankForTrophies, COIN_CAPS_BY_RANK } = require("../race/economy.js");
@@ -340,8 +340,9 @@ export function calculateCrateCoins(
     const caps = COIN_CAPS_BY_RANK[rank] ?? COIN_CAPS_BY_RANK["Unranked"];
     const maxCoinPerRace = caps[0]; // 1st place cap
 
-    const multiplier = config.multipliers[rarity] ?? config.multipliers["common"] ?? 0.25;
-    const variance = config.variance ?? 0.2;
+    const multipliers = config?.multipliers ?? {};
+    const multiplier = multipliers[rarity] ?? multipliers["common"] ?? 0.25;
+    const variance = config?.variance ?? 0.2;
 
     // Random factor: (1 - variance) to (1 + variance)
     const randomFactor = (1 - variance) + Math.random() * (2 * variance);
@@ -360,7 +361,7 @@ export function calculateCrateCoins(
 export function calculateCrateShards(
     trophies: number,
     crateRarity: string,
-    config: CrateRewardsConfig["shardScaling"],
+    config: CrateRewardsConfig["shardScaling"] | undefined,
 ): number {
     const { getRankForTrophies, RANK_THRESHOLDS } = require("../race/economy.js");
 
@@ -374,8 +375,9 @@ export function calculateCrateShards(
     // Same formula as race shards: shardBase = 5 + (20 × index/totalRanks)
     const shardBase = 5 + (20 * (Math.max(1, safeIndex) / totalRanks));
 
-    const multiplier = config.multipliers[crateRarity] ?? config.multipliers["common"] ?? 0.4;
-    const variance = config.variance ?? 0.2;
+    const multipliers = config?.multipliers ?? {};
+    const multiplier = multipliers[crateRarity] ?? multipliers["common"] ?? 0.4;
+    const variance = config?.variance ?? 0.2;
 
     const randomFactor = (1 - variance) + Math.random() * (2 * variance);
 

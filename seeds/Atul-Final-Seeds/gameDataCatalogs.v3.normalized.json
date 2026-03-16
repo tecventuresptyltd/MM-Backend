@@ -4525,6 +4525,19 @@
               "variant": {
                 "durationLabel": "24h"
               }
+            },
+            {
+              "skuId": "sku_coin7d_q5r8",
+              "displayName": "Coin Booster (7d)",
+              "rarity": "special",
+              "stackable": true,
+              "purchasable": true,
+              "gemPrice": 1600,
+              "durationSeconds": 604800,
+              "subType": "coin",
+              "variant": {
+                "durationLabel": "7d"
+              }
             }
           ]
         },
@@ -4588,6 +4601,19 @@
               "durationSeconds": 86400,
               "variant": {
                 "durationLabel": "24h"
+              }
+            },
+            {
+              "skuId": "sku_exp7d_f2h6",
+              "displayName": "EXP Booster (7d)",
+              "rarity": "special",
+              "stackable": true,
+              "purchasable": true,
+              "gemPrice": 1200,
+              "durationSeconds": 604800,
+              "subType": "exp",
+              "variant": {
+                "durationLabel": "7d"
               }
             }
           ]
@@ -4781,6 +4807,98 @@
               "durationSeconds": 86400,
               "variant": {
                 "durationLabel": "24h"
+              }
+            },
+            {
+              "skuId": "sku_shrd7d_w3j9",
+              "displayName": "Shard Booster (7d)",
+              "rarity": "special",
+              "stackable": true,
+              "purchasable": true,
+              "gemPrice": 1200,
+              "durationSeconds": 604800,
+              "subType": "shard",
+              "variant": {
+                "durationLabel": "7d"
+              }
+            }
+          ]
+        },
+        "cur_spell_shards": {
+          "itemId": "cur_spell_shards",
+          "displayName": "Spell Shards",
+          "category": "currency",
+          "type": "currency",
+          "subType": "spellShards",
+          "rarity": "special",
+          "stackable": true,
+          "purchasable": true,
+          "metadata": {
+            "currency": "spellShards"
+          },
+          "variants": [
+            {
+              "skuId": "sku_9o72e3ap",
+              "displayName": "Spell Shards (+50)",
+              "rarity": "special",
+              "stackable": true,
+              "purchasable": true,
+              "gemPrice": 10,
+              "subType": "spellShards",
+              "variant": {
+                "shardAmount": 50
+              },
+              "metadata": {
+                "currency": "spellShards",
+                "amount": 50
+              }
+            },
+            {
+              "skuId": "sku_uz3h5d38",
+              "displayName": "Spell Shards (+100)",
+              "rarity": "special",
+              "stackable": true,
+              "purchasable": true,
+              "gemPrice": 80,
+              "subType": "spellShards",
+              "variant": {
+                "shardAmount": 100
+              },
+              "metadata": {
+                "currency": "spellShards",
+                "amount": 100
+              }
+            },
+            {
+              "skuId": "sku_1e4kdvhy",
+              "displayName": "Spell Shards (+500)",
+              "rarity": "special",
+              "stackable": true,
+              "purchasable": true,
+              "gemPrice": 320,
+              "subType": "spellShards",
+              "variant": {
+                "shardAmount": 500
+              },
+              "metadata": {
+                "currency": "spellShards",
+                "amount": 500
+              }
+            },
+            {
+              "skuId": "sku_r7am2us0",
+              "displayName": "Spell Shards (+1,000)",
+              "rarity": "special",
+              "stackable": true,
+              "purchasable": true,
+              "gemPrice": 600,
+              "subType": "spellShards",
+              "variant": {
+                "shardAmount": 1000
+              },
+              "metadata": {
+                "currency": "spellShards",
+                "amount": 1000
               }
             }
           ]
@@ -10411,6 +10529,156 @@
           "metadata": null,
           "gemPrice": 720,
           "durationSeconds": 86400
+        },
+        "sku_9o72e3ap": {
+          "skuId": "sku_9o72e3ap",
+          "itemId": "cur_spell_shards",
+          "type": "currency",
+          "displayName": "Spell Shards (+50)",
+          "itemDisplayName": "Spell Shards",
+          "category": "currency",
+          "subType": "spellShards",
+          "rarity": "special",
+          "stackable": true,
+          "variant": {
+            "shardAmount": 50
+          },
+          "metadata": {
+            "currency": "spellShards",
+            "amount": 50
+          },
+          "purchasable": {
+            "currency": "gems",
+            "amount": 10
+          },
+          "gemPrice": 10,
+          "durationSeconds": null
+        },
+        "sku_uz3h5d38": {
+          "skuId": "sku_uz3h5d38",
+          "itemId": "cur_spell_shards",
+          "type": "currency",
+          "displayName": "Spell Shards (+100)",
+          "itemDisplayName": "Spell Shards",
+          "category": "currency",
+          "subType": "spellShards",
+          "rarity": "special",
+          "stackable": true,
+          "variant": {
+            "shardAmount": 100
+          },
+          "metadata": {
+            "currency": "spellShards",
+            "amount": 100
+          },
+          "purchasable": {
+            "currency": "gems",
+            "amount": 80
+          },
+          "gemPrice": 80,
+          "durationSeconds": null
+        },
+        "sku_1e4kdvhy": {
+          "skuId": "sku_1e4kdvhy",
+          "itemId": "cur_spell_shards",
+          "type": "currency",
+          "displayName": "Spell Shards (+500)",
+          "itemDisplayName": "Spell Shards",
+          "category": "currency",
+          "subType": "spellShards",
+          "rarity": "special",
+          "stackable": true,
+          "variant": {
+            "shardAmount": 500
+          },
+          "metadata": {
+            "currency": "spellShards",
+            "amount": 500
+          },
+          "purchasable": {
+            "currency": "gems",
+            "amount": 320
+          },
+          "gemPrice": 320,
+          "durationSeconds": null
+        },
+        "sku_r7am2us0": {
+          "skuId": "sku_r7am2us0",
+          "itemId": "cur_spell_shards",
+          "type": "currency",
+          "displayName": "Spell Shards (+1,000)",
+          "itemDisplayName": "Spell Shards",
+          "category": "currency",
+          "subType": "spellShards",
+          "rarity": "special",
+          "stackable": true,
+          "variant": {
+            "shardAmount": 1000
+          },
+          "metadata": {
+            "currency": "spellShards",
+            "amount": 1000
+          },
+          "purchasable": {
+            "currency": "gems",
+            "amount": 600
+          },
+          "gemPrice": 600,
+          "durationSeconds": null
+        },
+        "sku_coin7d_q5r8": {
+          "skuId": "sku_coin7d_q5r8",
+          "itemId": "bst_kcemzpr4",
+          "displayName": "Coin Booster (7d)",
+          "category": "booster",
+          "type": "booster",
+          "rarity": "special",
+          "stackable": true,
+          "variant": null,
+          "subType": "coin",
+          "purchasable": {
+            "currency": "gems",
+            "amount": 1600
+          },
+          "metadata": null,
+          "gemPrice": 1600,
+          "durationSeconds": 604800
+        },
+        "sku_exp7d_f2h6": {
+          "skuId": "sku_exp7d_f2h6",
+          "itemId": "bst_hhhb8w5q",
+          "displayName": "EXP Booster (7d)",
+          "category": "booster",
+          "type": "booster",
+          "rarity": "special",
+          "stackable": true,
+          "variant": null,
+          "subType": "exp",
+          "purchasable": {
+            "currency": "gems",
+            "amount": 1200
+          },
+          "metadata": null,
+          "gemPrice": 1200,
+          "durationSeconds": 604800
+        },
+        "sku_shrd7d_w3j9": {
+          "skuId": "sku_shrd7d_w3j9",
+          "itemId": "bst_shrd7k9m",
+          "displayName": "Shard Booster (7d)",
+          "category": "booster",
+          "type": "booster",
+          "rarity": "special",
+          "stackable": true,
+          "variant": null,
+          "subType": "shard",
+          "purchasable": {
+            "currency": "gems",
+            "amount": 1200
+          },
+          "metadata": null,
+          "gemPrice": 1200,
+          "durationSeconds": 604800
         }
       }
     }

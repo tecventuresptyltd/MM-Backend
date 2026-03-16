@@ -5,9 +5,11 @@
  *  1. Player purchases a crate from the shop (crate SKU lands in inventory).
  *  2. Player calls openCrate({ opId, crateId }).
  *  3. Server consumes 1 crate SKU from inventory.
- *  4. Rolls rewards using CrateRewardsConfig:
+ *  4. Rolls rewards using CrateRewardsConfig (V2 multi-slot format):
+ *     - Rank-scaled coins (guaranteed)
+ *     - Rank-scaled spell shards (guaranteed)
  *     - N random cosmetics matching the crate's rarity
- *     - M random catalog items (coins, gems, boosters, speed-ups)
+ *     - 1-3 weighted utility items (boosters/speed-ups) via multi-slot system
  *  5. Grants all rewards instantly (inventory + economy).
  *  6. Returns the full list of awarded items.
  */
@@ -22,6 +24,8 @@ import {
 } from "../core/config.js";
 import {
   getCrateRewardsConfig,
+  calculateCrateCoins,
+  calculateCrateShards,
 } from "../core/configV2.js";
 import { checkIdempotency, createInProgressReceipt } from "../core/idempotency.js";
 import { runTransactionWithReceipt } from "../core/transactions.js";
@@ -61,6 +65,7 @@ interface OpenCrateResult {
   economyChanges: {
     coins?: number;
     gems?: number;
+    spellShards?: number;
   };
 }
 
@@ -122,6 +127,26 @@ function weightedRandomPick(pool: CrateRewardItem[]): CrateRewardItem | null {
   return pool[pool.length - 1];
 }
 
+/** Roll a rarity tier from a weighted distribution */
+function rollRarityFromDistribution(
+  distribution: Record<string, number> | undefined,
+  fallbackRarity: string,
+): string {
+  if (!distribution || Object.keys(distribution).length === 0) {
+    return fallbackRarity;
+  }
+  const entries = Object.entries(distribution);
+  const totalWeight = entries.reduce((sum, [, w]) => sum + w, 0);
+  if (totalWeight <= 0) return fallbackRarity;
+
+  let roll = Math.random() * totalWeight;
+  for (const [rarity, weight] of entries) {
+    roll -= weight;
+    if (roll <= 0) return rarity;
+  }
+  return entries[entries.length - 1][0];
+}
+
 // =============================================================================
 // MAIN FUNCTION
 // =============================================================================
@@ -168,13 +193,10 @@ export const openCrate = onCall(
 
     const crateRarity = (crate.rarity ?? "common").toLowerCase();
 
-    // ── Determine reward pool ──
-    const rewardPool =
-      crateRewardsConfig?.rewardsByRarity?.[crateRarity] ??
-      crateRewardsConfig?.rewardsByRarity?.["common"];
-
-    if (!rewardPool) {
-      throw new HttpsError("internal", `No reward pool configured for rarity: ${crateRarity}`);
+    // ── Validate item pool exists for this rarity ──
+    const itemPool = crateRewardsConfig.itemPoolsByRarity?.[crateRarity];
+    if (!itemPool || itemPool.length === 0) {
+      throw new HttpsError("internal", `No item pool configured for rarity: ${crateRarity}`);
     }
 
     // ── Roll rewards for ALL crates ──
@@ -184,11 +206,44 @@ export const openCrate = onCall(
 
     const awardedItems: AwardedItem[] = [];
     const inventoryGrants: Array<{ skuId: string; quantity: number }> = [];
-    const economyChanges: { coins: number; gems: number } = { coins: 0, gems: 0 };
+    const economyChanges: { coins: number; gems: number; spellShards: number } = { coins: 0, gems: 0, spellShards: 0 };
+
+    // ── Read player trophies for rank-scaled rewards (outside transaction) ──
+    const profileDoc = await db.doc(`/Players/${uid}/Profile/Profile`).get();
+    const playerTrophies = (profileDoc.data()?.trophies as number) ?? 0;
 
     for (let c = 0; c < quantity; c++) {
-      // 1. Pick random cosmetics of this rarity (fresh shuffle per crate)
-      const cosmeticsToAward = Math.min(rewardPool.cosmeticCount, matchingCosmetics.length);
+      // 1. Guaranteed coins (rank-scaled)
+      const coinAmount = calculateCrateCoins(
+        playerTrophies,
+        crateRarity,
+        crateRewardsConfig.coinScaling,
+      );
+      economyChanges.coins += coinAmount;
+      awardedItems.push({
+        type: "coins",
+        displayName: `${coinAmount.toLocaleString()} Coins`,
+        quantity: coinAmount,
+      });
+
+      // 2. Guaranteed spell shards (rank-scaled)
+      const shardAmount = calculateCrateShards(
+        playerTrophies,
+        crateRarity,
+        crateRewardsConfig.shardScaling,
+      );
+      economyChanges.spellShards += shardAmount;
+      awardedItems.push({
+        type: "spellShards",
+        displayName: `${shardAmount.toLocaleString()} Spell Shards`,
+        quantity: shardAmount,
+      });
+
+      // 3. Pick random cosmetics of this rarity (fresh shuffle per crate)
+      const cosmeticsToAward = Math.min(
+        crateRewardsConfig.cosmeticCount ?? 3,
+        matchingCosmetics.length,
+      );
       const selectedCosmetics = shuffleArray([...matchingCosmetics]).slice(0, cosmeticsToAward);
 
       for (const cosmetic of selectedCosmetics) {
@@ -203,31 +258,56 @@ export const openCrate = onCall(
         inventoryGrants.push({ skuId: cosmetic.skuId, quantity: 1 });
       }
 
-      // 2. Pick random catalog items (coins, gems, boosters, speed-ups)
-      for (let i = 0; i < rewardPool.catalogItemCount; i++) {
-        const picked = weightedRandomPick(rewardPool.rewardPool);
+      // 4. Multi-slot utility item rolls
+      const slotActivation = crateRewardsConfig.slotActivation?.[crateRarity]
+        ?? { slot2: 0.25, slot3: 0.03 };
+      const rarityDist = crateRewardsConfig.slotRarityDistribution?.[crateRarity];
+
+      const activeSlotRarities: string[] = [crateRarity]; // Slot 1: guaranteed
+
+      if (Math.random() < slotActivation.slot2) {
+        activeSlotRarities.push(
+          rollRarityFromDistribution(rarityDist?.slot2, crateRarity),
+        );
+      }
+      if (Math.random() < slotActivation.slot3) {
+        activeSlotRarities.push(
+          rollRarityFromDistribution(rarityDist?.slot3, crateRarity),
+        );
+      }
+
+      for (const slotRarity of activeSlotRarities) {
+        const pool = crateRewardsConfig.itemPoolsByRarity?.[slotRarity];
+        if (!pool || pool.length === 0) continue;
+
+        const picked = weightedRandomPick(pool);
         if (!picked) continue;
 
-        const item: AwardedItem = {
-          type: picked.type,
-          displayName: picked.displayName,
-          quantity: picked.quantity,
-        };
-
-        if (picked.durationHours) {
-          item.durationHours = picked.durationHours;
-        }
-
         if (picked.type === "coins") {
-          economyChanges.coins += picked.quantity;
-        } else if (picked.type === "gems") {
-          economyChanges.gems += picked.quantity;
+          const slotCoinAmount = calculateCrateCoins(
+            playerTrophies,
+            slotRarity,
+            crateRewardsConfig.coinScaling,
+          );
+          economyChanges.coins += slotCoinAmount;
+          awardedItems.push({
+            type: "coins",
+            displayName: `${slotCoinAmount.toLocaleString()} Coins`,
+            quantity: slotCoinAmount,
+          });
         } else if (picked.skuId) {
-          item.skuId = picked.skuId;
+          const item: AwardedItem = {
+            type: picked.type,
+            displayName: picked.displayName,
+            quantity: picked.quantity,
+            skuId: picked.skuId,
+          };
+          if (picked.durationHours) {
+            item.durationHours = picked.durationHours;
+          }
           inventoryGrants.push({ skuId: picked.skuId, quantity: picked.quantity });
+          awardedItems.push(item);
         }
-
-        awardedItems.push(item);
       }
     }
 
@@ -274,7 +354,7 @@ export const openCrate = onCall(
         });
 
         // ── PHASE 4: Economy changes (WRITE ONLY) ──
-        if (economyChanges.coins > 0 || economyChanges.gems > 0) {
+        if (economyChanges.coins > 0 || economyChanges.gems > 0 || economyChanges.spellShards > 0) {
           const economyUpdate: Record<string, FirebaseFirestore.FieldValue> = {
             updatedAt: timestamp,
           };
@@ -283,6 +363,9 @@ export const openCrate = onCall(
           }
           if (economyChanges.gems > 0) {
             economyUpdate.gems = admin.firestore.FieldValue.increment(economyChanges.gems);
+          }
+          if (economyChanges.spellShards > 0) {
+            economyUpdate.spellShards = admin.firestore.FieldValue.increment(economyChanges.spellShards);
           }
           transaction.update(economyRef, economyUpdate);
         }
@@ -298,6 +381,7 @@ export const openCrate = onCall(
           economyChanges: {
             ...(economyChanges.coins > 0 ? { coins: economyChanges.coins } : {}),
             ...(economyChanges.gems > 0 ? { gems: economyChanges.gems } : {}),
+            ...(economyChanges.spellShards > 0 ? { spellShards: economyChanges.spellShards } : {}),
           },
         };
       },
@@ -313,3 +397,4 @@ export const openCrate = onCall(
     return result;
   },
 );
+

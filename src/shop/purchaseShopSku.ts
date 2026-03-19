@@ -103,10 +103,10 @@ export async function purchaseShopSkuInternal(
     : undefined;
   const currencyAmount = isCurrencyItem
     ? Number(
-        (variant.metadata as Record<string, unknown> | null)?.amount
-        ?? (variant.variant as Record<string, unknown> | null)?.shardAmount
-        ?? 0,
-      )
+      (variant.metadata as Record<string, unknown> | null)?.amount
+      ?? (variant.variant as Record<string, unknown> | null)?.shardAmount
+      ?? 0,
+    )
     : 0;
 
   if (isCurrencyItem && (!currencyField || !Number.isFinite(currencyAmount) || currencyAmount <= 0)) {

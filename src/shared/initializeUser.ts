@@ -3,6 +3,8 @@ import { HttpsError } from "firebase-functions/v2/https";
 import { loadStarterRewards } from "./starterRewards.js";
 import { loadStarterSpellIds } from "./catalogHelpers.js";
 import { resolveInventoryContext } from "./inventory.js";
+import { getCrateSlotsConfig, getUnlockDurationForRarity } from "../core/configV2.js";
+import { CrateSlotEntry, UserCrateSlotsDoc } from "./typesV2.js";
 import { getReferralConfig, listSkusByFilter, resolveSkuOrThrow } from "../core/config.js";
 import { createDefaultReferralStats } from "../referral/constants.js";
 import {
@@ -445,6 +447,7 @@ export async function initializeUserIfNeeded(
     const crateRef = playerRef.collection("Inventory").doc(starterRewards.crateSkuId);
     const keyRef = playerRef.collection("Inventory").doc(starterRewards.keySkuId);
     const receiptRef = playerRef.collection("Receipts").doc(receiptId);
+    const crateSlotsRef = db.doc(`/Players/${uid}/Crates/Slots`);
 
     const summaryRef = inventoryCtx.summaryRef;
     const useItemIdInventory = process.env.USE_ITEMID_V2 === "true";
@@ -454,6 +457,11 @@ export async function initializeUserIfNeeded(
     const legacyConsumablesRef = useItemIdInventory
       ? playerRef.collection("Inventory").doc("Consumables")
       : null;
+
+    // Pre-load crate slots config for slot placement
+    const slotsConfig = await getCrateSlotsConfig();
+    const crateRarity = (starterRewards.crate.rarity ?? "common").toLowerCase();
+    const unlockDurationSeconds = await getUnlockDurationForRarity(crateRarity);
 
     await runReadThenWrite(
       db,
@@ -489,6 +497,7 @@ export async function initializeUserIfNeeded(
           tx.get(summaryRef),
           legacyItemsDocPromise,
           legacyConsumablesDocPromise,
+          tx.get(crateSlotsRef),
         ]);
         const [
           playerDoc,
@@ -509,6 +518,7 @@ export async function initializeUserIfNeeded(
           summaryDoc,
           legacyItemsDoc,
           legacyConsumablesDoc,
+          crateSlotsDoc,
         ] = baseDocs;
         const cosmeticDocs = await Promise.all(
           cosmeticInventoryRefs.map((ref) => tx.get(ref)),
@@ -610,6 +620,7 @@ export async function initializeUserIfNeeded(
             }
             : null,
           referralPlan,
+          crateSlotsDoc,
           legacy: useItemIdInventory
             ? {
               itemsRef: legacyItemsRef,
@@ -655,6 +666,7 @@ export async function initializeUserIfNeeded(
           summaryState,
           defaultCosmetics,
           referralPlan,
+          crateSlotsDoc,
           fullGrant,
           legacy,
         } = reads;
@@ -804,18 +816,54 @@ export async function initializeUserIfNeeded(
           total: number;
         }> = [];
 
-        if (crateTotal < 1) {
-          const adjustment = await txIncSkuQty(
-            tx,
-            db,
-            uid,
-            starterRewards.crateSkuId,
-            1,
-            { state: crateState, timestamp },
-          );
-          crateTotal = adjustment.next;
-          summaryChanges[starterRewards.crateSkuId] =
-            (summaryChanges[starterRewards.crateSkuId] ?? 0) + 1;
+        // Place starter crate into a crate SLOT (not inventory)
+        // This matches the race result flow where crates go to slots only
+        {
+          const slotsData = (
+            crateSlotsDoc.exists ? crateSlotsDoc.data() : { slots: [], maxSlots: slotsConfig.maxSlots }
+          ) as UserCrateSlotsDoc;
+
+          const currentSlots = (slotsData.slots ?? []).filter((s) => s !== null);
+          const maxSlots = slotsData.maxSlots ?? slotsConfig.maxSlots;
+
+          if (currentSlots.length < maxSlots) {
+            const newSlotEntry: CrateSlotEntry = {
+              crateSkuId: starterRewards.crateSkuId,
+              crateId: starterRewards.crateId,
+              rarity: crateRarity,
+              receivedAt: admin.firestore.Timestamp.now(),
+              isUnlocking: false,
+              startedAt: null,
+              completesAt: null,
+              unlockDurationSeconds,
+            };
+
+            const newSlots: (CrateSlotEntry | null)[] = [];
+            let slotAssigned = false;
+
+            for (let i = 0; i < maxSlots; i++) {
+              const existingSlot = slotsData.slots?.[i] ?? null;
+              if (existingSlot) {
+                newSlots.push(existingSlot as CrateSlotEntry);
+              } else if (!slotAssigned) {
+                newSlots.push(newSlotEntry);
+                slotAssigned = true;
+              } else {
+                newSlots.push(null);
+              }
+            }
+
+            if (!slotAssigned) {
+              newSlots.push(newSlotEntry);
+            }
+
+            if (crateSlotsDoc.exists) {
+              tx.update(crateSlotsRef, { slots: newSlots, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+            } else {
+              tx.set(crateSlotsRef, { slots: newSlots, maxSlots, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+            }
+          }
+          // If all slots are full, skip — the player will get the crate from a race drop fallback
         }
 
         if (keyTotal < 1) {

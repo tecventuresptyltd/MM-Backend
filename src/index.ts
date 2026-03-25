@@ -135,3 +135,9 @@ export {
 export {
   upgradeCompletionJob,
 } from "./upgrades";
+
+// Daily Rewards: Streak-based daily login rewards
+export {
+  getDailyRewardStatus,
+  claimDailyReward,
+} from "./dailyRewards";

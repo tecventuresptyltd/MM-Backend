@@ -1,161 +1,161 @@
 {
-    "version": "v1-tiers",
-    "updatedAt": 1738616330000,
-    "tiers": {
-        "tier_1": {
-            "tierId": "tier_1",
-            "displayName": "Street License",
-            "i18n": {
-                "en": "Street License"
-            },
-            "order": 1,
-            "requirements": {
-                "masteryRank": 0,
-                "coins": 0
-            },
-            "bundledCars": [
-                {
-                    "carId": "car_h4ayzwf31g",
-                    "archetype": "tank",
-                    "displayName": "Mitsabi Eon"
-                },
-                {
-                    "carId": "car_1wp1gr2p",
-                    "archetype": "speedster",
-                    "displayName": "Doge Chaser"
-                },
-                {
-                    "carId": "car_4bbp20vv",
-                    "archetype": "specialist",
-                    "displayName": "Nisaro 360X"
-                }
-            ],
-            "starterLicense": true,
-            "description": "Entry-level street racing license. Granted to all new racers."
+  "version": "v1-tiers",
+  "updatedAt": 1742900000000,
+  "tiers": {
+    "tier_1": {
+      "tierId": "tier_1",
+      "displayName": "Street License",
+      "i18n": {
+        "en": "Street License"
+      },
+      "order": 1,
+      "requirements": {
+        "masteryRank": 0,
+        "coins": 0
+      },
+      "bundledCars": [
+        {
+          "carId": "car_h4ayzwf31g",
+          "archetype": "tank",
+          "displayName": "Mitsabi Eon"
         },
-        "tier_2": {
-            "tierId": "tier_2",
-            "displayName": "Sports License",
-            "i18n": {
-                "en": "Sports License"
-            },
-            "order": 2,
-            "requirements": {
-                "masteryRank": 5,
-                "coins": 100000
-            },
-            "bundledCars": [
-                {
-                    "carId": "car_3n27817s",
-                    "archetype": "tank",
-                    "displayName": "Mercian SLR Apex"
-                },
-                {
-                    "carId": "car_xtm9htbs",
-                    "archetype": "speedster",
-                    "displayName": "Nisaro Surya"
-                },
-                {
-                    "carId": "car_a9x2mkp3",
-                    "archetype": "specialist",
-                    "displayName": "Aster Marlin D9"
-                }
-            ],
-            "starterLicense": false,
-            "description": "Unlock faster sports cars with improved handling."
+        {
+          "carId": "car_1wp1gr2p",
+          "archetype": "speedster",
+          "displayName": "Doge Chaser"
         },
-        "tier_3": {
-            "tierId": "tier_3",
-            "displayName": "Super License",
-            "i18n": {
-                "en": "Super License"
-            },
-            "order": 3,
-            "requirements": {
-                "masteryRank": 10,
-                "coins": 250000
-            },
-            "bundledCars": [
-                {
-                    "carId": "car_jh5tqxqk",
-                    "archetype": "tank",
-                    "displayName": "Mclovin MP3"
-                },
-                {
-                    "carId": "car_0yhea29t",
-                    "archetype": "speedster",
-                    "displayName": "Chevaro Camara"
-                },
-                {
-                    "carId": "car_p4n7mm2z",
-                    "archetype": "specialist",
-                    "displayName": "Aura R9"
-                }
-            ],
-            "starterLicense": false,
-            "description": "Access to high-performance supercars."
-        },
-        "tier_4": {
-            "tierId": "tier_4",
-            "displayName": "Hyper License",
-            "i18n": {
-                "en": "Hyper License"
-            },
-            "order": 4,
-            "requirements": {
-                "masteryRank": 20,
-                "coins": 500000
-            },
-            "bundledCars": [
-                {
-                    "carId": "car_8m8qttmy",
-                    "archetype": "tank",
-                    "displayName": "Nisaro GR-X"
-                },
-                {
-                    "carId": "car_rqjrt91b",
-                    "archetype": "speedster",
-                    "displayName": "Porza 919"
-                },
-                {
-                    "carId": "car_kztq00ve",
-                    "archetype": "specialist",
-                    "displayName": "Lambros Avenger"
-                }
-            ],
-            "starterLicense": false,
-            "description": "Elite hypercars for experienced racers."
-        },
-        "tier_5": {
-            "tierId": "tier_5",
-            "displayName": "Mythic License",
-            "i18n": {
-                "en": "Mythic License"
-            },
-            "order": 5,
-            "requirements": {
-                "masteryRank": 30,
-                "coins": 1000000
-            },
-            "bundledCars": [
-                {
-                    "carId": "car_d2ap3yms",
-                    "archetype": "tank",
-                    "displayName": "Ferano LaVita"
-                },
-                {
-                    "carId": "car_enmdcw5t",
-                    "archetype": "speedster",
-                    "displayName": "Bugarri Chronos"
-                },
-                {
-                    "carId": "car_2n5hnes4",
-                    "archetype": "specialist",
-                    "displayName": "Kosegg Agere"
-                }
-            ],
-            "starterLicense": false,
-            "description": "Legendary machines of unparalleled power."
+        {
+          "carId": "car_4bbp20vv",
+          "archetype": "specialist",
+          "displayName": "Nisaro 360X"
         }
+      ],
+      "starterLicense": true,
+      "description": "Entry-level street racing license. Granted to all new racers."
+    },
+    "tier_2": {
+      "tierId": "tier_2",
+      "displayName": "Sports License",
+      "i18n": {
+        "en": "Sports License"
+      },
+      "order": 2,
+      "requirements": {
+        "masteryRank": 5,
+        "coins": 47000
+      },
+      "bundledCars": [
+        {
+          "carId": "car_3n27817s",
+          "archetype": "tank",
+          "displayName": "Mercian SLR Apex"
+        },
+        {
+          "carId": "car_xtm9htbs",
+          "archetype": "speedster",
+          "displayName": "Nisaro Surya"
+        },
+        {
+          "carId": "car_a9x2mkp3",
+          "archetype": "specialist",
+          "displayName": "Aster Marlin D9"
+        }
+      ],
+      "starterLicense": false,
+      "description": "Unlock faster sports cars with improved handling."
+    },
+    "tier_3": {
+      "tierId": "tier_3",
+      "displayName": "Super License",
+      "i18n": {
+        "en": "Super License"
+      },
+      "order": 3,
+      "requirements": {
+        "masteryRank": 10,
+        "coins": 73000
+      },
+      "bundledCars": [
+        {
+          "carId": "car_jh5tqxqk",
+          "archetype": "tank",
+          "displayName": "Mclovin MP3"
+        },
+        {
+          "carId": "car_0yhea29t",
+          "archetype": "speedster",
+          "displayName": "Chevaro Camara"
+        },
+        {
+          "carId": "car_p4n7mm2z",
+          "archetype": "specialist",
+          "displayName": "Aura R9"
+        }
+      ],
+      "starterLicense": false,
+      "description": "Access to high-performance supercars."
+    },
+    "tier_4": {
+      "tierId": "tier_4",
+      "displayName": "Hyper License",
+      "i18n": {
+        "en": "Hyper License"
+      },
+      "order": 4,
+      "requirements": {
+        "masteryRank": 20,
+        "coins": 141000
+      },
+      "bundledCars": [
+        {
+          "carId": "car_8m8qttmy",
+          "archetype": "tank",
+          "displayName": "Nisaro GR-X"
+        },
+        {
+          "carId": "car_rqjrt91b",
+          "archetype": "speedster",
+          "displayName": "Porza 919"
+        },
+        {
+          "carId": "car_kztq00ve",
+          "archetype": "specialist",
+          "displayName": "Lambros Avenger"
+        }
+      ],
+      "starterLicense": false,
+      "description": "Elite hypercars for experienced racers."
+    },
+    "tier_5": {
+      "tierId": "tier_5",
+      "displayName": "Mythic License",
+      "i18n": {
+        "en": "Mythic License"
+      },
+      "order": 5,
+      "requirements": {
+        "masteryRank": 30,
+        "coins": 278000
+      },
+      "bundledCars": [
+        {
+          "carId": "car_d2ap3yms",
+          "archetype": "tank",
+          "displayName": "Ferano LaVita"
+        },
+        {
+          "carId": "car_enmdcw5t",
+          "archetype": "speedster",
+          "displayName": "Bugarri Chronos"
+        },
+        {
+          "carId": "car_2n5hnes4",
+          "archetype": "specialist",
+          "displayName": "Kosegg Agere"
+        }
+      ],
+      "starterLicense": false,
+      "description": "Legendary machines of unparalleled power."
     }
+  }
 }

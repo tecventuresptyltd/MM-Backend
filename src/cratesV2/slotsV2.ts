@@ -732,6 +732,7 @@ export const skipCrateUnlockV2 = onCall(
                     remainingSeconds,
                     slotsConfig.skipCost.gemsPerHour,
                     slotsConfig.skipCost.minGems,
+                    (slotsConfig.skipCost as { freeSkipThresholdSeconds?: number }).freeSkipThresholdSeconds ?? 0,
                 );
 
                 // Check gems
@@ -885,6 +886,7 @@ export const getCrateSlotsStatusV2 = onCall(
                         remainingSeconds,
                         slotsConfig.skipCost.gemsPerHour,
                         slotsConfig.skipCost.minGems,
+                        (slotsConfig.skipCost as { freeSkipThresholdSeconds?: number }).freeSkipThresholdSeconds ?? 0,
                     )
                     : 0;
 

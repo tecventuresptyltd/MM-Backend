@@ -21,6 +21,7 @@ import {
     getXpCapForCar,
     getEvolutionCostForCar,
     calculateSkipCost,
+    getCarEvolutionV2Catalog,
 } from "../core/configV2.js";
 import {
     StartCarEvolutionRequest,
@@ -401,8 +402,8 @@ export const skipCarEvolutionV2 = onCall(
 
         await createInProgressReceipt(uid, opId, "skipCarEvolutionV2");
 
-        // evolutionCatalog replaced with hardcoded bypass
-        // const evolutionCatalog = await getCarEvolutionV2Catalog();
+        // Load evolution catalog for skip cost config
+        const evolutionCatalog = await getCarEvolutionV2Catalog();
 
         const result = await runTransactionWithReceipt<SkipCarEvolutionResponse>(
             uid,
@@ -450,14 +451,12 @@ export const skipCarEvolutionV2 = onCall(
                     throw new HttpsError("failed-precondition", "Evolution is already complete. Use claim instead.");
                 }
 
-                // Since CarEvolutionV2 is gone, we'll use a hardcoded fallback for skip cost 
-                // Alternatively, this can be moved to another config but for now we default to a standard rate
-                // 100 gems per hour, minimum 5 gems.
                 const remainingSeconds = Math.ceil((completesAt.toMillis() - now) / 1000);
                 const skipCost = calculateSkipCost(
                     remainingSeconds,
-                    100, // gems per hour
-                    5,   // min gems
+                    evolutionCatalog.skipCost.gemsPerHour,
+                    evolutionCatalog.skipCost.minGems,
+                    evolutionCatalog.skipCost.freeSkipThresholdSeconds ?? 0,
                 );
 
                 // Check gems
@@ -542,10 +541,11 @@ export const getPitCrewStatusV2 = onCall(
             throw new HttpsError("unauthenticated", "User must be authenticated.");
         }
 
-        const [pitCrewDoc, profileDoc, slotsConfig] = await Promise.all([
+        const [pitCrewDoc, profileDoc, slotsConfig, evolutionCatalog] = await Promise.all([
             db.doc(`/Players/${uid}/Queues/PitCrew`).get(),
             db.doc(`/Players/${uid}/Profile/Profile`).get(),
             getPlayerSlotsConfig(),
+            getCarEvolutionV2Catalog(),
         ]);
 
         const now = Date.now();
@@ -571,8 +571,9 @@ export const getPitCrewStatusV2 = onCall(
                 ? 0
                 : calculateSkipCost(
                     remainingSeconds,
-                    100, // Hardcoded fallback for now
-                    5,
+                    evolutionCatalog.skipCost.gemsPerHour,
+                    evolutionCatalog.skipCost.minGems,
+                    evolutionCatalog.skipCost.freeSkipThresholdSeconds ?? 0,
                 );
 
             return {

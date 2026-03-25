@@ -178,6 +178,33 @@ export async function getCarLevelData(carId: string, carLevel: number): Promise<
 }
 
 // =============================================================================
+// CAR EVOLUTION CATALOG
+// =============================================================================
+
+let carEvolutionCatalogCache: CacheEntry<CarEvolutionV2Catalog> | null = null;
+
+export async function getCarEvolutionV2Catalog(): Promise<CarEvolutionV2Catalog> {
+    const now = Date.now();
+    if (carEvolutionCatalogCache && now - carEvolutionCatalogCache.lastFetched < CACHE_TTL_MS) {
+        return carEvolutionCatalogCache.data;
+    }
+
+    const docRef = CATALOGS_ROOT.doc("CarEvolutionV2Catalog");
+    const doc = await docRef.get();
+
+    if (!doc.exists) {
+        throw new Error(
+            "CarEvolutionV2Catalog not found at /GameData/v1/catalogs/CarEvolutionV2Catalog",
+        );
+    }
+
+    const data = doc.data() as CarEvolutionV2Catalog;
+    carEvolutionCatalogCache = { data, lastFetched: now };
+    console.log("[V2Config] Loaded CarEvolutionV2Catalog");
+    return data;
+}
+
+// =============================================================================
 // SPELL EVOLUTION CATALOG
 // =============================================================================
 
@@ -481,8 +508,13 @@ export function calculateSkipCost(
     remainingSeconds: number,
     gemsPerHour: number, // Base rate (e.g. 20)
     minGems: number,
+    freeSkipThresholdSeconds: number = 0,
 ): number {
     if (remainingSeconds <= 0) {
+        return 0;
+    }
+    // Free skip for timers under the threshold (GoW-style)
+    if (freeSkipThresholdSeconds > 0 && remainingSeconds <= freeSkipThresholdSeconds) {
         return 0;
     }
     const remainingHours = remainingSeconds / 3600;
@@ -722,6 +754,45 @@ export function getMasteryProgress(
 }
 
 // =============================================================================
+// DAILY REWARDS CONFIG
+// =============================================================================
+
+export interface DailyRewardItem {
+    type: "gems" | "booster" | "speedUp";
+    id: string;
+    quantity: number;
+    label?: string;
+}
+
+export interface DailyRewardDay {
+    day: number;
+    gems: number;
+    items: DailyRewardItem[];
+    isMilestone?: boolean;
+}
+
+export interface DailyRewardsConfig {
+    version: string;
+    rewards: Record<string, DailyRewardDay>;
+}
+
+let dailyRewardsConfigCache: CacheEntry<DailyRewardsConfig> | null = null;
+
+export async function getDailyRewardsConfig(): Promise<DailyRewardsConfig> {
+    if (dailyRewardsConfigCache && Date.now() - dailyRewardsConfigCache.lastFetched < 300_000) {
+        return dailyRewardsConfigCache.data;
+    }
+    const snap = await admin.firestore().collection("GameData").doc("v1")
+        .collection("config").doc("DailyRewardsConfig").get();
+    if (!snap.exists) {
+        throw new Error("DailyRewardsConfig not found in Firestore.");
+    }
+    const config = snap.data() as DailyRewardsConfig;
+    dailyRewardsConfigCache = { data: config, lastFetched: Date.now() };
+    return config;
+}
+
+// =============================================================================
 // TEST HELPERS
 // =============================================================================
 
@@ -734,5 +805,6 @@ export function __resetV2ConfigCacheForTests(): void {
     playerSlotsConfigCache = null;
     carStatsBudgetConfigCache = null;
     masteryConfigCache = null;
+    dailyRewardsConfigCache = null;
     v2ConfigCache.clear();
 }

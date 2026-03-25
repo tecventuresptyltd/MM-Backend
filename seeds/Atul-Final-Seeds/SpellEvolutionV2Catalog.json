@@ -1,66 +1,74 @@
 {
-    "version": "v1-research",
-    "updatedAt": 1738616330000,
-    "notes": "Spell research costs define the Spell Shards and time required to level up spells. Level 1 is the unlock level (no cost for starters, unlockCost for non-starters).",
-    "unlockCost": {
-        "shards": 100,
-        "durationSeconds": 60,
-        "displayDuration": "1 minute",
-        "description": "Initial unlock research for level-gated spells"
+  "version": "v2-rebalanced",
+  "updatedAt": 1742900000000,
+  "notes": "Spell research costs define the Spell Shards and time required to level up spells. Level 1 is the unlock level (no cost for starters, unlockCost for non-starters).",
+  "unlockCost": {
+    "shards": 30,
+    "durationSeconds": 1800,
+    "displayDuration": "30 minutes",
+    "description": "Initial unlock research for level-gated spells"
+  },
+  "maxSpellLevel": 5,
+  "researchCosts": {
+    "1": {
+      "targetLevel": 1,
+      "shards": 0,
+      "durationSeconds": 0,
+      "displayDuration": "Instant",
+      "description": "Spell unlocked"
     },
-    "maxSpellLevel": 5,
-    "researchCosts": {
-        "1": {
-            "targetLevel": 1,
-            "shards": 0,
-            "durationSeconds": 0,
-            "displayDuration": "Instant",
-            "description": "Spell unlocked"
-        },
-        "2": {
-            "targetLevel": 2,
-            "shards": 50,
-            "durationSeconds": 1800,
-            "displayDuration": "30 minutes"
-        },
-        "3": {
-            "targetLevel": 3,
-            "shards": 200,
-            "durationSeconds": 7200,
-            "displayDuration": "2 hours"
-        },
-        "4": {
-            "targetLevel": 4,
-            "shards": 750,
-            "durationSeconds": 21600,
-            "displayDuration": "6 hours"
-        },
-        "5": {
-            "targetLevel": 5,
-            "shards": 2000,
-            "durationSeconds": 43200,
-            "displayDuration": "12 hours"
-        }
+    "2": {
+      "targetLevel": 2,
+      "shards": 30,
+      "durationSeconds": 1800,
+      "displayDuration": "30 minutes"
     },
-    "skipCost": {
-        "gemsPerHour": 20,
-        "minGems": 5
+    "3": {
+      "targetLevel": 3,
+      "shards": 150,
+      "durationSeconds": 7200,
+      "displayDuration": "2 hours"
     },
-    "spellXpConfig": {
-        "xpPerRace": 10,
-        "xpPerWin": 25,
-        "xpPerSpellCast": 5,
-        "xpCapPerLevel": {
-            "1": 100,
-            "2": 250,
-            "3": 500,
-            "4": 1000
-        }
+    "4": {
+      "targetLevel": 4,
+      "shards": 550,
+      "durationSeconds": 21600,
+      "displayDuration": "6 hours"
     },
-    "shardRewards": {
-        "baseScale": {
-            "minRank": 5,
-            "maxRank": 25
-        }
+    "5": {
+      "targetLevel": 5,
+      "shards": 1400,
+      "durationSeconds": 43200,
+      "displayDuration": "12 hours"
     }
+  },
+  "skipCost": {
+    "gemsPerHour": 20,
+    "minGems": 5,
+    "freeSkipThresholdSeconds": 300
+  },
+  "spellXpConfig": {
+    "xpPerRace": 10,
+    "xpPerWin": 25,
+    "xpPerSpellCast": 5,
+    "xpCapPerLevel": {
+      "1": 50,
+      "2": 150,
+      "3": 350,
+      "4": 700
+    }
+  },
+  "shardRewards": {
+    "baseScale": {
+      "minRank": 5,
+      "maxRank": 25
+    }
+  },
+  "masteryGates": {
+    "1": 0,
+    "2": 0,
+    "3": 3,
+    "4": 8,
+    "5": 25
+  }
 }

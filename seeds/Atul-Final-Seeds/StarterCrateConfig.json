@@ -1,0 +1,24 @@
+{
+    "version": "v1-starter-crate",
+    "updatedAt": 1742900000000,
+    "notes": "One-time starter crate awarded on account creation. Contains ~6.5h of speed-ups so new players can blitz through Tier 1 without timer gates (GoW-style early progression). Granted via bootstrap flow in initializeUser.ts.",
+    "crateType": "starter",
+    "displayName": "Racer's Welcome Pack",
+    "i18n": {
+        "en": "Racer's Welcome Pack"
+    },
+    "contents": {
+        "coins": 5000,
+        "speedUps": [
+            { "skuId": "sku_spd5m_r4x7", "durationMinutes": 5, "quantity": 10 },
+            { "skuId": "sku_spd15m_j8k2", "durationMinutes": 15, "quantity": 5 },
+            { "skuId": "sku_spd1h_m5t6", "durationMinutes": 60, "quantity": 3 },
+            { "skuId": "sku_spd3h_q2v8", "durationMinutes": 180, "quantity": 1 }
+        ]
+    },
+    "totalSkipValue": {
+        "minutes": 390,
+        "displayHours": "6.5 hours",
+        "notes": "T1 total timer = 2.3h, so this covers all T1 upgrades + early T2"
+    }
+}

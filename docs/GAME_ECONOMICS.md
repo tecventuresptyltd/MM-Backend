@@ -1,7 +1,9 @@
 # Mystic Motors — V2 Game Economics Bible
 
 > **Source of Truth** — All pricing, progression, rewards, and formulas for the Mystic Motors economy.
-> Last updated: 2026-02-28
+> Last updated: 2026-03-25
+>
+> **Design Model**: All costs derived from `cost = target_races × avg_earnings_at_expected_rank`. Mastery gates derived from "3 cars at 70% per tier" rule.
 
 ---
 
@@ -26,10 +28,9 @@
 
 | Currency | Type | Earned From | Spent On |
 |----------|------|-------------|----------|
-| **Coins** | Soft | Races (scales with rank), crates | Car upgrades, shop items |
+| **Coins** | Soft | Races (scales with rank), crates | Car upgrades, tier unlocks, shop items |
 | **Gems** | Hard | IAP, ads, events | Time skips, boosters, crate purchases |
 | **Spell Shards** | Soft | Races (scales with rank), crates | Spell research (leveling spells) |
-| **Spell Tokens** | Soft | Mastery rank-ups (1 per rank) | Unlocking new spells |
 | **Mastery XP** | Non-tradeable | Races (derived from car XP + spell XP) | Mastery rank progression, tier gating |
 
 ### Mastery XP Formula
@@ -192,7 +193,7 @@ Flat (not rank-scaled), awarded to each spell in the active deck:
 
 ## 7. Car Progression
 
-**15 cars** across **5 tiers**, each with **10 levels** (0→9). One car can be upgrading at a time (Pit Crew queue).
+**15 cars** across **5 tiers** (3 per tier: Tank, Speedster, Specialist), each with **10 levels** (0→9). One car can be upgrading at a time (Pit Crew queue).
 
 ### 7.1 The Upgrade Loop
 
@@ -200,133 +201,132 @@ Flat (not rank-scaled), awarded to each spell in the active deck:
 Race → Fill XP bar → Pay coins → Wait timer → Claim → Level up (XP resets) → Repeat
 ```
 
+**Free Skip Window**: Timers ≤ 5 minutes are free to skip instantly (GoW-style). Configured via `freeSkipThresholdSeconds: 300` in CarEvolutionV2Catalog.
+
 ### 7.2 Upgrade Timers Per Level
 
 | Level | Tier 1 | Tier 2 | Tier 3 | Tier 4 | Tier 5 |
 |-------|--------|--------|--------|--------|--------|
-| 0→1 | 1 min | 5 min | 15 min | 30 min | 1 hr |
-| 1→2 | 5 min | 15 min | 30 min | 1 hr | 2 hr |
-| 2→3 | 10 min | 30 min | 1 hr | 2 hr | 3 hr |
-| 3→4 | 15 min | 1 hr | 2 hr | 3 hr | 4 hr |
-| 4→5 | 30 min | 2 hr | 3 hr | 4 hr | 6 hr |
-| 5→6 | 45 min | 3 hr | 4 hr | 6 hr | 8 hr |
-| 6→7 | 1 hr | 4 hr | 6 hr | 8 hr | 12 hr |
-| 7→8 | 1.5 hr | 5 hr | 8 hr | 12 hr | 16 hr |
-| 8→9 | 2 hr | 6 hr | 10 hr | 16 hr | 24 hr |
-| **Total** | **~6 hr** | **~22 hr** | **~35 hr** | **~53 hr** | **~77 hr** |
+| 0→1 | 0m ⚡ | 15m | 1h | 2h | 4h |
+| 1→2 | 0m ⚡ | 30m | 2h | 4h | 8h |
+| 2→3 | 5m ⚡ | 45m | 3h | 6h | 12h |
+| 3→4 | 10m | 1h | 4h | 8h | 16h |
+| 4→5 | 15m | 1.5h | 5h | 10h | 20h |
+| 5→6 | 20m | 2h | 6h | 12h | 24h |
+| 6→7 | 25m | 3h | 8h | 16h | 32h |
+| 7→8 | 30m | 4h | 10h | 20h | 40h |
+| 8→9 | 30m | 5h | 12h | 24h | 48h |
+| **Total** | **2.3h** | **24h** | **63h** | **126h** | **252h** |
 
-**Design:** Tier 1 is the hook (near-instant upgrades). Tier 5 has genuine multi-hour waits that create strong skip temptation and return-to-claim loops.
+⚡ = Free skip (≤ 5 min). T1 first 3 levels are instant. T5 caps at 48h.
+
+**Starter Speed-Up Crate**: New players receive a "Racer's Welcome Pack" with ~6.5h of speed-ups (10×5m, 5×15m, 3×1h, 1×3h) covering all T1 + early T2 timers.
 
 ### 7.3 XP Required Per Level
 
+Derived: `xp = target_races × xp_base_at_rank × level_weight`
+
 | Level | Tier 1 | Tier 2 | Tier 3 | Tier 4 | Tier 5 |
 |-------|--------|--------|--------|--------|--------|
-| 0→1 | 100 | 250 | 500 | 1,000 | 2,000 |
-| 1→2 | 150 | 400 | 800 | 1,500 | 3,000 |
-| 2→3 | 200 | 550 | 1,100 | 2,000 | 4,000 |
-| 3→4 | 300 | 750 | 1,500 | 3,000 | 6,000 |
-| 4→5 | 400 | 1,000 | 2,000 | 4,000 | 8,000 |
-| 5→6 | 500 | 1,300 | 2,600 | 5,000 | 10,000 |
-| 6→7 | 700 | 1,800 | 3,600 | 7,000 | 14,000 |
-| 7→8 | 1,000 | 2,500 | 5,000 | 10,000 | 20,000 |
-| 8→9 | 1,500 | 3,800 | 7,500 | 15,000 | 30,000 |
-| **Total** | **4,850** | **12,350** | **24,600** | **48,500** | **97,000** |
+| 0→1 | 150 | 400 | 950 | 1,900 | 3,500 |
+| 1→2 | 150 | 500 | 1,200 | 2,400 | 4,400 |
+| 2→3 | 200 | 600 | 1,400 | 2,900 | 5,300 |
+| 3→4 | 250 | 700 | 1,700 | 3,400 | 6,200 |
+| 4→5 | 250 | 800 | 1,900 | 3,900 | 7,100 |
+| 5→6 | 350 | 1,000 | 2,400 | 4,800 | 8,800 |
+| 6→7 | 400 | 1,200 | 2,800 | 5,800 | 10,500 |
+| 7→8 | 450 | 1,400 | 3,300 | 6,700 | 12,500 |
+| 8→9 | 500 | 1,600 | 3,800 | 7,700 | 14,000 |
+| **Total** | **2,700** | **8,200** | **19,450** | **39,500** | **72,300** |
 
 ### 7.4 Coin Costs Per Level
 
-Designed so total cost per car ≈ 8-15 races worth of coins at the expected rank.
+Derived: `cost = (level_weight / 52.5) × target_races × avg_coins_at_rank × 0.75`
 
 | Level | Tier 1 | Tier 2 | Tier 3 | Tier 4 | Tier 5 |
 |-------|--------|--------|--------|--------|--------|
-| 0→1 | 0 | 0 | 0 | 0 | 0 |
-| 1→2 | 200 | 800 | 2,000 | 5,000 | 12,000 |
-| 2→3 | 400 | 1,200 | 3,000 | 7,500 | 18,000 |
-| 3→4 | 600 | 1,600 | 4,000 | 10,000 | 25,000 |
-| 4→5 | 800 | 2,000 | 5,000 | 12,500 | 30,000 |
-| 5→6 | 1,000 | 2,500 | 6,500 | 15,000 | 38,000 |
-| 6→7 | 1,200 | 3,000 | 8,000 | 18,000 | 45,000 |
-| 7→8 | 1,500 | 3,500 | 10,000 | 22,000 | 55,000 |
-| 8→9 | 2,000 | 4,500 | 12,500 | 28,000 | 70,000 |
-| **Total** | **7,700** | **19,100** | **51,000** | **118,000** | **293,000** |
+| 0→1 | 1,100 | 4,500 | 17,000 | 59,000 | 189,000 |
+| 1→2 | 1,600 | 6,700 | 25,500 | 89,000 | 284,000 |
+| 2→3 | 2,100 | 8,900 | 34,500 | 118,000 | 378,000 |
+| 3→4 | 3,200 | 13,500 | 51,500 | 178,000 | 567,000 |
+| 4→5 | 4,300 | 18,000 | 68,500 | 237,000 | 756,000 |
+| 5→6 | 5,400 | 22,500 | 85,500 | 296,000 | 945,000 |
+| 6→7 | 6,400 | 26,500 | 103,000 | 355,000 | 1,135,000 |
+| 7→8 | 8,600 | 35,500 | 137,000 | 474,000 | 1,510,000 |
+| 8→9 | 10,500 | 44,500 | 171,000 | 592,000 | 1,890,000 |
+| **Total** | **43,200** | **180,600** | **693,500** | **2,398,000** | **7,654,000** |
 
-### 7.5 Gem Cost to Skip All Upgrades (per car)
+### 7.5 Races to Max One Car (target)
 
-| Tier | Total Timer | Approx Skip Cost | Real $ |
-|------|------------|-------------------|--------|
-| 1 | ~6 hr | ~120 gems | ~$1.20 |
-| 2 | ~22 hr | ~360 gems | ~$3.60 |
-| 3 | ~35 hr | ~540 gems | ~$5.40 |
-| 4 | ~53 hr | ~780 gems | ~$7.80 |
-| 5 | ~77 hr | ~1,050 gems | ~$10.50 |
+| Tier | Target Races | Expected Rank | Avg Coins/Race | Days (10/day) |
+|------|-------------|---------------|----------------|---------------|
+| 1 | **30** | Bronze II | 1,875 | 3 |
+| 2 | **80** | Silver III | 2,925 | 8 |
+| 3 | **160** | Platinum III | 5,625 | 16 |
+| 4 | **280** | Master III | 11,100 | 28 |
+| 5 | **450** | Ascendant III | 22,050 | 45 |
 
-### 7.6 Races to Max One Car
+### 7.6 Stat Diversification
 
-| Tier | Total XP | Races (@ ~150 XP) | Days (10/day) |
-|------|----------|-------------------|---------------|
-| 1 | 4,850 | 33 | 3.3 |
-| 2 | 12,350 | 83 | 8.3 |
-| 3 | 24,600 | 164 | 16.4 |
-| 4 | 48,500 | 324 | 32.4 |
-| 5 | 97,000 | 647 | 64.7 |
+All 3 cars in a tier have equal total stat budgets but distribute across 5 stats differently:
 
-### 7.7 Tier Assignment
+| Stat | Tank | Speedster | Specialist |
+|------|------|-----------|------------|
+| Top Speed | 15% | **30%** | 20% |
+| Acceleration | 15% | **25%** | 20% |
+| Handling | **25%** | 15% | 20% |
+| Boost Regen | **25%** | 10% | 20% |
+| Boost Power | 20% | 20% | 20% |
 
-Cars are assigned to tiers by base price:
-
-| Base Price Range | Tier |
-|------------------|------|
-| 0 (starter) | 1 |
-| 1 – 19,999 | 2 |
-| 20,000 – 99,999 | 3 |
-| 100,000 – 499,999 | 4 |
-| 500,000+ | 5 |
+Handling range: 35 (low) → 75 (high). All other stat ranges unchanged.
 
 ---
 
 ## 8. Spell Progression
 
-**16 spells**, each with **5 levels**. One spell can be researching at a time (Library queue).
+**16 spells**, each with **5 levels**. One spell can be researching at a time (Library queue). **Mastery-gated** — later levels require a minimum mastery rank.
 
 ### 8.1 The Research Loop
 
 ```
-Equip spell in deck → Race to earn Spell XP → Hit XP cap → Pay shards → Wait timer → Claim → Level up → Repeat
+Equip spell in deck → Race to earn Spell XP → Hit XP cap → Check mastery gate → Pay shards → Wait timer → Claim → Level up → Repeat
 ```
 
 ### 8.2 Spell XP Caps (per level, before research can start)
 
 | Level | XP Cap |
 |-------|--------|
-| 1 | 100 |
-| 2 | 250 |
-| 3 | 500 |
-| 4 | 1,000 |
+| 1 | 50 |
+| 2 | 150 |
+| 3 | 350 |
+| 4 | 700 |
 
 Level 5 = max (no further XP gain).
 
-### 8.3 Research Costs & Timers
+### 8.3 Research Costs, Timers & Mastery Gates
 
-| To Level | Shards | Timer | Display |
-|----------|--------|-------|---------|
-| 2 | 50 | 30 min | "30 Minutes" |
-| 3 | 200 | 2 hr | "2 Hours" |
-| 4 | 750 | 6 hr | "6 Hours" |
-| 5 | 2,000 | 12 hr | "12 Hours" |
-| **Total/spell** | **3,000** | **~20.5 hr** | |
+| To Level | Shards | Timer | Mastery Gate |
+|----------|--------|-------|-------------|
+| 2 | 30 | 30 min | None |
+| 3 | 150 | 2 hr | **Rank 3** |
+| 4 | 550 | 6 hr | **Rank 8** |
+| 5 | 1,400 | 12 hr | **Rank 25** |
+| **Total/spell** | **2,130** | **~20.5 hr** | |
+
+**Non-starter unlock**: 30 shards + 30 min timer.
 
 ### 8.4 Skip Cost
 
-Base rate: **20 gems/hour**, min 5 gems. Uses the dynamic skip formula.
+Base rate: **20 gems/hour**, min 5 gems. Free skip under 5 minutes (`freeSkipThresholdSeconds: 300`).
 
 ### 8.5 Full Roster Progression
 
-| Milestone | Total Shards | Gameplay Hours |
-|-----------|-------------|----------------|
-| Max 1 spell | 3,000 | ~10 hr |
-| Max 4 spells (1 deck) | 12,000 | ~40 hr |
-| Max 8 spells (2 decks) | 24,000 | ~80 hr |
-| Max 13 spells | 39,000 | ~130 hr |
-| Max ALL 16 spells | 48,000 | ~160 hr |
+| Milestone | Total Shards | Races (~10 shards avg/race) |
+|-----------|-------------|-----------------------------|
+| Max 1 spell | 2,130 | ~213 |
+| Max 4 spells (1 deck) | 8,520 | ~852 |
+| Max 8 spells (2 decks) | 17,040 | ~1,704 |
+| Max ALL 16 spells | 34,080 | ~3,408 |
 
 ---
 
@@ -434,47 +434,51 @@ Shop price is always **2.5-8×** the skip value because buying outright skips bo
 
 Mastery is the **master clock** of the game. It cannot be skipped with gems. It ensures a minimum play time before content unlocks.
 
+**Design rule**: Getting 3 cars to 70% (level 7) in a tier naturally earns enough mastery XP to unlock the next tier. Players progress **laterally within a tier** before **vertically to the next**.
+
 ### 10.1 Mastery Rank Thresholds
 
 50 ranks total. Tier gates at ranks 5, 10, 20, 30.
 
-| Rank | Threshold | Gate |
-|------|-----------|------|
-| 1 | 2,000 | — |
-| 2 | 5,000 | — |
-| 3 | 10,000 | — |
-| 4 | 18,000 | — |
-| **5** | **30,000** | **Tier 2** |
-| 6 | 42,000 | — |
-| 7 | 56,000 | — |
-| 8 | 72,000 | — |
-| 9 | 92,000 | — |
-| **10** | **115,000** | **Tier 3** |
-| 15 | 215,000 | — |
-| **20** | **310,000** | **Tier 4** |
-| 25 | 480,000 | — |
-| **30** | **550,000** | **Tier 5** |
-| 35 | 900,000 | — |
-| 40 | 1,170,000 | — |
-| 45 | 1,504,000 | — |
-| 50 | 1,924,000 | — |
+| Rank | Threshold | Gate | Derivation |
+|------|-----------|------|------------|
+| 1 | 700 | — | |
+| 3 | 3,100 | — | Spell L3 gate |
+| **5** | **5,500** | **Tier 2** | 3×T1 cars to L7 = 47 races |
+| 8 | 15,500 | — | Spell L4 gate |
+| **10** | **22,000** | **Tier 3** | +3×T2 cars to L7 = 126 races |
+| 15 | 41,500 | — | |
+| **20** | **61,000** | **Tier 4** | +3×T3 cars to L7 = 250 races |
+| 25 | 100,000 | — | Spell L5 gate |
+| **30** | **140,000** | **Tier 5** | +3×T4 cars to L7 = 438 races |
+| 35 | 210,000 | — | |
+| 40 | 315,000 | — | |
+| 45 | 472,000 | — | |
+| 50 | 709,000 | — | Prestige |
 
-Ranks 31-50 are **post-endgame prestige** — no content gates, pure bragging rights.
+Ranks 31-50 are **post-endgame prestige** — no content gates.
 
-### 10.2 Time to Reach Each Gate
+### 10.2 Tier Unlock Costs
 
-Based on 10 races/day, ~157 mastery XP/race, ~30 min/day:
+Each tier requires mastery rank + coin payment (= 25 races at expected rank):
 
-| Gate | Races | Days | Gameplay Hours |
-|------|-------|------|----------------|
-| Tier 2 (Rank 5) | 191 | 19 | **~10 hr** |
-| Tier 3 (Rank 10) | 732 | 73 | **~37 hr** |
-| Tier 4 (Rank 20) | 1,975 | 198 | **~99 hr** |
-| Tier 5 (Rank 30) | 3,503 | 350 | **~175 hr** |
+| Tier | Mastery Rank | Coin Cost | Expected Rank |
+|------|-------------|-----------|---------------|
+| 2 (Sports) | 5 | 47,000 | Bronze II |
+| 3 (Super) | 10 | 73,000 | Silver III |
+| 4 (Hyper) | 20 | 141,000 | Platinum III |
+| 5 (Mythic) | 30 | 278,000 | Master III |
 
-### 10.3 Spell Tokens
+### 10.3 Time to Reach Each Gate
 
-Players earn **1 spell token per mastery rank-up**. Spell tokens unlock new spells.
+Based on 10 races/day, ~30 min/day:
+
+| Gate | Races | Days | Profile |
+|------|-------|------|---------|
+| Tier 2 (Rank 5) | 60 | 6 | Hook |
+| Tier 3 (Rank 10) | 190 | 19 | Engaged |
+| Tier 4 (Rank 20) | 630 | 63 | Invested |
+| Tier 5 (Rank 30) | 1,130 | 113 | Endgame |
 
 ---
 
@@ -486,24 +490,30 @@ The three parallel queues (Car, Spell, Crate) create a constant return-to-claim 
 
 | Queue | What's Upgrading | Timer Range | Resource Cost |
 |-------|-----------------|-------------|---------------|
-| Pit Crew | Car level (1 car) | 1 min – 24 hr | Coins |
-| Library | Spell level (1 spell) | 30 min – 12 hr | Shards |
-| Crate Bay | Crate opening (1 crate) | 1 hr – 24 hr | Free (earned) |
+| Pit Crew | Car level (1 car) | 0m–48h | Coins |
+| Library | Spell level (1 spell) | 30m–12h | Shards |
+| Crate Bay | Crate opening (1 crate) | 1h–24h | Free (earned) |
 
-### 11.2 Full Progression Timeline
+### 11.2 Full Progression Timeline (Regular F2P, 10 races/day)
 
-Active player profile: 10 races/day, ~30 min/day, ~3 min/race.
+| Day | Mastery | Cars | Spells | Player Feel |
+|-----|---------|------|--------|-------------|
+| **5** | T1 70% | 3 T1 cars to L7 | 1 spell at L2 | **Hooked** |
+| **6** | **Tier 2 unlocked** | Starting T2 | 1 spell at L2 | **Progressing** |
+| **19** | **Tier 3 unlocked** | T2 started | 2 spells at L2-3 | **Engaged** |
+| **52** | T3 70% | 3 T3 cars to L7 | Deck at L3 | **Invested** |
+| **63** | **Tier 4 unlocked** | Starting T4 | Deck at L3-4 | **Dedicated** |
+| **113** | **Tier 5 unlocked** | T4 progressing | 4-5 spells at L4 | **Endgame** |
+| **189** | T5 70% | 3 T5 cars to L7 | Most spells L4-5 | **Veteran** |
+| **249** | Rank 50 | **All 15 cars maxed** | All maxed | **Completionist** |
 
-| Gameplay Hours | Mastery | Cars | Spells | Player Feel |
-|---------------|---------|------|--------|-------------|
-| **~10 hr** | Tier 2 unlocked | 3 T1 cars maxed | 1-2 spells at Lv 3 | **Hooked** |
-| **~37 hr** | Tier 3 unlocked | T1+T2 maxed (6 cars) | 1 deck at Lv 4 | **Engaged** |
-| **~80 hr** | Mid Tier 3-4 | 9 cars maxed | 2 decks at Lv 4-5 | **Invested** |
-| **~99 hr** | Tier 4 unlocked | 9 cars + T4 started | ~8 spells at Lv 4 | **Dedicated** |
-| **~135 hr** | Rank ~25 | 12 cars maxed | ~10 spells at Lv 4-5 | **Veteran** |
-| **~175 hr** | Tier 5 unlocked | 12+ cars maxed | ~13 spells at Lv 5 | **Endgame** |
-| **~200 hr** | Post-T5 | **1-2 T5 cars near max** | Most spells maxed | **Completionist** |
-| **~250 hr** | Rank 35+ | All 15 cars maxed | All 16 spells maxed | **Prestige** |
+### 11.3 Time to Full Completion by Profile
+
+| Profile | Races/Day | Days to T5 MAXED | Total Races |
+|---------|-----------|-----------------|-------------|
+| Casual | 5 | ~509 days (~17 months) | ~2,545 |
+| Regular F2P | 10 | ~249 days (~8.3 months) | ~2,490 |
+| Hardcore | 20 | ~120 days (~4 months) | ~2,400 |
 
 ---
 

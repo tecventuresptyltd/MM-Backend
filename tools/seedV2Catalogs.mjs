@@ -59,6 +59,7 @@ const configs = [
     { file: "BoostersCatalog.json", docName: "BoostersCatalog" },
     { file: "SpeedUpsCatalog.json", docName: "SpeedUpsCatalog" },
     { file: "OffersCatalog.json", docName: "OffersCatalog" },
+    { file: "DailyRewardsConfig.json", docName: "DailyRewardsConfig" },
 ];
 
 async function seedV2Catalogs() {

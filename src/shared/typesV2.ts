@@ -67,6 +67,8 @@ export interface TierScaling {
 export interface EvolutionSkipCost {
     gemsPerHour: number;
     minGems: number;
+    /** Timers ≤ this many seconds can be skipped for free (GoW-style). Default: 0 (disabled). */
+    freeSkipThresholdSeconds?: number;
 }
 
 export interface StatBonusPerStar {
@@ -148,6 +150,8 @@ export interface ResearchCostEntry {
 export interface ResearchSkipCost {
     gemsPerHour: number;
     minGems: number;
+    /** Timers ≤ this many seconds can be skipped for free. Default: 0 (disabled). */
+    freeSkipThresholdSeconds?: number;
 }
 
 export interface SpellXpConfig {
@@ -172,6 +176,8 @@ export interface SpellEvolutionV2Catalog {
     skipCost: ResearchSkipCost;
     spellXpConfig: SpellXpConfig;
     shardRewards?: ShardRewardsConfig;
+    /** Mastery rank gates per spell level. Key = targetLevel string, value = required mastery rank. */
+    masteryGates?: Record<string, number>;
 }
 
 export interface LibrarySlotEntry {

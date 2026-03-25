@@ -1,6 +1,6 @@
 {
-  "version": "v4-rebalanced-economy",
-  "updatedAt": 1709164800000,
+  "version": "v5-economy-rebalance",
+  "updatedAt": 1742900000000,
   "cars": {
     "car_h4ayzwf31g": {
       "displayName": "Mitsabi Eon",
@@ -11,9 +11,9 @@
       },
       "levels": {
         "0": {
-          "xpToNext": 100,
-          "upgradeTimerSeconds": 60,
-          "priceCoins": 0,
+          "xpToNext": 150,
+          "upgradeTimerSeconds": 0,
+          "priceCoins": 1100,
           "carRating": 100,
           "topSpeed": 1.0,
           "acceleration": 1.0,
@@ -23,8 +23,8 @@
         },
         "1": {
           "xpToNext": 150,
-          "upgradeTimerSeconds": 300,
-          "priceCoins": 200,
+          "upgradeTimerSeconds": 0,
+          "priceCoins": 1600,
           "carRating": 110,
           "topSpeed": 1.06,
           "acceleration": 1.06,
@@ -34,8 +34,8 @@
         },
         "2": {
           "xpToNext": 200,
-          "upgradeTimerSeconds": 600,
-          "priceCoins": 400,
+          "upgradeTimerSeconds": 300,
+          "priceCoins": 2100,
           "carRating": 120,
           "topSpeed": 1.11,
           "acceleration": 1.11,
@@ -44,9 +44,9 @@
           "boostPower": 1.11
         },
         "3": {
-          "xpToNext": 300,
-          "upgradeTimerSeconds": 900,
-          "priceCoins": 600,
+          "xpToNext": 250,
+          "upgradeTimerSeconds": 600,
+          "priceCoins": 3200,
           "carRating": 130,
           "topSpeed": 1.17,
           "acceleration": 1.17,
@@ -55,9 +55,9 @@
           "boostPower": 1.17
         },
         "4": {
-          "xpToNext": 400,
-          "upgradeTimerSeconds": 1800,
-          "priceCoins": 800,
+          "xpToNext": 250,
+          "upgradeTimerSeconds": 900,
+          "priceCoins": 4300,
           "carRating": 140,
           "topSpeed": 1.22,
           "acceleration": 1.22,
@@ -66,9 +66,9 @@
           "boostPower": 1.22
         },
         "5": {
-          "xpToNext": 500,
-          "upgradeTimerSeconds": 2700,
-          "priceCoins": 1000,
+          "xpToNext": 350,
+          "upgradeTimerSeconds": 1200,
+          "priceCoins": 5400,
           "carRating": 150,
           "topSpeed": 1.28,
           "acceleration": 1.28,
@@ -77,9 +77,9 @@
           "boostPower": 1.28
         },
         "6": {
-          "xpToNext": 700,
-          "upgradeTimerSeconds": 3600,
-          "priceCoins": 1200,
+          "xpToNext": 400,
+          "upgradeTimerSeconds": 1500,
+          "priceCoins": 6400,
           "carRating": 160,
           "topSpeed": 1.33,
           "acceleration": 1.33,
@@ -88,9 +88,9 @@
           "boostPower": 1.33
         },
         "7": {
-          "xpToNext": 1000,
-          "upgradeTimerSeconds": 5400,
-          "priceCoins": 1500,
+          "xpToNext": 450,
+          "upgradeTimerSeconds": 1800,
+          "priceCoins": 8600,
           "carRating": 170,
           "topSpeed": 1.39,
           "acceleration": 1.39,
@@ -99,9 +99,9 @@
           "boostPower": 1.39
         },
         "8": {
-          "xpToNext": 1500,
-          "upgradeTimerSeconds": 7200,
-          "priceCoins": 2000,
+          "xpToNext": 500,
+          "upgradeTimerSeconds": 1800,
+          "priceCoins": 10500,
           "carRating": 180,
           "topSpeed": 1.44,
           "acceleration": 1.44,
@@ -142,9 +142,9 @@
       },
       "levels": {
         "0": {
-          "xpToNext": 250,
-          "upgradeTimerSeconds": 300,
-          "priceCoins": 0,
+          "xpToNext": 150,
+          "upgradeTimerSeconds": 0,
+          "priceCoins": 1100,
           "carRating": 150,
           "topSpeed": 1.0,
           "acceleration": 1.0,
@@ -153,9 +153,9 @@
           "boostPower": 1.0
         },
         "1": {
-          "xpToNext": 400,
-          "upgradeTimerSeconds": 900,
-          "priceCoins": 800,
+          "xpToNext": 150,
+          "upgradeTimerSeconds": 0,
+          "priceCoins": 1600,
           "carRating": 160,
           "topSpeed": 1.08,
           "acceleration": 1.08,
@@ -164,9 +164,9 @@
           "boostPower": 1.08
         },
         "2": {
-          "xpToNext": 550,
-          "upgradeTimerSeconds": 1800,
-          "priceCoins": 1200,
+          "xpToNext": 200,
+          "upgradeTimerSeconds": 300,
+          "priceCoins": 2100,
           "carRating": 170,
           "topSpeed": 1.16,
           "acceleration": 1.16,
@@ -175,9 +175,9 @@
           "boostPower": 1.16
         },
         "3": {
-          "xpToNext": 750,
-          "upgradeTimerSeconds": 3600,
-          "priceCoins": 1600,
+          "xpToNext": 250,
+          "upgradeTimerSeconds": 600,
+          "priceCoins": 3200,
           "carRating": 180,
           "topSpeed": 1.23,
           "acceleration": 1.23,
@@ -186,9 +186,9 @@
           "boostPower": 1.23
         },
         "4": {
-          "xpToNext": 1000,
-          "upgradeTimerSeconds": 7200,
-          "priceCoins": 2000,
+          "xpToNext": 250,
+          "upgradeTimerSeconds": 900,
+          "priceCoins": 4300,
           "carRating": 190,
           "topSpeed": 1.31,
           "acceleration": 1.31,
@@ -197,9 +197,9 @@
           "boostPower": 1.31
         },
         "5": {
-          "xpToNext": 1300,
-          "upgradeTimerSeconds": 10800,
-          "priceCoins": 2500,
+          "xpToNext": 350,
+          "upgradeTimerSeconds": 1200,
+          "priceCoins": 5400,
           "carRating": 200,
           "topSpeed": 1.39,
           "acceleration": 1.39,
@@ -208,9 +208,9 @@
           "boostPower": 1.39
         },
         "6": {
-          "xpToNext": 1800,
-          "upgradeTimerSeconds": 14400,
-          "priceCoins": 3000,
+          "xpToNext": 400,
+          "upgradeTimerSeconds": 1500,
+          "priceCoins": 6400,
           "carRating": 210,
           "topSpeed": 1.47,
           "acceleration": 1.47,
@@ -219,9 +219,9 @@
           "boostPower": 1.47
         },
         "7": {
-          "xpToNext": 2500,
-          "upgradeTimerSeconds": 18000,
-          "priceCoins": 3500,
+          "xpToNext": 450,
+          "upgradeTimerSeconds": 1800,
+          "priceCoins": 8600,
           "carRating": 220,
           "topSpeed": 1.54,
           "acceleration": 1.54,
@@ -230,9 +230,9 @@
           "boostPower": 1.54
         },
         "8": {
-          "xpToNext": 3800,
-          "upgradeTimerSeconds": 21600,
-          "priceCoins": 4500,
+          "xpToNext": 500,
+          "upgradeTimerSeconds": 1800,
+          "priceCoins": 10500,
           "carRating": 230,
           "topSpeed": 1.62,
           "acceleration": 1.62,
@@ -274,9 +274,9 @@
       },
       "levels": {
         "0": {
-          "xpToNext": 250,
-          "upgradeTimerSeconds": 300,
-          "priceCoins": 0,
+          "xpToNext": 150,
+          "upgradeTimerSeconds": 0,
+          "priceCoins": 1100,
           "carRating": 150,
           "topSpeed": 1.0,
           "acceleration": 1.0,
@@ -285,9 +285,9 @@
           "boostPower": 1.0
         },
         "1": {
-          "xpToNext": 400,
-          "upgradeTimerSeconds": 900,
-          "priceCoins": 800,
+          "xpToNext": 150,
+          "upgradeTimerSeconds": 0,
+          "priceCoins": 1600,
           "carRating": 160,
           "topSpeed": 1.08,
           "acceleration": 1.08,
@@ -296,9 +296,9 @@
           "boostPower": 1.08
         },
         "2": {
-          "xpToNext": 550,
-          "upgradeTimerSeconds": 1800,
-          "priceCoins": 1200,
+          "xpToNext": 200,
+          "upgradeTimerSeconds": 300,
+          "priceCoins": 2100,
           "carRating": 170,
           "topSpeed": 1.16,
           "acceleration": 1.16,
@@ -307,9 +307,9 @@
           "boostPower": 1.16
         },
         "3": {
-          "xpToNext": 750,
-          "upgradeTimerSeconds": 3600,
-          "priceCoins": 1600,
+          "xpToNext": 250,
+          "upgradeTimerSeconds": 600,
+          "priceCoins": 3200,
           "carRating": 180,
           "topSpeed": 1.23,
           "acceleration": 1.23,
@@ -318,9 +318,9 @@
           "boostPower": 1.23
         },
         "4": {
-          "xpToNext": 1000,
-          "upgradeTimerSeconds": 7200,
-          "priceCoins": 2000,
+          "xpToNext": 250,
+          "upgradeTimerSeconds": 900,
+          "priceCoins": 4300,
           "carRating": 190,
           "topSpeed": 1.31,
           "acceleration": 1.31,
@@ -329,9 +329,9 @@
           "boostPower": 1.31
         },
         "5": {
-          "xpToNext": 1300,
-          "upgradeTimerSeconds": 10800,
-          "priceCoins": 2500,
+          "xpToNext": 350,
+          "upgradeTimerSeconds": 1200,
+          "priceCoins": 5400,
           "carRating": 200,
           "topSpeed": 1.39,
           "acceleration": 1.39,
@@ -340,9 +340,9 @@
           "boostPower": 1.39
         },
         "6": {
-          "xpToNext": 1800,
-          "upgradeTimerSeconds": 14400,
-          "priceCoins": 3000,
+          "xpToNext": 400,
+          "upgradeTimerSeconds": 1500,
+          "priceCoins": 6400,
           "carRating": 210,
           "topSpeed": 1.47,
           "acceleration": 1.47,
@@ -351,9 +351,9 @@
           "boostPower": 1.47
         },
         "7": {
-          "xpToNext": 2500,
-          "upgradeTimerSeconds": 18000,
-          "priceCoins": 3500,
+          "xpToNext": 450,
+          "upgradeTimerSeconds": 1800,
+          "priceCoins": 8600,
           "carRating": 220,
           "topSpeed": 1.54,
           "acceleration": 1.54,
@@ -362,9 +362,9 @@
           "boostPower": 1.54
         },
         "8": {
-          "xpToNext": 3800,
-          "upgradeTimerSeconds": 21600,
-          "priceCoins": 4500,
+          "xpToNext": 500,
+          "upgradeTimerSeconds": 1800,
+          "priceCoins": 10500,
           "carRating": 230,
           "topSpeed": 1.62,
           "acceleration": 1.62,
@@ -406,9 +406,9 @@
       },
       "levels": {
         "0": {
-          "xpToNext": 500,
+          "xpToNext": 400,
           "upgradeTimerSeconds": 900,
-          "priceCoins": 0,
+          "priceCoins": 4500,
           "carRating": 200,
           "topSpeed": 1.0,
           "acceleration": 1.0,
@@ -417,9 +417,9 @@
           "boostPower": 1.0
         },
         "1": {
-          "xpToNext": 800,
+          "xpToNext": 500,
           "upgradeTimerSeconds": 1800,
-          "priceCoins": 2000,
+          "priceCoins": 6700,
           "carRating": 210,
           "topSpeed": 1.1,
           "acceleration": 1.1,
@@ -428,9 +428,9 @@
           "boostPower": 1.1
         },
         "2": {
-          "xpToNext": 1100,
-          "upgradeTimerSeconds": 3600,
-          "priceCoins": 3000,
+          "xpToNext": 600,
+          "upgradeTimerSeconds": 2700,
+          "priceCoins": 8900,
           "carRating": 220,
           "topSpeed": 1.2,
           "acceleration": 1.2,
@@ -439,9 +439,9 @@
           "boostPower": 1.2
         },
         "3": {
-          "xpToNext": 1500,
-          "upgradeTimerSeconds": 7200,
-          "priceCoins": 4000,
+          "xpToNext": 700,
+          "upgradeTimerSeconds": 3600,
+          "priceCoins": 13500,
           "carRating": 230,
           "topSpeed": 1.3,
           "acceleration": 1.3,
@@ -450,9 +450,9 @@
           "boostPower": 1.3
         },
         "4": {
-          "xpToNext": 2000,
-          "upgradeTimerSeconds": 10800,
-          "priceCoins": 5000,
+          "xpToNext": 800,
+          "upgradeTimerSeconds": 5400,
+          "priceCoins": 18000,
           "carRating": 240,
           "topSpeed": 1.4,
           "acceleration": 1.4,
@@ -461,9 +461,9 @@
           "boostPower": 1.4
         },
         "5": {
-          "xpToNext": 2600,
-          "upgradeTimerSeconds": 14400,
-          "priceCoins": 6500,
+          "xpToNext": 1000,
+          "upgradeTimerSeconds": 7200,
+          "priceCoins": 22500,
           "carRating": 250,
           "topSpeed": 1.5,
           "acceleration": 1.5,
@@ -472,9 +472,9 @@
           "boostPower": 1.5
         },
         "6": {
-          "xpToNext": 3600,
-          "upgradeTimerSeconds": 21600,
-          "priceCoins": 8000,
+          "xpToNext": 1200,
+          "upgradeTimerSeconds": 10800,
+          "priceCoins": 26500,
           "carRating": 260,
           "topSpeed": 1.6,
           "acceleration": 1.6,
@@ -483,9 +483,9 @@
           "boostPower": 1.6
         },
         "7": {
-          "xpToNext": 5000,
-          "upgradeTimerSeconds": 28800,
-          "priceCoins": 10000,
+          "xpToNext": 1400,
+          "upgradeTimerSeconds": 14400,
+          "priceCoins": 35500,
           "carRating": 270,
           "topSpeed": 1.7,
           "acceleration": 1.7,
@@ -494,9 +494,9 @@
           "boostPower": 1.7
         },
         "8": {
-          "xpToNext": 7500,
-          "upgradeTimerSeconds": 36000,
-          "priceCoins": 12500,
+          "xpToNext": 1600,
+          "upgradeTimerSeconds": 18000,
+          "priceCoins": 44500,
           "carRating": 280,
           "topSpeed": 1.8,
           "acceleration": 1.8,
@@ -537,9 +537,9 @@
       },
       "levels": {
         "0": {
-          "xpToNext": 500,
+          "xpToNext": 400,
           "upgradeTimerSeconds": 900,
-          "priceCoins": 0,
+          "priceCoins": 4500,
           "carRating": 200,
           "topSpeed": 1.0,
           "acceleration": 1.0,
@@ -548,9 +548,9 @@
           "boostPower": 1.0
         },
         "1": {
-          "xpToNext": 800,
+          "xpToNext": 500,
           "upgradeTimerSeconds": 1800,
-          "priceCoins": 2000,
+          "priceCoins": 6700,
           "carRating": 210,
           "topSpeed": 1.1,
           "acceleration": 1.1,
@@ -559,9 +559,9 @@
           "boostPower": 1.1
         },
         "2": {
-          "xpToNext": 1100,
-          "upgradeTimerSeconds": 3600,
-          "priceCoins": 3000,
+          "xpToNext": 600,
+          "upgradeTimerSeconds": 2700,
+          "priceCoins": 8900,
           "carRating": 220,
           "topSpeed": 1.2,
           "acceleration": 1.2,
@@ -570,9 +570,9 @@
           "boostPower": 1.2
         },
         "3": {
-          "xpToNext": 1500,
-          "upgradeTimerSeconds": 7200,
-          "priceCoins": 4000,
+          "xpToNext": 700,
+          "upgradeTimerSeconds": 3600,
+          "priceCoins": 13500,
           "carRating": 230,
           "topSpeed": 1.3,
           "acceleration": 1.3,
@@ -581,9 +581,9 @@
           "boostPower": 1.3
         },
         "4": {
-          "xpToNext": 2000,
-          "upgradeTimerSeconds": 10800,
-          "priceCoins": 5000,
+          "xpToNext": 800,
+          "upgradeTimerSeconds": 5400,
+          "priceCoins": 18000,
           "carRating": 240,
           "topSpeed": 1.4,
           "acceleration": 1.4,
@@ -592,9 +592,9 @@
           "boostPower": 1.4
         },
         "5": {
-          "xpToNext": 2600,
-          "upgradeTimerSeconds": 14400,
-          "priceCoins": 6500,
+          "xpToNext": 1000,
+          "upgradeTimerSeconds": 7200,
+          "priceCoins": 22500,
           "carRating": 250,
           "topSpeed": 1.5,
           "acceleration": 1.5,
@@ -603,9 +603,9 @@
           "boostPower": 1.5
         },
         "6": {
-          "xpToNext": 3600,
-          "upgradeTimerSeconds": 21600,
-          "priceCoins": 8000,
+          "xpToNext": 1200,
+          "upgradeTimerSeconds": 10800,
+          "priceCoins": 26500,
           "carRating": 260,
           "topSpeed": 1.6,
           "acceleration": 1.6,
@@ -614,9 +614,9 @@
           "boostPower": 1.6
         },
         "7": {
-          "xpToNext": 5000,
-          "upgradeTimerSeconds": 28800,
-          "priceCoins": 10000,
+          "xpToNext": 1400,
+          "upgradeTimerSeconds": 14400,
+          "priceCoins": 35500,
           "carRating": 270,
           "topSpeed": 1.7,
           "acceleration": 1.7,
@@ -625,9 +625,9 @@
           "boostPower": 1.7
         },
         "8": {
-          "xpToNext": 7500,
-          "upgradeTimerSeconds": 36000,
-          "priceCoins": 12500,
+          "xpToNext": 1600,
+          "upgradeTimerSeconds": 18000,
+          "priceCoins": 44500,
           "carRating": 280,
           "topSpeed": 1.8,
           "acceleration": 1.8,
@@ -669,9 +669,9 @@
       },
       "levels": {
         "0": {
-          "xpToNext": 1000,
-          "upgradeTimerSeconds": 1800,
-          "priceCoins": 0,
+          "xpToNext": 400,
+          "upgradeTimerSeconds": 900,
+          "priceCoins": 4500,
           "carRating": 300,
           "topSpeed": 1.0,
           "acceleration": 1.0,
@@ -680,9 +680,9 @@
           "boostPower": 1.0
         },
         "1": {
-          "xpToNext": 1500,
-          "upgradeTimerSeconds": 3600,
-          "priceCoins": 5000,
+          "xpToNext": 500,
+          "upgradeTimerSeconds": 1800,
+          "priceCoins": 6700,
           "carRating": 310,
           "topSpeed": 1.12,
           "acceleration": 1.12,
@@ -691,9 +691,9 @@
           "boostPower": 1.12
         },
         "2": {
-          "xpToNext": 2000,
-          "upgradeTimerSeconds": 7200,
-          "priceCoins": 7500,
+          "xpToNext": 600,
+          "upgradeTimerSeconds": 2700,
+          "priceCoins": 8900,
           "carRating": 320,
           "topSpeed": 1.24,
           "acceleration": 1.24,
@@ -702,9 +702,9 @@
           "boostPower": 1.24
         },
         "3": {
-          "xpToNext": 3000,
-          "upgradeTimerSeconds": 10800,
-          "priceCoins": 10000,
+          "xpToNext": 700,
+          "upgradeTimerSeconds": 3600,
+          "priceCoins": 13500,
           "carRating": 330,
           "topSpeed": 1.37,
           "acceleration": 1.37,
@@ -713,9 +713,9 @@
           "boostPower": 1.37
         },
         "4": {
-          "xpToNext": 4000,
-          "upgradeTimerSeconds": 14400,
-          "priceCoins": 12500,
+          "xpToNext": 800,
+          "upgradeTimerSeconds": 5400,
+          "priceCoins": 18000,
           "carRating": 340,
           "topSpeed": 1.49,
           "acceleration": 1.49,
@@ -724,9 +724,9 @@
           "boostPower": 1.49
         },
         "5": {
-          "xpToNext": 5000,
-          "upgradeTimerSeconds": 21600,
-          "priceCoins": 15000,
+          "xpToNext": 1000,
+          "upgradeTimerSeconds": 7200,
+          "priceCoins": 22500,
           "carRating": 350,
           "topSpeed": 1.61,
           "acceleration": 1.61,
@@ -735,9 +735,9 @@
           "boostPower": 1.61
         },
         "6": {
-          "xpToNext": 7000,
-          "upgradeTimerSeconds": 28800,
-          "priceCoins": 18000,
+          "xpToNext": 1200,
+          "upgradeTimerSeconds": 10800,
+          "priceCoins": 26500,
           "carRating": 360,
           "topSpeed": 1.73,
           "acceleration": 1.73,
@@ -746,9 +746,9 @@
           "boostPower": 1.73
         },
         "7": {
-          "xpToNext": 10000,
-          "upgradeTimerSeconds": 43200,
-          "priceCoins": 22000,
+          "xpToNext": 1400,
+          "upgradeTimerSeconds": 14400,
+          "priceCoins": 35500,
           "carRating": 370,
           "topSpeed": 1.86,
           "acceleration": 1.86,
@@ -757,9 +757,9 @@
           "boostPower": 1.86
         },
         "8": {
-          "xpToNext": 15000,
-          "upgradeTimerSeconds": 57600,
-          "priceCoins": 28000,
+          "xpToNext": 1600,
+          "upgradeTimerSeconds": 18000,
+          "priceCoins": 44500,
           "carRating": 380,
           "topSpeed": 1.98,
           "acceleration": 1.98,
@@ -801,9 +801,9 @@
       },
       "levels": {
         "0": {
-          "xpToNext": 1000,
-          "upgradeTimerSeconds": 1800,
-          "priceCoins": 0,
+          "xpToNext": 950,
+          "upgradeTimerSeconds": 3600,
+          "priceCoins": 17000,
           "carRating": 300,
           "topSpeed": 1.0,
           "acceleration": 1.0,
@@ -812,9 +812,9 @@
           "boostPower": 1.0
         },
         "1": {
-          "xpToNext": 1500,
-          "upgradeTimerSeconds": 3600,
-          "priceCoins": 5000,
+          "xpToNext": 1200,
+          "upgradeTimerSeconds": 7200,
+          "priceCoins": 25500,
           "carRating": 310,
           "topSpeed": 1.12,
           "acceleration": 1.12,
@@ -823,9 +823,9 @@
           "boostPower": 1.12
         },
         "2": {
-          "xpToNext": 2000,
-          "upgradeTimerSeconds": 7200,
-          "priceCoins": 7500,
+          "xpToNext": 1400,
+          "upgradeTimerSeconds": 10800,
+          "priceCoins": 34500,
           "carRating": 320,
           "topSpeed": 1.24,
           "acceleration": 1.24,
@@ -834,9 +834,9 @@
           "boostPower": 1.24
         },
         "3": {
-          "xpToNext": 3000,
-          "upgradeTimerSeconds": 10800,
-          "priceCoins": 10000,
+          "xpToNext": 1700,
+          "upgradeTimerSeconds": 14400,
+          "priceCoins": 51500,
           "carRating": 330,
           "topSpeed": 1.37,
           "acceleration": 1.37,
@@ -845,9 +845,9 @@
           "boostPower": 1.37
         },
         "4": {
-          "xpToNext": 4000,
-          "upgradeTimerSeconds": 14400,
-          "priceCoins": 12500,
+          "xpToNext": 1900,
+          "upgradeTimerSeconds": 18000,
+          "priceCoins": 68500,
           "carRating": 340,
           "topSpeed": 1.49,
           "acceleration": 1.49,
@@ -856,9 +856,9 @@
           "boostPower": 1.49
         },
         "5": {
-          "xpToNext": 5000,
+          "xpToNext": 2400,
           "upgradeTimerSeconds": 21600,
-          "priceCoins": 15000,
+          "priceCoins": 85500,
           "carRating": 350,
           "topSpeed": 1.61,
           "acceleration": 1.61,
@@ -867,9 +867,9 @@
           "boostPower": 1.61
         },
         "6": {
-          "xpToNext": 7000,
+          "xpToNext": 2800,
           "upgradeTimerSeconds": 28800,
-          "priceCoins": 18000,
+          "priceCoins": 103000,
           "carRating": 360,
           "topSpeed": 1.73,
           "acceleration": 1.73,
@@ -878,9 +878,9 @@
           "boostPower": 1.73
         },
         "7": {
-          "xpToNext": 10000,
-          "upgradeTimerSeconds": 43200,
-          "priceCoins": 22000,
+          "xpToNext": 3300,
+          "upgradeTimerSeconds": 36000,
+          "priceCoins": 137000,
           "carRating": 370,
           "topSpeed": 1.86,
           "acceleration": 1.86,
@@ -889,9 +889,9 @@
           "boostPower": 1.86
         },
         "8": {
-          "xpToNext": 15000,
-          "upgradeTimerSeconds": 57600,
-          "priceCoins": 28000,
+          "xpToNext": 3800,
+          "upgradeTimerSeconds": 43200,
+          "priceCoins": 171000,
           "carRating": 380,
           "topSpeed": 1.98,
           "acceleration": 1.98,
@@ -932,9 +932,9 @@
       },
       "levels": {
         "0": {
-          "xpToNext": 1000,
-          "upgradeTimerSeconds": 1800,
-          "priceCoins": 0,
+          "xpToNext": 950,
+          "upgradeTimerSeconds": 3600,
+          "priceCoins": 17000,
           "carRating": 300,
           "topSpeed": 1.0,
           "acceleration": 1.0,
@@ -943,9 +943,9 @@
           "boostPower": 1.0
         },
         "1": {
-          "xpToNext": 1500,
-          "upgradeTimerSeconds": 3600,
-          "priceCoins": 5000,
+          "xpToNext": 1200,
+          "upgradeTimerSeconds": 7200,
+          "priceCoins": 25500,
           "carRating": 310,
           "topSpeed": 1.12,
           "acceleration": 1.12,
@@ -954,9 +954,9 @@
           "boostPower": 1.12
         },
         "2": {
-          "xpToNext": 2000,
-          "upgradeTimerSeconds": 7200,
-          "priceCoins": 7500,
+          "xpToNext": 1400,
+          "upgradeTimerSeconds": 10800,
+          "priceCoins": 34500,
           "carRating": 320,
           "topSpeed": 1.24,
           "acceleration": 1.24,
@@ -965,9 +965,9 @@
           "boostPower": 1.24
         },
         "3": {
-          "xpToNext": 3000,
-          "upgradeTimerSeconds": 10800,
-          "priceCoins": 10000,
+          "xpToNext": 1700,
+          "upgradeTimerSeconds": 14400,
+          "priceCoins": 51500,
           "carRating": 330,
           "topSpeed": 1.37,
           "acceleration": 1.37,
@@ -976,9 +976,9 @@
           "boostPower": 1.37
         },
         "4": {
-          "xpToNext": 4000,
-          "upgradeTimerSeconds": 14400,
-          "priceCoins": 12500,
+          "xpToNext": 1900,
+          "upgradeTimerSeconds": 18000,
+          "priceCoins": 68500,
           "carRating": 340,
           "topSpeed": 1.49,
           "acceleration": 1.49,
@@ -987,9 +987,9 @@
           "boostPower": 1.49
         },
         "5": {
-          "xpToNext": 5000,
+          "xpToNext": 2400,
           "upgradeTimerSeconds": 21600,
-          "priceCoins": 15000,
+          "priceCoins": 85500,
           "carRating": 350,
           "topSpeed": 1.61,
           "acceleration": 1.61,
@@ -998,9 +998,9 @@
           "boostPower": 1.61
         },
         "6": {
-          "xpToNext": 7000,
+          "xpToNext": 2800,
           "upgradeTimerSeconds": 28800,
-          "priceCoins": 18000,
+          "priceCoins": 103000,
           "carRating": 360,
           "topSpeed": 1.73,
           "acceleration": 1.73,
@@ -1009,9 +1009,9 @@
           "boostPower": 1.73
         },
         "7": {
-          "xpToNext": 10000,
-          "upgradeTimerSeconds": 43200,
-          "priceCoins": 22000,
+          "xpToNext": 3300,
+          "upgradeTimerSeconds": 36000,
+          "priceCoins": 137000,
           "carRating": 370,
           "topSpeed": 1.86,
           "acceleration": 1.86,
@@ -1020,9 +1020,9 @@
           "boostPower": 1.86
         },
         "8": {
-          "xpToNext": 15000,
-          "upgradeTimerSeconds": 57600,
-          "priceCoins": 28000,
+          "xpToNext": 3800,
+          "upgradeTimerSeconds": 43200,
+          "priceCoins": 171000,
           "carRating": 380,
           "topSpeed": 1.98,
           "acceleration": 1.98,
@@ -1064,9 +1064,9 @@
       },
       "levels": {
         "0": {
-          "xpToNext": 2000,
+          "xpToNext": 950,
           "upgradeTimerSeconds": 3600,
-          "priceCoins": 0,
+          "priceCoins": 17000,
           "carRating": 450,
           "topSpeed": 1.0,
           "acceleration": 1.0,
@@ -1075,9 +1075,9 @@
           "boostPower": 1.0
         },
         "1": {
-          "xpToNext": 3000,
+          "xpToNext": 1200,
           "upgradeTimerSeconds": 7200,
-          "priceCoins": 12000,
+          "priceCoins": 25500,
           "carRating": 460,
           "topSpeed": 1.14,
           "acceleration": 1.14,
@@ -1086,9 +1086,9 @@
           "boostPower": 1.14
         },
         "2": {
-          "xpToNext": 4000,
+          "xpToNext": 1400,
           "upgradeTimerSeconds": 10800,
-          "priceCoins": 18000,
+          "priceCoins": 34500,
           "carRating": 470,
           "topSpeed": 1.29,
           "acceleration": 1.29,
@@ -1097,9 +1097,9 @@
           "boostPower": 1.29
         },
         "3": {
-          "xpToNext": 6000,
+          "xpToNext": 1700,
           "upgradeTimerSeconds": 14400,
-          "priceCoins": 25000,
+          "priceCoins": 51500,
           "carRating": 480,
           "topSpeed": 1.43,
           "acceleration": 1.43,
@@ -1108,9 +1108,9 @@
           "boostPower": 1.43
         },
         "4": {
-          "xpToNext": 8000,
-          "upgradeTimerSeconds": 21600,
-          "priceCoins": 30000,
+          "xpToNext": 1900,
+          "upgradeTimerSeconds": 18000,
+          "priceCoins": 68500,
           "carRating": 490,
           "topSpeed": 1.58,
           "acceleration": 1.58,
@@ -1119,9 +1119,9 @@
           "boostPower": 1.58
         },
         "5": {
-          "xpToNext": 10000,
-          "upgradeTimerSeconds": 28800,
-          "priceCoins": 38000,
+          "xpToNext": 2400,
+          "upgradeTimerSeconds": 21600,
+          "priceCoins": 85500,
           "carRating": 500,
           "topSpeed": 1.72,
           "acceleration": 1.72,
@@ -1130,9 +1130,9 @@
           "boostPower": 1.72
         },
         "6": {
-          "xpToNext": 14000,
-          "upgradeTimerSeconds": 43200,
-          "priceCoins": 45000,
+          "xpToNext": 2800,
+          "upgradeTimerSeconds": 28800,
+          "priceCoins": 103000,
           "carRating": 510,
           "topSpeed": 1.87,
           "acceleration": 1.87,
@@ -1141,9 +1141,9 @@
           "boostPower": 1.87
         },
         "7": {
-          "xpToNext": 20000,
-          "upgradeTimerSeconds": 57600,
-          "priceCoins": 55000,
+          "xpToNext": 3300,
+          "upgradeTimerSeconds": 36000,
+          "priceCoins": 137000,
           "carRating": 520,
           "topSpeed": 2.01,
           "acceleration": 2.01,
@@ -1152,9 +1152,9 @@
           "boostPower": 2.01
         },
         "8": {
-          "xpToNext": 30000,
-          "upgradeTimerSeconds": 86400,
-          "priceCoins": 70000,
+          "xpToNext": 3800,
+          "upgradeTimerSeconds": 43200,
+          "priceCoins": 171000,
           "carRating": 530,
           "topSpeed": 2.16,
           "acceleration": 2.16,
@@ -1196,9 +1196,9 @@
       },
       "levels": {
         "0": {
-          "xpToNext": 2000,
-          "upgradeTimerSeconds": 3600,
-          "priceCoins": 0,
+          "xpToNext": 1900,
+          "upgradeTimerSeconds": 7200,
+          "priceCoins": 59000,
           "carRating": 450,
           "topSpeed": 1.0,
           "acceleration": 1.0,
@@ -1207,9 +1207,9 @@
           "boostPower": 1.0
         },
         "1": {
-          "xpToNext": 3000,
-          "upgradeTimerSeconds": 7200,
-          "priceCoins": 12000,
+          "xpToNext": 2400,
+          "upgradeTimerSeconds": 14400,
+          "priceCoins": 89000,
           "carRating": 460,
           "topSpeed": 1.14,
           "acceleration": 1.14,
@@ -1218,9 +1218,9 @@
           "boostPower": 1.14
         },
         "2": {
-          "xpToNext": 4000,
-          "upgradeTimerSeconds": 10800,
-          "priceCoins": 18000,
+          "xpToNext": 2900,
+          "upgradeTimerSeconds": 21600,
+          "priceCoins": 118000,
           "carRating": 470,
           "topSpeed": 1.29,
           "acceleration": 1.29,
@@ -1229,9 +1229,9 @@
           "boostPower": 1.29
         },
         "3": {
-          "xpToNext": 6000,
-          "upgradeTimerSeconds": 14400,
-          "priceCoins": 25000,
+          "xpToNext": 3400,
+          "upgradeTimerSeconds": 28800,
+          "priceCoins": 178000,
           "carRating": 480,
           "topSpeed": 1.43,
           "acceleration": 1.43,
@@ -1240,9 +1240,9 @@
           "boostPower": 1.43
         },
         "4": {
-          "xpToNext": 8000,
-          "upgradeTimerSeconds": 21600,
-          "priceCoins": 30000,
+          "xpToNext": 3900,
+          "upgradeTimerSeconds": 36000,
+          "priceCoins": 237000,
           "carRating": 490,
           "topSpeed": 1.58,
           "acceleration": 1.58,
@@ -1251,9 +1251,9 @@
           "boostPower": 1.58
         },
         "5": {
-          "xpToNext": 10000,
-          "upgradeTimerSeconds": 28800,
-          "priceCoins": 38000,
+          "xpToNext": 4800,
+          "upgradeTimerSeconds": 43200,
+          "priceCoins": 296000,
           "carRating": 500,
           "topSpeed": 1.72,
           "acceleration": 1.72,
@@ -1262,9 +1262,9 @@
           "boostPower": 1.72
         },
         "6": {
-          "xpToNext": 14000,
-          "upgradeTimerSeconds": 43200,
-          "priceCoins": 45000,
+          "xpToNext": 5800,
+          "upgradeTimerSeconds": 57600,
+          "priceCoins": 355000,
           "carRating": 510,
           "topSpeed": 1.87,
           "acceleration": 1.87,
@@ -1273,9 +1273,9 @@
           "boostPower": 1.87
         },
         "7": {
-          "xpToNext": 20000,
-          "upgradeTimerSeconds": 57600,
-          "priceCoins": 55000,
+          "xpToNext": 6700,
+          "upgradeTimerSeconds": 72000,
+          "priceCoins": 474000,
           "carRating": 520,
           "topSpeed": 2.01,
           "acceleration": 2.01,
@@ -1284,9 +1284,9 @@
           "boostPower": 2.01
         },
         "8": {
-          "xpToNext": 30000,
+          "xpToNext": 7700,
           "upgradeTimerSeconds": 86400,
-          "priceCoins": 70000,
+          "priceCoins": 592000,
           "carRating": 530,
           "topSpeed": 2.16,
           "acceleration": 2.16,
@@ -1328,9 +1328,9 @@
       },
       "levels": {
         "0": {
-          "xpToNext": 2000,
-          "upgradeTimerSeconds": 3600,
-          "priceCoins": 0,
+          "xpToNext": 1900,
+          "upgradeTimerSeconds": 7200,
+          "priceCoins": 59000,
           "carRating": 450,
           "topSpeed": 1.0,
           "acceleration": 1.0,
@@ -1339,9 +1339,9 @@
           "boostPower": 1.0
         },
         "1": {
-          "xpToNext": 3000,
-          "upgradeTimerSeconds": 7200,
-          "priceCoins": 12000,
+          "xpToNext": 2400,
+          "upgradeTimerSeconds": 14400,
+          "priceCoins": 89000,
           "carRating": 460,
           "topSpeed": 1.14,
           "acceleration": 1.14,
@@ -1350,9 +1350,9 @@
           "boostPower": 1.14
         },
         "2": {
-          "xpToNext": 4000,
-          "upgradeTimerSeconds": 10800,
-          "priceCoins": 18000,
+          "xpToNext": 2900,
+          "upgradeTimerSeconds": 21600,
+          "priceCoins": 118000,
           "carRating": 470,
           "topSpeed": 1.29,
           "acceleration": 1.29,
@@ -1361,9 +1361,9 @@
           "boostPower": 1.29
         },
         "3": {
-          "xpToNext": 6000,
-          "upgradeTimerSeconds": 14400,
-          "priceCoins": 25000,
+          "xpToNext": 3400,
+          "upgradeTimerSeconds": 28800,
+          "priceCoins": 178000,
           "carRating": 480,
           "topSpeed": 1.43,
           "acceleration": 1.43,
@@ -1372,9 +1372,9 @@
           "boostPower": 1.43
         },
         "4": {
-          "xpToNext": 8000,
-          "upgradeTimerSeconds": 21600,
-          "priceCoins": 30000,
+          "xpToNext": 3900,
+          "upgradeTimerSeconds": 36000,
+          "priceCoins": 237000,
           "carRating": 490,
           "topSpeed": 1.58,
           "acceleration": 1.58,
@@ -1383,9 +1383,9 @@
           "boostPower": 1.58
         },
         "5": {
-          "xpToNext": 10000,
-          "upgradeTimerSeconds": 28800,
-          "priceCoins": 38000,
+          "xpToNext": 4800,
+          "upgradeTimerSeconds": 43200,
+          "priceCoins": 296000,
           "carRating": 500,
           "topSpeed": 1.72,
           "acceleration": 1.72,
@@ -1394,9 +1394,9 @@
           "boostPower": 1.72
         },
         "6": {
-          "xpToNext": 14000,
-          "upgradeTimerSeconds": 43200,
-          "priceCoins": 45000,
+          "xpToNext": 5800,
+          "upgradeTimerSeconds": 57600,
+          "priceCoins": 355000,
           "carRating": 510,
           "topSpeed": 1.87,
           "acceleration": 1.87,
@@ -1405,9 +1405,9 @@
           "boostPower": 1.87
         },
         "7": {
-          "xpToNext": 20000,
-          "upgradeTimerSeconds": 57600,
-          "priceCoins": 55000,
+          "xpToNext": 6700,
+          "upgradeTimerSeconds": 72000,
+          "priceCoins": 474000,
           "carRating": 520,
           "topSpeed": 2.01,
           "acceleration": 2.01,
@@ -1416,9 +1416,9 @@
           "boostPower": 2.01
         },
         "8": {
-          "xpToNext": 30000,
+          "xpToNext": 7700,
           "upgradeTimerSeconds": 86400,
-          "priceCoins": 70000,
+          "priceCoins": 592000,
           "carRating": 530,
           "topSpeed": 2.16,
           "acceleration": 2.16,
@@ -1460,9 +1460,9 @@
       },
       "levels": {
         "0": {
-          "xpToNext": 2000,
-          "upgradeTimerSeconds": 3600,
-          "priceCoins": 0,
+          "xpToNext": 1900,
+          "upgradeTimerSeconds": 7200,
+          "priceCoins": 59000,
           "carRating": 450,
           "topSpeed": 1.0,
           "acceleration": 1.0,
@@ -1471,9 +1471,9 @@
           "boostPower": 1.0
         },
         "1": {
-          "xpToNext": 3000,
-          "upgradeTimerSeconds": 7200,
-          "priceCoins": 12000,
+          "xpToNext": 2400,
+          "upgradeTimerSeconds": 14400,
+          "priceCoins": 89000,
           "carRating": 460,
           "topSpeed": 1.14,
           "acceleration": 1.14,
@@ -1482,9 +1482,9 @@
           "boostPower": 1.14
         },
         "2": {
-          "xpToNext": 4000,
-          "upgradeTimerSeconds": 10800,
-          "priceCoins": 18000,
+          "xpToNext": 2900,
+          "upgradeTimerSeconds": 21600,
+          "priceCoins": 118000,
           "carRating": 470,
           "topSpeed": 1.29,
           "acceleration": 1.29,
@@ -1493,9 +1493,9 @@
           "boostPower": 1.29
         },
         "3": {
-          "xpToNext": 6000,
-          "upgradeTimerSeconds": 14400,
-          "priceCoins": 25000,
+          "xpToNext": 3400,
+          "upgradeTimerSeconds": 28800,
+          "priceCoins": 178000,
           "carRating": 480,
           "topSpeed": 1.43,
           "acceleration": 1.43,
@@ -1504,9 +1504,9 @@
           "boostPower": 1.43
         },
         "4": {
-          "xpToNext": 8000,
-          "upgradeTimerSeconds": 21600,
-          "priceCoins": 30000,
+          "xpToNext": 3900,
+          "upgradeTimerSeconds": 36000,
+          "priceCoins": 237000,
           "carRating": 490,
           "topSpeed": 1.58,
           "acceleration": 1.58,
@@ -1515,9 +1515,9 @@
           "boostPower": 1.58
         },
         "5": {
-          "xpToNext": 10000,
-          "upgradeTimerSeconds": 28800,
-          "priceCoins": 38000,
+          "xpToNext": 4800,
+          "upgradeTimerSeconds": 43200,
+          "priceCoins": 296000,
           "carRating": 500,
           "topSpeed": 1.72,
           "acceleration": 1.72,
@@ -1526,9 +1526,9 @@
           "boostPower": 1.72
         },
         "6": {
-          "xpToNext": 14000,
-          "upgradeTimerSeconds": 43200,
-          "priceCoins": 45000,
+          "xpToNext": 5800,
+          "upgradeTimerSeconds": 57600,
+          "priceCoins": 355000,
           "carRating": 510,
           "topSpeed": 1.87,
           "acceleration": 1.87,
@@ -1537,9 +1537,9 @@
           "boostPower": 1.87
         },
         "7": {
-          "xpToNext": 20000,
-          "upgradeTimerSeconds": 57600,
-          "priceCoins": 55000,
+          "xpToNext": 6700,
+          "upgradeTimerSeconds": 72000,
+          "priceCoins": 474000,
           "carRating": 520,
           "topSpeed": 2.01,
           "acceleration": 2.01,
@@ -1548,9 +1548,9 @@
           "boostPower": 2.01
         },
         "8": {
-          "xpToNext": 30000,
+          "xpToNext": 7700,
           "upgradeTimerSeconds": 86400,
-          "priceCoins": 70000,
+          "priceCoins": 592000,
           "carRating": 530,
           "topSpeed": 2.16,
           "acceleration": 2.16,
@@ -1592,9 +1592,9 @@
       },
       "levels": {
         "0": {
-          "xpToNext": 2000,
-          "upgradeTimerSeconds": 3600,
-          "priceCoins": 0,
+          "xpToNext": 3500,
+          "upgradeTimerSeconds": 14400,
+          "priceCoins": 189000,
           "carRating": 450,
           "topSpeed": 1.0,
           "acceleration": 1.0,
@@ -1603,9 +1603,9 @@
           "boostPower": 1.0
         },
         "1": {
-          "xpToNext": 3000,
-          "upgradeTimerSeconds": 7200,
-          "priceCoins": 12000,
+          "xpToNext": 4400,
+          "upgradeTimerSeconds": 28800,
+          "priceCoins": 284000,
           "carRating": 460,
           "topSpeed": 1.14,
           "acceleration": 1.14,
@@ -1614,9 +1614,9 @@
           "boostPower": 1.14
         },
         "2": {
-          "xpToNext": 4000,
-          "upgradeTimerSeconds": 10800,
-          "priceCoins": 18000,
+          "xpToNext": 5300,
+          "upgradeTimerSeconds": 43200,
+          "priceCoins": 378000,
           "carRating": 470,
           "topSpeed": 1.29,
           "acceleration": 1.29,
@@ -1625,9 +1625,9 @@
           "boostPower": 1.29
         },
         "3": {
-          "xpToNext": 6000,
-          "upgradeTimerSeconds": 14400,
-          "priceCoins": 25000,
+          "xpToNext": 6200,
+          "upgradeTimerSeconds": 57600,
+          "priceCoins": 567000,
           "carRating": 480,
           "topSpeed": 1.43,
           "acceleration": 1.43,
@@ -1636,9 +1636,9 @@
           "boostPower": 1.43
         },
         "4": {
-          "xpToNext": 8000,
-          "upgradeTimerSeconds": 21600,
-          "priceCoins": 30000,
+          "xpToNext": 7100,
+          "upgradeTimerSeconds": 72000,
+          "priceCoins": 756000,
           "carRating": 490,
           "topSpeed": 1.58,
           "acceleration": 1.58,
@@ -1647,9 +1647,9 @@
           "boostPower": 1.58
         },
         "5": {
-          "xpToNext": 10000,
-          "upgradeTimerSeconds": 28800,
-          "priceCoins": 38000,
+          "xpToNext": 8800,
+          "upgradeTimerSeconds": 86400,
+          "priceCoins": 945000,
           "carRating": 500,
           "topSpeed": 1.72,
           "acceleration": 1.72,
@@ -1658,9 +1658,9 @@
           "boostPower": 1.72
         },
         "6": {
-          "xpToNext": 14000,
-          "upgradeTimerSeconds": 43200,
-          "priceCoins": 45000,
+          "xpToNext": 10500,
+          "upgradeTimerSeconds": 115200,
+          "priceCoins": 1135000,
           "carRating": 510,
           "topSpeed": 1.87,
           "acceleration": 1.87,
@@ -1669,9 +1669,9 @@
           "boostPower": 1.87
         },
         "7": {
-          "xpToNext": 20000,
-          "upgradeTimerSeconds": 57600,
-          "priceCoins": 55000,
+          "xpToNext": 12500,
+          "upgradeTimerSeconds": 144000,
+          "priceCoins": 1510000,
           "carRating": 520,
           "topSpeed": 2.01,
           "acceleration": 2.01,
@@ -1680,9 +1680,9 @@
           "boostPower": 2.01
         },
         "8": {
-          "xpToNext": 30000,
-          "upgradeTimerSeconds": 86400,
-          "priceCoins": 70000,
+          "xpToNext": 14000,
+          "upgradeTimerSeconds": 172800,
+          "priceCoins": 1890000,
           "carRating": 530,
           "topSpeed": 2.16,
           "acceleration": 2.16,
@@ -1724,9 +1724,9 @@
       },
       "levels": {
         "0": {
-          "xpToNext": 2000,
-          "upgradeTimerSeconds": 3600,
-          "priceCoins": 0,
+          "xpToNext": 3500,
+          "upgradeTimerSeconds": 14400,
+          "priceCoins": 189000,
           "carRating": 450,
           "topSpeed": 1.0,
           "acceleration": 1.0,
@@ -1735,9 +1735,9 @@
           "boostPower": 1.0
         },
         "1": {
-          "xpToNext": 3000,
-          "upgradeTimerSeconds": 7200,
-          "priceCoins": 12000,
+          "xpToNext": 4400,
+          "upgradeTimerSeconds": 28800,
+          "priceCoins": 284000,
           "carRating": 460,
           "topSpeed": 1.14,
           "acceleration": 1.14,
@@ -1746,9 +1746,9 @@
           "boostPower": 1.14
         },
         "2": {
-          "xpToNext": 4000,
-          "upgradeTimerSeconds": 10800,
-          "priceCoins": 18000,
+          "xpToNext": 5300,
+          "upgradeTimerSeconds": 43200,
+          "priceCoins": 378000,
           "carRating": 470,
           "topSpeed": 1.29,
           "acceleration": 1.29,
@@ -1757,9 +1757,9 @@
           "boostPower": 1.29
         },
         "3": {
-          "xpToNext": 6000,
-          "upgradeTimerSeconds": 14400,
-          "priceCoins": 25000,
+          "xpToNext": 6200,
+          "upgradeTimerSeconds": 57600,
+          "priceCoins": 567000,
           "carRating": 480,
           "topSpeed": 1.43,
           "acceleration": 1.43,
@@ -1768,9 +1768,9 @@
           "boostPower": 1.43
         },
         "4": {
-          "xpToNext": 8000,
-          "upgradeTimerSeconds": 21600,
-          "priceCoins": 30000,
+          "xpToNext": 7100,
+          "upgradeTimerSeconds": 72000,
+          "priceCoins": 756000,
           "carRating": 490,
           "topSpeed": 1.58,
           "acceleration": 1.58,
@@ -1779,9 +1779,9 @@
           "boostPower": 1.58
         },
         "5": {
-          "xpToNext": 10000,
-          "upgradeTimerSeconds": 28800,
-          "priceCoins": 38000,
+          "xpToNext": 8800,
+          "upgradeTimerSeconds": 86400,
+          "priceCoins": 945000,
           "carRating": 500,
           "topSpeed": 1.72,
           "acceleration": 1.72,
@@ -1790,9 +1790,9 @@
           "boostPower": 1.72
         },
         "6": {
-          "xpToNext": 14000,
-          "upgradeTimerSeconds": 43200,
-          "priceCoins": 45000,
+          "xpToNext": 10500,
+          "upgradeTimerSeconds": 115200,
+          "priceCoins": 1135000,
           "carRating": 510,
           "topSpeed": 1.87,
           "acceleration": 1.87,
@@ -1801,9 +1801,9 @@
           "boostPower": 1.87
         },
         "7": {
-          "xpToNext": 20000,
-          "upgradeTimerSeconds": 57600,
-          "priceCoins": 55000,
+          "xpToNext": 12500,
+          "upgradeTimerSeconds": 144000,
+          "priceCoins": 1510000,
           "carRating": 520,
           "topSpeed": 2.01,
           "acceleration": 2.01,
@@ -1812,9 +1812,9 @@
           "boostPower": 2.01
         },
         "8": {
-          "xpToNext": 30000,
-          "upgradeTimerSeconds": 86400,
-          "priceCoins": 70000,
+          "xpToNext": 14000,
+          "upgradeTimerSeconds": 172800,
+          "priceCoins": 1890000,
           "carRating": 530,
           "topSpeed": 2.16,
           "acceleration": 2.16,
@@ -1856,9 +1856,9 @@
       },
       "levels": {
         "0": {
-          "xpToNext": 2000,
-          "upgradeTimerSeconds": 3600,
-          "priceCoins": 0,
+          "xpToNext": 3500,
+          "upgradeTimerSeconds": 14400,
+          "priceCoins": 189000,
           "carRating": 450,
           "topSpeed": 1.0,
           "acceleration": 1.0,
@@ -1867,9 +1867,9 @@
           "boostPower": 1.0
         },
         "1": {
-          "xpToNext": 3000,
-          "upgradeTimerSeconds": 7200,
-          "priceCoins": 12000,
+          "xpToNext": 4400,
+          "upgradeTimerSeconds": 28800,
+          "priceCoins": 284000,
           "carRating": 460,
           "topSpeed": 1.14,
           "acceleration": 1.14,
@@ -1878,9 +1878,9 @@
           "boostPower": 1.14
         },
         "2": {
-          "xpToNext": 4000,
-          "upgradeTimerSeconds": 10800,
-          "priceCoins": 18000,
+          "xpToNext": 5300,
+          "upgradeTimerSeconds": 43200,
+          "priceCoins": 378000,
           "carRating": 470,
           "topSpeed": 1.29,
           "acceleration": 1.29,
@@ -1889,9 +1889,9 @@
           "boostPower": 1.29
         },
         "3": {
-          "xpToNext": 6000,
-          "upgradeTimerSeconds": 14400,
-          "priceCoins": 25000,
+          "xpToNext": 6200,
+          "upgradeTimerSeconds": 57600,
+          "priceCoins": 567000,
           "carRating": 480,
           "topSpeed": 1.43,
           "acceleration": 1.43,
@@ -1900,9 +1900,9 @@
           "boostPower": 1.43
         },
         "4": {
-          "xpToNext": 8000,
-          "upgradeTimerSeconds": 21600,
-          "priceCoins": 30000,
+          "xpToNext": 7100,
+          "upgradeTimerSeconds": 72000,
+          "priceCoins": 756000,
           "carRating": 490,
           "topSpeed": 1.58,
           "acceleration": 1.58,
@@ -1911,9 +1911,9 @@
           "boostPower": 1.58
         },
         "5": {
-          "xpToNext": 10000,
-          "upgradeTimerSeconds": 28800,
-          "priceCoins": 38000,
+          "xpToNext": 8800,
+          "upgradeTimerSeconds": 86400,
+          "priceCoins": 945000,
           "carRating": 500,
           "topSpeed": 1.72,
           "acceleration": 1.72,
@@ -1922,9 +1922,9 @@
           "boostPower": 1.72
         },
         "6": {
-          "xpToNext": 14000,
-          "upgradeTimerSeconds": 43200,
-          "priceCoins": 45000,
+          "xpToNext": 10500,
+          "upgradeTimerSeconds": 115200,
+          "priceCoins": 1135000,
           "carRating": 510,
           "topSpeed": 1.87,
           "acceleration": 1.87,
@@ -1933,9 +1933,9 @@
           "boostPower": 1.87
         },
         "7": {
-          "xpToNext": 20000,
-          "upgradeTimerSeconds": 57600,
-          "priceCoins": 55000,
+          "xpToNext": 12500,
+          "upgradeTimerSeconds": 144000,
+          "priceCoins": 1510000,
           "carRating": 520,
           "topSpeed": 2.01,
           "acceleration": 2.01,
@@ -1944,9 +1944,9 @@
           "boostPower": 2.01
         },
         "8": {
-          "xpToNext": 30000,
-          "upgradeTimerSeconds": 86400,
-          "priceCoins": 70000,
+          "xpToNext": 14000,
+          "upgradeTimerSeconds": 172800,
+          "priceCoins": 1890000,
           "carRating": 530,
           "topSpeed": 2.16,
           "acceleration": 2.16,

@@ -151,6 +151,23 @@ export const startSpellResearchV2 = onCall(
                     }
 
                     targetLevel = currentLevel + 1;
+
+                    // Check mastery gate for this target level
+                    const masteryGates = researchCatalog.masteryGates;
+                    if (masteryGates) {
+                        const requiredMasteryRank = masteryGates[String(targetLevel)] ?? 0;
+                        if (requiredMasteryRank > 0) {
+                            const profileData = profileDoc.data() ?? {};
+                            const playerMasteryRank = Number(profileData.masteryRank ?? 0);
+                            if (playerMasteryRank < requiredMasteryRank) {
+                                throw new HttpsError(
+                                    "failed-precondition",
+                                    `Mastery Rank ${playerMasteryRank} does not meet required rank ${requiredMasteryRank} for spell level ${targetLevel}.`,
+                                );
+                            }
+                        }
+                    }
+
                     const cost = researchCatalog.researchCosts[String(targetLevel)];
                     if (!cost) {
                         throw new HttpsError("internal", `Research cost not configured for level ${targetLevel}`);
@@ -501,6 +518,7 @@ export const skipSpellResearchV2 = onCall(
                     remainingSeconds,
                     researchCatalog.skipCost.gemsPerHour,
                     researchCatalog.skipCost.minGems,
+                    researchCatalog.skipCost.freeSkipThresholdSeconds ?? 0,
                 );
 
                 // Check gems
@@ -617,6 +635,7 @@ export const getLibraryStatusV2 = onCall(
                     remainingSeconds,
                     researchCatalog.skipCost.gemsPerHour,
                     researchCatalog.skipCost.minGems,
+                    researchCatalog.skipCost.freeSkipThresholdSeconds ?? 0,
                 );
 
             return {

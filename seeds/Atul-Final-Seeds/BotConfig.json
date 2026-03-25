@@ -7,8 +7,8 @@
         "max": 500
       },
       "aiBoostPower": {
-        "min": 0.10,
-        "max": 0.30
+        "min": 0.1,
+        "max": 0.3
       },
       "aiAcceleration": {
         "min": 2,
@@ -126,27 +126,34 @@
         "minTrophies": 0,
         "maxTrophies": 999,
         "minLevel": 1,
-        "maxLevel": 2,
+        "maxLevel": 1,
         "tierName": "Rookie"
       },
       {
         "minTrophies": 1000,
         "maxTrophies": 2499,
+        "minLevel": 1,
+        "maxLevel": 2,
+        "tierName": "Rising"
+      },
+      {
+        "minTrophies": 2500,
+        "maxTrophies": 3999,
         "minLevel": 2,
         "maxLevel": 3,
         "tierName": "Intermediate"
       },
       {
-        "minTrophies": 2500,
-        "maxTrophies": 4999,
-        "minLevel": 4,
-        "maxLevel": 5,
+        "minTrophies": 4000,
+        "maxTrophies": 5499,
+        "minLevel": 3,
+        "maxLevel": 4,
         "tierName": "Advanced"
       },
       {
-        "minTrophies": 5000,
+        "minTrophies": 5500,
         "maxTrophies": 99999,
-        "minLevel": 5,
+        "minLevel": 4,
         "maxLevel": 5,
         "tierName": "Champion"
       }
@@ -158,6 +165,6 @@
       "spell_th5ek2kw",
       "spell_0tk74qn8"
     ],
-    "updatedAt": 0
+    "updatedAt": 1742900000000
   }
 }

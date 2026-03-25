@@ -4324,7 +4324,7 @@
           "rarity": "rare",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 100
+          "gemPrice": 150
         }
       ]
     },
@@ -4343,7 +4343,7 @@
           "rarity": "exotic",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 175
+          "gemPrice": 400
         }
       ]
     },
@@ -4362,7 +4362,7 @@
           "rarity": "legendary",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 300
+          "gemPrice": 1000
         }
       ]
     },
@@ -4381,7 +4381,7 @@
           "rarity": "mythical",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 500
+          "gemPrice": 2500
         }
       ]
     },
@@ -4477,7 +4477,7 @@
           "rarity": "special",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 80,
+          "gemPrice": 18,
           "durationSeconds": 3600,
           "subType": "coin",
           "variant": {
@@ -4490,7 +4490,7 @@
           "rarity": "special",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 320,
+          "gemPrice": 80,
           "durationSeconds": 21600,
           "subType": "coin",
           "variant": {
@@ -4503,7 +4503,7 @@
           "rarity": "special",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 560,
+          "gemPrice": 130,
           "durationSeconds": 43200,
           "subType": "coin",
           "variant": {
@@ -4516,7 +4516,7 @@
           "rarity": "special",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 960,
+          "gemPrice": 200,
           "subType": "coin",
           "durationSeconds": 86400,
           "variant": {
@@ -4541,7 +4541,7 @@
           "rarity": "special",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 60,
+          "gemPrice": 15,
           "durationSeconds": 3600,
           "subType": "exp",
           "variant": {
@@ -4554,7 +4554,7 @@
           "rarity": "special",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 240,
+          "gemPrice": 60,
           "durationSeconds": 21600,
           "subType": "exp",
           "variant": {
@@ -4567,7 +4567,7 @@
           "rarity": "special",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 420,
+          "gemPrice": 100,
           "durationSeconds": 43200,
           "subType": "exp",
           "variant": {
@@ -4580,7 +4580,7 @@
           "rarity": "special",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 720,
+          "gemPrice": 160,
           "subType": "exp",
           "durationSeconds": 86400,
           "variant": {
@@ -4605,7 +4605,7 @@
           "rarity": "special",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 60,
+          "gemPrice": 18,
           "durationSeconds": 3600,
           "subType": "shard",
           "variant": {
@@ -4618,7 +4618,7 @@
           "rarity": "special",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 240,
+          "gemPrice": 80,
           "durationSeconds": 21600,
           "subType": "shard",
           "variant": {
@@ -4631,7 +4631,7 @@
           "rarity": "special",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 420,
+          "gemPrice": 130,
           "durationSeconds": 43200,
           "subType": "shard",
           "variant": {
@@ -4644,7 +4644,7 @@
           "rarity": "special",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 720,
+          "gemPrice": 200,
           "subType": "shard",
           "durationSeconds": 86400,
           "variant": {
@@ -4669,7 +4669,7 @@
           "rarity": "special",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 100,
+          "gemPrice": 5,
           "durationSeconds": 300,
           "subType": "speedup",
           "variant": {
@@ -4682,7 +4682,7 @@
           "rarity": "special",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 100,
+          "gemPrice": 8,
           "durationSeconds": 900,
           "subType": "speedup",
           "variant": {
@@ -4695,7 +4695,7 @@
           "rarity": "special",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 100,
+          "gemPrice": 12,
           "durationSeconds": 1800,
           "subType": "speedup",
           "variant": {
@@ -4708,7 +4708,7 @@
           "rarity": "special",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 100,
+          "gemPrice": 20,
           "durationSeconds": 3600,
           "subType": "speedup",
           "variant": {
@@ -4721,7 +4721,7 @@
           "rarity": "special",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 100,
+          "gemPrice": 50,
           "durationSeconds": 10800,
           "subType": "speedup",
           "variant": {
@@ -4734,7 +4734,7 @@
           "rarity": "special",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 100,
+          "gemPrice": 120,
           "durationSeconds": 28800,
           "subType": "speedup",
           "variant": {
@@ -4747,7 +4747,7 @@
           "rarity": "special",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 100,
+          "gemPrice": 300,
           "durationSeconds": 86400,
           "subType": "speedup",
           "variant": {
@@ -4760,7 +4760,7 @@
           "rarity": "special",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 100,
+          "gemPrice": 700,
           "durationSeconds": 259200,
           "subType": "speedup",
           "variant": {
@@ -4773,7 +4773,7 @@
           "rarity": "special",
           "stackable": true,
           "purchasable": true,
-          "gemPrice": 100,
+          "gemPrice": 1400,
           "durationSeconds": 604800,
           "subType": "speedup",
           "variant": {

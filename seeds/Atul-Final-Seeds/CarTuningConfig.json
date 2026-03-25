@@ -20,14 +20,14 @@
         "max": 4
       },
       "handling": {
-        "min": 51.9,
-        "max": 51.9
+        "min": 35,
+        "max": 75
       },
       "topSpeed": {
         "min": 150,
         "max": 350
       }
     },
-    "updatedAt": 0
+    "updatedAt": 1742900000000
   }
 }

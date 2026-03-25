@@ -832,6 +832,37 @@ export async function initializeUserIfNeeded(
             (summaryChanges[starterRewards.keySkuId] ?? 0) + 1;
         }
 
+        // --- Starter Speed-Up Crate (Racer's Welcome Pack) ---
+        // Grant speed-up items so new players can blitz through T1 without timer gates
+        const starterSpeedUps: Array<{ skuId: string; qty: number }> = [
+          { skuId: "sku_spd5m_r4x7", qty: 10 },   // 10x 5-minute speed-ups
+          { skuId: "sku_spd15m_j8k2", qty: 5 },    // 5x 15-minute speed-ups
+          { skuId: "sku_spd1h_m5t6", qty: 3 },     // 3x 1-hour speed-ups
+          { skuId: "sku_spd3h_q2v8", qty: 1 },     // 1x 3-hour speed-up
+        ];
+
+        for (const speedUp of starterSpeedUps) {
+          const speedUpRef = playerRef.collection("Inventory").doc(speedUp.skuId);
+          const speedUpDoc = await tx.get(speedUpRef);
+          const speedUpState = createTxSkuDocState(db, uid, speedUp.skuId, speedUpDoc);
+          if (speedUpState.quantity < 1) {
+            await txIncSkuQty(tx, db, uid, speedUp.skuId, speedUp.qty, {
+              state: speedUpState,
+              timestamp,
+              itemType: "speedup",
+            });
+            summaryChanges[speedUp.skuId] =
+              (summaryChanges[speedUp.skuId] ?? 0) + speedUp.qty;
+          }
+        }
+
+        // Grant starter bonus coins (5,000 from Welcome Pack)
+        tx.set(
+          economyRef,
+          { coins: admin.firestore.FieldValue.increment(5000), updatedAt: timestamp },
+          { merge: true },
+        );
+
         for (const cosmetic of defaultCosmetics) {
           const ownedQuantity = Math.max(0, Number(cosmetic.state.quantity ?? 0));
           if (ownedQuantity < 1) {

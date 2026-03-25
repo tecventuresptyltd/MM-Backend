@@ -1,47 +1,48 @@
 {
-    "version": "v2-evolution",
-    "updatedAt": 1740441600000,
-    "notes": "V2 Pit Crew System. XP-to-next and evolution costs (coins + timer) live in CarsCatalog per car per level (keys '1'-'10'). This catalog holds only the shared global config: skip cost, stat bonuses, tier scaling, and level shape. starLevel == carLevel (1:1 mapping). Star levels run 1-10 (matching CarsCatalog keys). maxStarLevel=10 = fully evolved.",
-    "maxStarLevel": 10,
-    "levelsPerStar": 1,
-    "skipCost": {
-        "gemsPerHour": 50,
-        "minGems": 10
+  "version": "v2-evolution",
+  "updatedAt": 1742900000000,
+  "notes": "V2 Pit Crew System. Rebalanced tier scaling to match economy model. Per-car per-level costs are in CarsCatalog. Skip cost 50 gems/hr.",
+  "maxStarLevel": 10,
+  "levelsPerStar": 1,
+  "skipCost": {
+    "gemsPerHour": 20,
+    "minGems": 5,
+    "freeSkipThresholdSeconds": 300
+  },
+  "statBonusPerStar": {
+    "topSpeed": 1.2,
+    "acceleration": 1.2,
+    "handling": 1.2,
+    "boostRegen": 1.2,
+    "boostPower": 1.2
+  },
+  "statBonusPerLevel": {
+    "topSpeed": 0.24,
+    "acceleration": 0.24,
+    "handling": 0.24,
+    "boostRegen": 0.24,
+    "boostPower": 0.24
+  },
+  "tierScaling": {
+    "1": {
+      "coinMultiplier": 1.0,
+      "timerMultiplier": 1.0
     },
-    "statBonusPerStar": {
-        "topSpeed": 1.2,
-        "acceleration": 1.2,
-        "handling": 1.2,
-        "boostRegen": 1.2,
-        "boostPower": 1.2
+    "2": {
+      "coinMultiplier": 4.16,
+      "timerMultiplier": 8.57
     },
-    "statBonusPerLevel": {
-        "topSpeed": 0.24,
-        "acceleration": 0.24,
-        "handling": 0.24,
-        "boostRegen": 0.24,
-        "boostPower": 0.24
+    "3": {
+      "coinMultiplier": 16.0,
+      "timerMultiplier": 22.5
     },
-    "tierScaling": {
-        "1": {
-            "coinMultiplier": 0.05,
-            "timerMultiplier": 0.01
-        },
-        "2": {
-            "coinMultiplier": 0.30,
-            "timerMultiplier": 0.15
-        },
-        "3": {
-            "coinMultiplier": 1.00,
-            "timerMultiplier": 1.00
-        },
-        "4": {
-            "coinMultiplier": 2.50,
-            "timerMultiplier": 2.50
-        },
-        "5": {
-            "coinMultiplier": 5.00,
-            "timerMultiplier": 4.00
-        }
+    "4": {
+      "coinMultiplier": 55.3,
+      "timerMultiplier": 45.0
+    },
+    "5": {
+      "coinMultiplier": 176.6,
+      "timerMultiplier": 90.0
     }
+  }
 }

@@ -1,6 +1,6 @@
 {
-  "version": "v3-bootstrap",
-  "updatedAt": 1762566860531,
+  "version": "v4-no-keys",
+  "updatedAt": 1742900000000,
   "ranks": [
     {
       "rankId": "rank_unranked",
@@ -9,7 +9,9 @@
         "en": "Unranked"
       },
       "minMmr": 0,
-      "rewards": { "coins": 1000 }
+      "rewards": {
+        "coins": 1000
+      }
     },
     {
       "rankId": "rank_bronze_1",
@@ -22,7 +24,10 @@
         "coins": 2200,
         "gems": 100,
         "inventory": [
-          { "skuId": "sku_rjwe5tdtc4", "quantity": 1 }
+          {
+            "skuId": "sku_zz3twgp0wx",
+            "quantity": 1
+          }
         ]
       }
     },
@@ -36,7 +41,10 @@
       "rewards": {
         "coins": 2500,
         "inventory": [
-          { "skuId": "sku_zz3twgp0wx", "quantity": 1 }
+          {
+            "skuId": "sku_zz3twgp0wx",
+            "quantity": 1
+          }
         ]
       }
     },
@@ -51,7 +59,10 @@
         "coins": 2800,
         "gems": 100,
         "inventory": [
-          { "skuId": "sku_rjwe5tdtc4", "quantity": 1 }
+          {
+            "skuId": "sku_zz3twgp0wx",
+            "quantity": 1
+          }
         ]
       }
     },
@@ -65,7 +76,10 @@
       "rewards": {
         "coins": 3100,
         "inventory": [
-          { "skuId": "sku_zz3twgp0wx", "quantity": 1 }
+          {
+            "skuId": "sku_zz3twgp0wx",
+            "quantity": 1
+          }
         ]
       }
     },
@@ -80,7 +94,10 @@
         "coins": 3500,
         "gems": 150,
         "inventory": [
-          { "skuId": "sku_p3yxnyhkpx", "quantity": 1 }
+          {
+            "skuId": "sku_72wnqwtfmx",
+            "quantity": 1
+          }
         ]
       }
     },
@@ -94,7 +111,10 @@
       "rewards": {
         "coins": 3900,
         "inventory": [
-          { "skuId": "sku_72wnqwtfmx", "quantity": 1 }
+          {
+            "skuId": "sku_72wnqwtfmx",
+            "quantity": 1
+          }
         ]
       }
     },
@@ -109,7 +129,10 @@
         "coins": 4300,
         "gems": 150,
         "inventory": [
-          { "skuId": "sku_p3yxnyhkpx", "quantity": 1 }
+          {
+            "skuId": "sku_72wnqwtfmx",
+            "quantity": 1
+          }
         ]
       }
     },
@@ -123,7 +146,10 @@
       "rewards": {
         "coins": 4800,
         "inventory": [
-          { "skuId": "sku_72wnqwtfmx", "quantity": 1 }
+          {
+            "skuId": "sku_72wnqwtfmx",
+            "quantity": 1
+          }
         ]
       }
     },
@@ -138,7 +164,10 @@
         "coins": 5400,
         "gems": 200,
         "inventory": [
-          { "skuId": "sku_zqqmqz7mwb", "quantity": 1 }
+          {
+            "skuId": "sku_e8e7jeba7v",
+            "quantity": 1
+          }
         ]
       }
     },
@@ -152,7 +181,10 @@
       "rewards": {
         "coins": 6000,
         "inventory": [
-          { "skuId": "sku_e8e7jeba7v", "quantity": 1 }
+          {
+            "skuId": "sku_e8e7jeba7v",
+            "quantity": 1
+          }
         ]
       }
     },
@@ -167,7 +199,10 @@
         "coins": 6700,
         "gems": 200,
         "inventory": [
-          { "skuId": "sku_zqqmqz7mwb", "quantity": 1 }
+          {
+            "skuId": "sku_e8e7jeba7v",
+            "quantity": 1
+          }
         ]
       }
     },
@@ -181,7 +216,10 @@
       "rewards": {
         "coins": 7500,
         "inventory": [
-          { "skuId": "sku_e8e7jeba7v", "quantity": 1 }
+          {
+            "skuId": "sku_e8e7jeba7v",
+            "quantity": 1
+          }
         ]
       }
     },
@@ -196,7 +234,10 @@
         "coins": 8400,
         "gems": 300,
         "inventory": [
-          { "skuId": "sku_acxbr542j1", "quantity": 1 }
+          {
+            "skuId": "sku_n9hsc0wxxk",
+            "quantity": 1
+          }
         ]
       }
     },
@@ -210,7 +251,10 @@
       "rewards": {
         "coins": 9400,
         "inventory": [
-          { "skuId": "sku_n9hsc0wxxk", "quantity": 1 }
+          {
+            "skuId": "sku_n9hsc0wxxk",
+            "quantity": 1
+          }
         ]
       }
     },
@@ -225,7 +269,10 @@
         "coins": 10500,
         "gems": 300,
         "inventory": [
-          { "skuId": "sku_acxbr542j1", "quantity": 1 }
+          {
+            "skuId": "sku_n9hsc0wxxk",
+            "quantity": 1
+          }
         ]
       }
     },
@@ -239,7 +286,10 @@
       "rewards": {
         "coins": 11800,
         "inventory": [
-          { "skuId": "sku_n9hsc0wxxk", "quantity": 1 }
+          {
+            "skuId": "sku_n9hsc0wxxk",
+            "quantity": 1
+          }
         ]
       }
     },
@@ -254,7 +304,10 @@
         "coins": 13200,
         "gems": 350,
         "inventory": [
-          { "skuId": "sku_acxbr542j1", "quantity": 1 }
+          {
+            "skuId": "sku_n9hsc0wxxk",
+            "quantity": 1
+          }
         ]
       }
     },
@@ -268,7 +321,10 @@
       "rewards": {
         "coins": 14800,
         "inventory": [
-          { "skuId": "sku_n9hsc0wxxk", "quantity": 1 }
+          {
+            "skuId": "sku_n9hsc0wxxk",
+            "quantity": 1
+          }
         ]
       }
     },
@@ -283,7 +339,10 @@
         "coins": 16600,
         "gems": 400,
         "inventory": [
-          { "skuId": "sku_acxbr542j1", "quantity": 1 }
+          {
+            "skuId": "sku_n9hsc0wxxk",
+            "quantity": 1
+          }
         ]
       }
     },
@@ -297,7 +356,10 @@
       "rewards": {
         "coins": 18600,
         "inventory": [
-          { "skuId": "sku_n9hsc0wxxk", "quantity": 1 }
+          {
+            "skuId": "sku_n9hsc0wxxk",
+            "quantity": 1
+          }
         ]
       }
     },
@@ -312,7 +374,10 @@
         "coins": 20900,
         "gems": 450,
         "inventory": [
-          { "skuId": "sku_hq5ywspmr5", "quantity": 1 }
+          {
+            "skuId": "sku_kgkjadrd79",
+            "quantity": 1
+          }
         ]
       }
     },
@@ -326,7 +391,10 @@
       "rewards": {
         "coins": 23400,
         "inventory": [
-          { "skuId": "sku_kgkjadrd79", "quantity": 1 }
+          {
+            "skuId": "sku_kgkjadrd79",
+            "quantity": 1
+          }
         ]
       }
     },
@@ -341,7 +409,10 @@
         "coins": 26200,
         "gems": 500,
         "inventory": [
-          { "skuId": "sku_acxbr542j1", "quantity": 1 }
+          {
+            "skuId": "sku_kgkjadrd79",
+            "quantity": 1
+          }
         ]
       }
     },
@@ -355,7 +426,10 @@
       "rewards": {
         "coins": 29400,
         "inventory": [
-          { "skuId": "sku_n9hsc0wxxk", "quantity": 1 }
+          {
+            "skuId": "sku_kgkjadrd79",
+            "quantity": 1
+          }
         ]
       }
     },
@@ -370,7 +444,10 @@
         "coins": 32900,
         "gems": 500,
         "inventory": [
-          { "skuId": "sku_hq5ywspmr5", "quantity": 1 }
+          {
+            "skuId": "sku_kgkjadrd79",
+            "quantity": 1
+          }
         ]
       }
     },
@@ -384,7 +461,10 @@
       "rewards": {
         "coins": 36900,
         "inventory": [
-          { "skuId": "sku_kgkjadrd79", "quantity": 1 }
+          {
+            "skuId": "sku_kgkjadrd79",
+            "quantity": 1
+          }
         ]
       }
     },
@@ -399,7 +479,10 @@
         "coins": 41300,
         "gems": 750,
         "inventory": [
-          { "skuId": "sku_kgkjadrd79", "quantity": 1 }
+          {
+            "skuId": "sku_kgkjadrd79",
+            "quantity": 1
+          }
         ]
       }
     }

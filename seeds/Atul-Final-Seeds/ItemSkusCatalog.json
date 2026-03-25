@@ -4080,10 +4080,10 @@
       "subType": null,
       "purchasable": {
         "currency": "gems",
-        "amount": 100
+        "amount": 150
       },
       "metadata": null,
-      "gemPrice": 100,
+      "gemPrice": 150,
       "durationSeconds": null
     },
     "sku_e8e7jeba7v": {
@@ -4098,10 +4098,10 @@
       "subType": null,
       "purchasable": {
         "currency": "gems",
-        "amount": 175
+        "amount": 400
       },
       "metadata": null,
-      "gemPrice": 175,
+      "gemPrice": 400,
       "durationSeconds": null
     },
     "sku_n9hsc0wxxk": {
@@ -4116,10 +4116,10 @@
       "subType": null,
       "purchasable": {
         "currency": "gems",
-        "amount": 300
+        "amount": 1000
       },
       "metadata": null,
-      "gemPrice": 300,
+      "gemPrice": 1000,
       "durationSeconds": null
     },
     "sku_kgkjadrd79": {
@@ -4134,10 +4134,10 @@
       "subType": null,
       "purchasable": {
         "currency": "gems",
-        "amount": 500
+        "amount": 2500
       },
       "metadata": null,
-      "gemPrice": 500,
+      "gemPrice": 2500,
       "durationSeconds": null
     },
     "sku_p3yxnyhkpx": {
@@ -4224,10 +4224,10 @@
       "subType": "coin",
       "purchasable": {
         "currency": "gems",
-        "amount": 80
+        "amount": 18
       },
       "metadata": null,
-      "gemPrice": 80,
+      "gemPrice": 18,
       "durationSeconds": 3600
     },
     "sku_eqzbetwm": {
@@ -4242,10 +4242,10 @@
       "subType": "coin",
       "purchasable": {
         "currency": "gems",
-        "amount": 320
+        "amount": 80
       },
       "metadata": null,
-      "gemPrice": 320,
+      "gemPrice": 80,
       "durationSeconds": 21600
     },
     "sku_wkm0amtg": {
@@ -4260,10 +4260,10 @@
       "subType": "coin",
       "purchasable": {
         "currency": "gems",
-        "amount": 560
+        "amount": 130
       },
       "metadata": null,
-      "gemPrice": 560,
+      "gemPrice": 130,
       "durationSeconds": 43200
     },
     "sku_tpt3379j8p": {
@@ -4278,10 +4278,10 @@
       "subType": "coin",
       "purchasable": {
         "currency": "gems",
-        "amount": 960
+        "amount": 200
       },
       "metadata": null,
-      "gemPrice": 960,
+      "gemPrice": 200,
       "durationSeconds": 86400
     },
     "sku_07hw4ry3": {
@@ -4296,10 +4296,10 @@
       "subType": "exp",
       "purchasable": {
         "currency": "gems",
-        "amount": 60
+        "amount": 15
       },
       "metadata": null,
-      "gemPrice": 60,
+      "gemPrice": 15,
       "durationSeconds": 3600
     },
     "sku_60fdgqkm": {
@@ -4314,10 +4314,10 @@
       "subType": "exp",
       "purchasable": {
         "currency": "gems",
-        "amount": 240
+        "amount": 60
       },
       "metadata": null,
-      "gemPrice": 240,
+      "gemPrice": 60,
       "durationSeconds": 21600
     },
     "sku_nhh7jtda": {
@@ -4332,10 +4332,10 @@
       "subType": "exp",
       "purchasable": {
         "currency": "gems",
-        "amount": 420
+        "amount": 100
       },
       "metadata": null,
-      "gemPrice": 420,
+      "gemPrice": 100,
       "durationSeconds": 43200
     },
     "sku_9pnmmjpscv": {
@@ -4350,10 +4350,10 @@
       "subType": "exp",
       "purchasable": {
         "currency": "gems",
-        "amount": 720
+        "amount": 160
       },
       "metadata": null,
-      "gemPrice": 720,
+      "gemPrice": 160,
       "durationSeconds": 86400
     },
     "sku_shrd1h_p3x9": {
@@ -4368,10 +4368,10 @@
       "subType": "shard",
       "purchasable": {
         "currency": "gems",
-        "amount": 60
+        "amount": 18
       },
       "metadata": null,
-      "gemPrice": 60,
+      "gemPrice": 18,
       "durationSeconds": 3600
     },
     "sku_shrd6h_k7w2": {
@@ -4386,10 +4386,10 @@
       "subType": "shard",
       "purchasable": {
         "currency": "gems",
-        "amount": 240
+        "amount": 80
       },
       "metadata": null,
-      "gemPrice": 240,
+      "gemPrice": 80,
       "durationSeconds": 21600
     },
     "sku_shrd12h_m4v6": {
@@ -4404,10 +4404,10 @@
       "subType": "shard",
       "purchasable": {
         "currency": "gems",
-        "amount": 420
+        "amount": 130
       },
       "metadata": null,
-      "gemPrice": 420,
+      "gemPrice": 130,
       "durationSeconds": 43200
     },
     "sku_shrd24h_n8t5": {
@@ -4422,10 +4422,10 @@
       "subType": "shard",
       "purchasable": {
         "currency": "gems",
-        "amount": 720
+        "amount": 200
       },
       "metadata": null,
-      "gemPrice": 720,
+      "gemPrice": 200,
       "durationSeconds": 86400
     },
     "sku_spd5m_r4x7": {
@@ -4440,10 +4440,10 @@
       "subType": "speedup",
       "purchasable": {
         "currency": "gems",
-        "amount": 100
+        "amount": 5
       },
       "metadata": null,
-      "gemPrice": 100,
+      "gemPrice": 5,
       "durationSeconds": 300
     },
     "sku_spd15m_j8k2": {
@@ -4458,10 +4458,10 @@
       "subType": "speedup",
       "purchasable": {
         "currency": "gems",
-        "amount": 100
+        "amount": 8
       },
       "metadata": null,
-      "gemPrice": 100,
+      "gemPrice": 8,
       "durationSeconds": 900
     },
     "sku_spd30m_w3n9": {
@@ -4476,10 +4476,10 @@
       "subType": "speedup",
       "purchasable": {
         "currency": "gems",
-        "amount": 100
+        "amount": 12
       },
       "metadata": null,
-      "gemPrice": 100,
+      "gemPrice": 12,
       "durationSeconds": 1800
     },
     "sku_spd1h_m5t6": {
@@ -4494,10 +4494,10 @@
       "subType": "speedup",
       "purchasable": {
         "currency": "gems",
-        "amount": 100
+        "amount": 20
       },
       "metadata": null,
-      "gemPrice": 100,
+      "gemPrice": 20,
       "durationSeconds": 3600
     },
     "sku_spd3h_q2v8": {
@@ -4512,10 +4512,10 @@
       "subType": "speedup",
       "purchasable": {
         "currency": "gems",
-        "amount": 100
+        "amount": 50
       },
       "metadata": null,
-      "gemPrice": 100,
+      "gemPrice": 50,
       "durationSeconds": 10800
     },
     "sku_spd8h_y7p4": {
@@ -4530,10 +4530,10 @@
       "subType": "speedup",
       "purchasable": {
         "currency": "gems",
-        "amount": 100
+        "amount": 120
       },
       "metadata": null,
-      "gemPrice": 100,
+      "gemPrice": 120,
       "durationSeconds": 28800
     },
     "sku_spd24h_b9f1": {
@@ -4548,10 +4548,10 @@
       "subType": "speedup",
       "purchasable": {
         "currency": "gems",
-        "amount": 100
+        "amount": 300
       },
       "metadata": null,
-      "gemPrice": 100,
+      "gemPrice": 300,
       "durationSeconds": 86400
     },
     "sku_spd3d_h6c3": {
@@ -4566,10 +4566,10 @@
       "subType": "speedup",
       "purchasable": {
         "currency": "gems",
-        "amount": 100
+        "amount": 700
       },
       "metadata": null,
-      "gemPrice": 100,
+      "gemPrice": 700,
       "durationSeconds": 259200
     },
     "sku_spd7d_e1g5": {
@@ -4584,10 +4584,64 @@
       "subType": "speedup",
       "purchasable": {
         "currency": "gems",
-        "amount": 100
+        "amount": 1400
       },
       "metadata": null,
-      "gemPrice": 100,
+      "gemPrice": 1400,
+      "durationSeconds": 604800
+    },
+    "sku_coin7d_q5r8": {
+      "skuId": "sku_coin7d_q5r8",
+      "itemId": "bst_kcemzpr4",
+      "displayName": "Coin Booster (7d)",
+      "category": "booster",
+      "type": "booster",
+      "rarity": "special",
+      "stackable": true,
+      "variant": null,
+      "subType": "coin",
+      "purchasable": {
+        "currency": "gems",
+        "amount": 1000
+      },
+      "metadata": null,
+      "gemPrice": 1000,
+      "durationSeconds": 604800
+    },
+    "sku_exp7d_f2h6": {
+      "skuId": "sku_exp7d_f2h6",
+      "itemId": "bst_hhhb8w5q",
+      "displayName": "EXP Booster (7d)",
+      "category": "booster",
+      "type": "booster",
+      "rarity": "special",
+      "stackable": true,
+      "variant": null,
+      "subType": "exp",
+      "purchasable": {
+        "currency": "gems",
+        "amount": 800
+      },
+      "metadata": null,
+      "gemPrice": 800,
+      "durationSeconds": 604800
+    },
+    "sku_shrd7d_w3j9": {
+      "skuId": "sku_shrd7d_w3j9",
+      "itemId": "bst_shrd7k9m",
+      "displayName": "Shard Booster (7d)",
+      "category": "booster",
+      "type": "booster",
+      "rarity": "special",
+      "stackable": true,
+      "variant": null,
+      "subType": "shard",
+      "purchasable": {
+        "currency": "gems",
+        "amount": 1000
+      },
+      "metadata": null,
+      "gemPrice": 1000,
       "durationSeconds": 604800
     }
   }

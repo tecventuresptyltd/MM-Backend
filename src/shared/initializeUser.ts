@@ -524,6 +524,21 @@ export async function initializeUserIfNeeded(
           cosmeticInventoryRefs.map((ref) => tx.get(ref)),
         );
 
+        // Pre-read speed-up inventory docs for starter welcome pack
+        const STARTER_SPEEDUP_SKUS = [
+          "sku_spd5m_r4x7", "sku_spd15m_j8k2", "sku_spd1h_m5t6", "sku_spd3h_q2v8",
+        ];
+        const speedUpRefs = STARTER_SPEEDUP_SKUS.map((skuId) =>
+          playerRef.collection("Inventory").doc(skuId),
+        );
+        const speedUpDocs = await Promise.all(
+          speedUpRefs.map((ref) => tx.get(ref)),
+        );
+        const speedUpStates = STARTER_SPEEDUP_SKUS.map((skuId, idx) => ({
+          skuId,
+          state: createTxSkuDocState(db, uid, skuId, speedUpDocs[idx]),
+        }));
+
         const crateState = createTxSkuDocState(
           db,
           uid,
@@ -621,6 +636,7 @@ export async function initializeUserIfNeeded(
             : null,
           referralPlan,
           crateSlotsDoc,
+          speedUpStates,
           legacy: useItemIdInventory
             ? {
               itemsRef: legacyItemsRef,
@@ -667,6 +683,7 @@ export async function initializeUserIfNeeded(
           defaultCosmetics,
           referralPlan,
           crateSlotsDoc,
+          speedUpStates,
           fullGrant,
           legacy,
         } = reads;
@@ -882,25 +899,24 @@ export async function initializeUserIfNeeded(
 
         // --- Starter Speed-Up Crate (Racer's Welcome Pack) ---
         // Grant speed-up items so new players can blitz through T1 without timer gates
-        const starterSpeedUps: Array<{ skuId: string; qty: number }> = [
-          { skuId: "sku_spd5m_r4x7", qty: 10 },   // 10x 5-minute speed-ups
-          { skuId: "sku_spd15m_j8k2", qty: 5 },    // 5x 15-minute speed-ups
-          { skuId: "sku_spd1h_m5t6", qty: 3 },     // 3x 1-hour speed-ups
-          { skuId: "sku_spd3h_q2v8", qty: 1 },     // 1x 3-hour speed-up
-        ];
+        // (speed-up docs were pre-read in the read phase above)
+        const starterSpeedUpQtys: Record<string, number> = {
+          "sku_spd5m_r4x7": 10,   // 10x 5-minute speed-ups
+          "sku_spd15m_j8k2": 5,   // 5x 15-minute speed-ups
+          "sku_spd1h_m5t6": 3,    // 3x 1-hour speed-ups
+          "sku_spd3h_q2v8": 1,    // 1x 3-hour speed-up
+        };
 
-        for (const speedUp of starterSpeedUps) {
-          const speedUpRef = playerRef.collection("Inventory").doc(speedUp.skuId);
-          const speedUpDoc = await tx.get(speedUpRef);
-          const speedUpState = createTxSkuDocState(db, uid, speedUp.skuId, speedUpDoc);
-          if (speedUpState.quantity < 1) {
-            await txIncSkuQty(tx, db, uid, speedUp.skuId, speedUp.qty, {
-              state: speedUpState,
+        for (const { skuId, state } of speedUpStates) {
+          const qty = starterSpeedUpQtys[skuId] ?? 0;
+          if (qty > 0 && state.quantity < 1) {
+            await txIncSkuQty(tx, db, uid, skuId, qty, {
+              state,
               timestamp,
               itemType: "speedup",
             });
-            summaryChanges[speedUp.skuId] =
-              (summaryChanges[speedUp.skuId] ?? 0) + speedUp.qty;
+            summaryChanges[skuId] =
+              (summaryChanges[skuId] ?? 0) + qty;
           }
         }
 

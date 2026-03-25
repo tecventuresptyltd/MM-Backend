@@ -26,6 +26,7 @@ import {
     StartSpellResearchResponse,
     ClaimSpellResearchRequest,
     ClaimSpellResearchResponse,
+    SkipSpellResearchResponse,
     UserLibraryDoc,
     LibrarySlotEntry,
 } from "../shared/typesV2.js";
@@ -429,13 +430,6 @@ export const claimSpellResearchV2 = onCall(
 interface SkipSpellResearchRequest {
     spellId: string;
     opId: string;
-}
-
-interface SkipSpellResearchResponse {
-    success: boolean;
-    opId: string;
-    spellId: string;
-    gemsSpent: number;
 }
 
 /**

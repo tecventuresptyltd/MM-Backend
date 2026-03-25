@@ -1043,28 +1043,49 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
   return result;
 });
 
+// --- Ad Watch Limits ---
+const AD_WATCH_MAX_PER_24H = 10;
+const AD_WATCH_MAX_PER_SESSION = 4;
+
+interface AdWatchEntry {
+  timestamp: admin.firestore.Timestamp;
+  type: string;
+  raceId: string;
+}
+
+interface AdWatchLogData {
+  watches: AdWatchEntry[];
+  sessionId: string | null;
+  sessionCount: number;
+  updatedAt: admin.firestore.FieldValue | admin.firestore.Timestamp;
+}
+
 export const claimDoubleReward = onCall(callableOptions({ memory: "256MiB", cpu: 1, concurrency: 80 }, true), async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "User is not authenticated.");
   }
 
-  const { raceId } = request.data;
+  const { raceId, sessionId } = request.data;
   if (typeof raceId !== "string" || !raceId) {
     throw new HttpsError("invalid-argument", "Valid raceId string is required.");
   }
+
+  const clientSessionId = typeof sessionId === "string" ? sessionId : "";
 
   const result = await db.runTransaction(async (transaction) => {
     const raceRef = db.doc(`/Races/${raceId}`);
     const participantRef = db.doc(`/Races/${raceId}/Participants/${uid}`);
     const economyRef = db.doc(`/Players/${uid}/Economy/Stats`);
     const profileRef = db.doc(`/Players/${uid}/Profile/Profile`);
+    const adWatchLogRef = db.doc(`/Players/${uid}/Ads/WatchLog`);
 
-    const [raceDoc, participantDoc, economyDoc, profileDoc] = await transaction.getAll(
+    const [raceDoc, participantDoc, economyDoc, profileDoc, adWatchLogDoc] = await transaction.getAll(
       raceRef,
       participantRef,
       economyRef,
-      profileRef
+      profileRef,
+      adWatchLogRef
     );
 
     if (!raceDoc.exists) {
@@ -1094,7 +1115,34 @@ export const claimDoubleReward = onCall(callableOptions({ memory: "256MiB", cpu:
       throw new HttpsError("not-found", "Player profile or economy data not found.");
     }
 
-    // Add exactly the base values again to simulate "doubling" the base.
+    // --- Ad Watch Limit Enforcement ---
+    const adLogData: AdWatchLogData = adWatchLogDoc.exists
+      ? adWatchLogDoc.data() as AdWatchLogData
+      : { watches: [], sessionId: null, sessionCount: 0, updatedAt: admin.firestore.Timestamp.now() };
+
+    const nowMs = Date.now();
+    const twentyFourHoursAgoMs = nowMs - (24 * 60 * 60 * 1000);
+
+    const recentWatches = (adLogData.watches ?? []).filter((w) => {
+      const watchMs = w.timestamp instanceof admin.firestore.Timestamp
+        ? w.timestamp.toMillis()
+        : typeof (w.timestamp as any)?._seconds === "number"
+          ? (w.timestamp as any)._seconds * 1000
+          : 0;
+      return watchMs > twentyFourHoursAgoMs;
+    });
+
+    if (recentWatches.length >= AD_WATCH_MAX_PER_24H) {
+      throw new HttpsError("resource-exhausted", "Maximum 10 ad watches per 24 hours reached. Try again later.");
+    }
+
+    if (clientSessionId && clientSessionId === adLogData.sessionId) {
+      if ((adLogData.sessionCount ?? 0) >= AD_WATCH_MAX_PER_SESSION) {
+        throw new HttpsError("resource-exhausted", "Maximum 4 ad watches per session reached. Restart the app to watch more ads.");
+      }
+    }
+
+    // --- Grant Double Reward ---
     const coinsToAdd = rewardsEarned.coins;
     const shardsToAdd = rewardsEarned.shards;
 
@@ -1105,10 +1153,9 @@ export const claimDoubleReward = onCall(callableOptions({ memory: "256MiB", cpu:
     if (shardsToAdd > 0) {
       economyUpdate.spellShards = admin.firestore.FieldValue.increment(shardsToAdd);
     }
-    
+
     transaction.update(economyRef, economyUpdate);
 
-    // Update Career Stats for the profile to mirror the extra coins gained
     if (coinsToAdd > 0) {
       transaction.update(profileRef, {
         careerCoins: admin.firestore.FieldValue.increment(coinsToAdd),
@@ -1116,19 +1163,43 @@ export const claimDoubleReward = onCall(callableOptions({ memory: "256MiB", cpu:
       });
     }
 
-    // Mark as claimed
     transaction.update(participantRef, {
       doubleRewardClaimed: true,
       doubleRewardClaimedAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    return { 
-      success: true, 
+    // --- Update Ad Watch Log ---
+    const isNewSession = !clientSessionId || clientSessionId !== adLogData.sessionId;
+    const newSessionCount = isNewSession ? 1 : (adLogData.sessionCount ?? 0) + 1;
+
+    const newWatchEntry: AdWatchEntry = {
+      timestamp: admin.firestore.Timestamp.now(),
+      type: "doubleReward",
+      raceId,
+    };
+
+    const prunedWatches = [...recentWatches, newWatchEntry];
+
+    transaction.set(adWatchLogRef, {
+      watches: prunedWatches,
+      sessionId: clientSessionId || adLogData.sessionId || null,
+      sessionCount: newSessionCount,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return {
+      success: true,
       rewards: {
         coinsAdded: coinsToAdd,
         shardsAdded: shardsToAdd
-      } 
+      },
+      adLimits: {
+        dailyWatches: prunedWatches.length,
+        dailyRemaining: AD_WATCH_MAX_PER_24H - prunedWatches.length,
+        sessionWatches: newSessionCount,
+        sessionRemaining: AD_WATCH_MAX_PER_SESSION - newSessionCount,
+      }
     };
   });
 
@@ -1136,7 +1207,9 @@ export const claimDoubleReward = onCall(callableOptions({ memory: "256MiB", cpu:
     uid,
     raceId,
     rewards: result.rewards,
+    adLimits: result.adLimits,
   });
 
   return result;
 });
+

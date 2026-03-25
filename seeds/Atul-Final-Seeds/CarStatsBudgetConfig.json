@@ -16,7 +16,7 @@
         "boostPower"
     ],
     "archetypeProfiles": {
-        "tank": {
+        "guardian": {
             "description": "High durability, strong handling and boost regen. Lower top speed.",
             "topSpeed": 0.15,
             "acceleration": 0.15,
@@ -24,7 +24,7 @@
             "boostRegen": 0.25,
             "boostPower": 0.20
         },
-        "speedster": {
+        "phantom": {
             "description": "Maximum top speed and acceleration. Weak handling and boost regen.",
             "topSpeed": 0.30,
             "acceleration": 0.25,
@@ -32,7 +32,7 @@
             "boostRegen": 0.10,
             "boostPower": 0.20
         },
-        "specialist": {
+        "arcanist": {
             "description": "Balanced across all stats. Jack of all trades.",
             "topSpeed": 0.20,
             "acceleration": 0.20,

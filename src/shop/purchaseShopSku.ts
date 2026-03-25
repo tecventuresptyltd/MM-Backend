@@ -97,6 +97,25 @@ export async function purchaseShopSkuInternal(
   const totalCost = unitCost * quantity;
   const reason = options.reason ?? `purchase.sku.${skuId}`;
 
+  const isCurrencyItem = sku.type === "currency";
+  const currencyField = isCurrencyItem
+    ? (sku.metadata as Record<string, unknown> | null)?.currency as string | undefined
+    : undefined;
+  const currencyAmount = isCurrencyItem
+    ? Number(
+      (variant.metadata as Record<string, unknown> | null)?.amount
+      ?? (variant.variant as Record<string, unknown> | null)?.shardAmount
+      ?? 0,
+    )
+    : 0;
+
+  if (isCurrencyItem && (!currencyField || !Number.isFinite(currencyAmount) || currencyAmount <= 0)) {
+    throw new HttpsError(
+      "failed-precondition",
+      `Currency SKU ${skuId} has invalid currency config (field: ${currencyField}, amount: ${currencyAmount}).`,
+    );
+  }
+
   const cachedResult = await checkIdempotency(uid, opId);
   if (cachedResult) {
     return cachedResult as PurchaseShopSkuResult;
@@ -105,6 +124,81 @@ export async function purchaseShopSkuInternal(
   await createInProgressReceipt(uid, opId, reason);
 
   try {
+    if (isCurrencyItem) {
+      return await runReadThenWriteWithReceipt(
+        uid,
+        opId,
+        reason,
+        async (transaction) => {
+          const statsRef = db.doc(`/Players/${uid}/Economy/Stats`);
+          const statsSnap = await transaction.get(statsRef);
+
+          if (!statsSnap.exists) {
+            throw new HttpsError("not-found", "Player economy stats not found.");
+          }
+
+          const stats = statsSnap.data() ?? {};
+          const gemsBefore = Number(stats.gems ?? 0);
+          const coinsBefore = Number(stats.coins ?? 0);
+          if (!Number.isFinite(gemsBefore) || !Number.isFinite(coinsBefore)) {
+            throw new HttpsError("failed-precondition", "Player balances are invalid.");
+          }
+
+          const currency: "gems" = "gems";
+          if (gemsBefore < totalCost) {
+            throw new HttpsError("resource-exhausted", "Insufficient gems.");
+          }
+
+          const gemsAfter = gemsBefore - totalCost;
+          const coinsAfter = coinsBefore;
+          const totalCurrencyGranted = currencyAmount * quantity;
+
+          return {
+            statsRef,
+            gemsBefore,
+            coinsBefore,
+            gemsAfter,
+            coinsAfter,
+            currency,
+            totalCurrencyGranted,
+          };
+        },
+        async (transaction, reads) => {
+          const {
+            statsRef,
+            gemsBefore,
+            coinsBefore,
+            gemsAfter,
+            coinsAfter,
+            currency,
+            totalCurrencyGranted,
+          } = reads;
+
+          const now = admin.firestore.FieldValue.serverTimestamp();
+
+          transaction.update(statsRef, {
+            updatedAt: now,
+            gems: admin.firestore.FieldValue.increment(-totalCost),
+            [currencyField!]: admin.firestore.FieldValue.increment(totalCurrencyGranted),
+          });
+
+          return {
+            success: true as const,
+            skuId,
+            quantity,
+            currency,
+            unitCost,
+            totalCost,
+            gemsBefore,
+            gemsAfter,
+            coinsBefore,
+            coinsAfter,
+            totalCostGems: totalCost,
+          };
+        },
+      );
+    }
+
     return await runReadThenWriteWithReceipt(
       uid,
       opId,

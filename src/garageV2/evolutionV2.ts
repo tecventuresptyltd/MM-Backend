@@ -416,11 +416,13 @@ export const skipCarEvolutionV2 = onCall(
                 // Document refs
                 const economyRef = db.doc(`/Players/${uid}/Economy/Stats`);
                 const pitCrewRef = db.doc(`/Players/${uid}/Queues/PitCrew`);
+                const garageRef = db.doc(`/Players/${uid}/Garage/Cars`);
 
                 // Read documents
-                const [economyDoc, pitCrewDoc] = await Promise.all([
+                const [economyDoc, pitCrewDoc, garageDoc] = await Promise.all([
                     transaction.get(economyRef),
                     transaction.get(pitCrewRef),
+                    transaction.get(garageRef),
                 ]);
 
                 // Validate economy
@@ -428,6 +430,16 @@ export const skipCarEvolutionV2 = onCall(
                     throw new HttpsError("not-found", "Player economy not found.");
                 }
                 const economyData = economyDoc.data()!;
+
+                // Validate garage
+                if (!garageDoc.exists) {
+                    throw new HttpsError("internal", "Garage not found.");
+                }
+                const garageData = garageDoc.data()!;
+                const carData = garageData.cars?.[carId];
+                if (!carData) {
+                    throw new HttpsError("internal", "Car not found in garage.");
+                }
 
                 // Validate pit crew
                 if (!pitCrewDoc.exists) {
@@ -476,16 +488,21 @@ export const skipCarEvolutionV2 = onCall(
                     updatedAt: timestamp,
                 });
 
-                // Update slot to complete immediately
-                const updatedSlots = [...currentSlots];
-                updatedSlots[slotIndex] = {
-                    ...slot,
-                    completesAt: admin.firestore.Timestamp.fromMillis(now),
-                };
-
+                // Remove from queue
+                const updatedSlots = currentSlots.filter((_, idx) => idx !== slotIndex);
                 transaction.update(pitCrewRef, {
                     slots: updatedSlots,
                     updatedAt: timestamp,
+                });
+
+                // Update car: increment starLevel and carLevel (1:1), reset XP
+                const newStarLevel = slot.targetCarLevel; // targetCarLevel == targetStarLevel (1:1)
+                transaction.update(garageRef, {
+                    [`cars.${carId}.starLevel`]: newStarLevel,
+                    [`cars.${carId}.carLevel`]: newStarLevel,
+                    [`cars.${carId}.xp`]: 0,
+                    [`cars.${carId}.isXpCapped`]: false,
+                    [`cars.${carId}.updatedAt`]: timestamp,
                 });
 
                 return {
@@ -493,6 +510,7 @@ export const skipCarEvolutionV2 = onCall(
                     opId,
                     carId,
                     gemsSpent: skipCost,
+                    newCarLevel: newStarLevel,
                 };
             },
         );

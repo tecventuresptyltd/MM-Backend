@@ -37,10 +37,13 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Deploy using Firebase alias
-echo ""
-echo "🚀 Deploying to SANDBOX..."
-firebase deploy --only functions --project $PROJECT_ALIAS
+DEPLOY_TARGET="functions"
+if [ -n "$1" ]; then
+    DEPLOY_TARGET="$1"
+fi
+
+echo "🚀 Deploying to SANDBOX (Target: $DEPLOY_TARGET)..."
+firebase deploy --only $DEPLOY_TARGET --project $PROJECT_ALIAS
 
 if [ $? -eq 0 ]; then
     echo ""

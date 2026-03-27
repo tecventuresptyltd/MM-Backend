@@ -31,23 +31,18 @@ const REFEREE_GEM_REWARD = 200;
 const INVITER_TIER_REWARDS: Record<number, ReferralSkuReward[]> = {
   1: [
     { skuId: "sku_zz3twgp0wx", qty: 1 },
-    { skuId: "sku_rjwe5tdtc4", qty: 1 },
   ],
   2: [
     { skuId: "sku_72wnqwtfmx", qty: 1 },
-    { skuId: "sku_p3yxnyhkpx", qty: 1 },
   ],
   3: [
     { skuId: "sku_e8e7jeba7v", qty: 1 },
-    { skuId: "sku_zqqmqz7mwb", qty: 1 },
   ],
   4: [
     { skuId: "sku_n9hsc0wxxk", qty: 1 },
-    { skuId: "sku_acxbr542j1", qty: 1 },
   ],
   5: [
     { skuId: "sku_kgkjadrd79", qty: 1 },
-    { skuId: "sku_hq5ywspmr5", qty: 1 },
   ],
 };
 

@@ -22,6 +22,7 @@ import { grantInventoryRewards } from "../shared/inventoryAwards.js";
 import { getLevelInfo } from "../shared/xp.js";
 import { applyClanTrophyDelta, updateClanMemberSnapshot } from "../clan/helpers.js";
 import { refreshFriendSnapshots } from "../Socials/updateSnapshots.js";
+import { getCratesCatalog } from "../core/config.js";
 import { getCrateSlotsConfig, getUnlockDurationForRarity } from "../core/configV2.js";
 import { CrateSlotEntry, UserCrateSlotsDoc } from "../shared/typesV2.js";
 
@@ -168,7 +169,23 @@ export const markTutorialComplete = onCall(callableOptions({ minInstances: getMi
   const profileRef = db.doc(`/Players/${uid}/Profile/Profile`);
   const statsRef = db.doc(`/Players/${uid}/Economy/Stats`);
   const spellsRef = db.doc(`/Players/${uid}/Spells/Levels`);
+  const crateSlotsRef = db.doc(`/Players/${uid}/Crates/Slots`);
   const timestamp = admin.firestore.FieldValue.serverTimestamp();
+
+  const [slotsConfig, cratesCatalog] = await Promise.all([
+    getCrateSlotsConfig(),
+    getCratesCatalog(),
+  ]);
+
+  const crateInfo = Object.entries(cratesCatalog).find(
+    ([_, crate]) => crate.crateSkuId === TUTORIAL_RARE_CRATE_SKU,
+  );
+  if (!crateInfo) {
+    throw new HttpsError("not-found", `Crate not found for SKU: ${TUTORIAL_RARE_CRATE_SKU}`);
+  }
+  const [crateId, crate] = crateInfo;
+  const crateRarity = (crate.rarity ?? "rare").toLowerCase();
+  const unlockDurationSeconds = await getUnlockDurationForRarity(crateRarity);
 
   let rareCrateGranted = false;
   let coinsGranted = 0;
@@ -177,11 +194,12 @@ export const markTutorialComplete = onCall(callableOptions({ minInstances: getMi
   let finalLevel: number | null = null;
   let finalTrophies: number | null = null;
   await db.runTransaction(async (transaction) => {
-    const [progressSnap, profileSnap, statsSnap, spellsSnap] = await transaction.getAll(
+    const [progressSnap, profileSnap, statsSnap, spellsSnap, crateSlotsSnap] = await transaction.getAll(
       progressRef,
       profileRef,
       statsRef,
       spellsRef,
+      crateSlotsRef,
     );
 
     if (!profileSnap.exists) {
@@ -198,13 +216,51 @@ export const markTutorialComplete = onCall(callableOptions({ minInstances: getMi
       const profileData = profileSnap.data() ?? {};
       const spellsData = spellsSnap.exists ? spellsSnap.data() ?? {} : {};
 
-      await grantInventoryRewards(
-        transaction,
-        uid,
-        [{ skuId: TUTORIAL_RARE_CRATE_SKU, quantity: 1 }],
-        { timestamp },
-      );
-      rareCrateGranted = true;
+      const slotsData = (
+        crateSlotsSnap.exists ? crateSlotsSnap.data() : { slots: [], maxSlots: slotsConfig.maxSlots }
+      ) as UserCrateSlotsDoc;
+
+      const currentSlots = (slotsData.slots ?? []).filter((s) => s !== null);
+      const maxSlots = slotsData.maxSlots ?? slotsConfig.maxSlots;
+
+      if (currentSlots.length < maxSlots) {
+        const newSlotEntry: CrateSlotEntry = {
+          crateSkuId: TUTORIAL_RARE_CRATE_SKU,
+          crateId,
+          rarity: crateRarity,
+          receivedAt: admin.firestore.Timestamp.now(),
+          isUnlocking: false,
+          startedAt: null,
+          completesAt: null,
+          unlockDurationSeconds,
+        };
+
+        const newSlots: (CrateSlotEntry | null)[] = [];
+        let slotAssigned = false;
+
+        for (let i = 0; i < maxSlots; i++) {
+          const existingSlot = slotsData.slots?.[i] ?? null;
+          if (existingSlot) {
+            newSlots.push(existingSlot as CrateSlotEntry);
+          } else if (!slotAssigned) {
+            newSlots.push(newSlotEntry);
+            slotAssigned = true;
+          } else {
+            newSlots.push(null);
+          }
+        }
+
+        if (!slotAssigned) {
+          newSlots.push(newSlotEntry);
+        }
+
+        if (crateSlotsSnap.exists) {
+          transaction.update(crateSlotsRef, { slots: newSlots, updatedAt: timestamp });
+        } else {
+          transaction.set(crateSlotsRef, { slots: newSlots, maxSlots, updatedAt: timestamp });
+        }
+        rareCrateGranted = true;
+      }
 
       coinsGranted = TUTORIAL_REWARD_COINS;
       xpGranted = TUTORIAL_REWARD_XP;

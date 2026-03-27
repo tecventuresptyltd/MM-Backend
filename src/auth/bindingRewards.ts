@@ -8,7 +8,6 @@ export const BINDING_REWARD_FIELD = "bindingRewardClaimed";
 
 const BINDING_REWARD_GRANTS = [
   { skuId: "sku_n9hsc0wxxk", quantity: 1 }, // Legendary Crate
-  { skuId: "sku_acxbr542j1", quantity: 1 }, // Legendary Key
 ];
 
 type BindingRewardOptions = {

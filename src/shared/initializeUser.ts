@@ -3,8 +3,8 @@ import { HttpsError } from "firebase-functions/v2/https";
 import { loadStarterRewards } from "./starterRewards.js";
 import { loadStarterSpellIds } from "./catalogHelpers.js";
 import { resolveInventoryContext } from "./inventory.js";
-import { getCrateSlotsConfig, getUnlockDurationForRarity } from "../core/configV2.js";
-import { CrateSlotEntry, UserCrateSlotsDoc } from "./typesV2.js";
+import { getCrateSlotsConfig, getUnlockDurationForRarity, getStarterTier } from "../core/configV2.js";
+import { CrateSlotEntry, UserCrateSlotsDoc, UserLicensesDoc, TierDefinition } from "./typesV2.js";
 import { getReferralConfig, listSkusByFilter, resolveSkuOrThrow } from "../core/config.js";
 import { createDefaultReferralStats } from "../referral/constants.js";
 import {
@@ -125,7 +125,20 @@ const buildDefaultSpells = (
 const DEFAULT_GARAGE = (now: admin.firestore.FieldValue) => ({
   cars: {
     car_h4ayzwf31g: {
+      carId: "car_h4ayzwf31g",
       upgradeLevel: 0,
+      tuning: {},
+      xp: 0,
+      starLevel: 1,
+      carLevel: 1,
+      isXpCapped: false,
+      fuelBars: 5,
+      fuelLastRefillAt: now,
+      archetype: "guardian",
+      tierOrder: 1,
+      acquiredVia: "starterLicense",
+      createdAt: now,
+      updatedAt: now,
     },
   },
   updatedAt: now,
@@ -226,6 +239,7 @@ export async function waitForUserBootstrap(uid: string): Promise<Set<string>> {
   const progressRef = playerRef.collection("Progress").doc("Initial");
   const maintenanceRef = playerRef.collection("Maintenance").doc("UnseenRewards");
   const referralsUnseenRef = playerRef.collection("Referrals").doc("UnseenRewards");
+  const licensesRef = playerRef.collection("Licenses").doc("Owned");
 
   const inventoryCtx = resolveInventoryContext(uid);
   const starterRewards = await loadStarterRewards();
@@ -242,6 +256,7 @@ export async function waitForUserBootstrap(uid: string): Promise<Set<string>> {
     socialRef,
     progressRef,
     maintenanceRef,
+    licensesRef,
     inventoryCtx.summaryRef,
     db.doc(`Players/${uid}/Inventory/${starterRewards.crateSkuId}`),
     starterRewards.keySkuId
@@ -447,6 +462,7 @@ export async function initializeUserIfNeeded(
     const crateRef = playerRef.collection("Inventory").doc(starterRewards.crateSkuId);
     const keyRef = playerRef.collection("Inventory").doc(starterRewards.keySkuId);
     const receiptRef = playerRef.collection("Receipts").doc(receiptId);
+    const licensesRef = playerRef.collection("Licenses").doc("Owned");
     const crateSlotsRef = db.doc(`/Players/${uid}/Crates/Slots`);
 
     const summaryRef = inventoryCtx.summaryRef;
@@ -462,6 +478,9 @@ export async function initializeUserIfNeeded(
     const slotsConfig = await getCrateSlotsConfig();
     const crateRarity = (starterRewards.crate.rarity ?? "common").toLowerCase();
     const unlockDurationSeconds = await getUnlockDurationForRarity(crateRarity);
+
+    // Pre-load starter tier definition for granting T1 license + all cars
+    const starterTier: TierDefinition | null = await getStarterTier();
 
     await runReadThenWrite(
       db,
@@ -498,6 +517,7 @@ export async function initializeUserIfNeeded(
           legacyItemsDocPromise,
           legacyConsumablesDocPromise,
           tx.get(crateSlotsRef),
+          tx.get(licensesRef),
         ]);
         const [
           playerDoc,
@@ -519,6 +539,7 @@ export async function initializeUserIfNeeded(
           legacyItemsDoc,
           legacyConsumablesDoc,
           crateSlotsDoc,
+          licensesDoc,
         ] = baseDocs;
         const cosmeticDocs = await Promise.all(
           cosmeticInventoryRefs.map((ref) => tx.get(ref)),
@@ -636,7 +657,9 @@ export async function initializeUserIfNeeded(
             : null,
           referralPlan,
           crateSlotsDoc,
+          licensesDoc,
           speedUpStates,
+          starterTier,
           legacy: useItemIdInventory
             ? {
               itemsRef: legacyItemsRef,
@@ -683,7 +706,9 @@ export async function initializeUserIfNeeded(
           defaultCosmetics,
           referralPlan,
           crateSlotsDoc,
+          licensesDoc,
           speedUpStates,
+          starterTier,
           fullGrant,
           legacy,
         } = reads;
@@ -749,8 +774,125 @@ export async function initializeUserIfNeeded(
           );
         }
 
-        if (!garageDoc.exists) {
-          tx.set(garageRef, DEFAULT_GARAGE(timestamp), { merge: false });
+        // --- Grant Starter Tier License + All T1 Cars ---
+        // Instead of granting only the default car, we grant the full T1 license
+        // and all bundled cars. Safe for existing users: checks if license/cars
+        // already exist before writing.
+        {
+          const garageData = garageDoc.exists ? (garageDoc.data() ?? { cars: {} }) : { cars: {} };
+          const carsMap = (garageData as Record<string, unknown>).cars as Record<string, unknown> ?? {};
+
+          if (starterTier) {
+            // --- License ---
+            const licensesData = (licensesDoc.exists ? licensesDoc.data() : { licenses: {} }) as UserLicensesDoc;
+            const hasStarterLicense = licensesData.licenses?.[starterTier.tierId] != null;
+
+            if (!hasStarterLicense) {
+              const grantedCars: string[] = [];
+              const carUpdates: Record<string, unknown> = {};
+
+              for (const bundledCar of starterTier.bundledCars) {
+                if (!carsMap[bundledCar.carId]) {
+                  grantedCars.push(bundledCar.carId);
+                  carUpdates[`cars.${bundledCar.carId}`] = {
+                    carId: bundledCar.carId,
+                    upgradeLevel: 0,
+                    tuning: {},
+                    xp: 0,
+                    starLevel: 1,
+                    carLevel: 1,
+                    isXpCapped: false,
+                    fuelBars: 5,
+                    fuelLastRefillAt: timestamp,
+                    archetype: bundledCar.archetype,
+                    tierOrder: starterTier.order,
+                    acquiredVia: "starterLicense",
+                    createdAt: timestamp,
+                    updatedAt: timestamp,
+                  };
+                }
+              }
+
+              // Write license
+              if (licensesDoc.exists) {
+                tx.update(licensesRef, {
+                  [`licenses.${starterTier.tierId}`]: {
+                    tierId: starterTier.tierId,
+                    purchasedAt: timestamp,
+                    grantedCars,
+                  },
+                  updatedAt: timestamp,
+                });
+              } else {
+                tx.set(licensesRef, {
+                  licenses: {
+                    [starterTier.tierId]: {
+                      tierId: starterTier.tierId,
+                      purchasedAt: timestamp,
+                      grantedCars,
+                    },
+                  },
+                  updatedAt: timestamp,
+                });
+              }
+
+              // Write cars to garage
+              if (Object.keys(carUpdates).length > 0) {
+                if (garageDoc.exists) {
+                  tx.update(garageRef, {
+                    ...carUpdates,
+                    updatedAt: timestamp,
+                  });
+                } else {
+                  // Build the full cars object for set
+                  const fullCars: Record<string, unknown> = {};
+                  for (const bundledCar of starterTier.bundledCars) {
+                    const carKey = `cars.${bundledCar.carId}`;
+                    if (carUpdates[carKey]) {
+                      fullCars[bundledCar.carId] = carUpdates[carKey];
+                    }
+                  }
+                  // Also preserve the default car if it's not a bundled car
+                  if (!fullCars["car_h4ayzwf31g"]) {
+                    fullCars["car_h4ayzwf31g"] = {
+                      carId: "car_h4ayzwf31g",
+                      upgradeLevel: 0,
+                      tuning: {},
+                      xp: 0,
+                      starLevel: 1,
+                      carLevel: 1,
+                      isXpCapped: false,
+                      fuelBars: 5,
+                      fuelLastRefillAt: timestamp,
+                      archetype: "guardian",
+                      tierOrder: 1,
+                      acquiredVia: "starterLicense",
+                      createdAt: timestamp,
+                      updatedAt: timestamp,
+                    };
+                  }
+                  tx.set(garageRef, { cars: fullCars, updatedAt: timestamp }, { merge: false });
+                }
+              } else if (!garageDoc.exists) {
+                // All cars already owned but garage doc doesn't exist (edge case)
+                tx.set(garageRef, DEFAULT_GARAGE(timestamp), { merge: false });
+              }
+
+              console.log(`[initializeUser] Granted starter license ${starterTier.tierId} to ${uid}, cars: ${grantedCars.join(", ")}`);
+            } else {
+              // Already has starter license — just ensure garage exists
+              if (!garageDoc.exists) {
+                tx.set(garageRef, DEFAULT_GARAGE(timestamp), { merge: false });
+              }
+              console.log(`[initializeUser] Player ${uid} already has starter license.`);
+            }
+          } else {
+            // No starter tier found in catalog — fall back to default single car
+            console.warn("[initializeUser] No starter tier found in catalog. Falling back to default garage.");
+            if (!garageDoc.exists) {
+              tx.set(garageRef, DEFAULT_GARAGE(timestamp), { merge: false });
+            }
+          }
         }
 
         if (!loadoutDoc.exists) {

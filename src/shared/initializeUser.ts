@@ -3,8 +3,8 @@ import { HttpsError } from "firebase-functions/v2/https";
 import { loadStarterRewards } from "./starterRewards.js";
 import { loadStarterSpellIds } from "./catalogHelpers.js";
 import { resolveInventoryContext } from "./inventory.js";
-import { getCrateSlotsConfig, getUnlockDurationForRarity, getStarterTier } from "../core/configV2.js";
-import { CrateSlotEntry, UserCrateSlotsDoc, UserLicensesDoc, TierDefinition } from "./typesV2.js";
+import { getCrateSlotsConfig, getUnlockDurationForRarity, getStarterTier, getMasteryConfig, getMasteryProgress } from "../core/configV2.js";
+import { CrateSlotEntry, UserCrateSlotsDoc, UserLicensesDoc, TierDefinition, MasteryConfig } from "./typesV2.js";
 import { getReferralConfig, listSkusByFilter, resolveSkuOrThrow } from "../core/config.js";
 import { createDefaultReferralStats } from "../referral/constants.js";
 import {
@@ -19,7 +19,7 @@ import {
 } from "../inventory/index.js";
 import { runReadThenWrite } from "../core/tx.js";
 import { ReferralConfig } from "../referral/types.js";
-import { getLevelInfo } from "./xp.js";
+
 import { refreshPlayerLeaderboardSnapshots } from "../Socials/liveLeaderboard.js";
 
 const db = admin.firestore();
@@ -33,17 +33,21 @@ interface InitializeOptions {
   authUser?: admin.auth.UserRecord | null;
 }
 
-const DEFAULT_PROFILE = (displayName: string, now: admin.firestore.FieldValue) => {
-  const levelInfo = getLevelInfo(0);
-  const expRequiredForNextLevel = levelInfo.expInLevel + levelInfo.expToNext;
+const DEFAULT_PROFILE = (
+  displayName: string,
+  now: admin.firestore.FieldValue,
+  masteryProgress: { rank: number; expProgress: number; expToNextLevel: number; expProgressDisplay: string },
+) => {
   return {
     displayName,
     avatarId: 1,
     exp: 0,
-    level: 1,
-    expProgress: levelInfo.expInLevel,
-    expToNextLevel: expRequiredForNextLevel,
-    expProgressDisplay: `${levelInfo.expInLevel} / ${expRequiredForNextLevel}`,
+    level: 0,
+    masteryXp: 0,
+    masteryRank: 0,
+    expProgress: masteryProgress.expProgress,
+    expToNextLevel: masteryProgress.expToNextLevel,
+    expProgressDisplay: masteryProgress.expProgressDisplay,
     trophies: 0,
     highestTrophies: 0,
     eliminationTrophies: 0,
@@ -482,6 +486,10 @@ export async function initializeUserIfNeeded(
     // Pre-load starter tier definition for granting T1 license + all cars
     const starterTier: TierDefinition | null = await getStarterTier();
 
+    // Pre-load mastery config for correct profile initialization
+    const masteryConfig: MasteryConfig = await getMasteryConfig();
+    const initialMasteryProgress = getMasteryProgress(0, masteryConfig);
+
     await runReadThenWrite(
       db,
       async (tx) => {
@@ -749,7 +757,7 @@ export async function initializeUserIfNeeded(
         const displayName = inferredGuest ? "Guest" : "New Racer";
 
         if (!profileDoc.exists) {
-          const profilePayload = DEFAULT_PROFILE(displayName, timestamp);
+          const profilePayload = DEFAULT_PROFILE(displayName, timestamp, initialMasteryProgress);
           profilePayload.referralCode = referralPlan.code;
           tx.set(profileRef, profilePayload, { merge: false });
         }

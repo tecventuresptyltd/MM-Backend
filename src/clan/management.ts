@@ -643,9 +643,18 @@ export const searchClans = onCall(callableOptions({ cpu: 1, concurrency: 80 }), 
   assertAuthenticated(request);
   const payload = (request.data ?? {}) as SearchClansRequest;
   const limit = clampLimit(payload.limit);
-  const requireOpenSpots = Boolean(payload.requireOpenSpots);
 
+  // --- In-memory filter values (NOT applied as Firestore where() clauses) ---
+  // Firestore prohibits range/inequality filters on more than one field at a time.
+  // Mixing where("stats.members", ">=") with orderBy("stats.trophies") is also invalid
+  // because the range field and the orderBy field differ.
+  // Solution: keep only equality filters in Firestore; apply all numeric ranges in-memory.
+  const minMembers = payload.minMembers !== undefined ? Number(payload.minMembers) : undefined;
+  const maxMembers = payload.maxMembers !== undefined ? Number(payload.maxMembers) : undefined;
+  const minTrophies = payload.minTrophies !== undefined ? Number(payload.minTrophies) : undefined;
   const queryText = typeof payload.query === "string" ? payload.query.trim() : "";
+
+  // --- Firestore query: equality filters only ---
   let query: FirebaseFirestore.Query = clansCollection().where("status", "==", "active");
   if (payload.location) {
     const location = sanitizeWith(() => resolveLocation(payload.location));
@@ -658,32 +667,32 @@ export const searchClans = onCall(callableOptions({ cpu: 1, concurrency: 80 }), 
   if (payload.type && payload.type !== "any") {
     query = query.where("type", "==", resolveClanType(payload.type));
   }
-  if (payload.minMembers !== undefined) {
-    query = query.where("stats.members", ">=", Number(payload.minMembers));
-  }
-  if (payload.maxMembers !== undefined) {
-    query = query.where("stats.members", "<=", Number(payload.maxMembers));
-  }
-  if (payload.minTrophies !== undefined) {
-    query = query.where("stats.trophies", ">=", Number(payload.minTrophies));
-  }
 
-  query = query.orderBy("stats.trophies", "desc").limit(limit * 2);
+  // Fetch a larger batch to account for in-memory filtering dropping some results.
+  // Max fetch is capped at 200 to stay within Firestore read limits.
+  const fetchLimit = Math.min(limit * 6, 200);
+  query = query.orderBy("stats.trophies", "desc").limit(fetchLimit);
+
   const snapshot = await query.get();
   const lowerQuery = queryText.toLowerCase();
 
+  // --- In-memory filtering ---
   const results = snapshot.docs
     .map((doc: FirebaseFirestore.QueryDocumentSnapshot) => clanSummaryProjection(doc.data() ?? {}))
     .filter((clan: ReturnType<typeof clanSummaryProjection>) => {
-      if (lowerQuery.length === 0) {
-        return true;
-      }
-      return clan.name.toLowerCase().includes(lowerQuery);
+      const members = Number(clan.stats?.members ?? 0);
+      const trophies = Number(clan.stats?.trophies ?? 0);
+      if (lowerQuery.length > 0 && !clan.name.toLowerCase().includes(lowerQuery)) return false;
+      if (minMembers !== undefined && members < minMembers) return false;
+      if (maxMembers !== undefined && members > maxMembers) return false;
+      if (minTrophies !== undefined && trophies < minTrophies) return false;
+      return true;
     })
     .slice(0, limit);
 
   return { clans: results };
 });
+
 
 interface GetClanLeaderboardRequest {
   limit?: number;

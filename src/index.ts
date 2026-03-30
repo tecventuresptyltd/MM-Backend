@@ -134,6 +134,7 @@ export {
 // V2 Upgrade Completion: Auto-complete timer-based upgrades
 export {
   upgradeCompletionJob,
+  completeUpgradeTask,
 } from "./upgrades";
 
 // Daily Rewards: Streak-based daily login rewards

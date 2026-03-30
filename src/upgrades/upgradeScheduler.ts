@@ -14,6 +14,7 @@
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
+import { CloudTasksClient } from "@google-cloud/tasks";
 import { REGION } from "../shared/region.js";
 import { db } from "../shared/firestore.js";
 import {
@@ -39,6 +40,47 @@ const MAX_RETRIES = 5;
 /** Path to the completion queue collection */
 const COMPLETION_QUEUE_PATH = "System/Upgrades/CompletionQueue";
 
+/** Cloud Tasks client (lazy-initialized) */
+let tasksClient: CloudTasksClient | null = null;
+
+const getTasksClient = (): CloudTasksClient => {
+    if (!tasksClient) {
+        tasksClient = new CloudTasksClient();
+    }
+    return tasksClient;
+};
+
+/**
+ * Resolves the GCP project ID from the Firebase environment.
+ */
+const getProjectId = (): string => {
+    const projectId = process.env.GCLOUD_PROJECT
+        || process.env.GCP_PROJECT
+        || JSON.parse(process.env.FIREBASE_CONFIG || "{}").projectId;
+    if (!projectId) {
+        throw new Error("[upgradeScheduler] Unable to determine GCP project ID");
+    }
+    return projectId;
+};
+
+/**
+ * The Cloud Tasks queue name for upgrade completions.
+ * Firebase auto-creates this queue when deploying the onTaskDispatched function.
+ * Format: ext-{functionName} → but we use a simpler name derived from the function export.
+ */
+const TASK_QUEUE_NAME = "completeUpgradeTask";
+
+/**
+ * Build a deterministic Cloud Task name for an upgrade.
+ * Must match: [a-zA-Z0-9_-]{1,500}
+ */
+const buildTaskName = (uid: string, upgradeType: string, targetId: string): string => {
+    // Replace any non-alphanumeric chars with dashes for safety
+    const safeUid = uid.replace(/[^a-zA-Z0-9]/g, "-");
+    const safeTarget = targetId.replace(/[^a-zA-Z0-9]/g, "-");
+    return `${safeUid}-${upgradeType}-${safeTarget}`;
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Queue Management (exported for use by start/skip/speedup functions)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -56,13 +98,28 @@ export const buildQueueDocId = (
 /**
  * Schedule an upgrade for auto-completion.
  * Called OUTSIDE the transaction in start functions (Transaction Metadata Return pattern).
+ *
+ * Writes a queue doc (for safety-net polling) AND enqueues a Cloud Task
+ * that fires at the exact completesAt time for near-instant completion.
  */
 export const scheduleUpgradeCompletion = async (
     entry: UpgradeCompletionEntry,
 ): Promise<void> => {
     const docId = buildQueueDocId(entry.uid, entry.upgradeType, entry.targetId);
 
+    // 1. Write queue doc (safety-net tracking for the 2-minute poller)
     await db.collection(COMPLETION_QUEUE_PATH).doc(docId).set(entry);
+
+    // 2. Enqueue Cloud Task at the exact completesAt time
+    try {
+        await enqueueUpgradeTask(entry);
+    } catch (error) {
+        // Non-fatal: the 2-minute poller will catch it as a safety net
+        logger.warn(
+            `[upgradeScheduler] Failed to enqueue Cloud Task for ${entry.upgradeType}: uid=${entry.uid} target=${entry.targetId}. Poller will handle it.`,
+            error,
+        );
+    }
 
     logger.info(
         `[upgradeScheduler] Scheduled ${entry.upgradeType} completion: uid=${entry.uid} target=${entry.targetId} completesAt=${new Date(entry.completesAt).toISOString()}`,
@@ -72,6 +129,7 @@ export const scheduleUpgradeCompletion = async (
 /**
  * Cancel a scheduled upgrade completion.
  * Called when a player skips (instant complete) or the upgrade is otherwise cancelled.
+ * Deletes both the queue doc and the Cloud Task.
  */
 export const cancelUpgradeCompletion = async (
     uid: string,
@@ -87,11 +145,20 @@ export const cancelUpgradeCompletion = async (
         // Non-fatal: doc may not exist if it was already processed
         logger.warn(`[upgradeScheduler] Failed to cancel ${upgradeType} for ${uid}/${targetId}`, error);
     }
+
+    // Also cancel the Cloud Task
+    try {
+        await deleteUpgradeTask(uid, upgradeType, targetId);
+    } catch (error) {
+        // Non-fatal: task may not exist or already executed
+        logger.warn(`[upgradeScheduler] Failed to delete Cloud Task for ${upgradeType}: ${uid}/${targetId}`, error);
+    }
 };
 
 /**
  * Update the completesAt of a scheduled upgrade (used by speedups).
  * If the new completesAt is in the past, deletes the queue entry instead.
+ * Replaces the Cloud Task with a new one at the updated time.
  */
 export const updateUpgradeCompletionTime = async (
     uid: string,
@@ -118,6 +185,22 @@ export const updateUpgradeCompletionTime = async (
     } catch (error) {
         // Non-fatal: doc may not exist
         logger.warn(`[upgradeScheduler] Failed to update completesAt for ${uid}/${targetId}`, error);
+    }
+
+    // Replace the Cloud Task: delete old, enqueue new
+    try {
+        await deleteUpgradeTask(uid, upgradeType, targetId);
+        await enqueueUpgradeTask({
+            uid,
+            upgradeType,
+            targetId,
+            targetLevel: 0, // Not critical — the task handler reads from the queue doc
+            completesAt: newCompletesAt,
+            createdAt: now,
+        });
+    } catch (error) {
+        // Non-fatal: poller safety net will catch it
+        logger.warn(`[upgradeScheduler] Failed to replace Cloud Task for ${upgradeType}: ${uid}/${targetId}`, error);
     }
 };
 
@@ -314,8 +397,10 @@ const processSpellResearch = async (entry: UpgradeCompletionEntry): Promise<bool
 /**
  * Process a single upgrade completion entry.
  * Routes to the appropriate handler based on upgradeType.
+ *
+ * EXPORTED for use by upgradeTaskHandler.ts (Cloud Tasks handler).
  */
-const processUpgradeEntry = async (entry: UpgradeCompletionEntry): Promise<boolean> => {
+export const processUpgradeCompletionEntry = async (entry: UpgradeCompletionEntry): Promise<boolean> => {
     const { uid, upgradeType, targetId, retryCount = 0 } = entry;
 
     // FUSE BREAKER: Drop after too many retries
@@ -390,11 +475,11 @@ export const processUpgradeCompletions = async (): Promise<{
 
         const entries = dueCompletions.docs.map(doc => doc.data() as UpgradeCompletionEntry);
 
-        // Process in parallel batches
+        // Process in parallel batches (safety net — Cloud Tasks handles most completions)
         for (let i = 0; i < entries.length; i += PARALLEL_BATCH) {
             const batch = entries.slice(i, i + PARALLEL_BATCH);
             const results = await Promise.allSettled(
-                batch.map(entry => processUpgradeEntry(entry)),
+                batch.map(entry => processUpgradeCompletionEntry(entry)),
             );
 
             results.forEach((result) => {
@@ -415,7 +500,8 @@ export const processUpgradeCompletions = async (): Promise<{
 
 /**
  * Scheduled function that processes upgrade completions every 2 minutes.
- * EFFICIENT: Only queries the completion queue, not all player documents.
+ * Acts as a SAFETY NET for Cloud Tasks — most completions are handled instantly
+ * by completeUpgradeTask via Cloud Tasks. This poller catches any that slip through.
  * When no upgrades are due, this does 1 indexed query returning 0 results.
  */
 export const upgradeCompletionJob = {
@@ -433,4 +519,103 @@ export const upgradeCompletionJob = {
             logger.info("[upgradeScheduler] Upgrade completion job completed", stats);
         },
     ),
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Cloud Tasks Helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Enqueue a Cloud Task to fire at the exact completesAt time.
+ * The task invokes the completeUpgradeTask onTaskDispatched handler.
+ */
+const enqueueUpgradeTask = async (entry: UpgradeCompletionEntry): Promise<void> => {
+    const client = getTasksClient();
+    const projectId = getProjectId();
+    const location = REGION;
+
+    // Cloud Tasks queue path — Firebase creates this automatically from the function name
+    const queuePath = client.queuePath(projectId, location, TASK_QUEUE_NAME);
+
+    // Deterministic task name for deduplication and cancellation
+    const taskName = `${queuePath}/tasks/${buildTaskName(entry.uid, entry.upgradeType, entry.targetId)}`;
+
+    // Calculate schedule time
+    const now = Date.now();
+    const delayMs = Math.max(0, entry.completesAt - now);
+    const scheduleTimeSeconds = Math.floor((now + delayMs) / 1000);
+
+    // Task payload
+    const payload = {
+        uid: entry.uid,
+        upgradeType: entry.upgradeType,
+        targetId: entry.targetId,
+        targetLevel: entry.targetLevel,
+        completesAt: entry.completesAt,
+    };
+
+    // The URL for the Cloud Function that handles the task
+    const functionUrl = `https://${location}-${projectId}.cloudfunctions.net/${TASK_QUEUE_NAME}`;
+
+    try {
+        await client.createTask({
+            parent: queuePath,
+            task: {
+                name: taskName,
+                httpRequest: {
+                    httpMethod: "POST",
+                    url: functionUrl,
+                    headers: { "Content-Type": "application/json" },
+                    body: Buffer.from(JSON.stringify({ data: payload })).toString("base64"),
+                    oidcToken: {
+                        serviceAccountEmail: `${projectId}@appspot.gserviceaccount.com`,
+                    },
+                },
+                scheduleTime: {
+                    seconds: scheduleTimeSeconds,
+                },
+            },
+        });
+
+        logger.info(
+            `[upgradeScheduler] Enqueued Cloud Task: ${entry.upgradeType} uid=${entry.uid} target=${entry.targetId} ` +
+            `fires at ${new Date(scheduleTimeSeconds * 1000).toISOString()} (delay=${Math.round(delayMs / 1000)}s)`,
+        );
+    } catch (error: unknown) {
+        // If the task already exists (ALREADY_EXISTS), that's fine — idempotent
+        const grpcError = error as { code?: number };
+        if (grpcError.code === 6) { // ALREADY_EXISTS
+            logger.info(`[upgradeScheduler] Cloud Task already exists for ${entry.uid}/${entry.targetId} — skipping`);
+            return;
+        }
+        throw error;
+    }
+};
+
+/**
+ * Delete a scheduled Cloud Task (called on cancel/skip/manual claim).
+ */
+const deleteUpgradeTask = async (
+    uid: string,
+    upgradeType: string,
+    targetId: string,
+): Promise<void> => {
+    const client = getTasksClient();
+    const projectId = getProjectId();
+    const location = REGION;
+
+    const queuePath = client.queuePath(projectId, location, TASK_QUEUE_NAME);
+    const taskName = `${queuePath}/tasks/${buildTaskName(uid, upgradeType, targetId)}`;
+
+    try {
+        await client.deleteTask({ name: taskName });
+        logger.info(`[upgradeScheduler] Deleted Cloud Task: ${upgradeType} uid=${uid} target=${targetId}`);
+    } catch (error: unknown) {
+        const grpcError = error as { code?: number };
+        if (grpcError.code === 5) { // NOT_FOUND — already executed or deleted
+            logger.info(`[upgradeScheduler] Cloud Task not found (already completed): ${uid}/${targetId}`);
+            return;
+        }
+        throw error;
+    }
 };

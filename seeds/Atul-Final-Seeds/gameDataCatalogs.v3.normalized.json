@@ -15861,8 +15861,8 @@
   {
     "path": "/GameData/v1/catalogs/RanksCatalog",
     "data": {
-      "version": "v3-bootstrap",
-      "updatedAt": 1762566860531,
+      "version": "v4-no-keys",
+      "updatedAt": 1742900000000,
       "ranks": [
         {
           "rankId": "rank_unranked",
@@ -15887,7 +15887,7 @@
             "gems": 100,
             "inventory": [
               {
-                "skuId": "sku_rjwe5tdtc4",
+                "skuId": "sku_zz3twgp0wx",
                 "quantity": 1
               }
             ]
@@ -15922,7 +15922,7 @@
             "gems": 100,
             "inventory": [
               {
-                "skuId": "sku_rjwe5tdtc4",
+                "skuId": "sku_zz3twgp0wx",
                 "quantity": 1
               }
             ]
@@ -15957,7 +15957,7 @@
             "gems": 150,
             "inventory": [
               {
-                "skuId": "sku_p3yxnyhkpx",
+                "skuId": "sku_72wnqwtfmx",
                 "quantity": 1
               }
             ]
@@ -15992,7 +15992,7 @@
             "gems": 150,
             "inventory": [
               {
-                "skuId": "sku_p3yxnyhkpx",
+                "skuId": "sku_72wnqwtfmx",
                 "quantity": 1
               }
             ]
@@ -16027,7 +16027,7 @@
             "gems": 200,
             "inventory": [
               {
-                "skuId": "sku_zqqmqz7mwb",
+                "skuId": "sku_e8e7jeba7v",
                 "quantity": 1
               }
             ]
@@ -16062,7 +16062,7 @@
             "gems": 200,
             "inventory": [
               {
-                "skuId": "sku_zqqmqz7mwb",
+                "skuId": "sku_e8e7jeba7v",
                 "quantity": 1
               }
             ]
@@ -16097,7 +16097,7 @@
             "gems": 300,
             "inventory": [
               {
-                "skuId": "sku_acxbr542j1",
+                "skuId": "sku_n9hsc0wxxk",
                 "quantity": 1
               }
             ]
@@ -16132,7 +16132,7 @@
             "gems": 300,
             "inventory": [
               {
-                "skuId": "sku_acxbr542j1",
+                "skuId": "sku_n9hsc0wxxk",
                 "quantity": 1
               }
             ]
@@ -16167,7 +16167,7 @@
             "gems": 350,
             "inventory": [
               {
-                "skuId": "sku_acxbr542j1",
+                "skuId": "sku_n9hsc0wxxk",
                 "quantity": 1
               }
             ]
@@ -16202,7 +16202,7 @@
             "gems": 400,
             "inventory": [
               {
-                "skuId": "sku_acxbr542j1",
+                "skuId": "sku_n9hsc0wxxk",
                 "quantity": 1
               }
             ]
@@ -16237,7 +16237,7 @@
             "gems": 450,
             "inventory": [
               {
-                "skuId": "sku_hq5ywspmr5",
+                "skuId": "sku_kgkjadrd79",
                 "quantity": 1
               }
             ]
@@ -16272,7 +16272,7 @@
             "gems": 500,
             "inventory": [
               {
-                "skuId": "sku_acxbr542j1",
+                "skuId": "sku_kgkjadrd79",
                 "quantity": 1
               }
             ]
@@ -16289,7 +16289,7 @@
             "coins": 29400,
             "inventory": [
               {
-                "skuId": "sku_n9hsc0wxxk",
+                "skuId": "sku_kgkjadrd79",
                 "quantity": 1
               }
             ]
@@ -16307,7 +16307,7 @@
             "gems": 500,
             "inventory": [
               {
-                "skuId": "sku_hq5ywspmr5",
+                "skuId": "sku_kgkjadrd79",
                 "quantity": 1
               }
             ]

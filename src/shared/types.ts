@@ -245,7 +245,7 @@ export interface CratesCatalogDoc {
 }
 
 export interface OfferEntitlement {
-  type: "gems" | "coins" | "crate" | "key" | "booster" | "cosmetic";
+  type: "gems" | "coins" | "crate" | "booster" | "cosmetic";
   id: string;
   quantity: number;
 }
@@ -283,7 +283,6 @@ export interface ActiveDailyOfferState {
 
 export type SpecialOfferTriggerType =
   | "level_up"
-  | "flash_missing_key"
   | "flash_missing_crate";
 
 export interface ActiveSpecialOffer {

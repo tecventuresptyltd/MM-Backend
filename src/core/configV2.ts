@@ -123,8 +123,8 @@ export async function getXpCapForCar(carId: string, starLevel: number): Promise<
 }
 
 /**
- * Get the evolution cost for a specific car at its current star level.
- * Reads priceCoins and upgradeTimerSeconds from CarsCatalog per-car per-level.
+ * Get the evolution cost for a specific car to reach its NEXT star level.
+ * Reads priceCoins and upgradeTimerSeconds from the TARGET level in CarsCatalog.
  * Returns null if the car is at max star level or config is missing.
  */
 export async function getEvolutionCostForCar(
@@ -132,16 +132,23 @@ export async function getEvolutionCostForCar(
     starLevel: number,
 ): Promise<{ coins: number; durationSeconds: number; targetStarLevel: number } | null> {
     const catalog = await getCarsCatalog();
-    const levelData = catalog.cars?.[carId]?.levels?.[String(starLevel)];
-    if (!levelData) return null;
+
+    // Check current level to verify if progression is possible
+    const currentLevelData = catalog.cars?.[carId]?.levels?.[String(starLevel)];
+    if (!currentLevelData) return null;
 
     // If this is the max level (xpToNext = 0), there's no next level to evolve to
-    if (levelData.xpToNext === 0) return null;
+    if (currentLevelData.xpToNext === 0) return null;
+
+    // Target the next star level to grab cost and timer
+    const targetStarLevel = starLevel + 1;
+    const targetLevelData = catalog.cars?.[carId]?.levels?.[String(targetStarLevel)];
+    if (!targetLevelData) return null; // Failsafe if target config doesn't exist
 
     return {
-        targetStarLevel: starLevel + 1,
-        coins: levelData.priceCoins,
-        durationSeconds: levelData.upgradeTimerSeconds,
+        targetStarLevel,
+        coins: targetLevelData.priceCoins,
+        durationSeconds: targetLevelData.upgradeTimerSeconds,
     };
 }
 

@@ -54,7 +54,6 @@ export const offerStateRef = (uid: string) => db.doc(OFFER_STATE_PATH(uid));
 
 const SPECIAL_TRIGGER_TYPES: SpecialOfferTriggerType[] = [
   "level_up",
-  "flash_missing_key",
   "flash_missing_crate",
 ];
 const SPECIAL_TRIGGER_SET = new Set(SPECIAL_TRIGGER_TYPES);

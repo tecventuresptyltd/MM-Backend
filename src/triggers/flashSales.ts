@@ -26,9 +26,6 @@ export interface FlashSaleTriggerResult {
   triggered: ActiveSpecialOffer[];
 }
 
-const needsKey = (snapshot: InventorySnapshot): boolean =>
-  (snapshot.mythicalCrates ?? 0) > 0 && (snapshot.mythicalKeys ?? 0) === 0;
-
 const needsCrate = (snapshot: InventorySnapshot): boolean =>
   (snapshot.mythicalKeys ?? 0) > 0 && (snapshot.mythicalCrates ?? 0) === 0;
 
@@ -86,9 +83,6 @@ const runWithTransaction = async (
   ): Promise<FlashSaleTriggerResult | null> => {
     const inventory = await resolveInventoryState(transaction, options.uid, options.inventory);
     const triggers: SpecialOfferTriggerType[] = [];
-    if (needsKey(inventory)) {
-      triggers.push("flash_missing_key");
-    }
     if (needsCrate(inventory)) {
       triggers.push("flash_missing_crate");
     }
@@ -170,10 +164,7 @@ export const maybeTriggerFlashSales = async (
   options: FlashSaleTriggerOptions,
 ): Promise<FlashSaleTriggerResult | null> => {
   const ladderIndex = await loadOfferLadderIndex();
-  if (
-    !ladderIndex.flashOfferIds.flash_missing_crate &&
-    !ladderIndex.flashOfferIds.flash_missing_key
-  ) {
+  if (!ladderIndex.flashOfferIds.flash_missing_crate) {
     return null;
   }
   return runWithTransaction(options, ladderIndex.flashOfferIds);

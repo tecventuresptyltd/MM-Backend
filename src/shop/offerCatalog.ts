@@ -13,7 +13,6 @@ const TIER_TYPE_MAP = new Map<number, number>([
   [4, 8],
 ]);
 const FLASH_TRIGGER_BY_TYPE = new Map<number, SpecialOfferTriggerType>([
-  [11, "flash_missing_key"],
   [12, "flash_missing_crate"],
 ]);
 

@@ -110,7 +110,7 @@
         "variance": 0.2,
         "notes": "crateShards = floor(shardBase(rank) × multiplier × (0.8 + random(0.4))). shardBase = 5 + (20 × rankIndex/50). Scales 5× across ranks vs coins' 20× — intentionally slower so crates don't shortcut spell progression."
     },
-    "cosmeticCount": 3,
+    "cosmeticCount": 1,
     "itemPoolsByRarity": {
         "common": [
             {

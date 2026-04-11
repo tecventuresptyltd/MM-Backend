@@ -61,6 +61,7 @@ export const completeUpgradeTask = onTaskDispatched(
             maxDispatchesPerSecond: 50,
         },
         memory: "256MiB",
+        minInstances: 1, // Keep 1 instance warm to eliminate the 15-20 second cold start delay
     },
     async (request) => {
         const payload = request.data as UpgradeTaskPayload;

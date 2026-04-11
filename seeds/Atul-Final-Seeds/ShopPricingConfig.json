@@ -65,12 +65,12 @@
                 },
                 "24hr": {
                     "durationSeconds": 86400,
-                    "gems": 200,
+                    "gems": 180,
                     "displayDuration": "24 Hours"
                 },
                 "7day": {
                     "durationSeconds": 604800,
-                    "gems": 1000,
+                    "gems": 900,
                     "displayDuration": "7 Days"
                 }
             }
@@ -90,12 +90,12 @@
                 },
                 "24hr": {
                     "durationSeconds": 86400,
-                    "gems": 200,
+                    "gems": 180,
                     "displayDuration": "24 Hours"
                 },
                 "7day": {
                     "durationSeconds": 604800,
-                    "gems": 1000,
+                    "gems": 900,
                     "displayDuration": "7 Days"
                 }
             }
@@ -115,12 +115,12 @@
                 },
                 "24hr": {
                     "durationSeconds": 86400,
-                    "gems": 160,
+                    "gems": 140,
                     "displayDuration": "24 Hours"
                 },
                 "7day": {
                     "durationSeconds": 604800,
-                    "gems": 800,
+                    "gems": 700,
                     "displayDuration": "7 Days"
                 }
             }

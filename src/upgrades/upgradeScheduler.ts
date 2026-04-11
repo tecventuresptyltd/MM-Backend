@@ -14,7 +14,7 @@
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
-import { CloudTasksClient } from "@google-cloud/tasks";
+import { getFunctions } from "firebase-admin/functions";
 import { REGION } from "../shared/region.js";
 import { db } from "../shared/firestore.js";
 import {
@@ -40,28 +40,7 @@ const MAX_RETRIES = 5;
 /** Path to the completion queue collection */
 const COMPLETION_QUEUE_PATH = "System/Upgrades/CompletionQueue";
 
-/** Cloud Tasks client (lazy-initialized) */
-let tasksClient: CloudTasksClient | null = null;
 
-const getTasksClient = (): CloudTasksClient => {
-    if (!tasksClient) {
-        tasksClient = new CloudTasksClient();
-    }
-    return tasksClient;
-};
-
-/**
- * Resolves the GCP project ID from the Firebase environment.
- */
-const getProjectId = (): string => {
-    const projectId = process.env.GCLOUD_PROJECT
-        || process.env.GCP_PROJECT
-        || JSON.parse(process.env.FIREBASE_CONFIG || "{}").projectId;
-    if (!projectId) {
-        throw new Error("[upgradeScheduler] Unable to determine GCP project ID");
-    }
-    return projectId;
-};
 
 /**
  * The Cloud Tasks queue name for upgrade completions.
@@ -249,12 +228,12 @@ const processCarEvolution = async (entry: UpgradeCompletionEntry): Promise<boole
         const now = Date.now();
 
         if (completesAt.toMillis() > now) {
-            // Timer not yet complete — don't process (queue entry may have stale completesAt)
+            // Timer not yet complete (Cloud Task fired slightly early) — don't delete queue entry!
+            // Return false so the task fails and retries, rather than silently succeeding and breaking auto-completion.
             logger.warn(
                 `[upgradeScheduler] Car evolution not yet complete: uid=${uid} car=${carId} remaining=${Math.ceil((completesAt.toMillis() - now) / 1000)}s`,
             );
-            transaction.delete(queueRef);
-            return true;
+            return false;
         }
 
         // Validate garage
@@ -334,11 +313,12 @@ const processSpellResearch = async (entry: UpgradeCompletionEntry): Promise<bool
         const now = Date.now();
 
         if (completesAt.toMillis() > now) {
+            // Timer not yet complete (Cloud Task fired slightly early) — don't delete queue entry!
+            // Return false so the task fails and retries, rather than silently succeeding and breaking auto-completion.
             logger.warn(
                 `[upgradeScheduler] Spell research not yet complete: uid=${uid} spell=${spellId} remaining=${Math.ceil((completesAt.toMillis() - now) / 1000)}s`,
             );
-            transaction.delete(queueRef);
-            return true;
+            return false;
         }
 
         const timestamp = admin.firestore.FieldValue.serverTimestamp();
@@ -530,20 +510,18 @@ export const upgradeCompletionJob = {
  * The task invokes the completeUpgradeTask onTaskDispatched handler.
  */
 const enqueueUpgradeTask = async (entry: UpgradeCompletionEntry): Promise<void> => {
-    const client = getTasksClient();
-    const projectId = getProjectId();
-    const location = REGION;
+    const queue = getFunctions().taskQueue(TASK_QUEUE_NAME);
 
-    // Cloud Tasks queue path — Firebase creates this automatically from the function name
-    const queuePath = client.queuePath(projectId, location, TASK_QUEUE_NAME);
-
-    // Deterministic task name for deduplication and cancellation
-    const taskName = `${queuePath}/tasks/${buildTaskName(entry.uid, entry.upgradeType, entry.targetId)}`;
+    // Deterministic task ID for deduplication and cancellation
+    // Reversed strings per Firebase docs to avoid hotspotting
+    const rawId = buildTaskName(entry.uid, entry.upgradeType, entry.targetId);
+    const id = rawId.split("").reverse().join("");
 
     // Calculate schedule time
     const now = Date.now();
     const delayMs = Math.max(0, entry.completesAt - now);
-    const scheduleTimeSeconds = Math.floor((now + delayMs) / 1000);
+    // Use Math.ceil to ensure we schedule for the second AFTER completing, avoiding early task triggers
+    const scheduleTimeSeconds = Math.ceil((now + delayMs) / 1000);
 
     // Task payload
     const payload = {
@@ -554,37 +532,19 @@ const enqueueUpgradeTask = async (entry: UpgradeCompletionEntry): Promise<void> 
         completesAt: entry.completesAt,
     };
 
-    // The URL for the Cloud Function that handles the task
-    const functionUrl = `https://${location}-${projectId}.cloudfunctions.net/${TASK_QUEUE_NAME}`;
-
     try {
-        await client.createTask({
-            parent: queuePath,
-            task: {
-                name: taskName,
-                httpRequest: {
-                    httpMethod: "POST",
-                    url: functionUrl,
-                    headers: { "Content-Type": "application/json" },
-                    body: Buffer.from(JSON.stringify({ data: payload })).toString("base64"),
-                    oidcToken: {
-                        serviceAccountEmail: `${projectId}@appspot.gserviceaccount.com`,
-                    },
-                },
-                scheduleTime: {
-                    seconds: scheduleTimeSeconds,
-                },
-            },
+        await queue.enqueue(payload, {
+            id,
+            scheduleTime: new Date(scheduleTimeSeconds * 1000),
         });
 
         logger.info(
             `[upgradeScheduler] Enqueued Cloud Task: ${entry.upgradeType} uid=${entry.uid} target=${entry.targetId} ` +
             `fires at ${new Date(scheduleTimeSeconds * 1000).toISOString()} (delay=${Math.round(delayMs / 1000)}s)`,
         );
-    } catch (error: unknown) {
-        // If the task already exists (ALREADY_EXISTS), that's fine — idempotent
-        const grpcError = error as { code?: number };
-        if (grpcError.code === 6) { // ALREADY_EXISTS
+    } catch (error: any) {
+        // If the task already exists, that's fine — idempotent
+        if (error.code === "functions/task-already-exists") {
             logger.info(`[upgradeScheduler] Cloud Task already exists for ${entry.uid}/${entry.targetId} — skipping`);
             return;
         }
@@ -600,19 +560,15 @@ const deleteUpgradeTask = async (
     upgradeType: string,
     targetId: string,
 ): Promise<void> => {
-    const client = getTasksClient();
-    const projectId = getProjectId();
-    const location = REGION;
-
-    const queuePath = client.queuePath(projectId, location, TASK_QUEUE_NAME);
-    const taskName = `${queuePath}/tasks/${buildTaskName(uid, upgradeType, targetId)}`;
+    const queue = getFunctions().taskQueue(TASK_QUEUE_NAME);
+    const rawId = buildTaskName(uid, upgradeType, targetId);
+    const id = rawId.split("").reverse().join("");
 
     try {
-        await client.deleteTask({ name: taskName });
+        await queue.delete(id);
         logger.info(`[upgradeScheduler] Deleted Cloud Task: ${upgradeType} uid=${uid} target=${targetId}`);
-    } catch (error: unknown) {
-        const grpcError = error as { code?: number };
-        if (grpcError.code === 5) { // NOT_FOUND — already executed or deleted
+    } catch (error: any) {
+        if (error.code === "functions/not-found") {
             logger.info(`[upgradeScheduler] Cloud Task not found (already completed): ${uid}/${targetId}`);
             return;
         }

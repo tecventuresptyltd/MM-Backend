@@ -1,13 +1,13 @@
 {
-  "version": "v2-evolution",
-  "updatedAt": 1742900000000,
-  "notes": "V2 Pit Crew System. Rebalanced tier scaling to match economy model. Per-car per-level costs are in CarsCatalog. Skip cost 50 gems/hr.",
+  "version": "v3-timer-rebalance",
+  "updatedAt": 1744364400000,
+  "notes": "V2 Pit Crew System. Timer curves redesigned: T1 starts 1min, crosses 10-min free-skip threshold at ~3.5h gameplay. Skip cost 20 gems/hr. Free skip under 10 min.",
   "maxStarLevel": 10,
   "levelsPerStar": 1,
   "skipCost": {
     "gemsPerHour": 20,
     "minGems": 5,
-    "freeSkipThresholdSeconds": 300
+    "freeSkipThresholdSeconds": 600
   },
   "statBonusPerStar": {
     "topSpeed": 1.2,
@@ -30,19 +30,19 @@
     },
     "2": {
       "coinMultiplier": 4.16,
-      "timerMultiplier": 8.57
+      "timerMultiplier": 2.93
     },
     "3": {
       "coinMultiplier": 16.0,
-      "timerMultiplier": 22.5
+      "timerMultiplier": 9.22
     },
     "4": {
       "coinMultiplier": 55.3,
-      "timerMultiplier": 45.0
+      "timerMultiplier": 19.2
     },
     "5": {
       "coinMultiplier": 176.6,
-      "timerMultiplier": 90.0
+      "timerMultiplier": 38.1
     }
   }
 }

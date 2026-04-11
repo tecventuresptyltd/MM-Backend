@@ -1,11 +1,11 @@
 {
-  "version": "v2-rebalanced",
-  "updatedAt": 1742900000000,
-  "notes": "Spell research costs define the Spell Shards and time required to level up spells. Level 1 is the unlock level (no cost for starters, unlockCost for non-starters).",
+  "version": "v3-timer-rebalance",
+  "updatedAt": 1744364400000,
+  "notes": "Spell research rebalanced for car parity. L1-2=early game (free skip), L3-4=mid game, L5=endgame. Shards reduced ~30%. Mastery gates aligned to tier unlock points.",
   "unlockCost": {
     "shards": 30,
-    "durationSeconds": 1800,
-    "displayDuration": "30 minutes",
+    "durationSeconds": 600,
+    "displayDuration": "10 minutes",
     "description": "Initial unlock research for level-gated spells"
   },
   "maxSpellLevel": 5,
@@ -19,25 +19,25 @@
     },
     "2": {
       "targetLevel": 2,
-      "shards": 30,
-      "durationSeconds": 1800,
-      "displayDuration": "30 minutes"
+      "shards": 20,
+      "durationSeconds": 600,
+      "displayDuration": "10 minutes"
     },
     "3": {
       "targetLevel": 3,
-      "shards": 150,
-      "durationSeconds": 7200,
-      "displayDuration": "2 hours"
+      "shards": 100,
+      "durationSeconds": 3600,
+      "displayDuration": "1 hour"
     },
     "4": {
       "targetLevel": 4,
-      "shards": 550,
-      "durationSeconds": 21600,
-      "displayDuration": "6 hours"
+      "shards": 400,
+      "durationSeconds": 14400,
+      "displayDuration": "4 hours"
     },
     "5": {
       "targetLevel": 5,
-      "shards": 1400,
+      "shards": 1200,
       "durationSeconds": 43200,
       "displayDuration": "12 hours"
     }
@@ -45,7 +45,7 @@
   "skipCost": {
     "gemsPerHour": 20,
     "minGems": 5,
-    "freeSkipThresholdSeconds": 300
+    "freeSkipThresholdSeconds": 600
   },
   "spellXpConfig": {
     "xpPerRace": 10,
@@ -67,8 +67,8 @@
   "masteryGates": {
     "1": 0,
     "2": 0,
-    "3": 3,
-    "4": 8,
+    "3": 5,
+    "4": 12,
     "5": 25
   }
 }

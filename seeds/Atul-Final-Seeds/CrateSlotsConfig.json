@@ -39,8 +39,8 @@
         "enabled": true,
         "description": "When all slots are full, grant this instead of a crate",
         "rewards": {
-            "coins": 100,
-            "spellShards": 10
+            "coins": 500,
+            "spellShards": 25
         }
     },
     "simultaneousUnlocks": 1

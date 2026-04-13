@@ -1,31 +1,292 @@
-Offer ID,Display Name,Category,Slot,Price (USD),Original Price,Value Multiplier,True Gem Value,Validity,Trigger Condition,Upsell To,Gems,Crates,Boosters,Time Skips,Total Skip Hours
-offer_adrenaline_pro,Adrenaline Pro,context,4,$5.99,,4x,2494,1h,win_streak_3,,1400,Exotic Crate ×2,Coin Booster 12h,3h Time Skip ×2 | 1h Time Skip ×2 | 30m Time Skip ×2,9.0
-offer_resource_rush,Resource Rush,context,4,$24.99,,3x,7552,4h,fuel_empty,,4500,Exotic Crate ×4,Coin Booster 24h ×2 | XP Booster 24h ×2 | Shard Booster 24h ×2,8h Time Skip ×2 | 3h Time Skip ×2 | 1h Time Skip ×4 | 15m Time Skip ×4,27.0
-offer_mythic_mystery,Mythic Mystery,context,4,$44.99,,3x,12290,8h,mythical_crate_earned,,8500,Mythical Crate,Coin Booster 24h | XP Booster 24h | Shard Booster 24h,24h Time Skip | 8h Time Skip ×2 | 3h Time Skip ×3 | 1h Time Skip ×5,54.0
-offer_double_clutch,Double Clutch,event,4,$6.99,,4x,2760,1d,weekend,,2000,Rare Crate ×2,Coin Booster 12h | XP Booster 12h,8h Time Skip | 3h Time Skip | 1h Time Skip ×3,14.0
-offer_ignition_starter,Ignition Starter,micro_hook,1,$1.99,,5x,1046,1d,,offer_drift_king_upsell,600,Rare Crate | Common Crate ×2,Coin Booster 6h | XP Booster 6h,1h Time Skip ×2 | 15m Time Skip ×2,2.5
-offer_fuel_emergency,Fuel Emergency,micro_hook,1,$1.99,,6x,1136,1d,,offer_drift_king_upsell,600,Exotic Crate,Coin Booster 6h,1h Time Skip ×2 | 15m Time Skip ×2,2.5
-offer_nitro_surge,Nitro Surge,micro_hook,1,$1.99,,5x,936,1d,,offer_drift_king_upsell,500,Rare Crate ×2,Shard Booster 6h,1h Time Skip ×2 | 15m Time Skip ×2,2.5
-offer_adrenaline_shot,Adrenaline Shot,micro_hook,1,$1.99,,5x,1056,1d,,offer_drift_king_upsell,500,Rare Crate | Common Crate ×2 | Rare Crate,XP Booster 12h,1h Time Skip ×2 | 15m Time Skip ×2,2.5
-offer_sprint_starter,Sprint Starter,micro_hook,1,$1.99,,5x,1036,1d,,offer_drift_king_upsell,500,Exotic Crate,Coin Booster 6h,1h Time Skip ×2 | 15m Time Skip ×2,2.5
-offer_midnight_oil,Midnight Oil,micro_hook,1,$1.99,,5x,986,1d,,offer_drift_king_upsell,600,Rare Crate,Coin Booster 12h,3h Time Skip | 1h Time Skip ×2 | 15m Time Skip ×2,5.5
-offer_nitro_boost_plus,Nitro Boost Plus,micro_hook,1,$2.99,,5x,1386,1d,,offer_drift_king_upsell,800,Exotic Crate,Shard Booster 6h,3h Time Skip | 1h Time Skip ×2 | 15m Time Skip ×2,5.5
-offer_pit_stop_special,Pit Stop Special,micro_hook,1,$3.99,,5x,1894,1d,,offer_drift_king_upsell,1200,Exotic Crate,Coin Booster 12h,3h Time Skip ×2 | 1h Time Skip ×2 | 30m Time Skip ×2,9.0
-offer_pro_crew_kit,Pro Crew Kit,mid_tier,2,$29.99,,3x,9100,2d,,,6500,Legendary Crate,Coin Booster 24h ×2 | XP Booster 24h ×2 | Shard Booster 24h ×2,24h Time Skip | 8h Time Skip | 3h Time Skip ×2 | 1h Time Skip ×4,42.0
-offer_street_legend,Street Legend,mid_tier,2,$39.99,,3x,11790,2d,,,8000,Legendary Crate ×2,Coin Booster 24h ×2 | XP Booster 24h ×2 | Shard Booster 24h ×2,24h Time Skip | 8h Time Skip ×2 | 3h Time Skip ×3 | 1h Time Skip ×5,54.0
-offer_pro_circuit_pack,Pro Circuit Pack,mid_tier,2,$69.99,,2x,17608,2d,,,12000,Legendary Crate ×2 | Exotic Crate ×3,Coin Booster 24h ×3 | XP Booster 24h ×3 | Shard Booster 24h ×3,24h Time Skip | 8h Time Skip ×2 | 3h Time Skip ×4 | 1h Time Skip ×6 | 15m Time Skip ×6,59.5
-offer_lvl10_milestone,Mastery 5 Milestone,milestone,4,$2.99,,5x,1544,1d,mastery_rank_5,,1100,Rare Crate,Coin Booster 12h,3h Time Skip ×2 | 1h Time Skip ×2 | 30m Time Skip ×2,9.0
-offer_lvl20_milestone,Mastery 10 Milestone,milestone,4,$12.99,,4x,4690,1d,mastery_rank_10,,3000,Exotic Crate,Coin Booster 24h | XP Booster 24h | Shard Booster 24h,24h Time Skip | 8h Time Skip ×2 | 3h Time Skip ×3 | 1h Time Skip ×5,54.0
-offer_lvl50_milestone,Mastery 20 Milestone,milestone,4,$99.99,,2x,23744,2d,mastery_rank_20,,15000,Mythical Crate | Legendary Crate ×2,Coin Booster 7d | XP Booster 7d | Shard Booster 7d,3d Time Skip | 24h Time Skip | 8h Time Skip ×3 | 3h Time Skip ×4 | 1h Time Skip ×6 | 15m Time Skip ×8,140.0
-offer_mechanics_choice,Mechanic's Choice,sweet_spot,2,$6.99,,4x,2960,2d,,,1800,Exotic Crate | Rare Crate ×2,Coin Booster 12h | XP Booster 12h,8h Time Skip | 3h Time Skip | 1h Time Skip ×3,14.0
-offer_drift_king,Drift King,sweet_spot,2,$9.99,,4x,4262,2d,,,2500,Exotic Crate ×2 | Rare Crate,Coin Booster 24h | XP Booster 24h | Shard Booster 24h,8h Time Skip | 3h Time Skip ×2 | 1h Time Skip ×3 | 15m Time Skip ×4,18.0
-offer_fast_lane_pack,Fast Lane Pack,sweet_spot,2,$12.99,,4x,5012,2d,,,3500,Exotic Crate | Rare Crate ×2,Coin Booster 24h | XP Booster 24h | Shard Booster 24h,8h Time Skip | 3h Time Skip ×2 | 1h Time Skip ×3 | 15m Time Skip ×4,18.0
-offer_weekend_warrior,Weekend Warrior,sweet_spot,2,$19.99,,3x,6652,2d,,,4000,Exotic Crate ×3,Coin Booster 24h ×2 | XP Booster 24h ×2 | Shard Booster 24h ×2,8h Time Skip ×2 | 3h Time Skip ×2 | 1h Time Skip ×4 | 15m Time Skip ×4,27.0
-offer_tuners_vault,Tuner's Vault,sweet_spot,2,$24.99,,3x,7752,2d,,,4500,Legendary Crate | Exotic Crate ×2,Coin Booster 24h ×2 | XP Booster 24h ×2 | Shard Booster 24h ×2,8h Time Skip ×2 | 3h Time Skip ×2 | 1h Time Skip ×4 | 15m Time Skip ×4,27.0
-offer_drift_king_upsell,Drift King Flash Deal,upsell,,$5.99,$9.99,7x,4262,0.25h,post_purchase_upsell,offer_stage3_choice,2500,Exotic Crate ×2 | Rare Crate,Coin Booster 24h | XP Booster 24h | Shard Booster 24h,8h Time Skip | 3h Time Skip ×2 | 1h Time Skip ×3 | 15m Time Skip ×4,18.0
-offer_the_collector,The Collector's Edition,whale,3,$79.99,,2x,19290,3d,,,12000,Mythical Crate | Exotic Crate ×2,Coin Booster 7d | XP Booster 7d | Shard Booster 7d,3d Time Skip | 24h Time Skip | 8h Time Skip ×2 | 3h Time Skip ×3 | 1h Time Skip ×5,126.0
-offer_elite_engineer,Elite Crew Package,whale,3,$89.99,,3x,23244,3d,,,16000,Legendary Crate ×4,Coin Booster 24h ×3 | XP Booster 24h ×3 | Shard Booster 24h ×3,3d Time Skip | 24h Time Skip | 8h Time Skip ×3 | 3h Time Skip ×4 | 1h Time Skip ×6 | 15m Time Skip ×8,140.0
-offer_garage_overhaul,Full Garage Upgrade,whale,3,$129.99,,2x,32150,3d,,,20000,Legendary Crate ×3 | Exotic Crate ×5,Coin Booster 7d ×2 | XP Booster 7d ×2 | Shard Booster 7d ×2,3d Time Skip | 24h Time Skip ×2 | 8h Time Skip ×3 | 3h Time Skip ×5 | 1h Time Skip ×8 | 15m Time Skip ×10,169.5
-offer_grand_prix_hoard,Grand Prix Elite,whale,3,$149.99,,2x,37350,3d,,,25000,Mythical Crate ×2 | Legendary Crate ×2,Coin Booster 7d | XP Booster 7d | Shard Booster 7d,3d Time Skip ×2 | 24h Time Skip ×2 | 8h Time Skip ×3 | 3h Time Skip ×5 | 1h Time Skip ×8 | 15m Time Skip ×10,241.5
-offer_the_sovereign,The Apex Collection,whale,3,$199.99,,4x,85900,3d,,,60000,Mythical Crate ×5 | Legendary Crate ×5,Coin Booster 7d ×2 | XP Booster 7d ×2 | Shard Booster 7d ×2,3d Time Skip ×2 | 24h Time Skip ×3 | 8h Time Skip ×4 | 3h Time Skip ×6 | 1h Time Skip ×10 | 30m Time Skip ×10,281.0
-offer_championship_kit,Championship Circuit,whale,3,$199.99,,2x,50900,3d,,,35000,Mythical Crate ×3 | Legendary Crate ×3,Coin Booster 24h ×4 | XP Booster 24h ×4 | Shard Booster 24h ×4,3d Time Skip ×2 | 24h Time Skip ×3 | 8h Time Skip ×4 | 3h Time Skip ×6 | 1h Time Skip ×10 | 30m Time Skip ×10,281.0
+offer_id,display_name,category,slot,price_usd,original_price_usd,value_multiplier,validity,trigger_condition,upsell_offer_id,item_type,item_sku_id,item_display_name,item_quantity
+offer_adrenaline_pro,Adrenaline Pro,context,4,$5.99,,4x,1h,win_streak_3,,gems,gems,Gems,1400
+,,,,,,,,,,crate,crt_7y8a6hca,Exotic Crate,2
+,,,,,,,,,,booster,sku_wkm0amtg,Coin Booster 12h,1
+,,,,,,,,,,speedUp,sku_spd3h_q2v8,3h Time Skip,2
+,,,,,,,,,,speedUp,sku_spd1h_m5t6,1h Time Skip,2
+,,,,,,,,,,speedUp,sku_spd30m_w3n9,30m Time Skip,2
+
+offer_resource_rush,Resource Rush,context,4,$24.99,,3x,4h,fuel_empty,,gems,gems,Gems,4500
+,,,,,,,,,,crate,crt_7y8a6hca,Exotic Crate,4
+,,,,,,,,,,booster,sku_tpt3379j8p,Coin Booster 24h,2
+,,,,,,,,,,booster,sku_9pnmmjpscv,XP Booster 24h,2
+,,,,,,,,,,booster,sku_shrd24h_n8t5,Shard Booster 24h,2
+,,,,,,,,,,speedUp,sku_spd8h_y7p4,8h Time Skip,2
+,,,,,,,,,,speedUp,sku_spd3h_q2v8,3h Time Skip,2
+,,,,,,,,,,speedUp,sku_spd1h_m5t6,1h Time Skip,4
+,,,,,,,,,,speedUp,sku_spd15m_j8k2,15m Time Skip,4
+
+offer_mythic_mystery,Mythic Mystery,context,4,$44.99,,3x,8h,mythical_crate_earned,,gems,gems,Gems,8500
+,,,,,,,,,,crate,crt_y8fywbrs,Mythical Crate,1
+,,,,,,,,,,booster,sku_tpt3379j8p,Coin Booster 24h,1
+,,,,,,,,,,booster,sku_9pnmmjpscv,XP Booster 24h,1
+,,,,,,,,,,booster,sku_shrd24h_n8t5,Shard Booster 24h,1
+,,,,,,,,,,speedUp,sku_spd24h_b9f1,24h Time Skip,1
+,,,,,,,,,,speedUp,sku_spd8h_y7p4,8h Time Skip,2
+,,,,,,,,,,speedUp,sku_spd3h_q2v8,3h Time Skip,3
+,,,,,,,,,,speedUp,sku_spd1h_m5t6,1h Time Skip,5
+
+offer_double_clutch,Double Clutch,event,4,$6.99,,4x,1d,weekend,,gems,gems,Gems,2000
+,,,,,,,,,,crate,crt_vzqgtd2s,Rare Crate,2
+,,,,,,,,,,booster,sku_wkm0amtg,Coin Booster 12h,1
+,,,,,,,,,,booster,sku_nhh7jtda,XP Booster 12h,1
+,,,,,,,,,,speedUp,sku_spd8h_y7p4,8h Time Skip,1
+,,,,,,,,,,speedUp,sku_spd3h_q2v8,3h Time Skip,1
+,,,,,,,,,,speedUp,sku_spd1h_m5t6,1h Time Skip,3
+
+offer_ignition_starter,Ignition Starter,micro_hook,1,$1.99,,5x,1d,,offer_drift_king_upsell,gems,gems,Gems,600
+,,,,,,,,,,crate,crt_vzqgtd2s,Rare Crate,1
+,,,,,,,,,,crate,crt_ayvncyt0,Common Crate,2
+,,,,,,,,,,booster,sku_eqzbetwm,Coin Booster 6h,1
+,,,,,,,,,,booster,sku_60fdgqkm,XP Booster 6h,1
+,,,,,,,,,,speedUp,sku_spd1h_m5t6,1h Time Skip,2
+,,,,,,,,,,speedUp,sku_spd15m_j8k2,15m Time Skip,2
+
+offer_fuel_emergency,Fuel Emergency,micro_hook,1,$1.99,,6x,1d,,offer_drift_king_upsell,gems,gems,Gems,600
+,,,,,,,,,,crate,crt_7y8a6hca,Exotic Crate,1
+,,,,,,,,,,booster,sku_eqzbetwm,Coin Booster 6h,1
+,,,,,,,,,,speedUp,sku_spd1h_m5t6,1h Time Skip,2
+,,,,,,,,,,speedUp,sku_spd15m_j8k2,15m Time Skip,2
+
+offer_nitro_surge,Nitro Surge,micro_hook,1,$1.99,,5x,1d,,offer_drift_king_upsell,gems,gems,Gems,500
+,,,,,,,,,,crate,crt_vzqgtd2s,Rare Crate,2
+,,,,,,,,,,booster,sku_shrd6h_k7w2,Shard Booster 6h,1
+,,,,,,,,,,speedUp,sku_spd1h_m5t6,1h Time Skip,2
+,,,,,,,,,,speedUp,sku_spd15m_j8k2,15m Time Skip,2
+
+offer_adrenaline_shot,Adrenaline Shot,micro_hook,1,$1.99,,5x,1d,,offer_drift_king_upsell,gems,gems,Gems,500
+,,,,,,,,,,crate,crt_vzqgtd2s,Rare Crate,1
+,,,,,,,,,,crate,crt_ayvncyt0,Common Crate,2
+,,,,,,,,,,booster,sku_nhh7jtda,XP Booster 12h,1
+,,,,,,,,,,crate,crt_vzqgtd2s,Rare Crate,1
+,,,,,,,,,,speedUp,sku_spd1h_m5t6,1h Time Skip,2
+,,,,,,,,,,speedUp,sku_spd15m_j8k2,15m Time Skip,2
+
+offer_sprint_starter,Sprint Starter,micro_hook,1,$1.99,,5x,1d,,offer_drift_king_upsell,gems,gems,Gems,500
+,,,,,,,,,,crate,crt_7y8a6hca,Exotic Crate,1
+,,,,,,,,,,booster,sku_eqzbetwm,Coin Booster 6h,1
+,,,,,,,,,,speedUp,sku_spd1h_m5t6,1h Time Skip,2
+,,,,,,,,,,speedUp,sku_spd15m_j8k2,15m Time Skip,2
+
+offer_midnight_oil,Midnight Oil,micro_hook,1,$1.99,,5x,1d,,offer_drift_king_upsell,gems,gems,Gems,600
+,,,,,,,,,,crate,crt_vzqgtd2s,Rare Crate,1
+,,,,,,,,,,booster,sku_wkm0amtg,Coin Booster 12h,1
+,,,,,,,,,,speedUp,sku_spd3h_q2v8,3h Time Skip,1
+,,,,,,,,,,speedUp,sku_spd1h_m5t6,1h Time Skip,2
+,,,,,,,,,,speedUp,sku_spd15m_j8k2,15m Time Skip,2
+
+offer_nitro_boost_plus,Nitro Boost Plus,micro_hook,1,$2.99,,5x,1d,,offer_drift_king_upsell,gems,gems,Gems,800
+,,,,,,,,,,crate,crt_7y8a6hca,Exotic Crate,1
+,,,,,,,,,,booster,sku_shrd6h_k7w2,Shard Booster 6h,1
+,,,,,,,,,,speedUp,sku_spd3h_q2v8,3h Time Skip,1
+,,,,,,,,,,speedUp,sku_spd1h_m5t6,1h Time Skip,2
+,,,,,,,,,,speedUp,sku_spd15m_j8k2,15m Time Skip,2
+
+offer_pit_stop_special,Pit Stop Special,micro_hook,1,$3.99,,5x,1d,,offer_drift_king_upsell,gems,gems,Gems,1200
+,,,,,,,,,,crate,crt_7y8a6hca,Exotic Crate,1
+,,,,,,,,,,booster,sku_wkm0amtg,Coin Booster 12h,1
+,,,,,,,,,,speedUp,sku_spd3h_q2v8,3h Time Skip,2
+,,,,,,,,,,speedUp,sku_spd1h_m5t6,1h Time Skip,2
+,,,,,,,,,,speedUp,sku_spd30m_w3n9,30m Time Skip,2
+
+offer_pro_crew_kit,Pro Crew Kit,mid_tier,2,$29.99,,3x,2d,,,gems,gems,Gems,6500
+,,,,,,,,,,crate,crt_76ar1k2x,Legendary Crate,1
+,,,,,,,,,,booster,sku_tpt3379j8p,Coin Booster 24h,2
+,,,,,,,,,,booster,sku_9pnmmjpscv,XP Booster 24h,2
+,,,,,,,,,,booster,sku_shrd24h_n8t5,Shard Booster 24h,2
+,,,,,,,,,,speedUp,sku_spd24h_b9f1,24h Time Skip,1
+,,,,,,,,,,speedUp,sku_spd8h_y7p4,8h Time Skip,1
+,,,,,,,,,,speedUp,sku_spd3h_q2v8,3h Time Skip,2
+,,,,,,,,,,speedUp,sku_spd1h_m5t6,1h Time Skip,4
+
+offer_street_legend,Street Legend,mid_tier,2,$39.99,,3x,2d,,,gems,gems,Gems,8000
+,,,,,,,,,,crate,crt_76ar1k2x,Legendary Crate,2
+,,,,,,,,,,booster,sku_tpt3379j8p,Coin Booster 24h,2
+,,,,,,,,,,booster,sku_9pnmmjpscv,XP Booster 24h,2
+,,,,,,,,,,booster,sku_shrd24h_n8t5,Shard Booster 24h,2
+,,,,,,,,,,speedUp,sku_spd24h_b9f1,24h Time Skip,1
+,,,,,,,,,,speedUp,sku_spd8h_y7p4,8h Time Skip,2
+,,,,,,,,,,speedUp,sku_spd3h_q2v8,3h Time Skip,3
+,,,,,,,,,,speedUp,sku_spd1h_m5t6,1h Time Skip,5
+
+offer_pro_circuit_pack,Pro Circuit Pack,mid_tier,2,$69.99,,2x,2d,,,gems,gems,Gems,12000
+,,,,,,,,,,crate,crt_76ar1k2x,Legendary Crate,2
+,,,,,,,,,,crate,crt_7y8a6hca,Exotic Crate,3
+,,,,,,,,,,booster,sku_tpt3379j8p,Coin Booster 24h,3
+,,,,,,,,,,booster,sku_9pnmmjpscv,XP Booster 24h,3
+,,,,,,,,,,booster,sku_shrd24h_n8t5,Shard Booster 24h,3
+,,,,,,,,,,speedUp,sku_spd24h_b9f1,24h Time Skip,1
+,,,,,,,,,,speedUp,sku_spd8h_y7p4,8h Time Skip,2
+,,,,,,,,,,speedUp,sku_spd3h_q2v8,3h Time Skip,4
+,,,,,,,,,,speedUp,sku_spd1h_m5t6,1h Time Skip,6
+,,,,,,,,,,speedUp,sku_spd15m_j8k2,15m Time Skip,6
+
+offer_lvl10_milestone,Mastery 5 Milestone,milestone,4,$2.99,,5x,1d,mastery_rank_5,,gems,gems,Gems,1100
+,,,,,,,,,,crate,crt_vzqgtd2s,Rare Crate,1
+,,,,,,,,,,booster,sku_wkm0amtg,Coin Booster 12h,1
+,,,,,,,,,,speedUp,sku_spd3h_q2v8,3h Time Skip,2
+,,,,,,,,,,speedUp,sku_spd1h_m5t6,1h Time Skip,2
+,,,,,,,,,,speedUp,sku_spd30m_w3n9,30m Time Skip,2
+
+offer_lvl20_milestone,Mastery 10 Milestone,milestone,4,$12.99,,4x,1d,mastery_rank_10,,gems,gems,Gems,3000
+,,,,,,,,,,crate,crt_7y8a6hca,Exotic Crate,1
+,,,,,,,,,,booster,sku_tpt3379j8p,Coin Booster 24h,1
+,,,,,,,,,,booster,sku_9pnmmjpscv,XP Booster 24h,1
+,,,,,,,,,,booster,sku_shrd24h_n8t5,Shard Booster 24h,1
+,,,,,,,,,,speedUp,sku_spd24h_b9f1,24h Time Skip,1
+,,,,,,,,,,speedUp,sku_spd8h_y7p4,8h Time Skip,2
+,,,,,,,,,,speedUp,sku_spd3h_q2v8,3h Time Skip,3
+,,,,,,,,,,speedUp,sku_spd1h_m5t6,1h Time Skip,5
+
+offer_lvl50_milestone,Mastery 20 Milestone,milestone,4,$99.99,,2x,2d,mastery_rank_20,,gems,gems,Gems,15000
+,,,,,,,,,,crate,crt_y8fywbrs,Mythical Crate,1
+,,,,,,,,,,crate,crt_76ar1k2x,Legendary Crate,2
+,,,,,,,,,,booster,sku_coin7d_q5r8,Coin Booster 7d,1
+,,,,,,,,,,booster,sku_exp7d_f2h6,XP Booster 7d,1
+,,,,,,,,,,booster,sku_shrd7d_w3j9,Shard Booster 7d,1
+,,,,,,,,,,speedUp,sku_spd3d_h6c3,3d Time Skip,1
+,,,,,,,,,,speedUp,sku_spd24h_b9f1,24h Time Skip,1
+,,,,,,,,,,speedUp,sku_spd8h_y7p4,8h Time Skip,3
+,,,,,,,,,,speedUp,sku_spd3h_q2v8,3h Time Skip,4
+,,,,,,,,,,speedUp,sku_spd1h_m5t6,1h Time Skip,6
+,,,,,,,,,,speedUp,sku_spd15m_j8k2,15m Time Skip,8
+
+offer_mechanics_choice,Mechanic's Choice,sweet_spot,2,$6.99,,4x,2d,,,gems,gems,Gems,1800
+,,,,,,,,,,crate,crt_7y8a6hca,Exotic Crate,1
+,,,,,,,,,,crate,crt_vzqgtd2s,Rare Crate,2
+,,,,,,,,,,booster,sku_wkm0amtg,Coin Booster 12h,1
+,,,,,,,,,,booster,sku_nhh7jtda,XP Booster 12h,1
+,,,,,,,,,,speedUp,sku_spd8h_y7p4,8h Time Skip,1
+,,,,,,,,,,speedUp,sku_spd3h_q2v8,3h Time Skip,1
+,,,,,,,,,,speedUp,sku_spd1h_m5t6,1h Time Skip,3
+
+offer_drift_king,Drift King,sweet_spot,2,$9.99,,4x,2d,,,gems,gems,Gems,2500
+,,,,,,,,,,crate,crt_7y8a6hca,Exotic Crate,2
+,,,,,,,,,,crate,crt_vzqgtd2s,Rare Crate,1
+,,,,,,,,,,booster,sku_tpt3379j8p,Coin Booster 24h,1
+,,,,,,,,,,booster,sku_9pnmmjpscv,XP Booster 24h,1
+,,,,,,,,,,booster,sku_shrd24h_n8t5,Shard Booster 24h,1
+,,,,,,,,,,speedUp,sku_spd8h_y7p4,8h Time Skip,1
+,,,,,,,,,,speedUp,sku_spd3h_q2v8,3h Time Skip,2
+,,,,,,,,,,speedUp,sku_spd1h_m5t6,1h Time Skip,3
+,,,,,,,,,,speedUp,sku_spd15m_j8k2,15m Time Skip,4
+
+offer_fast_lane_pack,Fast Lane Pack,sweet_spot,2,$12.99,,4x,2d,,,gems,gems,Gems,3500
+,,,,,,,,,,crate,crt_7y8a6hca,Exotic Crate,1
+,,,,,,,,,,crate,crt_vzqgtd2s,Rare Crate,2
+,,,,,,,,,,booster,sku_tpt3379j8p,Coin Booster 24h,1
+,,,,,,,,,,booster,sku_9pnmmjpscv,XP Booster 24h,1
+,,,,,,,,,,booster,sku_shrd24h_n8t5,Shard Booster 24h,1
+,,,,,,,,,,speedUp,sku_spd8h_y7p4,8h Time Skip,1
+,,,,,,,,,,speedUp,sku_spd3h_q2v8,3h Time Skip,2
+,,,,,,,,,,speedUp,sku_spd1h_m5t6,1h Time Skip,3
+,,,,,,,,,,speedUp,sku_spd15m_j8k2,15m Time Skip,4
+
+offer_weekend_warrior,Weekend Warrior,sweet_spot,2,$19.99,,3x,2d,,,gems,gems,Gems,4000
+,,,,,,,,,,crate,crt_7y8a6hca,Exotic Crate,3
+,,,,,,,,,,booster,sku_tpt3379j8p,Coin Booster 24h,2
+,,,,,,,,,,booster,sku_9pnmmjpscv,XP Booster 24h,2
+,,,,,,,,,,booster,sku_shrd24h_n8t5,Shard Booster 24h,2
+,,,,,,,,,,speedUp,sku_spd8h_y7p4,8h Time Skip,2
+,,,,,,,,,,speedUp,sku_spd3h_q2v8,3h Time Skip,2
+,,,,,,,,,,speedUp,sku_spd1h_m5t6,1h Time Skip,4
+,,,,,,,,,,speedUp,sku_spd15m_j8k2,15m Time Skip,4
+
+offer_tuners_vault,Tuner's Vault,sweet_spot,2,$24.99,,3x,2d,,,gems,gems,Gems,4500
+,,,,,,,,,,crate,crt_76ar1k2x,Legendary Crate,1
+,,,,,,,,,,crate,crt_7y8a6hca,Exotic Crate,2
+,,,,,,,,,,booster,sku_tpt3379j8p,Coin Booster 24h,2
+,,,,,,,,,,booster,sku_9pnmmjpscv,XP Booster 24h,2
+,,,,,,,,,,booster,sku_shrd24h_n8t5,Shard Booster 24h,2
+,,,,,,,,,,speedUp,sku_spd8h_y7p4,8h Time Skip,2
+,,,,,,,,,,speedUp,sku_spd3h_q2v8,3h Time Skip,2
+,,,,,,,,,,speedUp,sku_spd1h_m5t6,1h Time Skip,4
+,,,,,,,,,,speedUp,sku_spd15m_j8k2,15m Time Skip,4
+
+offer_drift_king_upsell,Drift King Flash Deal,upsell,,$5.99,$9.99,7x,0.25h,post_purchase_upsell,offer_stage3_choice,gems,gems,Gems,2500
+,,,,,,,,,,crate,crt_7y8a6hca,Exotic Crate,2
+,,,,,,,,,,crate,crt_vzqgtd2s,Rare Crate,1
+,,,,,,,,,,booster,sku_tpt3379j8p,Coin Booster 24h,1
+,,,,,,,,,,booster,sku_9pnmmjpscv,XP Booster 24h,1
+,,,,,,,,,,booster,sku_shrd24h_n8t5,Shard Booster 24h,1
+,,,,,,,,,,speedUp,sku_spd8h_y7p4,8h Time Skip,1
+,,,,,,,,,,speedUp,sku_spd3h_q2v8,3h Time Skip,2
+,,,,,,,,,,speedUp,sku_spd1h_m5t6,1h Time Skip,3
+,,,,,,,,,,speedUp,sku_spd15m_j8k2,15m Time Skip,4
+
+offer_the_collector,The Collector's Edition,whale,3,$79.99,,2x,3d,,,gems,gems,Gems,12000
+,,,,,,,,,,crate,crt_y8fywbrs,Mythical Crate,1
+,,,,,,,,,,crate,crt_7y8a6hca,Exotic Crate,2
+,,,,,,,,,,booster,sku_coin7d_q5r8,Coin Booster 7d,1
+,,,,,,,,,,booster,sku_exp7d_f2h6,XP Booster 7d,1
+,,,,,,,,,,booster,sku_shrd7d_w3j9,Shard Booster 7d,1
+,,,,,,,,,,speedUp,sku_spd3d_h6c3,3d Time Skip,1
+,,,,,,,,,,speedUp,sku_spd24h_b9f1,24h Time Skip,1
+,,,,,,,,,,speedUp,sku_spd8h_y7p4,8h Time Skip,2
+,,,,,,,,,,speedUp,sku_spd3h_q2v8,3h Time Skip,3
+,,,,,,,,,,speedUp,sku_spd1h_m5t6,1h Time Skip,5
+
+offer_elite_engineer,Elite Crew Package,whale,3,$89.99,,3x,3d,,,gems,gems,Gems,16000
+,,,,,,,,,,crate,crt_76ar1k2x,Legendary Crate,4
+,,,,,,,,,,booster,sku_tpt3379j8p,Coin Booster 24h,3
+,,,,,,,,,,booster,sku_9pnmmjpscv,XP Booster 24h,3
+,,,,,,,,,,booster,sku_shrd24h_n8t5,Shard Booster 24h,3
+,,,,,,,,,,speedUp,sku_spd3d_h6c3,3d Time Skip,1
+,,,,,,,,,,speedUp,sku_spd24h_b9f1,24h Time Skip,1
+,,,,,,,,,,speedUp,sku_spd8h_y7p4,8h Time Skip,3
+,,,,,,,,,,speedUp,sku_spd3h_q2v8,3h Time Skip,4
+,,,,,,,,,,speedUp,sku_spd1h_m5t6,1h Time Skip,6
+,,,,,,,,,,speedUp,sku_spd15m_j8k2,15m Time Skip,8
+
+offer_garage_overhaul,Full Garage Upgrade,whale,3,$129.99,,2x,3d,,,gems,gems,Gems,20000
+,,,,,,,,,,crate,crt_76ar1k2x,Legendary Crate,3
+,,,,,,,,,,crate,crt_7y8a6hca,Exotic Crate,5
+,,,,,,,,,,booster,sku_coin7d_q5r8,Coin Booster 7d,2
+,,,,,,,,,,booster,sku_exp7d_f2h6,XP Booster 7d,2
+,,,,,,,,,,booster,sku_shrd7d_w3j9,Shard Booster 7d,2
+,,,,,,,,,,speedUp,sku_spd3d_h6c3,3d Time Skip,1
+,,,,,,,,,,speedUp,sku_spd24h_b9f1,24h Time Skip,2
+,,,,,,,,,,speedUp,sku_spd8h_y7p4,8h Time Skip,3
+,,,,,,,,,,speedUp,sku_spd3h_q2v8,3h Time Skip,5
+,,,,,,,,,,speedUp,sku_spd1h_m5t6,1h Time Skip,8
+,,,,,,,,,,speedUp,sku_spd15m_j8k2,15m Time Skip,10
+
+offer_grand_prix_hoard,Grand Prix Elite,whale,3,$149.99,,2x,3d,,,gems,gems,Gems,25000
+,,,,,,,,,,crate,crt_y8fywbrs,Mythical Crate,2
+,,,,,,,,,,crate,crt_76ar1k2x,Legendary Crate,2
+,,,,,,,,,,booster,sku_coin7d_q5r8,Coin Booster 7d,1
+,,,,,,,,,,booster,sku_exp7d_f2h6,XP Booster 7d,1
+,,,,,,,,,,booster,sku_shrd7d_w3j9,Shard Booster 7d,1
+,,,,,,,,,,speedUp,sku_spd3d_h6c3,3d Time Skip,2
+,,,,,,,,,,speedUp,sku_spd24h_b9f1,24h Time Skip,2
+,,,,,,,,,,speedUp,sku_spd8h_y7p4,8h Time Skip,3
+,,,,,,,,,,speedUp,sku_spd3h_q2v8,3h Time Skip,5
+,,,,,,,,,,speedUp,sku_spd1h_m5t6,1h Time Skip,8
+,,,,,,,,,,speedUp,sku_spd15m_j8k2,15m Time Skip,10
+
+offer_the_sovereign,The Apex Collection,whale,3,$199.99,,4x,3d,,,gems,gems,Gems,60000
+,,,,,,,,,,crate,crt_y8fywbrs,Mythical Crate,5
+,,,,,,,,,,crate,crt_76ar1k2x,Legendary Crate,5
+,,,,,,,,,,booster,sku_coin7d_q5r8,Coin Booster 7d,2
+,,,,,,,,,,booster,sku_exp7d_f2h6,XP Booster 7d,2
+,,,,,,,,,,booster,sku_shrd7d_w3j9,Shard Booster 7d,2
+,,,,,,,,,,speedUp,sku_spd3d_h6c3,3d Time Skip,2
+,,,,,,,,,,speedUp,sku_spd24h_b9f1,24h Time Skip,3
+,,,,,,,,,,speedUp,sku_spd8h_y7p4,8h Time Skip,4
+,,,,,,,,,,speedUp,sku_spd3h_q2v8,3h Time Skip,6
+,,,,,,,,,,speedUp,sku_spd1h_m5t6,1h Time Skip,10
+,,,,,,,,,,speedUp,sku_spd30m_w3n9,30m Time Skip,10
+
+offer_championship_kit,Championship Circuit,whale,3,$199.99,,2x,3d,,,gems,gems,Gems,35000
+,,,,,,,,,,crate,crt_y8fywbrs,Mythical Crate,3
+,,,,,,,,,,crate,crt_76ar1k2x,Legendary Crate,3
+,,,,,,,,,,booster,sku_tpt3379j8p,Coin Booster 24h,4
+,,,,,,,,,,booster,sku_9pnmmjpscv,XP Booster 24h,4
+,,,,,,,,,,booster,sku_shrd24h_n8t5,Shard Booster 24h,4
+,,,,,,,,,,speedUp,sku_spd3d_h6c3,3d Time Skip,2
+,,,,,,,,,,speedUp,sku_spd24h_b9f1,24h Time Skip,3
+,,,,,,,,,,speedUp,sku_spd8h_y7p4,8h Time Skip,4
+,,,,,,,,,,speedUp,sku_spd3h_q2v8,3h Time Skip,6
+,,,,,,,,,,speedUp,sku_spd1h_m5t6,1h Time Skip,10
+,,,,,,,,,,speedUp,sku_spd30m_w3n9,30m Time Skip,10
+

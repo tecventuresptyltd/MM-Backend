@@ -1,0 +1,32 @@
+Offer ID,Display Name,Category,Slot,Price (USD),Original Price,Multiplier,True Gem Value,Validity,Trigger,Upsell To,Contents
+offer_adrenaline_pro,Adrenaline Pro,context,4,$2.49,,10x,2380,1h,win_streak_3,,1400 Gems + Exotic Crate ×2 + Coin Booster 12h + 3h Time Skip
+offer_resource_rush,Resource Rush,context,4,$8.99,,8x,7340,4h,fuel_empty,,4500 Gems + Exotic Crate ×4 + Coin Booster 24h ×2 + XP Booster 24h ×2 + Shard Booster 24h ×2 + 8h Time Skip
+offer_mythic_mystery,Mythic Mystery,context,4,$14.99,,8x,11860,8h,mythical_crate_earned,,8500 Gems + Mythical Crate + Coin Booster 24h + XP Booster 24h + Shard Booster 24h + 24h Time Skip
+offer_double_clutch,Double Clutch,event,4,$3.99,,7x,2610,1d,weekend,,2000 Gems + Rare Crate ×2 + Coin Booster 12h + XP Booster 12h + 3h Time Skip
+offer_ignition_starter,Ignition Starter,micro_hook,1,$0.99,,10x,1010,1d,,offer_drift_king_upsell,600 Gems + Rare Crate + Common Crate ×2 + Coin Booster 6h + XP Booster 6h + 1h Time Skip
+offer_fuel_emergency,Fuel Emergency,micro_hook,1,$0.99,,7x,650,1d,,offer_drift_king_upsell,400 Gems + Rare Crate + Coin Booster 6h + 1h Time Skip
+offer_nitro_surge,Nitro Surge,micro_hook,1,$0.99,,9x,888,1d,,offer_drift_king_upsell,500 Gems + Rare Crate ×2 + Shard Booster 6h + 15m Time Skip
+offer_adrenaline_shot,Adrenaline Shot,micro_hook,1,$0.99,,7x,720,1d,,offer_drift_king_upsell,350 Gems + Rare Crate + Common Crate ×2 + XP Booster 12h + 1h Time Skip
+offer_sprint_starter,Sprint Starter,micro_hook,1,$0.99,,10x,1000,1d,,offer_drift_king_upsell,500 Gems + Exotic Crate + Coin Booster 6h + 1h Time Skip
+offer_midnight_oil,Midnight Oil,micro_hook,1,$0.99,,8x,780,1d,,offer_drift_king_upsell,450 Gems + Rare Crate + Coin Booster 12h + 3h Time Skip
+offer_nitro_boost_plus,Nitro Boost Plus,micro_hook,1,$1.49,,9x,1300,1d,,offer_drift_king_upsell,800 Gems + Exotic Crate + Shard Booster 6h + 1h Time Skip
+offer_pit_stop_special,Pit Stop Special,micro_hook,1,$1.99,,9x,1780,1d,,offer_drift_king_upsell,1200 Gems + Exotic Crate + Coin Booster 12h + 3h Time Skip
+offer_pro_crew_kit,Pro Crew Kit,mid_tier,2,$12.99,,7x,8920,2d,,,6500 Gems + Legendary Crate + Coin Booster 24h ×2 + XP Booster 24h ×2 + Shard Booster 24h ×2 + 24h Time Skip
+offer_street_legend,Street Legend,mid_tier,2,$14.99,,8x,11420,2d,,,8000 Gems + Legendary Crate ×2 + Coin Booster 24h ×2 + XP Booster 24h ×2 + Shard Booster 24h ×2 + 24h Time Skip
+offer_pro_circuit_pack,Pro Circuit Pack,mid_tier,2,$19.99,,9x,17480,2d,,,12000 Gems + Legendary Crate ×2 + Exotic Crate ×3 + Coin Booster 24h ×3 + XP Booster 24h ×3 + Shard Booster 24h ×3 + 24h Time Skip ×2
+offer_lvl10_milestone,Mastery 5 Milestone,milestone,4,$1.99,,7x,1430,1d,mastery_rank_5,,1100 Gems + Rare Crate + Coin Booster 12h + 3h Time Skip
+offer_lvl20_milestone,Mastery 10 Milestone,milestone,4,$4.99,,8x,4080,1d,mastery_rank_10,,3000 Gems + Exotic Crate + Coin Booster 24h + XP Booster 24h + Shard Booster 24h + 8h Time Skip
+offer_lvl50_milestone,Mastery 20 Milestone,milestone,4,$24.99,,9x,23200,2d,mastery_rank_20,,15000 Gems + Mythical Crate + Legendary Crate ×2 + Coin Booster 7d + XP Booster 7d + Shard Booster 7d + 3d Time Skip
+offer_mechanics_choice,Mechanic's Choice,sweet_spot,2,$2.99,,9x,2810,2d,,,1800 Gems + Exotic Crate + Rare Crate ×2 + Coin Booster 12h + XP Booster 12h + 3h Time Skip
+offer_drift_king,Drift King,sweet_spot,2,$4.99,,8x,4130,2d,,,2500 Gems + Exotic Crate ×2 + Rare Crate + Coin Booster 24h + XP Booster 24h + Shard Booster 24h + 8h Time Skip
+offer_fast_lane_pack,Fast Lane Pack,sweet_spot,2,$5.99,,8x,4880,2d,,,3500 Gems + Exotic Crate + Rare Crate ×2 + Coin Booster 24h + XP Booster 24h + Shard Booster 24h + 8h Time Skip
+offer_weekend_warrior,Weekend Warrior,sweet_spot,2,$7.99,,8x,6620,2d,,,4000 Gems + Exotic Crate ×3 + Coin Booster 24h ×2 + XP Booster 24h ×2 + Shard Booster 24h ×2 + 24h Time Skip
+offer_tuners_vault,Tuner's Vault,sweet_spot,2,$9.99,,8x,7660,2d,,,4500 Gems + Legendary Crate + Exotic Crate ×2 + Coin Booster 24h ×2 + XP Booster 24h ×2 + Shard Booster 24h ×2 + 8h Time Skip ×2
+offer_drift_king_upsell,Drift King Bundle,upsell,,$2.99,$4.99,14x,4130,0.25h,post_purchase_upsell,offer_stage3_choice,2500 Gems + Exotic Crate ×2 + Rare Crate + Coin Booster 24h + XP Booster 24h + Shard Booster 24h + 8h Time Skip
+offer_the_collector,The Collector,whale,3,$21.99,,8x,18600,3d,,,12000 Gems + Mythical Crate + Exotic Crate ×2 + Coin Booster 7d + XP Booster 7d + Shard Booster 7d + 24h Time Skip
+offer_elite_engineer,Elite Engineer,whale,3,$29.99,,7x,22280,3d,,,16000 Gems + Legendary Crate ×4 + Coin Booster 24h ×3 + XP Booster 24h ×3 + Shard Booster 24h ×3 + 24h Time Skip ×2
+offer_garage_overhaul,Garage Overhaul,whale,3,$39.99,,8x,31700,3d,,,20000 Gems + Legendary Crate ×3 + Exotic Crate ×5 + Coin Booster 7d ×2 + XP Booster 7d ×2 + Shard Booster 7d ×2 + 3d Time Skip
+offer_grand_prix_hoard,Grand Prix Hoard,whale,3,$49.99,,7x,35700,3d,,,25000 Gems + Mythical Crate ×2 + Legendary Crate ×2 + Coin Booster 7d + XP Booster 7d + Shard Booster 7d + 3d Time Skip
+offer_championship_kit,Championship Kit,whale,3,$59.99,,8x,49140,3d,,,35000 Gems + Mythical Crate ×3 + Legendary Crate ×3 + Coin Booster 24h ×4 + XP Booster 24h ×4 + Shard Booster 24h ×4 + 3d Time Skip ×2
+offer_the_sovereign,The Sovereign,whale,3,$99.99,,8x,84900,3d,,,60000 Gems + Mythical Crate ×5 + Legendary Crate ×5 + Coin Booster 7d ×2 + XP Booster 7d ×2 + Shard Booster 7d ×2 + 3d Time Skip ×2
+offer_whales_cache,Whale's Cache,whale,3,$149.99,,10x,143500,3d,,,100000 Gems + Mythical Crate ×10 + Coin Booster 7d ×5 + XP Booster 7d ×5 + Shard Booster 7d ×5 + 3d Time Skip ×5

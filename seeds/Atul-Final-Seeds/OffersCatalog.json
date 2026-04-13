@@ -1165,56 +1165,6 @@
       ],
       "offerId": "offer_championship_kit"
     },
-    "offer_whales_cache": {
-      "displayName": "Titan's Vault",
-      "category": "whale",
-      "slotAssignment": 3,
-      "productId": "com.tecventures.mysticmotors.offer.whales_cache",
-      "price": 199.99,
-      "advertisedMultiplier": 7,
-      "trueGemValue": 141000,
-      "validityHours": 72,
-      "upsellOfferId": null,
-      "triggerCondition": null,
-      "entitlements": [
-        {
-          "type": "gems",
-          "id": "gems",
-          "quantity": 100000
-        },
-        {
-          "type": "crate",
-          "id": "sku_kgkjadrd79",
-          "quantity": 10,
-          "label": "Mythical Crate \u00d710"
-        },
-        {
-          "type": "booster",
-          "id": "sku_coin7d_q5r8",
-          "quantity": 5,
-          "label": "Coin Booster 7d \u00d75"
-        },
-        {
-          "type": "booster",
-          "id": "sku_exp7d_f2h6",
-          "quantity": 5,
-          "label": "XP Booster 7d \u00d75"
-        },
-        {
-          "type": "booster",
-          "id": "sku_shrd7d_w3j9",
-          "quantity": 5,
-          "label": "Shard Booster 7d \u00d75"
-        },
-        {
-          "type": "speedUp",
-          "id": "sku_spd3d_h6c3",
-          "quantity": 5,
-          "label": "3d Time Skip \u00d75"
-        }
-      ],
-      "offerId": "offer_whales_cache"
-    },
     "offer_lvl10_milestone": {
       "displayName": "Mastery 5 Milestone",
       "category": "milestone",

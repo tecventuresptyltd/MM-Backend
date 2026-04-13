@@ -32,7 +32,7 @@
       "productId": "com.tecventures.mysticmotors.offer.ignition_starter",
       "price": 1.99,
       "advertisedMultiplier": 5,
-      "trueGemValue": 1010,
+      "trueGemValue": 1046,
       "validityHours": 24,
       "upsellOfferId": "offer_drift_king_upsell",
       "triggerCondition": null,
@@ -68,9 +68,15 @@
         },
         {
           "type": "speedUp",
-          "id": "sku_spd1h_m5t6",
-          "quantity": 1,
-          "label": "1h Time Skip"
+          "id": "skip_1h",
+          "quantity": 2,
+          "label": "1h Time Skip \u00d72"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_15m",
+          "quantity": 2,
+          "label": "15m Time Skip \u00d72"
         }
       ],
       "offerId": "offer_ignition_starter"
@@ -83,7 +89,7 @@
       "price": 5.99,
       "originalPrice": 9.99,
       "advertisedMultiplier": 7,
-      "trueGemValue": 4070,
+      "trueGemValue": 4262,
       "validityMinutes": 15,
       "validityHours": 0.25,
       "upsellOfferId": "offer_stage3_choice",
@@ -126,9 +132,27 @@
         },
         {
           "type": "speedUp",
-          "id": "sku_spd8h_y7p4",
+          "id": "skip_8h",
           "quantity": 1,
           "label": "8h Time Skip"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_3h",
+          "quantity": 2,
+          "label": "3h Time Skip \u00d72"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_1h",
+          "quantity": 3,
+          "label": "1h Time Skip \u00d73"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_15m",
+          "quantity": 4,
+          "label": "15m Time Skip \u00d74"
         }
       ],
       "offerId": "offer_drift_king_upsell"
@@ -140,7 +164,7 @@
       "productId": "com.tecventures.mysticmotors.offer.fuel_emergency",
       "price": 1.99,
       "advertisedMultiplier": 6,
-      "trueGemValue": 1100,
+      "trueGemValue": 1136,
       "validityHours": 24,
       "upsellOfferId": "offer_drift_king_upsell",
       "triggerCondition": null,
@@ -164,9 +188,15 @@
         },
         {
           "type": "speedUp",
-          "id": "sku_spd1h_m5t6",
-          "quantity": 1,
-          "label": "1h Time Skip"
+          "id": "skip_1h",
+          "quantity": 2,
+          "label": "1h Time Skip \u00d72"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_15m",
+          "quantity": 2,
+          "label": "15m Time Skip \u00d72"
         }
       ],
       "offerId": "offer_fuel_emergency"
@@ -177,8 +207,8 @@
       "slotAssignment": 1,
       "productId": "com.tecventures.mysticmotors.offer.nitro_surge",
       "price": 1.99,
-      "advertisedMultiplier": 4,
-      "trueGemValue": 888,
+      "advertisedMultiplier": 5,
+      "trueGemValue": 936,
       "validityHours": 24,
       "upsellOfferId": "offer_drift_king_upsell",
       "triggerCondition": null,
@@ -202,9 +232,15 @@
         },
         {
           "type": "speedUp",
-          "id": "sku_spd15m_j8k2",
-          "quantity": 1,
-          "label": "15m Time Skip"
+          "id": "skip_1h",
+          "quantity": 2,
+          "label": "1h Time Skip \u00d72"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_15m",
+          "quantity": 2,
+          "label": "15m Time Skip \u00d72"
         }
       ],
       "offerId": "offer_nitro_surge"
@@ -216,7 +252,7 @@
       "productId": "com.tecventures.mysticmotors.offer.adrenaline_shot",
       "price": 1.99,
       "advertisedMultiplier": 5,
-      "trueGemValue": 1020,
+      "trueGemValue": 1056,
       "validityHours": 24,
       "upsellOfferId": "offer_drift_king_upsell",
       "triggerCondition": null,
@@ -245,16 +281,22 @@
           "label": "XP Booster 12h"
         },
         {
-          "type": "speedUp",
-          "id": "sku_spd1h_m5t6",
-          "quantity": 1,
-          "label": "1h Time Skip"
-        },
-        {
           "type": "crate",
           "id": "sku_72wnqwtfmx",
           "quantity": 1,
           "label": "Rare Crate"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_1h",
+          "quantity": 2,
+          "label": "1h Time Skip \u00d72"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_15m",
+          "quantity": 2,
+          "label": "15m Time Skip \u00d72"
         }
       ],
       "offerId": "offer_adrenaline_shot"
@@ -266,7 +308,7 @@
       "productId": "com.tecventures.mysticmotors.offer.sprint_starter",
       "price": 1.99,
       "advertisedMultiplier": 5,
-      "trueGemValue": 1000,
+      "trueGemValue": 1036,
       "validityHours": 24,
       "upsellOfferId": "offer_drift_king_upsell",
       "triggerCondition": null,
@@ -290,9 +332,15 @@
         },
         {
           "type": "speedUp",
-          "id": "sku_spd1h_m5t6",
-          "quantity": 1,
-          "label": "1h Time Skip"
+          "id": "skip_1h",
+          "quantity": 2,
+          "label": "1h Time Skip \u00d72"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_15m",
+          "quantity": 2,
+          "label": "15m Time Skip \u00d72"
         }
       ],
       "offerId": "offer_sprint_starter"
@@ -304,7 +352,7 @@
       "productId": "com.tecventures.mysticmotors.offer.midnight_oil",
       "price": 1.99,
       "advertisedMultiplier": 5,
-      "trueGemValue": 930,
+      "trueGemValue": 986,
       "validityHours": 24,
       "upsellOfferId": "offer_drift_king_upsell",
       "triggerCondition": null,
@@ -328,9 +376,21 @@
         },
         {
           "type": "speedUp",
-          "id": "sku_spd3h_q2v8",
+          "id": "skip_3h",
           "quantity": 1,
           "label": "3h Time Skip"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_1h",
+          "quantity": 2,
+          "label": "1h Time Skip \u00d72"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_15m",
+          "quantity": 2,
+          "label": "15m Time Skip \u00d72"
         }
       ],
       "offerId": "offer_midnight_oil"
@@ -341,8 +401,8 @@
       "slotAssignment": 1,
       "productId": "com.tecventures.mysticmotors.offer.nitro_boost_plus",
       "price": 2.99,
-      "advertisedMultiplier": 4,
-      "trueGemValue": 1300,
+      "advertisedMultiplier": 5,
+      "trueGemValue": 1386,
       "validityHours": 24,
       "upsellOfferId": "offer_drift_king_upsell",
       "triggerCondition": null,
@@ -366,9 +426,21 @@
         },
         {
           "type": "speedUp",
-          "id": "sku_spd1h_m5t6",
+          "id": "skip_3h",
           "quantity": 1,
-          "label": "1h Time Skip"
+          "label": "3h Time Skip"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_1h",
+          "quantity": 2,
+          "label": "1h Time Skip \u00d72"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_15m",
+          "quantity": 2,
+          "label": "15m Time Skip \u00d72"
         }
       ],
       "offerId": "offer_nitro_boost_plus"
@@ -379,8 +451,8 @@
       "slotAssignment": 1,
       "productId": "com.tecventures.mysticmotors.offer.pit_stop_special",
       "price": 3.99,
-      "advertisedMultiplier": 4,
-      "trueGemValue": 1780,
+      "advertisedMultiplier": 5,
+      "trueGemValue": 1894,
       "validityHours": 24,
       "upsellOfferId": "offer_drift_king_upsell",
       "triggerCondition": null,
@@ -404,9 +476,21 @@
         },
         {
           "type": "speedUp",
-          "id": "sku_spd3h_q2v8",
-          "quantity": 1,
-          "label": "3h Time Skip"
+          "id": "skip_3h",
+          "quantity": 2,
+          "label": "3h Time Skip \u00d72"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_1h",
+          "quantity": 2,
+          "label": "1h Time Skip \u00d72"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_30m",
+          "quantity": 2,
+          "label": "30m Time Skip \u00d72"
         }
       ],
       "offerId": "offer_pit_stop_special"
@@ -418,7 +502,7 @@
       "productId": "com.tecventures.mysticmotors.offer.drift_king",
       "price": 9.99,
       "advertisedMultiplier": 4,
-      "trueGemValue": 4070,
+      "trueGemValue": 4262,
       "validityHours": 48,
       "upsellOfferId": null,
       "triggerCondition": null,
@@ -460,9 +544,27 @@
         },
         {
           "type": "speedUp",
-          "id": "sku_spd8h_y7p4",
+          "id": "skip_8h",
           "quantity": 1,
           "label": "8h Time Skip"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_3h",
+          "quantity": 2,
+          "label": "3h Time Skip \u00d72"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_1h",
+          "quantity": 3,
+          "label": "1h Time Skip \u00d73"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_15m",
+          "quantity": 4,
+          "label": "15m Time Skip \u00d74"
         }
       ],
       "offerId": "offer_drift_king"
@@ -474,7 +576,7 @@
       "productId": "com.tecventures.mysticmotors.offer.mechanics_choice",
       "price": 6.99,
       "advertisedMultiplier": 4,
-      "trueGemValue": 2780,
+      "trueGemValue": 2960,
       "validityHours": 48,
       "upsellOfferId": null,
       "triggerCondition": null,
@@ -510,9 +612,21 @@
         },
         {
           "type": "speedUp",
-          "id": "sku_spd3h_q2v8",
+          "id": "skip_8h",
+          "quantity": 1,
+          "label": "8h Time Skip"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_3h",
           "quantity": 1,
           "label": "3h Time Skip"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_1h",
+          "quantity": 3,
+          "label": "1h Time Skip \u00d73"
         }
       ],
       "offerId": "offer_mechanics_choice"
@@ -524,7 +638,7 @@
       "productId": "com.tecventures.mysticmotors.offer.tuners_vault",
       "price": 24.99,
       "advertisedMultiplier": 3,
-      "trueGemValue": 7540,
+      "trueGemValue": 7752,
       "validityHours": 48,
       "upsellOfferId": null,
       "triggerCondition": null,
@@ -566,9 +680,27 @@
         },
         {
           "type": "speedUp",
-          "id": "sku_spd8h_y7p4",
+          "id": "skip_8h",
           "quantity": 2,
           "label": "8h Time Skip \u00d72"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_3h",
+          "quantity": 2,
+          "label": "3h Time Skip \u00d72"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_1h",
+          "quantity": 4,
+          "label": "1h Time Skip \u00d74"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_15m",
+          "quantity": 4,
+          "label": "15m Time Skip \u00d74"
         }
       ],
       "offerId": "offer_tuners_vault"
@@ -580,7 +712,7 @@
       "productId": "com.tecventures.mysticmotors.offer.street_legend",
       "price": 39.99,
       "advertisedMultiplier": 3,
-      "trueGemValue": 11300,
+      "trueGemValue": 11790,
       "validityHours": 48,
       "upsellOfferId": null,
       "triggerCondition": null,
@@ -616,9 +748,27 @@
         },
         {
           "type": "speedUp",
-          "id": "sku_spd24h_b9f1",
+          "id": "skip_24h",
           "quantity": 1,
           "label": "24h Time Skip"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_8h",
+          "quantity": 2,
+          "label": "8h Time Skip \u00d72"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_3h",
+          "quantity": 3,
+          "label": "3h Time Skip \u00d73"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_1h",
+          "quantity": 5,
+          "label": "1h Time Skip \u00d75"
         }
       ],
       "offerId": "offer_street_legend"
@@ -630,7 +780,7 @@
       "productId": "com.tecventures.mysticmotors.offer.pro_circuit",
       "price": 69.99,
       "advertisedMultiplier": 2,
-      "trueGemValue": 17300,
+      "trueGemValue": 17608,
       "validityHours": 48,
       "upsellOfferId": null,
       "triggerCondition": null,
@@ -672,9 +822,33 @@
         },
         {
           "type": "speedUp",
-          "id": "sku_spd24h_b9f1",
+          "id": "skip_24h",
+          "quantity": 1,
+          "label": "24h Time Skip"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_8h",
           "quantity": 2,
-          "label": "24h Time Skip \u00d72"
+          "label": "8h Time Skip \u00d72"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_3h",
+          "quantity": 4,
+          "label": "3h Time Skip \u00d74"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_1h",
+          "quantity": 6,
+          "label": "1h Time Skip \u00d76"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_15m",
+          "quantity": 6,
+          "label": "15m Time Skip \u00d76"
         }
       ],
       "offerId": "offer_pro_circuit_pack"
@@ -686,7 +860,7 @@
       "productId": "com.tecventures.mysticmotors.offer.weekend_warrior",
       "price": 19.99,
       "advertisedMultiplier": 3,
-      "trueGemValue": 6500,
+      "trueGemValue": 6652,
       "validityHours": 48,
       "upsellOfferId": null,
       "triggerCondition": null,
@@ -722,9 +896,27 @@
         },
         {
           "type": "speedUp",
-          "id": "sku_spd24h_b9f1",
-          "quantity": 1,
-          "label": "24h Time Skip"
+          "id": "skip_8h",
+          "quantity": 2,
+          "label": "8h Time Skip \u00d72"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_3h",
+          "quantity": 2,
+          "label": "3h Time Skip \u00d72"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_1h",
+          "quantity": 4,
+          "label": "1h Time Skip \u00d74"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_15m",
+          "quantity": 4,
+          "label": "15m Time Skip \u00d74"
         }
       ],
       "offerId": "offer_weekend_warrior"
@@ -736,7 +928,7 @@
       "productId": "com.tecventures.mysticmotors.offer.fast_lane",
       "price": 12.99,
       "advertisedMultiplier": 4,
-      "trueGemValue": 4820,
+      "trueGemValue": 5012,
       "validityHours": 48,
       "upsellOfferId": null,
       "triggerCondition": null,
@@ -778,9 +970,27 @@
         },
         {
           "type": "speedUp",
-          "id": "sku_spd8h_y7p4",
+          "id": "skip_8h",
           "quantity": 1,
           "label": "8h Time Skip"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_3h",
+          "quantity": 2,
+          "label": "3h Time Skip \u00d72"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_1h",
+          "quantity": 3,
+          "label": "1h Time Skip \u00d73"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_15m",
+          "quantity": 4,
+          "label": "15m Time Skip \u00d74"
         }
       ],
       "offerId": "offer_fast_lane_pack"
@@ -792,7 +1002,7 @@
       "productId": "com.tecventures.mysticmotors.offer.pro_crew_kit",
       "price": 29.99,
       "advertisedMultiplier": 3,
-      "trueGemValue": 8800,
+      "trueGemValue": 9100,
       "validityHours": 48,
       "upsellOfferId": null,
       "triggerCondition": null,
@@ -828,9 +1038,27 @@
         },
         {
           "type": "speedUp",
-          "id": "sku_spd24h_b9f1",
+          "id": "skip_24h",
           "quantity": 1,
           "label": "24h Time Skip"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_8h",
+          "quantity": 1,
+          "label": "8h Time Skip"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_3h",
+          "quantity": 2,
+          "label": "3h Time Skip \u00d72"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_1h",
+          "quantity": 4,
+          "label": "1h Time Skip \u00d74"
         }
       ],
       "offerId": "offer_pro_crew_kit"
@@ -842,7 +1070,7 @@
       "productId": "com.tecventures.mysticmotors.offer.grand_prix",
       "price": 149.99,
       "advertisedMultiplier": 2,
-      "trueGemValue": 35200,
+      "trueGemValue": 37350,
       "validityHours": 72,
       "upsellOfferId": null,
       "triggerCondition": null,
@@ -884,9 +1112,39 @@
         },
         {
           "type": "speedUp",
-          "id": "sku_spd3d_h6c3",
-          "quantity": 1,
-          "label": "3d Time Skip"
+          "id": "skip_3d",
+          "quantity": 2,
+          "label": "3d Time Skip \u00d72"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_24h",
+          "quantity": 2,
+          "label": "24h Time Skip \u00d72"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_8h",
+          "quantity": 3,
+          "label": "8h Time Skip \u00d73"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_3h",
+          "quantity": 5,
+          "label": "3h Time Skip \u00d75"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_1h",
+          "quantity": 8,
+          "label": "1h Time Skip \u00d78"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_15m",
+          "quantity": 10,
+          "label": "15m Time Skip \u00d710"
         }
       ],
       "offerId": "offer_grand_prix_hoard"
@@ -898,7 +1156,7 @@
       "productId": "com.tecventures.mysticmotors.offer.the_sovereign",
       "price": 199.99,
       "advertisedMultiplier": 4,
-      "trueGemValue": 83900,
+      "trueGemValue": 85900,
       "validityHours": 72,
       "upsellOfferId": null,
       "triggerCondition": null,
@@ -940,9 +1198,39 @@
         },
         {
           "type": "speedUp",
-          "id": "sku_spd3d_h6c3",
+          "id": "skip_3d",
           "quantity": 2,
           "label": "3d Time Skip \u00d72"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_24h",
+          "quantity": 3,
+          "label": "24h Time Skip \u00d73"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_8h",
+          "quantity": 4,
+          "label": "8h Time Skip \u00d74"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_3h",
+          "quantity": 6,
+          "label": "3h Time Skip \u00d76"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_1h",
+          "quantity": 10,
+          "label": "1h Time Skip \u00d710"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_30m",
+          "quantity": 10,
+          "label": "30m Time Skip \u00d710"
         }
       ],
       "offerId": "offer_the_sovereign"
@@ -953,8 +1241,8 @@
       "slotAssignment": 3,
       "productId": "com.tecventures.mysticmotors.offer.elite_engineer",
       "price": 89.99,
-      "advertisedMultiplier": 2,
-      "trueGemValue": 22100,
+      "advertisedMultiplier": 3,
+      "trueGemValue": 23244,
       "validityHours": 72,
       "upsellOfferId": null,
       "triggerCondition": null,
@@ -990,9 +1278,39 @@
         },
         {
           "type": "speedUp",
-          "id": "sku_spd24h_b9f1",
-          "quantity": 2,
-          "label": "24h Time Skip \u00d72"
+          "id": "skip_3d",
+          "quantity": 1,
+          "label": "3d Time Skip"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_24h",
+          "quantity": 1,
+          "label": "24h Time Skip"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_8h",
+          "quantity": 3,
+          "label": "8h Time Skip \u00d73"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_3h",
+          "quantity": 4,
+          "label": "3h Time Skip \u00d74"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_1h",
+          "quantity": 6,
+          "label": "1h Time Skip \u00d76"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_15m",
+          "quantity": 8,
+          "label": "15m Time Skip \u00d78"
         }
       ],
       "offerId": "offer_elite_engineer"
@@ -1002,9 +1320,9 @@
       "category": "whale",
       "slotAssignment": 3,
       "productId": "com.tecventures.mysticmotors.offer.the_collector",
-      "price": 69.99,
-      "advertisedMultiplier": 3,
-      "trueGemValue": 18100,
+      "price": 79.99,
+      "advertisedMultiplier": 2,
+      "trueGemValue": 19290,
       "validityHours": 72,
       "upsellOfferId": null,
       "triggerCondition": null,
@@ -1046,9 +1364,33 @@
         },
         {
           "type": "speedUp",
-          "id": "sku_spd24h_b9f1",
+          "id": "skip_3d",
+          "quantity": 1,
+          "label": "3d Time Skip"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_24h",
           "quantity": 1,
           "label": "24h Time Skip"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_8h",
+          "quantity": 2,
+          "label": "8h Time Skip \u00d72"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_3h",
+          "quantity": 3,
+          "label": "3h Time Skip \u00d73"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_1h",
+          "quantity": 5,
+          "label": "1h Time Skip \u00d75"
         }
       ],
       "offerId": "offer_the_collector"
@@ -1060,7 +1402,7 @@
       "productId": "com.tecventures.mysticmotors.offer.garage_overhaul",
       "price": 129.99,
       "advertisedMultiplier": 2,
-      "trueGemValue": 30700,
+      "trueGemValue": 32150,
       "validityHours": 72,
       "upsellOfferId": null,
       "triggerCondition": null,
@@ -1102,9 +1444,39 @@
         },
         {
           "type": "speedUp",
-          "id": "sku_spd3d_h6c3",
+          "id": "skip_3d",
           "quantity": 1,
           "label": "3d Time Skip"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_24h",
+          "quantity": 2,
+          "label": "24h Time Skip \u00d72"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_8h",
+          "quantity": 3,
+          "label": "8h Time Skip \u00d73"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_3h",
+          "quantity": 5,
+          "label": "3h Time Skip \u00d75"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_1h",
+          "quantity": 8,
+          "label": "1h Time Skip \u00d78"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_15m",
+          "quantity": 10,
+          "label": "15m Time Skip \u00d710"
         }
       ],
       "offerId": "offer_garage_overhaul"
@@ -1116,7 +1488,7 @@
       "productId": "com.tecventures.mysticmotors.offer.championship_kit",
       "price": 199.99,
       "advertisedMultiplier": 2,
-      "trueGemValue": 48900,
+      "trueGemValue": 50900,
       "validityHours": 72,
       "upsellOfferId": null,
       "triggerCondition": null,
@@ -1158,9 +1530,39 @@
         },
         {
           "type": "speedUp",
-          "id": "sku_spd3d_h6c3",
+          "id": "skip_3d",
           "quantity": 2,
           "label": "3d Time Skip \u00d72"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_24h",
+          "quantity": 3,
+          "label": "24h Time Skip \u00d73"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_8h",
+          "quantity": 4,
+          "label": "8h Time Skip \u00d74"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_3h",
+          "quantity": 6,
+          "label": "3h Time Skip \u00d76"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_1h",
+          "quantity": 10,
+          "label": "1h Time Skip \u00d710"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_30m",
+          "quantity": 10,
+          "label": "30m Time Skip \u00d710"
         }
       ],
       "offerId": "offer_championship_kit"
@@ -1172,7 +1574,7 @@
       "productId": "com.tecventures.mysticmotors.offer.lvl10_milestone",
       "price": 2.99,
       "advertisedMultiplier": 5,
-      "trueGemValue": 1430,
+      "trueGemValue": 1544,
       "validityHours": 24,
       "upsellOfferId": null,
       "triggerCondition": "mastery_rank_5",
@@ -1196,9 +1598,21 @@
         },
         {
           "type": "speedUp",
-          "id": "sku_spd3h_q2v8",
-          "quantity": 1,
-          "label": "3h Time Skip"
+          "id": "skip_3h",
+          "quantity": 2,
+          "label": "3h Time Skip \u00d72"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_1h",
+          "quantity": 2,
+          "label": "1h Time Skip \u00d72"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_30m",
+          "quantity": 2,
+          "label": "30m Time Skip \u00d72"
         }
       ],
       "offerId": "offer_lvl10_milestone"
@@ -1208,9 +1622,9 @@
       "category": "milestone",
       "slotAssignment": 4,
       "productId": "com.tecventures.mysticmotors.offer.lvl20_milestone",
-      "price": 9.99,
+      "price": 12.99,
       "advertisedMultiplier": 4,
-      "trueGemValue": 4020,
+      "trueGemValue": 4690,
       "validityHours": 24,
       "upsellOfferId": null,
       "triggerCondition": "mastery_rank_10",
@@ -1246,9 +1660,27 @@
         },
         {
           "type": "speedUp",
-          "id": "sku_spd8h_y7p4",
+          "id": "skip_24h",
           "quantity": 1,
-          "label": "8h Time Skip"
+          "label": "24h Time Skip"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_8h",
+          "quantity": 2,
+          "label": "8h Time Skip \u00d72"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_3h",
+          "quantity": 3,
+          "label": "3h Time Skip \u00d73"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_1h",
+          "quantity": 5,
+          "label": "1h Time Skip \u00d75"
         }
       ],
       "offerId": "offer_lvl20_milestone"
@@ -1258,9 +1690,9 @@
       "category": "milestone",
       "slotAssignment": 4,
       "productId": "com.tecventures.mysticmotors.offer.lvl50_milestone",
-      "price": 89.99,
+      "price": 99.99,
       "advertisedMultiplier": 2,
-      "trueGemValue": 22700,
+      "trueGemValue": 23744,
       "validityHours": 48,
       "upsellOfferId": null,
       "triggerCondition": "mastery_rank_20",
@@ -1302,9 +1734,39 @@
         },
         {
           "type": "speedUp",
-          "id": "sku_spd3d_h6c3",
+          "id": "skip_3d",
           "quantity": 1,
           "label": "3d Time Skip"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_24h",
+          "quantity": 1,
+          "label": "24h Time Skip"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_8h",
+          "quantity": 3,
+          "label": "8h Time Skip \u00d73"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_3h",
+          "quantity": 4,
+          "label": "3h Time Skip \u00d74"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_1h",
+          "quantity": 6,
+          "label": "1h Time Skip \u00d76"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_15m",
+          "quantity": 8,
+          "label": "15m Time Skip \u00d78"
         }
       ],
       "offerId": "offer_lvl50_milestone"
@@ -1316,7 +1778,7 @@
       "productId": "com.tecventures.mysticmotors.offer.resource_rush",
       "price": 24.99,
       "advertisedMultiplier": 3,
-      "trueGemValue": 7220,
+      "trueGemValue": 7552,
       "validityHours": 4,
       "upsellOfferId": null,
       "triggerCondition": "fuel_empty",
@@ -1352,9 +1814,27 @@
         },
         {
           "type": "speedUp",
-          "id": "sku_spd8h_y7p4",
-          "quantity": 1,
-          "label": "8h Time Skip"
+          "id": "skip_8h",
+          "quantity": 2,
+          "label": "8h Time Skip \u00d72"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_3h",
+          "quantity": 2,
+          "label": "3h Time Skip \u00d72"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_1h",
+          "quantity": 4,
+          "label": "1h Time Skip \u00d74"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_15m",
+          "quantity": 4,
+          "label": "15m Time Skip \u00d74"
         }
       ],
       "offerId": "offer_resource_rush"
@@ -1364,9 +1844,9 @@
       "category": "context",
       "slotAssignment": 4,
       "productId": "com.tecventures.mysticmotors.offer.adrenaline_pro",
-      "price": 4.99,
-      "advertisedMultiplier": 5,
-      "trueGemValue": 2380,
+      "price": 5.99,
+      "advertisedMultiplier": 4,
+      "trueGemValue": 2494,
       "validityHours": 1,
       "upsellOfferId": null,
       "triggerCondition": "win_streak_3",
@@ -1390,9 +1870,21 @@
         },
         {
           "type": "speedUp",
-          "id": "sku_spd3h_q2v8",
-          "quantity": 1,
-          "label": "3h Time Skip"
+          "id": "skip_3h",
+          "quantity": 2,
+          "label": "3h Time Skip \u00d72"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_1h",
+          "quantity": 2,
+          "label": "1h Time Skip \u00d72"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_30m",
+          "quantity": 2,
+          "label": "30m Time Skip \u00d72"
         }
       ],
       "offerId": "offer_adrenaline_pro"
@@ -1402,9 +1894,9 @@
       "category": "context",
       "slotAssignment": 4,
       "productId": "com.tecventures.mysticmotors.offer.mythic_mystery",
-      "price": 39.99,
+      "price": 44.99,
       "advertisedMultiplier": 3,
-      "trueGemValue": 11800,
+      "trueGemValue": 12290,
       "validityHours": 8,
       "upsellOfferId": null,
       "triggerCondition": "mythical_crate_earned",
@@ -1440,9 +1932,27 @@
         },
         {
           "type": "speedUp",
-          "id": "sku_spd24h_b9f1",
+          "id": "skip_24h",
           "quantity": 1,
           "label": "24h Time Skip"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_8h",
+          "quantity": 2,
+          "label": "8h Time Skip \u00d72"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_3h",
+          "quantity": 3,
+          "label": "3h Time Skip \u00d73"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_1h",
+          "quantity": 5,
+          "label": "1h Time Skip \u00d75"
         }
       ],
       "offerId": "offer_mythic_mystery"
@@ -1452,9 +1962,9 @@
       "category": "event",
       "slotAssignment": 4,
       "productId": "com.tecventures.mysticmotors.offer.double_clutch",
-      "price": 5.99,
+      "price": 6.99,
       "advertisedMultiplier": 4,
-      "trueGemValue": 2580,
+      "trueGemValue": 2760,
       "validityHours": 24,
       "upsellOfferId": null,
       "triggerCondition": "weekend",
@@ -1484,9 +1994,21 @@
         },
         {
           "type": "speedUp",
-          "id": "sku_spd3h_q2v8",
+          "id": "skip_8h",
+          "quantity": 1,
+          "label": "8h Time Skip"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_3h",
           "quantity": 1,
           "label": "3h Time Skip"
+        },
+        {
+          "type": "speedUp",
+          "id": "skip_1h",
+          "quantity": 3,
+          "label": "1h Time Skip \u00d73"
         }
       ],
       "offerId": "offer_double_clutch"

@@ -6,104 +6,48 @@ import { db } from "../shared/firestore.js";
 import { MainOffer } from "../shared/types.js";
 import { callableOptions } from "../shared/callableOptions.js";
 import {
-    OFFER_VALIDITY_MS,
     normaliseActiveOffers,
     normaliseOfferFlowState,
     writeActiveOffersV2,
     writeOfferFlowState,
     pruneExpiredSpecialOffers,
 } from "./offerState.js";
-import { loadOfferLadderIndex, OfferLadderIndex } from "./offerCatalog.js";
-import { scheduleOfferTransition } from "./offerScheduler.js";
+import { loadOfferSlotIndex, OfferSlotIndex } from "./offerCatalog.js";
+import { createSlotOffer, scheduleOfferTransition } from "./offerScheduler.js";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Offer Selection
-// ─────────────────────────────────────────────────────────────────────────────
-
-const selectRandomDailyOffer = (index: OfferLadderIndex): { offerId: string; offerType: number } => {
-    const ids = index.dailyBaseOfferIds;
-    if (ids.length === 0) {
-        throw new Error("No daily offers configured in catalog.");
-    }
-    const randomIndex = Math.floor(Math.random() * ids.length);
-    const offerId = ids[randomIndex];
-    return { offerId, offerType: randomIndex + 1 };
-};
-
-const createDailyOffer = (index: OfferLadderIndex, now: number): MainOffer => {
-    const { offerId, offerType } = selectRandomDailyOffer(index);
-    return {
-        offerId,
-        offerType,
-        expiresAt: now + OFFER_VALIDITY_MS,
-        tier: 0,
-        state: "active",
-        isStarter: false,
-    };
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Safety Net Logic
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Check if a player needs offer restoration.
- * Players need restoration if:
- * 1. They have no main offer at all
- * 2. They're not in a valid state (active/cooldown/purchase_delay)
- */
-const needsOfferRestoration = (activeOffers: any, flowState: any, now: number): boolean => {
-    // No main offer at all
-    if (!activeOffers.main) {
+const needsOfferRestoration = (activeOffers: any, now: number): boolean => {
+    if (!activeOffers.rotating || !Array.isArray(activeOffers.rotating) || activeOffers.rotating.length === 0) {
         return true;
     }
 
-    const main = activeOffers.main;
-
-    // Invalid state
-    if (!["active", "cooldown", "purchase_delay"].includes(main.state)) {
-        logger.warn(`Invalid offer state: ${main.state}`);
-        return true;
-    }
-
-    // Expired active offer (missed expiry transition - this is the fix for stale offers)
-    if (main.state === "active" && main.expiresAt <= now) {
-        logger.warn(`Active offer expired at ${main.expiresAt}, now is ${now}`);
-        return true;
-    }
-
-    // Stuck in cooldown/delay for too long (>48 hours)
-    if (main.state !== "active" && main.nextOfferAt) {
-        const timeSinceTransition = now - main.nextOfferAt;
-        if (timeSinceTransition > 48 * 60 * 60 * 1000) {
-            logger.warn(`Offer stuck in ${main.state} for >48h`);
-            return true;
+    let needsRepair = false;
+    for (const main of activeOffers.rotating) {
+        if (!["active", "cooldown", "purchase_delay"].includes(main.state)) {
+            needsRepair = true;
+        }
+        if (main.state === "active" && main.expiresAt <= now) {
+            needsRepair = true;
+        }
+        if (main.state !== "active" && main.nextOfferAt) {
+            const timeSinceTransition = now - main.nextOfferAt;
+            if (timeSinceTransition > 48 * 60 * 60 * 1000) {
+                needsRepair = true;
+            }
         }
     }
-
-    return false;
+    return needsRepair;
 };
 
-/**
- * Remove undefined values from a main offer to prevent Firestore errors.
- */
-const sanitizeMainOffer = (offer: MainOffer | undefined): MainOffer | null => {
-    if (!offer) return null;
-    // JSON round-trip strips undefined values
-    return JSON.parse(JSON.stringify(offer));
+const sanitizeMainOfferArray = (offers: MainOffer[]): MainOffer[] => {
+    return JSON.parse(JSON.stringify(offers));
 };
 
-/**
- * Check and fix offers for a single player.
- * Returns true if any changes were made.
- */
 const restorePlayerOffers = async (
     uid: string,
-    ladderIndex: OfferLadderIndex,
+    slotIndex: OfferSlotIndex,
     now: number,
 ): Promise<boolean> => {
     try {
-        // Transaction returns info about what was restored
         const result = await db.runTransaction(async (transaction) => {
             const activeRef = db.doc(`Players/${uid}/Offers/Active`);
             const stateRef = db.doc(`Players/${uid}/Offers/State`);
@@ -116,98 +60,63 @@ const restorePlayerOffers = async (
             const activeOffers = normaliseActiveOffers(activeSnap.data());
             const flowState = normaliseOfferFlowState(stateSnap.data());
 
-            // Always prune expired special offers first
             const prunedSpecial = pruneExpiredSpecialOffers(activeOffers.special || [], now);
             const specialNeedsPruning = prunedSpecial.length !== (activeOffers.special || []).length;
 
-            // Check if main offer needs restoration
-            const mainNeedsRestoration = needsOfferRestoration(activeOffers, flowState, now);
+            const mainNeedsRestoration = needsOfferRestoration(activeOffers, now);
 
-            // Skip if nothing needs fixing
             if (!mainNeedsRestoration && !specialNeedsPruning) {
-                return null; // Nothing to do
+                return null;
             }
 
-            logger.info(`[offerSafetyNet] Fixing offers for player ${uid} (main: ${mainNeedsRestoration}, special: ${specialNeedsPruning})`);
-
-            // Determine what main offer to use
-            let mainOffer = activeOffers.main;
-            let restoredOffer: MainOffer | null = null;
-
+            let rotating = activeOffers.rotating || [];
+            
             if (mainNeedsRestoration) {
-                // Create fresh daily offer at current tier
-                restoredOffer = createDailyOffer(ladderIndex, now);
-                restoredOffer.tier = flowState.tier;
-                mainOffer = restoredOffer;
+                rotating = [
+                    createSlotOffer("micro_hook", slotIndex, now),
+                    createSlotOffer("sweet_spot", slotIndex, now),
+                    createSlotOffer("whale", slotIndex, now),
+                ];
             }
 
             writeActiveOffersV2(transaction, uid, {
-                main: sanitizeMainOffer(mainOffer),
+                rotating: sanitizeMainOfferArray(rotating),
                 special: prunedSpecial,
             }, now);
 
-            // Always ensure starterShown is true if we restored main
             if (mainNeedsRestoration) {
-                writeOfferFlowState(transaction, uid, {
-                    starterShown: true,
-                    tier: flowState.tier,
-                }, now);
+                writeOfferFlowState(transaction, uid, { starterShown: true }, now);
             }
 
-            // Return info for scheduling (can't schedule inside transaction)
-            return restoredOffer ? { expiresAt: restoredOffer.expiresAt, tier: restoredOffer.tier } : { fixed: true };
+            return mainNeedsRestoration ? { rotating } : { fixed: true };
         });
 
-        if (!result) {
-            return false; // Nothing was fixed
-        }
+        if (!result) return false;
 
-        // Schedule expiry transition for the restored offer (OUTSIDE transaction)
-        if ("expiresAt" in result && result.expiresAt) {
-            try {
-                await scheduleOfferTransition(
-                    uid,
-                    result.expiresAt,
-                    "offer_expired",
-                    result.tier ?? 0,
-                );
-            } catch (scheduleError) {
-                logger.warn(`[offerSafetyNet] Failed to schedule expiry for ${uid}:`, scheduleError);
+        if ("rotating" in result && result.rotating) {
+            for (const offer of result.rotating) {
+                if (offer.category) {
+                    await scheduleOfferTransition(uid, offer.category, offer.expiresAt, "offer_expired").catch(e => logger.warn(e));
+                }
             }
         }
 
         return true;
     } catch (error) {
-        logger.error(`[offerSafetyNet] Failed to fix offers for ${uid}:`, error);
+        logger.error(`Failed to fix offers for ${uid}:`, error);
         return false;
     }
 };
 
-/**
- * Scan all players and restore offers for those who need it.
- * Runs daily as a safety net.
- */
-export const runOfferSafetyCheck = async (): Promise<{
-    scanned: number;
-    restored: number;
-    errors: number;
-}> => {
+export const runOfferSafetyCheck = async (): Promise<{ scanned: number; restored: number; errors: number; }> => {
     const stats = { scanned: 0, restored: 0, errors: 0 };
     const now = Date.now();
 
     try {
-        const ladderIndex = await loadOfferLadderIndex();
+        const slotIndex = await loadOfferSlotIndex();
 
-        // Query all player root documents to get UIDs
-        // We query the Players collection directly
-        const playersSnap = await db
-            .collection("Players")
-            .select() // Only get document references, not full data
-            .get();
+        const playersSnap = await db.collection("Players").select().get();
 
-        logger.info(`[offerSafetyNet] Found ${playersSnap.size} players to check`);
-
-        // Process in batches
         const BATCH_SIZE = 20;
         const playerDocs = playersSnap.docs;
 
@@ -217,103 +126,43 @@ export const runOfferSafetyCheck = async (): Promise<{
             const results = await Promise.allSettled(
                 batch.map(async (doc: FirebaseFirestore.DocumentSnapshot) => {
                     const uid = doc.id;
-                    if (!uid) {
-                        logger.warn(`[offerSafetyNet] Could not extract UID from ${doc.ref.path}`);
-                        return { restored: false, error: false };
-                    }
+                    if (!uid) return { restored: false, error: false };
 
                     stats.scanned++;
-
-                    const restored = await restorePlayerOffers(uid, ladderIndex, now);
+                    const restored = await restorePlayerOffers(uid, slotIndex, now);
                     return { restored, error: false };
                 })
             );
 
             results.forEach((result) => {
                 if (result.status === "fulfilled") {
-                    if (result.value.restored) {
-                        stats.restored++;
-                    }
-                    if (result.value.error) {
-                        stats.errors++;
-                    }
+                    if (result.value.restored) stats.restored++;
+                    if (result.value.error) stats.errors++;
                 } else {
                     stats.errors++;
                 }
             });
-
-            // Progress logging every 100 players
-            if (stats.scanned % 100 === 0) {
-                logger.info(`[offerSafetyNet] Progress: ${stats.scanned} scanned, ${stats.restored} restored`);
-            }
         }
-
         return stats;
     } catch (error) {
-        logger.error("[offerSafetyNet] Fatal error during safety check:", error);
         throw error;
     }
 };
 
-/**
- * Scheduled function that runs daily to catch any players who fell out of the offer cycle.
- * This is a safety net - under normal circumstances, players should never need restoration.
- */
 export const offerSafetyNetJob = onSchedule(
-    {
-        region: REGION,
-        schedule: "every day 02:00", // Runs at 2 AM UTC daily (low-traffic time)
-        timeZone: "Etc/UTC",
-        timeoutSeconds: 540, // 9 minutes
-        memory: "512MiB",
-    },
+    { region: REGION, schedule: "every day 02:00", timeZone: "Etc/UTC", timeoutSeconds: 540, memory: "512MiB" },
     async () => {
-        logger.info("[offerSafetyNet] Starting daily offer safety check");
-
         const stats = await runOfferSafetyCheck();
-
-        logger.info("[offerSafetyNet] Daily safety check completed", stats);
-
-        // Alert if many restorations (indicates a problem)
-        if (stats.restored > 10) {
-            logger.warn(
-                `[offerSafetyNet] High restoration count: ${stats.restored} players needed restoration. ` +
-                "This may indicate a bug in the offer flow system."
-            );
-        }
+        if (stats.restored > 10) logger.warn(`High restoration count: ${stats.restored}`);
     }
 );
 
-/**
- * Manual callable function to trigger the safety check on-demand.
- * Useful for:
- * - Running immediately after deployment
- * - Testing the safety net
- * - Emergency restorations
- * 
- * IMPORTANT: Only callable by authenticated users (add admin check if needed)
- */
 export const runOfferSafetyNet = onCall(
-    callableOptions({
-        timeoutSeconds: 540,
-        memory: "512MiB",
-    }),
+    callableOptions({ timeoutSeconds: 540, memory: "512MiB" }),
     async (request) => {
         const uid = request.auth?.uid;
-        if (!uid) {
-            throw new HttpsError("unauthenticated", "Must be authenticated to run safety check");
-        }
-
-        logger.info(`[offerSafetyNet] Manual safety check triggered by ${uid}`);
-
+        if (!uid) throw new HttpsError("unauthenticated", "Must be authenticated");
         const stats = await runOfferSafetyCheck();
-
-        logger.info("[offerSafetyNet] Manual safety check completed", stats);
-
-        return {
-            success: true,
-            ...stats,
-            message: `Scanned ${stats.scanned} players, restored ${stats.restored} offers`,
-        };
+        return { success: true, ...stats, message: `Scanned ${stats.scanned} players, restored ${stats.restored} offers` };
     }
 );

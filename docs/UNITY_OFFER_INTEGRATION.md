@@ -25,15 +25,21 @@ Players/{uid}/Offers/Active
 
 ```json
 {
-  "main": {
-    "offerId": "offer_3jaky2p2",
-    "offerType": 0,
-    "expiresAt": 1735600000000,
-    "tier": 0,
-    "state": "active",
-    "nextOfferAt": 1735643200000,
-    "isStarter": true
-  },
+  "rotating": [
+    {
+      "slotId": "micro_hook",
+      "offerId": "offer_3jaky2p2",
+      "expiresAt": 1735600000000,
+      "state": "active",
+      "nextOfferAt": 1735643200000
+    },
+    {
+      "slotId": "sweet_spot",
+      "offerId": "offer_5abc123z",
+      "state": "cooldown",
+      "nextOfferAt": 1735684300000
+    }
+  ],
   "special": [
     {
       "offerId": "offer_3vv3me0e",
@@ -48,17 +54,15 @@ Players/{uid}/Offers/Active
 
 ### Field Definitions
 
-#### `main` Object (Main Rotating Offer Slot)
+#### `rotating` Array (Main Core Shop Offers)
 
 | Field | Type | Description |
 |-------|------|-------------|
+| `slotId` | string | Internal identifier for the slot (e.g. `micro_hook`, `whale`) |
 | `offerId` | string | Catalog ID of the offer to display |
-| `offerType` | number | 0=starter, 1-4=daily, 5-8=ladder tiers |
 | `expiresAt` | number | Timestamp (ms) when offer expires |
-| `tier` | number | Current ladder tier (0-4) |
 | `state` | string | `"active"`, `"cooldown"`, or `"purchase_delay"` |
 | `nextOfferAt` | number? | When next offer available (only if state != "active") |
-| `isStarter` | boolean? | True if this is the starter offer |
 
 #### `state` Values
 
@@ -129,15 +133,15 @@ public class OfferManager : MonoBehaviour
 ```csharp
 void ProcessOfferUpdate(Dictionary<string, object> data)
 {
-    // Handle main offer slot
-    if (data.ContainsKey("main") && data["main"] != null)
+    // Handle rotating offers
+    if (data.ContainsKey("rotating") && data["rotating"] != null)
     {
-        var main = data["main"] as Dictionary<string, object>;
-        ProcessMainOffer(main);
+        var rotating = data["rotating"] as List<object>;
+        ProcessRotatingOffers(rotating);
     }
     else
     {
-        HideMainOffer();
+        ClearRotatingOffers();
     }
 
     // Handle special offers
@@ -152,21 +156,27 @@ void ProcessOfferUpdate(Dictionary<string, object> data)
     }
 }
 
-void ProcessMainOffer(Dictionary<string, object> main)
+void ProcessRotatingOffers(List<object> rotating)
 {
-    string state = main["state"] as string;
-    
-    switch (state)
+    ClearRotatingOffers();
+
+    foreach (var item in rotating)
     {
-        case "active":
-            ShowActiveOffer(main);
-            break;
-        case "cooldown":
-            ShowCooldownTimer(main);
-            break;
-        case "purchase_delay":
-            ShowPurchaseDelayTimer(main);
-            break;
+        var offerData = item as Dictionary<string, object>;
+        string state = offerData["state"] as string;
+
+        switch (state)
+        {
+            case "active":
+                ShowActiveOffer(offerData);
+                break;
+            case "cooldown":
+                ShowCooldownTimer(offerData);
+                break;
+            case "purchase_delay":
+                ShowPurchaseDelayTimer(offerData);
+                break;
+        }
     }
 }
 ```

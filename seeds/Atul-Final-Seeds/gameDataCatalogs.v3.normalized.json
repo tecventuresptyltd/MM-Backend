@@ -12633,547 +12633,1622 @@
     "data": {
       "version": "v3-normalized",
       "offers": {
-        "offer_3jaky2p2": {
-          "displayName": "Starter Offer",
-          "offerType": 0,
-          "productId": "com.tecventures.mysticmotors.starter.offer",
+        "offer_adrenaline_pro": {
+          "offerId": "offer_adrenaline_pro",
+          "displayName": "ADRENALINE PRO PACK",
+          "category": "context",
+          "currency": "USD",
+          "amount": 5.99,
+          "productId": "io.tecventures.mysticmotors.iap.offer_adrenaline_pro",
           "entitlements": [
             {
               "type": "gems",
               "id": "gems",
-              "quantity": 300
+              "quantity": 1400
             },
             {
               "type": "crate",
-              "id": "sku_n9hsc0wxxk",
-              "quantity": 1
-            },
-            {
-              "type": "crate",
-              "id": "sku_72wnqwtfmx",
-              "quantity": 1
-            }
-          ],
-          "price": 1,
-          "originalPrice": 11,
-          "currency": "USD",
-          "startAt": 1761228851445,
-          "endAt": 1755472800000,
-          "validityHours": 48,
-          "offerId": "offer_3jaky2p2"
-        },
-        "offer_kn1k91mn": {
-          "displayName": "Daily Offer I",
-          "offerType": 1,
-          "productId": "com.tecventures.mysticmotors.dailyoffer.1",
-          "entitlements": [
-            {
-              "type": "gems",
-              "id": "gems",
-              "quantity": 300
-            },
-            {
-              "type": "crate",
-              "id": "sku_72wnqwtfmx",
-              "quantity": 1
-            },
-            {
-              "type": "crate",
-              "id": "sku_e8e7jeba7v",
-              "quantity": 1
-            },
-            {
-              "type": "booster",
-              "id": "sku_amf7txny",
-              "quantity": 1
-            },
-            {
-              "type": "booster",
-              "id": "sku_07hw4ry3",
-              "quantity": 1
-            }
-          ],
-          "price": 1,
-          "originalPrice": 10,
-          "currency": "USD",
-          "startAt": 1761228851445,
-          "endAt": 1755386400000,
-          "validityHours": 24,
-          "offerId": "offer_kn1k91mn"
-        },
-        "offer_bfnnjavw": {
-          "displayName": "Daily Offer II",
-          "offerType": 2,
-          "productId": "com.tecventures.mysticmotors.dailyoffer.2",
-          "entitlements": [
-            {
-              "type": "gems",
-              "id": "gems",
-              "quantity": 250
-            },
-            {
-              "type": "crate",
-              "id": "sku_n9hsc0wxxk",
-              "quantity": 1
-            },
-            {
-              "type": "crate",
-              "id": "sku_72wnqwtfmx",
-              "quantity": 1
-            },
-            {
-              "type": "crate",
-              "id": "sku_e8e7jeba7v",
-              "quantity": 1
-            },
-            {
-              "type": "booster",
-              "id": "sku_amf7txny",
-              "quantity": 1
-            },
-            {
-              "type": "booster",
-              "id": "sku_07hw4ry3",
-              "quantity": 1
-            }
-          ],
-          "price": 2,
-          "originalPrice": 16,
-          "currency": "USD",
-          "startAt": 1761228851445,
-          "endAt": 1755386400000,
-          "validityHours": 24,
-          "offerId": "offer_bfnnjavw"
-        },
-        "offer_g3dxevzg": {
-          "displayName": "Daily Offer III",
-          "offerType": 3,
-          "productId": "com.tecventures.mysticmotors.dailyoffer.3",
-          "entitlements": [
-            {
-              "type": "gems",
-              "id": "gems",
-              "quantity": 350
-            },
-            {
-              "type": "crate",
-              "id": "sku_kgkjadrd79",
-              "quantity": 1
-            },
-            {
-              "type": "crate",
-              "id": "sku_72wnqwtfmx",
-              "quantity": 1
-            },
-            {
-              "type": "crate",
-              "id": "sku_e8e7jeba7v",
-              "quantity": 1
-            },
-            {
-              "type": "booster",
-              "id": "sku_amf7txny",
-              "quantity": 1
-            },
-            {
-              "type": "booster",
-              "id": "sku_07hw4ry3",
-              "quantity": 1
-            }
-          ],
-          "price": 3,
-          "originalPrice": 21,
-          "currency": "USD",
-          "startAt": 1761228851445,
-          "endAt": 1755386400000,
-          "validityHours": 24,
-          "offerId": "offer_g3dxevzg"
-        },
-        "offer_edcayzxw": {
-          "displayName": "Daily Offer IV",
-          "offerType": 4,
-          "productId": "com.tecventures.mysticmotors.dailyoffer.4",
-          "entitlements": [
-            {
-              "type": "crate",
-              "id": "sku_kgkjadrd79",
-              "quantity": 1
-            },
-            {
-              "type": "crate",
-              "id": "sku_72wnqwtfmx",
-              "quantity": 1
-            },
-            {
-              "type": "crate",
-              "id": "sku_e8e7jeba7v",
-              "quantity": 1
-            },
-            {
-              "type": "crate",
-              "id": "sku_n9hsc0wxxk",
-              "quantity": 1
-            },
-            {
-              "type": "booster",
-              "id": "sku_amf7txny",
-              "quantity": 1
-            },
-            {
-              "type": "booster",
-              "id": "sku_07hw4ry3",
-              "quantity": 1
-            }
-          ],
-          "price": 1.5,
-          "originalPrice": 12,
-          "currency": "USD",
-          "startAt": 1761228851445,
-          "endAt": 1755386400000,
-          "validityHours": 24,
-          "offerId": "offer_edcayzxw"
-        },
-        "offer_bwebp6s4": {
-          "displayName": "Gem Surge",
-          "offerType": 5,
-          "productId": "com.tecventures.mysticmotors.gemsurge",
-          "entitlements": [
-            {
-              "type": "gems",
-              "id": "gems",
-              "quantity": 2250
-            },
-            {
-              "type": "crate",
-              "id": "sku_72wnqwtfmx",
-              "quantity": 1
-            },
-            {
-              "type": "crate",
-              "id": "sku_e8e7jeba7v",
-              "quantity": 1
-            },
-            {
-              "type": "crate",
-              "id": "sku_n9hsc0wxxk",
-              "quantity": 1
-            },
-            {
-              "type": "booster",
-              "id": "sku_amf7txny",
-              "quantity": 1
-            },
-            {
-              "type": "booster",
-              "id": "sku_07hw4ry3",
-              "quantity": 1
-            }
-          ],
-          "price": 5,
-          "originalPrice": 35,
-          "currency": "USD",
-          "startAt": 1761228851445,
-          "endAt": 1755386400000,
-          "validityHours": 24,
-          "offerId": "offer_bwebp6s4"
-        },
-        "offer_z5k1130z": {
-          "displayName": "Gemstreem",
-          "offerType": 6,
-          "productId": "com.tecventures.mysticmotors.gemstream",
-          "entitlements": [
-            {
-              "type": "gems",
-              "id": "gems",
-              "quantity": 2650
-            },
-            {
-              "type": "crate",
-              "id": "sku_kgkjadrd79",
-              "quantity": 1
-            },
-            {
-              "type": "crate",
-              "id": "sku_72wnqwtfmx",
-              "quantity": 1
-            },
-            {
-              "type": "crate",
-              "id": "sku_e8e7jeba7v",
-              "quantity": 1
-            },
-            {
-              "type": "crate",
-              "id": "sku_n9hsc0wxxk",
-              "quantity": 1
-            },
-            {
-              "type": "booster",
-              "id": "sku_amf7txny",
-              "quantity": 1
-            },
-            {
-              "type": "booster",
-              "id": "sku_07hw4ry3",
-              "quantity": 1
-            }
-          ],
-          "price": 10,
-          "originalPrice": 50,
-          "currency": "USD",
-          "startAt": 1761228851445,
-          "endAt": 1755386400000,
-          "validityHours": 24,
-          "offerId": "offer_z5k1130z"
-        },
-        "offer_nymn2fmt": {
-          "displayName": "Fortune Fuel",
-          "offerType": 7,
-          "productId": "com.tecventures.mysticmotors.fortunefuel",
-          "entitlements": [
-            {
-              "type": "gems",
-              "id": "gems",
-              "quantity": 3300
-            },
-            {
-              "type": "crate",
-              "id": "sku_kgkjadrd79",
-              "quantity": 2
-            },
-            {
-              "type": "crate",
-              "id": "sku_72wnqwtfmx",
-              "quantity": 2
-            },
-            {
-              "type": "crate",
-              "id": "sku_e8e7jeba7v",
-              "quantity": 2
-            },
-            {
-              "type": "crate",
-              "id": "sku_n9hsc0wxxk",
+              "id": "crt_7y8a6hca",
               "quantity": 2
             },
             {
               "type": "booster",
-              "id": "sku_amf7txny",
+              "id": "sku_wkm0amtg",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
               "quantity": 2
             },
             {
-              "type": "booster",
-              "id": "sku_07hw4ry3",
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd30m_w3n9",
               "quantity": 2
             }
           ],
-          "price": 20,
-          "originalPrice": 80,
-          "currency": "USD",
-          "startAt": 1761228851445,
-          "endAt": 1755386400000,
-          "validityHours": 24,
-          "offerId": "offer_nymn2fmt"
+          "triggerType": "win_streak_3"
         },
-        "offer_wwgzr06v": {
-          "displayName": "Treasure Circuit",
-          "offerType": 8,
-          "productId": "com.tecventures.mysticmotors.treasure",
+        "offer_resource_rush": {
+          "offerId": "offer_resource_rush",
+          "displayName": "RESOURCE RUSH BUNDLE",
+          "category": "context",
+          "currency": "USD",
+          "amount": 24.99,
+          "productId": "io.tecventures.mysticmotors.iap.offer_resource_rush",
           "entitlements": [
             {
               "type": "gems",
               "id": "gems",
-              "quantity": 8250
+              "quantity": 4500
             },
             {
               "type": "crate",
-              "id": "sku_kgkjadrd79",
+              "id": "crt_7y8a6hca",
+              "quantity": 4
+            },
+            {
+              "type": "booster",
+              "id": "sku_tpt3379j8p",
+              "quantity": 2
+            },
+            {
+              "type": "booster",
+              "id": "sku_9pnmmjpscv",
+              "quantity": 2
+            },
+            {
+              "type": "booster",
+              "id": "sku_shrd24h_n8t5",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd8h_y7p4",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 4
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd15m_j8k2",
+              "quantity": 4
+            }
+          ],
+          "triggerType": "fuel_empty"
+        },
+        "offer_mythic_mystery": {
+          "offerId": "offer_mythic_mystery",
+          "displayName": "MYTHIC MYSTERY PACK",
+          "category": "context",
+          "currency": "USD",
+          "amount": 44.99,
+          "productId": "io.tecventures.mysticmotors.iap.offer_mythic_mystery",
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 8500
+            },
+            {
+              "type": "crate",
+              "id": "crt_y8fywbrs",
+              "quantity": 1
+            },
+            {
+              "type": "booster",
+              "id": "sku_tpt3379j8p",
+              "quantity": 1
+            },
+            {
+              "type": "booster",
+              "id": "sku_9pnmmjpscv",
+              "quantity": 1
+            },
+            {
+              "type": "booster",
+              "id": "sku_shrd24h_n8t5",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd24h_b9f1",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd8h_y7p4",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 3
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 5
+            }
+          ],
+          "triggerType": "mythical_crate_earned"
+        },
+        "offer_double_clutch": {
+          "offerId": "offer_double_clutch",
+          "displayName": "DOUBLE CLUTCH BUNDLE",
+          "category": "event",
+          "currency": "USD",
+          "amount": 6.99,
+          "productId": "io.tecventures.mysticmotors.iap.offer_double_clutch",
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 2000
+            },
+            {
+              "type": "crate",
+              "id": "crt_vzqgtd2s",
+              "quantity": 2
+            },
+            {
+              "type": "booster",
+              "id": "sku_wkm0amtg",
+              "quantity": 1
+            },
+            {
+              "type": "booster",
+              "id": "sku_nhh7jtda",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd8h_y7p4",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 3
+            }
+          ],
+          "triggerType": "weekend"
+        },
+        "offer_ignition_starter": {
+          "offerId": "offer_ignition_starter",
+          "displayName": "IGNITION STARTER PACK",
+          "category": "micro_hook",
+          "currency": "USD",
+          "amount": 1.99,
+          "productId": "io.tecventures.mysticmotors.iap.offer_ignition_starter",
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 600
+            },
+            {
+              "type": "crate",
+              "id": "crt_vzqgtd2s",
+              "quantity": 1
+            },
+            {
+              "type": "crate",
+              "id": "crt_ayvncyt0",
+              "quantity": 2
+            },
+            {
+              "type": "booster",
+              "id": "sku_eqzbetwm",
+              "quantity": 1
+            },
+            {
+              "type": "booster",
+              "id": "sku_60fdgqkm",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd15m_j8k2",
+              "quantity": 2
+            }
+          ],
+          "dependsOnId": "offer_drift_king_upsell"
+        },
+        "offer_fuel_emergency": {
+          "offerId": "offer_fuel_emergency",
+          "displayName": "FUEL EMERGENCY PACK",
+          "category": "micro_hook",
+          "currency": "USD",
+          "amount": 1.99,
+          "productId": "io.tecventures.mysticmotors.iap.offer_fuel_emergency",
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 600
+            },
+            {
+              "type": "crate",
+              "id": "crt_7y8a6hca",
+              "quantity": 1
+            },
+            {
+              "type": "booster",
+              "id": "sku_eqzbetwm",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd15m_j8k2",
+              "quantity": 2
+            }
+          ],
+          "dependsOnId": "offer_drift_king_upsell"
+        },
+        "offer_nitro_surge": {
+          "offerId": "offer_nitro_surge",
+          "displayName": "NITRO SURGE BUNDLE",
+          "category": "micro_hook",
+          "currency": "USD",
+          "amount": 1.99,
+          "productId": "io.tecventures.mysticmotors.iap.offer_nitro_surge",
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 500
+            },
+            {
+              "type": "crate",
+              "id": "crt_vzqgtd2s",
+              "quantity": 2
+            },
+            {
+              "type": "booster",
+              "id": "sku_shrd6h_k7w2",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd15m_j8k2",
+              "quantity": 2
+            }
+          ],
+          "dependsOnId": "offer_drift_king_upsell"
+        },
+        "offer_adrenaline_shot": {
+          "offerId": "offer_adrenaline_shot",
+          "displayName": "ADRENALINE SHOT BUNDLE",
+          "category": "micro_hook",
+          "currency": "USD",
+          "amount": 1.99,
+          "productId": "io.tecventures.mysticmotors.iap.offer_adrenaline_shot",
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 500
+            },
+            {
+              "type": "crate",
+              "id": "crt_vzqgtd2s",
+              "quantity": 2
+            },
+            {
+              "type": "crate",
+              "id": "crt_ayvncyt0",
+              "quantity": 2
+            },
+            {
+              "type": "booster",
+              "id": "sku_nhh7jtda",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd15m_j8k2",
+              "quantity": 2
+            }
+          ],
+          "dependsOnId": "offer_drift_king_upsell"
+        },
+        "offer_sprint_starter": {
+          "offerId": "offer_sprint_starter",
+          "displayName": "SPRINT STARTER PACK",
+          "category": "micro_hook",
+          "currency": "USD",
+          "amount": 1.99,
+          "productId": "io.tecventures.mysticmotors.iap.offer_sprint_starter",
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 500
+            },
+            {
+              "type": "crate",
+              "id": "crt_7y8a6hca",
+              "quantity": 1
+            },
+            {
+              "type": "booster",
+              "id": "sku_eqzbetwm",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd15m_j8k2",
+              "quantity": 2
+            }
+          ],
+          "dependsOnId": "offer_drift_king_upsell"
+        },
+        "offer_midnight_oil": {
+          "offerId": "offer_midnight_oil",
+          "displayName": "MIDNIGHT OIL PACK",
+          "category": "micro_hook",
+          "currency": "USD",
+          "amount": 1.99,
+          "productId": "io.tecventures.mysticmotors.iap.offer_midnight_oil",
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 600
+            },
+            {
+              "type": "crate",
+              "id": "crt_vzqgtd2s",
+              "quantity": 1
+            },
+            {
+              "type": "booster",
+              "id": "sku_wkm0amtg",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd15m_j8k2",
+              "quantity": 2
+            }
+          ],
+          "dependsOnId": "offer_drift_king_upsell"
+        },
+        "offer_nitro_boost_plus": {
+          "offerId": "offer_nitro_boost_plus",
+          "displayName": "NITRO BOOST PLUS PACK",
+          "category": "micro_hook",
+          "currency": "USD",
+          "amount": 2.99,
+          "productId": "io.tecventures.mysticmotors.iap.offer_nitro_boost_plus",
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 800
+            },
+            {
+              "type": "crate",
+              "id": "crt_7y8a6hca",
+              "quantity": 1
+            },
+            {
+              "type": "booster",
+              "id": "sku_shrd6h_k7w2",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd15m_j8k2",
+              "quantity": 2
+            }
+          ],
+          "dependsOnId": "offer_drift_king_upsell"
+        },
+        "offer_pit_stop_special": {
+          "offerId": "offer_pit_stop_special",
+          "displayName": "PIT STOP SPECIAL PACK",
+          "category": "micro_hook",
+          "currency": "USD",
+          "amount": 3.99,
+          "productId": "io.tecventures.mysticmotors.iap.offer_pit_stop_special",
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 1200
+            },
+            {
+              "type": "crate",
+              "id": "crt_7y8a6hca",
+              "quantity": 1
+            },
+            {
+              "type": "booster",
+              "id": "sku_wkm0amtg",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd30m_w3n9",
+              "quantity": 2
+            }
+          ],
+          "dependsOnId": "offer_drift_king_upsell"
+        },
+        "offer_pro_crew_kit": {
+          "offerId": "offer_pro_crew_kit",
+          "displayName": "PRO CREW KIT",
+          "category": "mid_tier",
+          "currency": "USD",
+          "amount": 29.99,
+          "productId": "io.tecventures.mysticmotors.iap.offer_pro_crew_kit",
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 6500
+            },
+            {
+              "type": "crate",
+              "id": "crt_76ar1k2x",
+              "quantity": 1
+            },
+            {
+              "type": "booster",
+              "id": "sku_tpt3379j8p",
+              "quantity": 2
+            },
+            {
+              "type": "booster",
+              "id": "sku_9pnmmjpscv",
+              "quantity": 2
+            },
+            {
+              "type": "booster",
+              "id": "sku_shrd24h_n8t5",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd24h_b9f1",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd8h_y7p4",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 4
+            }
+          ]
+        },
+        "offer_street_legend": {
+          "offerId": "offer_street_legend",
+          "displayName": "STREET LEGEND BUNDLE",
+          "category": "mid_tier",
+          "currency": "USD",
+          "amount": 39.99,
+          "productId": "io.tecventures.mysticmotors.iap.offer_street_legend",
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 8000
+            },
+            {
+              "type": "crate",
+              "id": "crt_76ar1k2x",
+              "quantity": 2
+            },
+            {
+              "type": "booster",
+              "id": "sku_tpt3379j8p",
+              "quantity": 2
+            },
+            {
+              "type": "booster",
+              "id": "sku_9pnmmjpscv",
+              "quantity": 2
+            },
+            {
+              "type": "booster",
+              "id": "sku_shrd24h_n8t5",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd24h_b9f1",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd8h_y7p4",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 3
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 5
+            }
+          ]
+        },
+        "offer_pro_circuit_pack": {
+          "offerId": "offer_pro_circuit_pack",
+          "displayName": "PRO CIRCUIT PACK",
+          "category": "mid_tier",
+          "currency": "USD",
+          "amount": 69.99,
+          "productId": "io.tecventures.mysticmotors.iap.offer_pro_circuit_pack",
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 12000
+            },
+            {
+              "type": "crate",
+              "id": "crt_76ar1k2x",
+              "quantity": 2
+            },
+            {
+              "type": "crate",
+              "id": "crt_7y8a6hca",
+              "quantity": 3
+            },
+            {
+              "type": "booster",
+              "id": "sku_tpt3379j8p",
+              "quantity": 3
+            },
+            {
+              "type": "booster",
+              "id": "sku_9pnmmjpscv",
+              "quantity": 3
+            },
+            {
+              "type": "booster",
+              "id": "sku_shrd24h_n8t5",
+              "quantity": 3
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd24h_b9f1",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd8h_y7p4",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 4
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 6
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd15m_j8k2",
+              "quantity": 6
+            }
+          ]
+        },
+        "offer_lvl10_milestone": {
+          "offerId": "offer_lvl10_milestone",
+          "displayName": "MASTERY 5 MILESTONE BUNDLE",
+          "category": "milestone",
+          "currency": "USD",
+          "amount": 2.99,
+          "productId": "io.tecventures.mysticmotors.iap.offer_lvl10_milestone",
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 1100
+            },
+            {
+              "type": "crate",
+              "id": "crt_vzqgtd2s",
+              "quantity": 1
+            },
+            {
+              "type": "booster",
+              "id": "sku_wkm0amtg",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd30m_w3n9",
+              "quantity": 2
+            }
+          ],
+          "triggerType": "mastery_rank_5"
+        },
+        "offer_lvl20_milestone": {
+          "offerId": "offer_lvl20_milestone",
+          "displayName": "MASTERY 10 MILESTONE PACK",
+          "category": "milestone",
+          "currency": "USD",
+          "amount": 12.99,
+          "productId": "io.tecventures.mysticmotors.iap.offer_lvl20_milestone",
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 3000
+            },
+            {
+              "type": "crate",
+              "id": "crt_7y8a6hca",
+              "quantity": 1
+            },
+            {
+              "type": "booster",
+              "id": "sku_tpt3379j8p",
+              "quantity": 1
+            },
+            {
+              "type": "booster",
+              "id": "sku_9pnmmjpscv",
+              "quantity": 1
+            },
+            {
+              "type": "booster",
+              "id": "sku_shrd24h_n8t5",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd24h_b9f1",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd8h_y7p4",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 3
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 5
+            }
+          ],
+          "triggerType": "mastery_rank_10"
+        },
+        "offer_lvl50_milestone": {
+          "offerId": "offer_lvl50_milestone",
+          "displayName": "MASTERY 20 MILESTONE PACK",
+          "category": "milestone",
+          "currency": "USD",
+          "amount": 99.99,
+          "productId": "io.tecventures.mysticmotors.iap.offer_lvl50_milestone",
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 15000
+            },
+            {
+              "type": "crate",
+              "id": "crt_y8fywbrs",
+              "quantity": 1
+            },
+            {
+              "type": "crate",
+              "id": "crt_76ar1k2x",
+              "quantity": 2
+            },
+            {
+              "type": "booster",
+              "id": "sku_coin7d_q5r8",
+              "quantity": 1
+            },
+            {
+              "type": "booster",
+              "id": "sku_exp7d_f2h6",
+              "quantity": 1
+            },
+            {
+              "type": "booster",
+              "id": "sku_shrd7d_w3j9",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3d_h6c3",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd24h_b9f1",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd8h_y7p4",
+              "quantity": 3
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 4
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 6
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd15m_j8k2",
+              "quantity": 8
+            }
+          ],
+          "triggerType": "mastery_rank_20"
+        },
+        "offer_mechanics_choice": {
+          "offerId": "offer_mechanics_choice",
+          "displayName": "MECHANIC'S CHOICE BUNDLE",
+          "category": "sweet_spot",
+          "currency": "USD",
+          "amount": 6.99,
+          "productId": "io.tecventures.mysticmotors.iap.offer_mechanics_choice",
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 1800
+            },
+            {
+              "type": "crate",
+              "id": "crt_7y8a6hca",
+              "quantity": 1
+            },
+            {
+              "type": "crate",
+              "id": "crt_vzqgtd2s",
+              "quantity": 2
+            },
+            {
+              "type": "booster",
+              "id": "sku_wkm0amtg",
+              "quantity": 1
+            },
+            {
+              "type": "booster",
+              "id": "sku_nhh7jtda",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd8h_y7p4",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 3
+            }
+          ]
+        },
+        "offer_drift_king": {
+          "offerId": "offer_drift_king",
+          "displayName": "DRIFT KING PACK",
+          "category": "sweet_spot",
+          "currency": "USD",
+          "amount": 9.99,
+          "productId": "io.tecventures.mysticmotors.iap.offer_drift_king",
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 2500
+            },
+            {
+              "type": "crate",
+              "id": "crt_7y8a6hca",
+              "quantity": 2
+            },
+            {
+              "type": "crate",
+              "id": "crt_vzqgtd2s",
+              "quantity": 1
+            },
+            {
+              "type": "booster",
+              "id": "sku_tpt3379j8p",
+              "quantity": 1
+            },
+            {
+              "type": "booster",
+              "id": "sku_9pnmmjpscv",
+              "quantity": 1
+            },
+            {
+              "type": "booster",
+              "id": "sku_shrd24h_n8t5",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd8h_y7p4",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 3
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd15m_j8k2",
+              "quantity": 4
+            }
+          ]
+        },
+        "offer_fast_lane_pack": {
+          "offerId": "offer_fast_lane_pack",
+          "displayName": "FAST LANE PACK",
+          "category": "sweet_spot",
+          "currency": "USD",
+          "amount": 12.99,
+          "productId": "io.tecventures.mysticmotors.iap.offer_fast_lane_pack",
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 3500
+            },
+            {
+              "type": "crate",
+              "id": "crt_7y8a6hca",
+              "quantity": 1
+            },
+            {
+              "type": "crate",
+              "id": "crt_vzqgtd2s",
+              "quantity": 2
+            },
+            {
+              "type": "booster",
+              "id": "sku_tpt3379j8p",
+              "quantity": 1
+            },
+            {
+              "type": "booster",
+              "id": "sku_9pnmmjpscv",
+              "quantity": 1
+            },
+            {
+              "type": "booster",
+              "id": "sku_shrd24h_n8t5",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd8h_y7p4",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 3
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd15m_j8k2",
+              "quantity": 4
+            }
+          ]
+        },
+        "offer_weekend_warrior": {
+          "offerId": "offer_weekend_warrior",
+          "displayName": "WEEKEND WARRIOR BUNDLE",
+          "category": "sweet_spot",
+          "currency": "USD",
+          "amount": 19.99,
+          "productId": "io.tecventures.mysticmotors.iap.offer_weekend_warrior",
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 4000
+            },
+            {
+              "type": "crate",
+              "id": "crt_7y8a6hca",
+              "quantity": 3
+            },
+            {
+              "type": "booster",
+              "id": "sku_tpt3379j8p",
+              "quantity": 2
+            },
+            {
+              "type": "booster",
+              "id": "sku_9pnmmjpscv",
+              "quantity": 2
+            },
+            {
+              "type": "booster",
+              "id": "sku_shrd24h_n8t5",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd8h_y7p4",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 4
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd15m_j8k2",
+              "quantity": 4
+            }
+          ]
+        },
+        "offer_tuners_vault": {
+          "offerId": "offer_tuners_vault",
+          "displayName": "TUNER'S VAULT",
+          "category": "sweet_spot",
+          "currency": "USD",
+          "amount": 24.99,
+          "productId": "io.tecventures.mysticmotors.iap.offer_tuners_vault",
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 4500
+            },
+            {
+              "type": "crate",
+              "id": "crt_76ar1k2x",
+              "quantity": 1
+            },
+            {
+              "type": "crate",
+              "id": "crt_7y8a6hca",
+              "quantity": 2
+            },
+            {
+              "type": "booster",
+              "id": "sku_tpt3379j8p",
+              "quantity": 2
+            },
+            {
+              "type": "booster",
+              "id": "sku_9pnmmjpscv",
+              "quantity": 2
+            },
+            {
+              "type": "booster",
+              "id": "sku_shrd24h_n8t5",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd8h_y7p4",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 4
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd15m_j8k2",
+              "quantity": 4
+            }
+          ]
+        },
+        "offer_drift_king_upsell": {
+          "offerId": "offer_drift_king_upsell",
+          "displayName": "DRIFT KING FLASH DEAL",
+          "category": "upsell",
+          "currency": "USD",
+          "amount": 5.99,
+          "productId": "io.tecventures.mysticmotors.iap.offer_drift_king_upsell",
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 2500
+            },
+            {
+              "type": "crate",
+              "id": "crt_7y8a6hca",
+              "quantity": 2
+            },
+            {
+              "type": "crate",
+              "id": "crt_vzqgtd2s",
+              "quantity": 1
+            },
+            {
+              "type": "booster",
+              "id": "sku_tpt3379j8p",
+              "quantity": 1
+            },
+            {
+              "type": "booster",
+              "id": "sku_9pnmmjpscv",
+              "quantity": 1
+            },
+            {
+              "type": "booster",
+              "id": "sku_shrd24h_n8t5",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd8h_y7p4",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 3
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd15m_j8k2",
+              "quantity": 4
+            }
+          ],
+          "triggerType": "post_purchase_upsell",
+          "dependsOnId": "offer_stage3_choice"
+        },
+        "offer_the_collector": {
+          "offerId": "offer_the_collector",
+          "displayName": "THE COLLECTOR'S EDITION",
+          "category": "whale",
+          "currency": "USD",
+          "amount": 79.99,
+          "productId": "io.tecventures.mysticmotors.iap.offer_the_collector",
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 12000
+            },
+            {
+              "type": "crate",
+              "id": "crt_y8fywbrs",
+              "quantity": 1
+            },
+            {
+              "type": "crate",
+              "id": "crt_7y8a6hca",
+              "quantity": 2
+            },
+            {
+              "type": "booster",
+              "id": "sku_coin7d_q5r8",
+              "quantity": 1
+            },
+            {
+              "type": "booster",
+              "id": "sku_exp7d_f2h6",
+              "quantity": 1
+            },
+            {
+              "type": "booster",
+              "id": "sku_shrd7d_w3j9",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3d_h6c3",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd24h_b9f1",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd8h_y7p4",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 3
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 5
+            }
+          ]
+        },
+        "offer_elite_engineer": {
+          "offerId": "offer_elite_engineer",
+          "displayName": "ELITE CREW PACKAGE",
+          "category": "whale",
+          "currency": "USD",
+          "amount": 89.99,
+          "productId": "io.tecventures.mysticmotors.iap.offer_elite_engineer",
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 16000
+            },
+            {
+              "type": "crate",
+              "id": "crt_76ar1k2x",
+              "quantity": 4
+            },
+            {
+              "type": "booster",
+              "id": "sku_tpt3379j8p",
+              "quantity": 3
+            },
+            {
+              "type": "booster",
+              "id": "sku_9pnmmjpscv",
+              "quantity": 3
+            },
+            {
+              "type": "booster",
+              "id": "sku_shrd24h_n8t5",
+              "quantity": 3
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3d_h6c3",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd24h_b9f1",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd8h_y7p4",
+              "quantity": 3
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 4
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 6
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd15m_j8k2",
+              "quantity": 8
+            }
+          ]
+        },
+        "offer_garage_overhaul": {
+          "offerId": "offer_garage_overhaul",
+          "displayName": "FULL GARAGE UPGRADE BUNDLE",
+          "category": "whale",
+          "currency": "USD",
+          "amount": 129.99,
+          "productId": "io.tecventures.mysticmotors.iap.offer_garage_overhaul",
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 20000
+            },
+            {
+              "type": "crate",
+              "id": "crt_76ar1k2x",
+              "quantity": 3
+            },
+            {
+              "type": "crate",
+              "id": "crt_7y8a6hca",
+              "quantity": 5
+            },
+            {
+              "type": "booster",
+              "id": "sku_coin7d_q5r8",
+              "quantity": 2
+            },
+            {
+              "type": "booster",
+              "id": "sku_exp7d_f2h6",
+              "quantity": 2
+            },
+            {
+              "type": "booster",
+              "id": "sku_shrd7d_w3j9",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3d_h6c3",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd24h_b9f1",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd8h_y7p4",
+              "quantity": 3
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 5
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 8
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd15m_j8k2",
+              "quantity": 10
+            }
+          ]
+        },
+        "offer_grand_prix_hoard": {
+          "offerId": "offer_grand_prix_hoard",
+          "displayName": "GRAND PRIX ELITE PACK",
+          "category": "whale",
+          "currency": "USD",
+          "amount": 149.99,
+          "productId": "io.tecventures.mysticmotors.iap.offer_grand_prix_hoard",
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 25000
+            },
+            {
+              "type": "crate",
+              "id": "crt_y8fywbrs",
+              "quantity": 2
+            },
+            {
+              "type": "crate",
+              "id": "crt_76ar1k2x",
+              "quantity": 2
+            },
+            {
+              "type": "booster",
+              "id": "sku_coin7d_q5r8",
+              "quantity": 1
+            },
+            {
+              "type": "booster",
+              "id": "sku_exp7d_f2h6",
+              "quantity": 1
+            },
+            {
+              "type": "booster",
+              "id": "sku_shrd7d_w3j9",
+              "quantity": 1
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3d_h6c3",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd24h_b9f1",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd8h_y7p4",
+              "quantity": 3
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 5
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 8
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd15m_j8k2",
+              "quantity": 10
+            }
+          ]
+        },
+        "offer_the_sovereign": {
+          "offerId": "offer_the_sovereign",
+          "displayName": "THE APEX COLLECTION BUNDLE",
+          "category": "whale",
+          "currency": "USD",
+          "amount": 199.99,
+          "productId": "io.tecventures.mysticmotors.iap.offer_the_sovereign",
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 60000
+            },
+            {
+              "type": "crate",
+              "id": "crt_y8fywbrs",
               "quantity": 5
             },
             {
               "type": "crate",
-              "id": "sku_n9hsc0wxxk",
-              "quantity": 5
-            },
-            {
-              "type": "crate",
-              "id": "sku_e8e7jeba7v",
-              "quantity": 5
-            },
-            {
-              "type": "crate",
-              "id": "sku_72wnqwtfmx",
+              "id": "crt_76ar1k2x",
               "quantity": 5
             },
             {
               "type": "booster",
-              "id": "sku_amf7txny",
-              "quantity": 5
-            },
-            {
-              "type": "booster",
-              "id": "sku_07hw4ry3",
-              "quantity": 5
-            }
-          ],
-          "price": 50,
-          "originalPrice": 80,
-          "currency": "USD",
-          "startAt": 1761228851445,
-          "endAt": 1755386400000,
-          "validityHours": 24,
-          "offerId": "offer_wwgzr06v"
-        },
-        "offer_3vv3me0e": {
-          "displayName": "LVL 5",
-          "offerType": 9,
-          "productId": "com.tecventures.mysticmotors.lvl.5",
-          "entitlements": [
-            {
-              "type": "gems",
-              "id": "gems",
-              "quantity": 2250
-            },
-            {
-              "type": "crate",
-              "id": "sku_kgkjadrd79",
-              "quantity": 1
-            },
-            {
-              "type": "crate",
-              "id": "sku_n9hsc0wxxk",
-              "quantity": 1
-            },
-            {
-              "type": "crate",
-              "id": "sku_e8e7jeba7v",
-              "quantity": 1
-            },
-            {
-              "type": "crate",
-              "id": "sku_72wnqwtfmx",
-              "quantity": 1
-            },
-            {
-              "type": "booster",
-              "id": "sku_amf7txny",
-              "quantity": 1
-            },
-            {
-              "type": "booster",
-              "id": "sku_07hw4ry3",
-              "quantity": 1
-            }
-          ],
-          "price": 3,
-          "originalPrice": 45,
-          "currency": "USD",
-          "startAt": 1761228851445,
-          "endAt": 1755386400000,
-          "validityHours": 24,
-          "offerId": "offer_3vv3me0e"
-        },
-        "offer_jw7ms0ny": {
-          "displayName": "LVL 10",
-          "offerType": 10,
-          "productId": "com.tecventures.mysticmotors.lvl.10",
-          "entitlements": [
-            {
-              "type": "gems",
-              "id": "gems",
-              "quantity": 2450
-            },
-            {
-              "type": "crate",
-              "id": "sku_kgkjadrd79",
+              "id": "sku_coin7d_q5r8",
               "quantity": 2
             },
             {
-              "type": "crate",
-              "id": "sku_n9hsc0wxxk",
-              "quantity": 1
-            },
-            {
-              "type": "crate",
-              "id": "sku_e8e7jeba7v",
-              "quantity": 1
-            },
-            {
-              "type": "crate",
-              "id": "sku_72wnqwtfmx",
-              "quantity": 1
+              "type": "booster",
+              "id": "sku_exp7d_f2h6",
+              "quantity": 2
             },
             {
               "type": "booster",
-              "id": "sku_amf7txny",
-              "quantity": 1
+              "id": "sku_shrd7d_w3j9",
+              "quantity": 2
             },
             {
-              "type": "booster",
-              "id": "sku_07hw4ry3",
-              "quantity": 1
+              "type": "speedUp",
+              "id": "sku_spd3d_h6c3",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd24h_b9f1",
+              "quantity": 3
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd8h_y7p4",
+              "quantity": 4
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 6
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 10
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd30m_w3n9",
+              "quantity": 10
             }
-          ],
-          "price": 5,
-          "originalPrice": 60,
-          "currency": "USD",
-          "startAt": 1761228851445,
-          "endAt": 1755386400000,
-          "validityHours": 24,
-          "offerId": "offer_jw7ms0ny"
+          ]
         },
-        "offer_zqcpwsbz": {
-          "displayName": "Flash Sale I",
-          "offerType": 11,
-          "productId": "com.tecventures.mysticmotors.flashsale.1",
+        "offer_championship_kit": {
+          "offerId": "offer_championship_kit",
+          "displayName": "CHAMPIONSHIP CIRCUIT PACK",
+          "category": "whale",
+          "currency": "USD",
+          "amount": 199.99,
+          "productId": "io.tecventures.mysticmotors.iap.offer_championship_kit",
           "entitlements": [
             {
               "type": "gems",
               "id": "gems",
-              "quantity": 1000
-            },
-            {
-              "type": "booster",
-              "id": "sku_amf7txny",
-              "quantity": 1
-            }
-          ],
-          "price": 1,
-          "originalPrice": 15,
-          "currency": "USD",
-          "startAt": 1761228851445,
-          "endAt": 1755312900000,
-          "validityHours": 0.25,
-          "offerId": "offer_zqcpwsbz"
-        },
-        "offer_1aka0xdg": {
-          "displayName": "Flash Sale II",
-          "offerType": 12,
-          "productId": "com.tecventures.mysticmotors.flashsale.2",
-          "entitlements": [
-            {
-              "type": "gems",
-              "id": "gems",
-              "quantity": 1000
-            },
-            {
-              "type": "booster",
-              "id": "sku_amf7txny",
-              "quantity": 1
+              "quantity": 35000
             },
             {
               "type": "crate",
-              "id": "sku_kgkjadrd79",
-              "quantity": 1
+              "id": "crt_y8fywbrs",
+              "quantity": 3
+            },
+            {
+              "type": "crate",
+              "id": "crt_76ar1k2x",
+              "quantity": 3
+            },
+            {
+              "type": "booster",
+              "id": "sku_tpt3379j8p",
+              "quantity": 4
+            },
+            {
+              "type": "booster",
+              "id": "sku_9pnmmjpscv",
+              "quantity": 4
+            },
+            {
+              "type": "booster",
+              "id": "sku_shrd24h_n8t5",
+              "quantity": 4
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3d_h6c3",
+              "quantity": 2
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd24h_b9f1",
+              "quantity": 3
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd8h_y7p4",
+              "quantity": 4
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 6
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 10
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd30m_w3n9",
+              "quantity": 10
             }
-          ],
-          "price": 1,
-          "originalPrice": 15,
-          "currency": "USD",
-          "startAt": 1761228851445,
-          "endAt": 1755312900000,
-          "validityHours": 0.25,
-          "offerId": "offer_1aka0xdg"
+          ]
         }
       },
       "createdAt": 1761228851445,
@@ -13704,11 +14779,11 @@
               "upgradeTimerSeconds": 0,
               "priceCoins": 1100,
               "carRating": 100,
-              "topSpeed": 1.0,
-              "acceleration": 1.0,
-              "handling": 1.0,
-              "boostRegen": 1.0,
-              "boostPower": 1.0
+              "topSpeed": 1,
+              "acceleration": 1,
+              "handling": 1,
+              "boostRegen": 1,
+              "boostPower": 1
             },
             "1": {
               "xpToNext": 150,
@@ -13835,11 +14910,11 @@
               "upgradeTimerSeconds": 0,
               "priceCoins": 1100,
               "carRating": 150,
-              "topSpeed": 1.0,
-              "acceleration": 1.0,
-              "handling": 1.0,
-              "boostRegen": 1.0,
-              "boostPower": 1.0
+              "topSpeed": 1,
+              "acceleration": 1,
+              "handling": 1,
+              "boostRegen": 1,
+              "boostPower": 1
             },
             "1": {
               "xpToNext": 150,
@@ -13967,11 +15042,11 @@
               "upgradeTimerSeconds": 0,
               "priceCoins": 1100,
               "carRating": 150,
-              "topSpeed": 1.0,
-              "acceleration": 1.0,
-              "handling": 1.0,
-              "boostRegen": 1.0,
-              "boostPower": 1.0
+              "topSpeed": 1,
+              "acceleration": 1,
+              "handling": 1,
+              "boostRegen": 1,
+              "boostPower": 1
             },
             "1": {
               "xpToNext": 150,
@@ -14099,11 +15174,11 @@
               "upgradeTimerSeconds": 300,
               "priceCoins": 4500,
               "carRating": 200,
-              "topSpeed": 1.0,
-              "acceleration": 1.0,
-              "handling": 1.0,
-              "boostRegen": 1.0,
-              "boostPower": 1.0
+              "topSpeed": 1,
+              "acceleration": 1,
+              "handling": 1,
+              "boostRegen": 1,
+              "boostPower": 1
             },
             "1": {
               "xpToNext": 500,
@@ -14230,11 +15305,11 @@
               "upgradeTimerSeconds": 300,
               "priceCoins": 4500,
               "carRating": 200,
-              "topSpeed": 1.0,
-              "acceleration": 1.0,
-              "handling": 1.0,
-              "boostRegen": 1.0,
-              "boostPower": 1.0
+              "topSpeed": 1,
+              "acceleration": 1,
+              "handling": 1,
+              "boostRegen": 1,
+              "boostPower": 1
             },
             "1": {
               "xpToNext": 500,
@@ -14362,11 +15437,11 @@
               "upgradeTimerSeconds": 300,
               "priceCoins": 4500,
               "carRating": 300,
-              "topSpeed": 1.0,
-              "acceleration": 1.0,
-              "handling": 1.0,
-              "boostRegen": 1.0,
-              "boostPower": 1.0
+              "topSpeed": 1,
+              "acceleration": 1,
+              "handling": 1,
+              "boostRegen": 1,
+              "boostPower": 1
             },
             "1": {
               "xpToNext": 500,
@@ -14494,11 +15569,11 @@
               "upgradeTimerSeconds": 1800,
               "priceCoins": 25500,
               "carRating": 300,
-              "topSpeed": 1.0,
-              "acceleration": 1.0,
-              "handling": 1.0,
-              "boostRegen": 1.0,
-              "boostPower": 1.0
+              "topSpeed": 1,
+              "acceleration": 1,
+              "handling": 1,
+              "boostRegen": 1,
+              "boostPower": 1
             },
             "1": {
               "xpToNext": 1200,
@@ -14625,11 +15700,11 @@
               "upgradeTimerSeconds": 1800,
               "priceCoins": 25500,
               "carRating": 300,
-              "topSpeed": 1.0,
-              "acceleration": 1.0,
-              "handling": 1.0,
-              "boostRegen": 1.0,
-              "boostPower": 1.0
+              "topSpeed": 1,
+              "acceleration": 1,
+              "handling": 1,
+              "boostRegen": 1,
+              "boostPower": 1
             },
             "1": {
               "xpToNext": 1200,
@@ -14757,11 +15832,11 @@
               "upgradeTimerSeconds": 1800,
               "priceCoins": 25500,
               "carRating": 450,
-              "topSpeed": 1.0,
-              "acceleration": 1.0,
-              "handling": 1.0,
-              "boostRegen": 1.0,
-              "boostPower": 1.0
+              "topSpeed": 1,
+              "acceleration": 1,
+              "handling": 1,
+              "boostRegen": 1,
+              "boostPower": 1
             },
             "1": {
               "xpToNext": 1200,
@@ -14858,8 +15933,8 @@
               "carRating": 540,
               "topSpeed": 2.3,
               "acceleration": 2.3,
-              "handling": 2.0,
-              "boostRegen": 2.0,
+              "handling": 2,
+              "boostRegen": 2,
               "boostPower": 2.3
             }
           },
@@ -14889,11 +15964,11 @@
               "upgradeTimerSeconds": 3600,
               "priceCoins": 118000,
               "carRating": 450,
-              "topSpeed": 1.0,
-              "acceleration": 1.0,
-              "handling": 1.0,
-              "boostRegen": 1.0,
-              "boostPower": 1.0
+              "topSpeed": 1,
+              "acceleration": 1,
+              "handling": 1,
+              "boostRegen": 1,
+              "boostPower": 1
             },
             "1": {
               "xpToNext": 2400,
@@ -14990,8 +16065,8 @@
               "carRating": 540,
               "topSpeed": 2.3,
               "acceleration": 2.3,
-              "handling": 2.0,
-              "boostRegen": 2.0,
+              "handling": 2,
+              "boostRegen": 2,
               "boostPower": 2.3
             }
           },
@@ -15020,11 +16095,11 @@
               "upgradeTimerSeconds": 3600,
               "priceCoins": 118000,
               "carRating": 450,
-              "topSpeed": 1.0,
-              "acceleration": 1.0,
-              "handling": 1.0,
-              "boostRegen": 1.0,
-              "boostPower": 1.0
+              "topSpeed": 1,
+              "acceleration": 1,
+              "handling": 1,
+              "boostRegen": 1,
+              "boostPower": 1
             },
             "1": {
               "xpToNext": 2400,
@@ -15121,8 +16196,8 @@
               "carRating": 540,
               "topSpeed": 2.3,
               "acceleration": 2.3,
-              "handling": 2.0,
-              "boostRegen": 2.0,
+              "handling": 2,
+              "boostRegen": 2,
               "boostPower": 2.3
             }
           },
@@ -15152,11 +16227,11 @@
               "upgradeTimerSeconds": 3600,
               "priceCoins": 118000,
               "carRating": 450,
-              "topSpeed": 1.0,
-              "acceleration": 1.0,
-              "handling": 1.0,
-              "boostRegen": 1.0,
-              "boostPower": 1.0
+              "topSpeed": 1,
+              "acceleration": 1,
+              "handling": 1,
+              "boostRegen": 1,
+              "boostPower": 1
             },
             "1": {
               "xpToNext": 2400,
@@ -15253,8 +16328,8 @@
               "carRating": 540,
               "topSpeed": 2.3,
               "acceleration": 2.3,
-              "handling": 2.0,
-              "boostRegen": 2.0,
+              "handling": 2,
+              "boostRegen": 2,
               "boostPower": 2.3
             }
           },
@@ -15284,11 +16359,11 @@
               "upgradeTimerSeconds": 7200,
               "priceCoins": 472500,
               "carRating": 450,
-              "topSpeed": 1.0,
-              "acceleration": 1.0,
-              "handling": 1.0,
-              "boostRegen": 1.0,
-              "boostPower": 1.0
+              "topSpeed": 1,
+              "acceleration": 1,
+              "handling": 1,
+              "boostRegen": 1,
+              "boostPower": 1
             },
             "1": {
               "xpToNext": 4400,
@@ -15385,8 +16460,8 @@
               "carRating": 540,
               "topSpeed": 2.3,
               "acceleration": 2.3,
-              "handling": 2.0,
-              "boostRegen": 2.0,
+              "handling": 2,
+              "boostRegen": 2,
               "boostPower": 2.3
             }
           },
@@ -15415,11 +16490,11 @@
               "upgradeTimerSeconds": 7200,
               "priceCoins": 472500,
               "carRating": 450,
-              "topSpeed": 1.0,
-              "acceleration": 1.0,
-              "handling": 1.0,
-              "boostRegen": 1.0,
-              "boostPower": 1.0
+              "topSpeed": 1,
+              "acceleration": 1,
+              "handling": 1,
+              "boostRegen": 1,
+              "boostPower": 1
             },
             "1": {
               "xpToNext": 4400,
@@ -15516,8 +16591,8 @@
               "carRating": 540,
               "topSpeed": 2.3,
               "acceleration": 2.3,
-              "handling": 2.0,
-              "boostRegen": 2.0,
+              "handling": 2,
+              "boostRegen": 2,
               "boostPower": 2.3
             }
           },
@@ -15547,11 +16622,11 @@
               "upgradeTimerSeconds": 7200,
               "priceCoins": 472500,
               "carRating": 450,
-              "topSpeed": 1.0,
-              "acceleration": 1.0,
-              "handling": 1.0,
-              "boostRegen": 1.0,
-              "boostPower": 1.0
+              "topSpeed": 1,
+              "acceleration": 1,
+              "handling": 1,
+              "boostRegen": 1,
+              "boostPower": 1
             },
             "1": {
               "xpToNext": 4400,
@@ -15648,8 +16723,8 @@
               "carRating": 540,
               "topSpeed": 2.3,
               "acceleration": 2.3,
-              "handling": 2.0,
-              "boostRegen": 2.0,
+              "handling": 2,
+              "boostRegen": 2,
               "boostPower": 2.3
             }
           },

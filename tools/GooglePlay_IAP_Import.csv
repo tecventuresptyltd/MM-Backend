@@ -1,0 +1,31 @@
+Product ID,Published State,Purchase Type,Auto Translate,Locale; Title; Description,Auto Fill Prices,Price
+io.tecventures.mysticmotors.iap.offer_adrenaline_pro,published,managed_by_android,true,en_US; ADRENALINE PRO PACK; ADRENALINE PRO PACK Special Offer,true,5990000
+io.tecventures.mysticmotors.iap.offer_resource_rush,published,managed_by_android,true,en_US; RESOURCE RUSH BUNDLE; RESOURCE RUSH BUNDLE Special Offer,true,24990000
+io.tecventures.mysticmotors.iap.offer_mythic_mystery,published,managed_by_android,true,en_US; MYTHIC MYSTERY PACK; MYTHIC MYSTERY PACK Special Offer,true,44990000
+io.tecventures.mysticmotors.iap.offer_double_clutch,published,managed_by_android,true,en_US; DOUBLE CLUTCH BUNDLE; DOUBLE CLUTCH BUNDLE Special Offer,true,6990000
+io.tecventures.mysticmotors.iap.offer_ignition_starter,published,managed_by_android,true,en_US; IGNITION STARTER PACK; IGNITION STARTER PACK Special Offer,true,1990000
+io.tecventures.mysticmotors.iap.offer_fuel_emergency,published,managed_by_android,true,en_US; FUEL EMERGENCY PACK; FUEL EMERGENCY PACK Special Offer,true,1990000
+io.tecventures.mysticmotors.iap.offer_nitro_surge,published,managed_by_android,true,en_US; NITRO SURGE BUNDLE; NITRO SURGE BUNDLE Special Offer,true,1990000
+io.tecventures.mysticmotors.iap.offer_adrenaline_shot,published,managed_by_android,true,en_US; ADRENALINE SHOT BUNDLE; ADRENALINE SHOT BUNDLE Special Offer,true,1990000
+io.tecventures.mysticmotors.iap.offer_sprint_starter,published,managed_by_android,true,en_US; SPRINT STARTER PACK; SPRINT STARTER PACK Special Offer,true,1990000
+io.tecventures.mysticmotors.iap.offer_midnight_oil,published,managed_by_android,true,en_US; MIDNIGHT OIL PACK; MIDNIGHT OIL PACK Special Offer,true,1990000
+io.tecventures.mysticmotors.iap.offer_nitro_boost_plus,published,managed_by_android,true,en_US; NITRO BOOST PLUS PACK; NITRO BOOST PLUS PACK Special Offer,true,2990000
+io.tecventures.mysticmotors.iap.offer_pit_stop_special,published,managed_by_android,true,en_US; PIT STOP SPECIAL PACK; PIT STOP SPECIAL PACK Special Offer,true,3990000
+io.tecventures.mysticmotors.iap.offer_pro_crew_kit,published,managed_by_android,true,en_US; PRO CREW KIT; PRO CREW KIT Special Offer,true,29990000
+io.tecventures.mysticmotors.iap.offer_street_legend,published,managed_by_android,true,en_US; STREET LEGEND BUNDLE; STREET LEGEND BUNDLE Special Offer,true,39990000
+io.tecventures.mysticmotors.iap.offer_pro_circuit_pack,published,managed_by_android,true,en_US; PRO CIRCUIT PACK; PRO CIRCUIT PACK Special Offer,true,69990000
+io.tecventures.mysticmotors.iap.offer_lvl10_milestone,published,managed_by_android,true,en_US; MASTERY 5 MILESTONE BUNDLE; MASTERY 5 MILESTONE BUNDLE Special Offer,true,2990000
+io.tecventures.mysticmotors.iap.offer_lvl20_milestone,published,managed_by_android,true,en_US; MASTERY 10 MILESTONE PACK; MASTERY 10 MILESTONE PACK Special Offer,true,12990000
+io.tecventures.mysticmotors.iap.offer_lvl50_milestone,published,managed_by_android,true,en_US; MASTERY 20 MILESTONE PACK; MASTERY 20 MILESTONE PACK Special Offer,true,99990000
+io.tecventures.mysticmotors.iap.offer_mechanics_choice,published,managed_by_android,true,en_US; MECHANIC'S CHOICE BUNDLE; MECHANIC'S CHOICE BUNDLE Special Offer,true,6990000
+io.tecventures.mysticmotors.iap.offer_drift_king,published,managed_by_android,true,en_US; DRIFT KING PACK; DRIFT KING PACK Special Offer,true,9990000
+io.tecventures.mysticmotors.iap.offer_fast_lane_pack,published,managed_by_android,true,en_US; FAST LANE PACK; FAST LANE PACK Special Offer,true,12990000
+io.tecventures.mysticmotors.iap.offer_weekend_warrior,published,managed_by_android,true,en_US; WEEKEND WARRIOR BUNDLE; WEEKEND WARRIOR BUNDLE Special Offer,true,19990000
+io.tecventures.mysticmotors.iap.offer_tuners_vault,published,managed_by_android,true,en_US; TUNER'S VAULT; TUNER'S VAULT Special Offer,true,24990000
+io.tecventures.mysticmotors.iap.offer_drift_king_upsell,published,managed_by_android,true,en_US; DRIFT KING FLASH DEAL; DRIFT KING FLASH DEAL Special Offer,true,5990000
+io.tecventures.mysticmotors.iap.offer_the_collector,published,managed_by_android,true,en_US; THE COLLECTOR'S EDITION; THE COLLECTOR'S EDITION Special Offer,true,79990000
+io.tecventures.mysticmotors.iap.offer_elite_engineer,published,managed_by_android,true,en_US; ELITE CREW PACKAGE; ELITE CREW PACKAGE Special Offer,true,89990000
+io.tecventures.mysticmotors.iap.offer_garage_overhaul,published,managed_by_android,true,en_US; FULL GARAGE UPGRADE BUNDLE; FULL GARAGE UPGRADE BUNDLE Special Offer,true,129990000
+io.tecventures.mysticmotors.iap.offer_grand_prix_hoard,published,managed_by_android,true,en_US; GRAND PRIX ELITE PACK; GRAND PRIX ELITE PACK Special Offer,true,149990000
+io.tecventures.mysticmotors.iap.offer_the_sovereign,published,managed_by_android,true,en_US; THE APEX COLLECTION BUNDLE; THE APEX COLLECTION BUNDLE Special Offer,true,199990000
+io.tecventures.mysticmotors.iap.offer_championship_kit,published,managed_by_android,true,en_US; CHAMPIONSHIP CIRCUIT PACK; CHAMPIONSHIP CIRCUIT PACK Special Offer,true,199990000

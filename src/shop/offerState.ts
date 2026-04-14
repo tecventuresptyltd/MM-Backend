@@ -89,23 +89,11 @@ const isSpecialTriggerType = (value: unknown): value is SpecialOfferTriggerType 
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Calculate next tier after an offer is purchased (IAP only).
- * Climbs 1 tier, with special wrap from tier 4 → tier 3.
+ * Next tier logic deprecated. Multi-slot uses random rotation.
  */
-export const resolveNextTierOnPurchase = (currentTier: number): number => {
-  if (currentTier >= MAX_TIER) {
-    return MAX_TIER - 1; // Wrap T4 → T3
-  }
-  return Math.min(MAX_TIER, currentTier + 1);
-};
+export const resolveNextTierOnPurchase = (currentTier: number): number => 0;
 
-/**
- * Calculate next tier after an offer expires.
- * Drops 2 tiers, minimum tier 0.
- */
-export const resolveNextTierOnExpiry = (currentTier: number): number => {
-  return Math.max(0, currentTier - 2);
-};
+export const resolveNextTierOnExpiry = (currentTier: number): number => 0;
 
 /**
  * Get the appropriate cooldown duration based on how the offer ended.
@@ -170,7 +158,7 @@ const normaliseMainOffer = (value: unknown): MainOffer | undefined => {
   const state = isValidMainOfferState(data.state) ? data.state : "active";
   return {
     offerId: data.offerId,
-    offerType: normaliseNumber(data.offerType, 0),
+    category: typeof data.category === "string" ? data.category : "unknown",
     expiresAt: normaliseNumber(data.expiresAt),
     tier: clampTier(data.tier),
     state,
@@ -233,19 +221,21 @@ export const normaliseDailyState = (value: unknown): ActiveDailyOfferState => {
 
 /**
  * Normalise ActiveOffers document data.
- * Supports both legacy (starter/daily) and new (main) formats.
+ * Supports multi-slot format.
  */
 export const normaliseActiveOffers = (
   data: FirebaseFirestore.DocumentData | undefined | null,
 ): ActiveOffers => {
-  const starter = normaliseStarter(data?.starter);
-  const daily = data?.daily ? normaliseDailyState(data.daily) : undefined;
-  const main = normaliseMainOffer(data?.main);
   const special = normaliseSpecialList(data?.special);
+  const rotating: MainOffer[] = [];
+  if (Array.isArray(data?.rotating)) {
+    data.rotating.forEach((elem: unknown) => {
+      const parsed = normaliseMainOffer(elem);
+      if (parsed) rotating.push(parsed);
+    });
+  }
   return {
-    starter,
-    daily,
-    main,
+    rotating,
     special,
     updatedAt: normaliseNumber(data?.updatedAt, 0) || undefined,
   };
@@ -289,18 +279,18 @@ export const pruneExpiredSpecialOffers = (
 ): ActiveSpecialOffer[] => special.filter((entry) => entry.expiresAt > now);
 
 /**
- * Check if a main offer is ready for the next transition.
+ * Check if a slot offer is ready for the next transition.
  */
-export const isMainOfferTransitionReady = (
-  main: MainOffer | undefined,
+export const isOfferTransitionReady = (
+  slot: MainOffer | undefined,
   now: number,
 ): boolean => {
-  if (!main) return false;
-  if (main.state === "active") {
-    return main.expiresAt <= now;
+  if (!slot) return false;
+  if (slot.state === "active") {
+    return slot.expiresAt <= now;
   }
-  if (main.state === "cooldown" || main.state === "purchase_delay") {
-    return (main.nextOfferAt ?? 0) <= now;
+  if (slot.state === "cooldown" || slot.state === "purchase_delay") {
+    return (slot.nextOfferAt ?? 0) <= now;
   }
   return false;
 };
@@ -317,14 +307,10 @@ export const writeActiveOffers =
   ) =>
     (state: ActiveOffers, now: number) => {
       const ref = activeOffersRef(uid);
-      const starterValue: ActiveStarterOffer | FirebaseFirestore.FieldValue =
-        state.starter ?? admin.firestore.FieldValue.delete();
-
       transaction.set(
         ref,
         {
-          starter: starterValue,
-          daily: state.daily ?? admin.firestore.FieldValue.delete(),
+          rotating: state.rotating ?? admin.firestore.FieldValue.delete(),
           special: state.special,
           updatedAt: now,
         },
@@ -333,27 +319,29 @@ export const writeActiveOffers =
     };
 
 /**
- * Write the new-format ActiveOffers document with main slot.
+ * Write the new-format ActiveOffers document with multiple slots.
  */
 export const writeActiveOffersV2 = (
   transaction: FirebaseFirestore.Transaction,
   uid: string,
   state: {
-    main?: MainOffer | null;
+    rotating?: MainOffer[];
     special: ActiveSpecialOffer[];
   },
   now: number,
 ): void => {
   const ref = activeOffersRef(uid);
-  const mainValue: MainOffer | FirebaseFirestore.FieldValue =
-    state.main ?? admin.firestore.FieldValue.delete();
 
   transaction.set(
     ref,
     {
-      main: mainValue,
+      rotating: state.rotating ?? admin.firestore.FieldValue.delete(),
       special: state.special,
       // Clear legacy fields
+      slot1: admin.firestore.FieldValue.delete(),
+      slot2: admin.firestore.FieldValue.delete(),
+      slot3: admin.firestore.FieldValue.delete(),
+      main: admin.firestore.FieldValue.delete(),
       starter: admin.firestore.FieldValue.delete(),
       daily: admin.firestore.FieldValue.delete(),
       updatedAt: now,

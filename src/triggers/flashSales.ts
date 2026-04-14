@@ -3,7 +3,7 @@ import * as admin from "firebase-admin";
 import { db } from "../shared/firestore.js";
 import { ActiveSpecialOffer, SpecialOfferTriggerType } from "../shared/types.js";
 import { activeOffersRef, normaliseActiveOffers, pruneExpiredSpecialOffers } from "../shop/offerState.js";
-import { loadOfferLadderIndex } from "../shop/offerCatalog.js";
+import { loadOfferSlotIndex } from "../shop/offerCatalog.js";
 
 const MYTHICAL_CRATE_SKU = "sku_kgkjadrd79";
 const MYTHICAL_KEY_SKU = "sku_hq5ywspmr5";
@@ -163,9 +163,9 @@ const runWithTransaction = async (
 export const maybeTriggerFlashSales = async (
   options: FlashSaleTriggerOptions,
 ): Promise<FlashSaleTriggerResult | null> => {
-  const ladderIndex = await loadOfferLadderIndex();
-  if (!ladderIndex.flashOfferIds.flash_missing_crate) {
+  const index = await loadOfferSlotIndex();
+  if (!index.flashOfferIds.flash_missing_crate) {
     return null;
   }
-  return runWithTransaction(options, ladderIndex.flashOfferIds);
+  return runWithTransaction(options, index.flashOfferIds);
 };

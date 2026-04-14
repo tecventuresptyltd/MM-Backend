@@ -263,7 +263,10 @@ export interface Offer {
   endAt?: number;
   metadata?: Record<string, unknown>;
   validityHours?: number;
+  validityMinutes?: number;
   offerType?: number;
+  category?: string;
+  slotAssignment?: number;
   updatedAt?: number;
 }
 
@@ -304,10 +307,10 @@ export type MainOfferState = 'active' | 'cooldown' | 'purchase_delay';
  * Replaces separate starter/daily handling with unified slot.
  */
 export interface MainOffer {
+  category: string; // Internal identifier for the category (e.g., "micro_hook", "whale")
   offerId: string;
-  offerType: number;
   expiresAt: number;
-  tier: number;
+  tier?: number; // deprecated
   state: MainOfferState;
   /** When next offer becomes available (used in cooldown/purchase_delay states) */
   nextOfferAt?: number;
@@ -336,12 +339,10 @@ export interface OfferFlowState {
  * Stored at Players/{uid}/Offers/Active
  */
 export interface ActiveOffers {
-  /** @deprecated Use main instead - kept for backward compatibility */
-  starter?: ActiveStarterOffer;
-  /** @deprecated Use main instead - kept for backward compatibility */
-  daily?: ActiveDailyOfferState;
-  /** New unified main offer slot */
+  /** @deprecated Refactored to multi-slot system */
   main?: MainOffer;
+  /** Infinitely scalable array of rotating shop categories */
+  rotating?: MainOffer[];
   /** Independent stackable offers (milestones, flash sales) */
   special: ActiveSpecialOffer[];
   updatedAt?: number;

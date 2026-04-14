@@ -39,29 +39,21 @@ async function initializePlayer(uid) {
         stateRef.get(),
     ]);
 
-    // Skip if already has main offer
-    if (activeSnap.exists && activeSnap.data()?.main) {
-        return { initialized: false, reason: 'already_has_offer' };
+    // Skip if already migrated
+    if (activeSnap.exists && activeSnap.data()?.rotating) {
+        return { initialized: false, reason: 'already_has_rotating_offers' };
     }
 
-    // Select random daily offer
-    const randomIndex = Math.floor(Math.random() * dailyOfferIds.length);
-    const offerId = dailyOfferIds[randomIndex];
-    const offerType = randomIndex + 1;
-
+    // Default initialization. getDailyOffers will dynamically populate this via the backend
     await db.runTransaction(async (txn) => {
         txn.set(activeRef, {
-            main: {
-                offerId,
-                offerType,
-                expiresAt: now + (24 * 60 * 60 * 1000), // 24 hours
-                tier: 0,
-                state: 'active',
-                isStarter: false,
-            },
+            rotating: [],
             special: [],
+            main: admin.firestore.FieldValue.delete(), // clean legacy
+            starter: admin.firestore.FieldValue.delete(), // clean legacy
+            daily: admin.firestore.FieldValue.delete(), // clean legacy
             updatedAt: now,
-        });
+        }, { merge: true });
 
         txn.set(stateRef, {
             starterEligible: false,

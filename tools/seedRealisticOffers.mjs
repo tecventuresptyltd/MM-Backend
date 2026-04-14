@@ -32,10 +32,10 @@ const now = Date.now();
 
 // Available daily/ladder offers from catalog
 const DAILY_OFFERS = [
-    { offerId: 'offer_bwebp6s4', type: 1 },
-    { offerId: 'offer_lj8amwse', type: 2 },
-    { offerId: 'offer_t9cqmz1z', type: 3 },
-    { offerId: 'offer_c3yqfh3h', type: 4 },
+    { offerId: 'offer_ignition_starter' },
+    { offerId: 'offer_fuel_emergency' },
+    { offerId: 'offer_nitro_surge' },
+    { offerId: 'offer_adrenaline_shot' },
 ];
 
 async function seedRealisticOffers() {
@@ -60,51 +60,50 @@ async function seedRealisticOffers() {
     const mainOffer = {
         state: 'active',
         offerId: randomDaily.offerId,
-        offerType: randomDaily.type,
+        offerType: 1, // Legacy integer shim
         expiresAt: now + (24 * 60 * 60 * 1000), // 24 hours from now
         isStarter: false,
         tier: 0,
     };
 
-    console.log(`Main offer: ${mainOffer.offerId} (Daily Type ${mainOffer.offerType})`);
+    console.log(`Main offer: ${mainOffer.offerId}`);
 
     // Determine special offers based on actual data
     const specialOffers = [];
 
-    // Add level-up offer if player is at milestone level (5 or 10)
+    // Add level-up offer if player is at milestone level (5, 10, or 20)
     if (level === 5) {
         specialOffers.push({
-            offerId: 'offer_3vv3me0e',
-            triggerType: 'level_up',
-            expiresAt: now + (48 * 60 * 60 * 1000),
+            offerId: 'offer_lvl10_milestone', // Our new ID for Mastery Rank 5
+            triggerType: 'mastery_rank_5',
+            expiresAt: now + (24 * 60 * 60 * 1000),
             metadata: { level: 5 },
         });
-        console.log('  + Level 5 milestone offer');
+        console.log('  + Mastery 5 milestone offer');
     } else if (level === 10) {
         specialOffers.push({
-            offerId: 'offer_nzbg5lp4',
-            triggerType: 'level_up',
-            expiresAt: now + (48 * 60 * 60 * 1000),
+            offerId: 'offer_lvl20_milestone', // Our new ID for Mastery Rank 10
+            triggerType: 'mastery_rank_10',
+            expiresAt: now + (24 * 60 * 60 * 1000),
             metadata: { level: 10 },
         });
-        console.log('  + Level 10 milestone offer');
+        console.log('  + Mastery 10 milestone offer');
     }
 
-    // Add flash sales (these would be triggered by inventory checks in real function)
-    // For testing, we'll add both
+    // Add contextual sales (these would be triggered by game state checks in real function)
     specialOffers.push({
-        offerId: 'offer_1fc83c23',
-        triggerType: 'flash_missing_key',
-        expiresAt: now + (6 * 60 * 60 * 1000), // 6 hours
+        offerId: 'offer_resource_rush',
+        triggerType: 'fuel_empty',
+        expiresAt: now + (4 * 60 * 60 * 1000), // 4 hours
     });
-    console.log('  + Flash sale: Missing legendary key');
+    console.log('  + Contextual: Fuel Empty');
 
     specialOffers.push({
-        offerId: 'offer_hqfexluh',
-        triggerType: 'flash_missing_crate',
-        expiresAt: now + (6 * 60 * 60 * 1000),
+        offerId: 'offer_double_clutch',
+        triggerType: 'weekend',
+        expiresAt: now + (24 * 60 * 60 * 1000),
     });
-    console.log('  + Flash sale: Missing mythical crate');
+    console.log('  + Event: Weekend Double Clutch');
 
     console.log(`\nTotal special offers: ${specialOffers.length}\n`);
 

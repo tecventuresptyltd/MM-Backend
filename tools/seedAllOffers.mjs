@@ -35,48 +35,51 @@ async function seedAllOffers() {
     const activeRef = db.doc(`Players/${targetUid}/Offers/Active`);
     const stateRef = db.doc(`Players/${targetUid}/Offers/State`);
 
-    // Main offer - using a ladder tier 2 offer (IAP)
+    // Main offer - Using Sweet Spot test offer
     const mainOffer = {
         state: 'active',
-        offerId: 'offer_hr9k5zv2', // Tier 2 ladder offer
-        offerType: 7, // Ladder type
-        expiresAt: now + (24 * 60 * 60 * 1000), // 24 hours
+        offerId: 'offer_mechanics_choice',
+        offerType: 5, // Legacy integer shim (5 = Tier 1 Ladder equivalent)
+        expiresAt: now + (48 * 60 * 60 * 1000), // 48 hours for sweet spot
         isStarter: false,
-        tier: 2,
+        tier: 1,
     };
 
-    // Special offers - one of each type
+    // Special offers - all other 29 offers
     const specialOffers = [
-        // Level-up reward (level 5)
-        {
-            offerId: 'offer_3vv3me0e',
-            triggerType: 'level_up',
-            expiresAt: now + (48 * 60 * 60 * 1000), // 48 hours
-            metadata: { level: 5 },
-        },
-        // Level-up reward (level 10)
-        {
-            offerId: 'offer_nzbg5lp4',
-            triggerType: 'level_up',
-            expiresAt: now + (48 * 60 * 60 * 1000),
-            metadata: { level: 10 },
-        },
-        // Flash sale - missing key
-        {
-            offerId: 'offer_1fc83c23',
-            triggerType: 'flash_missing_key',
-            expiresAt: now + (6 * 60 * 60 * 1000), // 6 hours
-        },
-        // Flash sale - missing crate
-        {
-            offerId: 'offer_hqfexluh',
-            triggerType: 'flash_missing_crate',
-            expiresAt: now + (6 * 60 * 60 * 1000), // 6 hours
-        },
+        { offerId: 'offer_ignition_starter', triggerType: 'test_trigger_micro_hook', expiresAt: now + (24 * 60 * 60 * 1000) },
+        { offerId: 'offer_drift_king_upsell', triggerType: 'post_purchase_upsell', expiresAt: now + (0.25 * 60 * 60 * 1000) },
+        { offerId: 'offer_fuel_emergency', triggerType: 'test_trigger_micro_hook', expiresAt: now + (24 * 60 * 60 * 1000) },
+        { offerId: 'offer_nitro_surge', triggerType: 'test_trigger_micro_hook', expiresAt: now + (24 * 60 * 60 * 1000) },
+        { offerId: 'offer_adrenaline_shot', triggerType: 'test_trigger_micro_hook', expiresAt: now + (24 * 60 * 60 * 1000) },
+        { offerId: 'offer_sprint_starter', triggerType: 'test_trigger_micro_hook', expiresAt: now + (24 * 60 * 60 * 1000) },
+        { offerId: 'offer_midnight_oil', triggerType: 'test_trigger_micro_hook', expiresAt: now + (24 * 60 * 60 * 1000) },
+        { offerId: 'offer_nitro_boost_plus', triggerType: 'test_trigger_micro_hook', expiresAt: now + (24 * 60 * 60 * 1000) },
+        { offerId: 'offer_pit_stop_special', triggerType: 'test_trigger_micro_hook', expiresAt: now + (24 * 60 * 60 * 1000) },
+        { offerId: 'offer_drift_king', triggerType: 'test_trigger_sweet_spot', expiresAt: now + (48 * 60 * 60 * 1000) },
+        { offerId: 'offer_tuners_vault', triggerType: 'test_trigger_sweet_spot', expiresAt: now + (48 * 60 * 60 * 1000) },
+        { offerId: 'offer_street_legend', triggerType: 'test_trigger_mid_tier', expiresAt: now + (48 * 60 * 60 * 1000) },
+        { offerId: 'offer_pro_circuit_pack', triggerType: 'test_trigger_mid_tier', expiresAt: now + (48 * 60 * 60 * 1000) },
+        { offerId: 'offer_weekend_warrior', triggerType: 'test_trigger_sweet_spot', expiresAt: now + (48 * 60 * 60 * 1000) },
+        { offerId: 'offer_fast_lane_pack', triggerType: 'test_trigger_sweet_spot', expiresAt: now + (48 * 60 * 60 * 1000) },
+        { offerId: 'offer_pro_crew_kit', triggerType: 'test_trigger_mid_tier', expiresAt: now + (48 * 60 * 60 * 1000) },
+        { offerId: 'offer_grand_prix_hoard', triggerType: 'test_trigger_whale', expiresAt: now + (72 * 60 * 60 * 1000) },
+        { offerId: 'offer_the_sovereign', triggerType: 'test_trigger_whale', expiresAt: now + (72 * 60 * 60 * 1000) },
+        { offerId: 'offer_elite_engineer', triggerType: 'test_trigger_whale', expiresAt: now + (72 * 60 * 60 * 1000) },
+        { offerId: 'offer_the_collector', triggerType: 'test_trigger_whale', expiresAt: now + (72 * 60 * 60 * 1000) },
+        { offerId: 'offer_garage_overhaul', triggerType: 'test_trigger_whale', expiresAt: now + (72 * 60 * 60 * 1000) },
+        { offerId: 'offer_championship_kit', triggerType: 'test_trigger_whale', expiresAt: now + (72 * 60 * 60 * 1000) },
+        { offerId: 'offer_lvl10_milestone', triggerType: 'mastery_rank_5', expiresAt: now + (24 * 60 * 60 * 1000) },
+        { offerId: 'offer_lvl20_milestone', triggerType: 'mastery_rank_10', expiresAt: now + (24 * 60 * 60 * 1000) },
+        { offerId: 'offer_lvl50_milestone', triggerType: 'mastery_rank_20', expiresAt: now + (48 * 60 * 60 * 1000) },
+        { offerId: 'offer_resource_rush', triggerType: 'fuel_empty', expiresAt: now + (4 * 60 * 60 * 1000) },
+        { offerId: 'offer_adrenaline_pro', triggerType: 'win_streak_3', expiresAt: now + (1 * 60 * 60 * 1000) },
+        { offerId: 'offer_mythic_mystery', triggerType: 'mythical_crate_earned', expiresAt: now + (8 * 60 * 60 * 1000) },
+        { offerId: 'offer_double_clutch', triggerType: 'weekend', expiresAt: now + (24 * 60 * 60 * 1000) }
     ];
 
     console.log('Creating offers document...');
-    console.log(`Main offer: ${mainOffer.offerId} (Tier ${mainOffer.tier} Ladder)`);
+    console.log(`Main offer: ${mainOffer.offerId}`);
     console.log(`Special offers: ${specialOffers.length} types\n`);
 
     await activeRef.set({
@@ -90,7 +93,7 @@ async function seedAllOffers() {
         starterEligible: true,
         starterShown: true,
         starterPurchased: false,
-        tier: 2,
+        tier: 1,
         lastOfferExpiredAt: null,
         lastOfferPurchasedAt: null,
         offersPurchased: 0,
@@ -102,7 +105,7 @@ async function seedAllOffers() {
     console.log('\nCreated offers:');
     console.log('───────────────────────────────────────────');
     console.log('MAIN OFFER:');
-    console.log(`  • ${mainOffer.offerId} - Tier 2 Ladder (24h)`);
+    console.log(`  • ${mainOffer.offerId}`);
     console.log('\nSPECIAL OFFERS:');
     specialOffers.forEach(offer => {
         const hours = Math.round((offer.expiresAt - now) / (60 * 60 * 1000));

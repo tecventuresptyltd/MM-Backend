@@ -12635,7 +12635,7 @@
       "offers": {
         "offer_adrenaline_pro": {
           "offerId": "offer_adrenaline_pro",
-          "displayName": "ADRENALINE PRO PACK",
+          "displayName": "EXOTIC SURGE",
           "category": "context",
           "currency": "USD",
           "amount": 5.99,
@@ -12648,7 +12648,7 @@
             },
             {
               "type": "crate",
-              "id": "crt_7y8a6hca",
+              "id": "sku_e8e7jeba7v",
               "quantity": 2
             },
             {
@@ -12676,7 +12676,7 @@
         },
         "offer_resource_rush": {
           "offerId": "offer_resource_rush",
-          "displayName": "RESOURCE RUSH BUNDLE",
+          "displayName": "GOLD FLOOD",
           "category": "context",
           "currency": "USD",
           "amount": 24.99,
@@ -12689,7 +12689,7 @@
             },
             {
               "type": "crate",
-              "id": "crt_7y8a6hca",
+              "id": "sku_e8e7jeba7v",
               "quantity": 4
             },
             {
@@ -12732,7 +12732,7 @@
         },
         "offer_mythic_mystery": {
           "offerId": "offer_mythic_mystery",
-          "displayName": "MYTHIC MYSTERY PACK",
+          "displayName": "FORTUNE VAULT",
           "category": "context",
           "currency": "USD",
           "amount": 44.99,
@@ -12745,7 +12745,7 @@
             },
             {
               "type": "crate",
-              "id": "crt_y8fywbrs",
+              "id": "sku_kgkjadrd79",
               "quantity": 1
             },
             {
@@ -12788,7 +12788,7 @@
         },
         "offer_double_clutch": {
           "offerId": "offer_double_clutch",
-          "displayName": "DOUBLE CLUTCH BUNDLE",
+          "displayName": "WEEKEND CIRCUIT",
           "category": "event",
           "currency": "USD",
           "amount": 6.99,
@@ -12801,7 +12801,7 @@
             },
             {
               "type": "crate",
-              "id": "crt_vzqgtd2s",
+              "id": "sku_72wnqwtfmx",
               "quantity": 2
             },
             {
@@ -12834,7 +12834,7 @@
         },
         "offer_ignition_starter": {
           "offerId": "offer_ignition_starter",
-          "displayName": "IGNITION STARTER PACK",
+          "displayName": "GEM IGNITION",
           "category": "micro_hook",
           "currency": "USD",
           "amount": 1.99,
@@ -12847,12 +12847,12 @@
             },
             {
               "type": "crate",
-              "id": "crt_vzqgtd2s",
+              "id": "sku_72wnqwtfmx",
               "quantity": 1
             },
             {
               "type": "crate",
-              "id": "crt_ayvncyt0",
+              "id": "sku_zz3twgp0wx",
               "quantity": 2
             },
             {
@@ -12880,7 +12880,7 @@
         },
         "offer_fuel_emergency": {
           "offerId": "offer_fuel_emergency",
-          "displayName": "FUEL EMERGENCY PACK",
+          "displayName": "FUEL SURGE",
           "category": "micro_hook",
           "currency": "USD",
           "amount": 1.99,
@@ -12893,7 +12893,7 @@
             },
             {
               "type": "crate",
-              "id": "crt_7y8a6hca",
+              "id": "sku_e8e7jeba7v",
               "quantity": 1
             },
             {
@@ -12916,7 +12916,7 @@
         },
         "offer_nitro_surge": {
           "offerId": "offer_nitro_surge",
-          "displayName": "NITRO SURGE BUNDLE",
+          "displayName": "RARE RUSH",
           "category": "micro_hook",
           "currency": "USD",
           "amount": 1.99,
@@ -12929,7 +12929,7 @@
             },
             {
               "type": "crate",
-              "id": "crt_vzqgtd2s",
+              "id": "sku_72wnqwtfmx",
               "quantity": 2
             },
             {
@@ -12952,7 +12952,7 @@
         },
         "offer_adrenaline_shot": {
           "offerId": "offer_adrenaline_shot",
-          "displayName": "ADRENALINE SHOT BUNDLE",
+          "displayName": "RARE STORM",
           "category": "micro_hook",
           "currency": "USD",
           "amount": 1.99,
@@ -12965,12 +12965,12 @@
             },
             {
               "type": "crate",
-              "id": "crt_vzqgtd2s",
+              "id": "sku_72wnqwtfmx",
               "quantity": 2
             },
             {
               "type": "crate",
-              "id": "crt_ayvncyt0",
+              "id": "sku_zz3twgp0wx",
               "quantity": 2
             },
             {
@@ -12993,7 +12993,7 @@
         },
         "offer_sprint_starter": {
           "offerId": "offer_sprint_starter",
-          "displayName": "SPRINT STARTER PACK",
+          "displayName": "SPARK CACHE",
           "category": "micro_hook",
           "currency": "USD",
           "amount": 1.99,
@@ -13006,7 +13006,7 @@
             },
             {
               "type": "crate",
-              "id": "crt_7y8a6hca",
+              "id": "sku_e8e7jeba7v",
               "quantity": 1
             },
             {
@@ -13029,7 +13029,7 @@
         },
         "offer_midnight_oil": {
           "offerId": "offer_midnight_oil",
-          "displayName": "MIDNIGHT OIL PACK",
+          "displayName": "NIGHT SHIFT",
           "category": "micro_hook",
           "currency": "USD",
           "amount": 1.99,
@@ -13042,7 +13042,7 @@
             },
             {
               "type": "crate",
-              "id": "crt_vzqgtd2s",
+              "id": "sku_72wnqwtfmx",
               "quantity": 1
             },
             {
@@ -13070,7 +13070,7 @@
         },
         "offer_nitro_boost_plus": {
           "offerId": "offer_nitro_boost_plus",
-          "displayName": "NITRO BOOST PLUS PACK",
+          "displayName": "SHARD STRIKE",
           "category": "micro_hook",
           "currency": "USD",
           "amount": 2.99,
@@ -13083,7 +13083,7 @@
             },
             {
               "type": "crate",
-              "id": "crt_7y8a6hca",
+              "id": "sku_e8e7jeba7v",
               "quantity": 1
             },
             {
@@ -13111,7 +13111,7 @@
         },
         "offer_pit_stop_special": {
           "offerId": "offer_pit_stop_special",
-          "displayName": "PIT STOP SPECIAL PACK",
+          "displayName": "TURBO CACHE",
           "category": "micro_hook",
           "currency": "USD",
           "amount": 3.99,
@@ -13124,7 +13124,7 @@
             },
             {
               "type": "crate",
-              "id": "crt_7y8a6hca",
+              "id": "sku_e8e7jeba7v",
               "quantity": 1
             },
             {
@@ -13152,7 +13152,7 @@
         },
         "offer_pro_crew_kit": {
           "offerId": "offer_pro_crew_kit",
-          "displayName": "PRO CREW KIT",
+          "displayName": "LEGENDARY HAUL",
           "category": "mid_tier",
           "currency": "USD",
           "amount": 29.99,
@@ -13165,7 +13165,7 @@
             },
             {
               "type": "crate",
-              "id": "crt_76ar1k2x",
+              "id": "sku_n9hsc0wxxk",
               "quantity": 1
             },
             {
@@ -13207,7 +13207,7 @@
         },
         "offer_street_legend": {
           "offerId": "offer_street_legend",
-          "displayName": "STREET LEGEND BUNDLE",
+          "displayName": "LEGEND SURGE",
           "category": "mid_tier",
           "currency": "USD",
           "amount": 39.99,
@@ -13220,7 +13220,7 @@
             },
             {
               "type": "crate",
-              "id": "crt_76ar1k2x",
+              "id": "sku_n9hsc0wxxk",
               "quantity": 2
             },
             {
@@ -13262,7 +13262,7 @@
         },
         "offer_pro_circuit_pack": {
           "offerId": "offer_pro_circuit_pack",
-          "displayName": "PRO CIRCUIT PACK",
+          "displayName": "GRAND CIRCUIT",
           "category": "mid_tier",
           "currency": "USD",
           "amount": 69.99,
@@ -13275,12 +13275,12 @@
             },
             {
               "type": "crate",
-              "id": "crt_76ar1k2x",
+              "id": "sku_n9hsc0wxxk",
               "quantity": 2
             },
             {
               "type": "crate",
-              "id": "crt_7y8a6hca",
+              "id": "sku_e8e7jeba7v",
               "quantity": 3
             },
             {
@@ -13327,7 +13327,7 @@
         },
         "offer_lvl10_milestone": {
           "offerId": "offer_lvl10_milestone",
-          "displayName": "MASTERY 5 MILESTONE BUNDLE",
+          "displayName": "MASTERY SURGE",
           "category": "milestone",
           "currency": "USD",
           "amount": 2.99,
@@ -13340,7 +13340,7 @@
             },
             {
               "type": "crate",
-              "id": "crt_vzqgtd2s",
+              "id": "sku_72wnqwtfmx",
               "quantity": 1
             },
             {
@@ -13368,7 +13368,7 @@
         },
         "offer_lvl20_milestone": {
           "offerId": "offer_lvl20_milestone",
-          "displayName": "MASTERY 10 MILESTONE PACK",
+          "displayName": "HORIZON CACHE",
           "category": "milestone",
           "currency": "USD",
           "amount": 12.99,
@@ -13381,7 +13381,7 @@
             },
             {
               "type": "crate",
-              "id": "crt_7y8a6hca",
+              "id": "sku_e8e7jeba7v",
               "quantity": 1
             },
             {
@@ -13424,7 +13424,7 @@
         },
         "offer_lvl50_milestone": {
           "offerId": "offer_lvl50_milestone",
-          "displayName": "MASTERY 20 MILESTONE PACK",
+          "displayName": "APEX VAULT",
           "category": "milestone",
           "currency": "USD",
           "amount": 99.99,
@@ -13437,12 +13437,12 @@
             },
             {
               "type": "crate",
-              "id": "crt_y8fywbrs",
+              "id": "sku_kgkjadrd79",
               "quantity": 1
             },
             {
               "type": "crate",
-              "id": "crt_76ar1k2x",
+              "id": "sku_n9hsc0wxxk",
               "quantity": 2
             },
             {
@@ -13495,7 +13495,7 @@
         },
         "offer_mechanics_choice": {
           "offerId": "offer_mechanics_choice",
-          "displayName": "MECHANIC'S CHOICE BUNDLE",
+          "displayName": "GARAGE CIRCUIT",
           "category": "sweet_spot",
           "currency": "USD",
           "amount": 6.99,
@@ -13508,12 +13508,12 @@
             },
             {
               "type": "crate",
-              "id": "crt_7y8a6hca",
+              "id": "sku_e8e7jeba7v",
               "quantity": 1
             },
             {
               "type": "crate",
-              "id": "crt_vzqgtd2s",
+              "id": "sku_72wnqwtfmx",
               "quantity": 2
             },
             {
@@ -13545,7 +13545,7 @@
         },
         "offer_drift_king": {
           "offerId": "offer_drift_king",
-          "displayName": "DRIFT KING PACK",
+          "displayName": "EXOTIC EDGE",
           "category": "sweet_spot",
           "currency": "USD",
           "amount": 9.99,
@@ -13558,12 +13558,12 @@
             },
             {
               "type": "crate",
-              "id": "crt_7y8a6hca",
+              "id": "sku_e8e7jeba7v",
               "quantity": 2
             },
             {
               "type": "crate",
-              "id": "crt_vzqgtd2s",
+              "id": "sku_72wnqwtfmx",
               "quantity": 1
             },
             {
@@ -13605,7 +13605,7 @@
         },
         "offer_fast_lane_pack": {
           "offerId": "offer_fast_lane_pack",
-          "displayName": "FAST LANE PACK",
+          "displayName": "SPEED VAULT",
           "category": "sweet_spot",
           "currency": "USD",
           "amount": 12.99,
@@ -13618,12 +13618,12 @@
             },
             {
               "type": "crate",
-              "id": "crt_7y8a6hca",
+              "id": "sku_e8e7jeba7v",
               "quantity": 1
             },
             {
               "type": "crate",
-              "id": "crt_vzqgtd2s",
+              "id": "sku_72wnqwtfmx",
               "quantity": 2
             },
             {
@@ -13665,7 +13665,7 @@
         },
         "offer_weekend_warrior": {
           "offerId": "offer_weekend_warrior",
-          "displayName": "WEEKEND WARRIOR BUNDLE",
+          "displayName": "EXOTIC STORM",
           "category": "sweet_spot",
           "currency": "USD",
           "amount": 19.99,
@@ -13678,7 +13678,7 @@
             },
             {
               "type": "crate",
-              "id": "crt_7y8a6hca",
+              "id": "sku_e8e7jeba7v",
               "quantity": 3
             },
             {
@@ -13720,7 +13720,7 @@
         },
         "offer_tuners_vault": {
           "offerId": "offer_tuners_vault",
-          "displayName": "TUNER'S VAULT",
+          "displayName": "LEGENDARY EDGE",
           "category": "sweet_spot",
           "currency": "USD",
           "amount": 24.99,
@@ -13733,12 +13733,12 @@
             },
             {
               "type": "crate",
-              "id": "crt_76ar1k2x",
+              "id": "sku_n9hsc0wxxk",
               "quantity": 1
             },
             {
               "type": "crate",
-              "id": "crt_7y8a6hca",
+              "id": "sku_e8e7jeba7v",
               "quantity": 2
             },
             {
@@ -13780,7 +13780,7 @@
         },
         "offer_drift_king_upsell": {
           "offerId": "offer_drift_king_upsell",
-          "displayName": "DRIFT KING FLASH DEAL",
+          "displayName": "FLASH CIRCUIT",
           "category": "upsell",
           "currency": "USD",
           "amount": 5.99,
@@ -13793,12 +13793,12 @@
             },
             {
               "type": "crate",
-              "id": "crt_7y8a6hca",
+              "id": "sku_e8e7jeba7v",
               "quantity": 2
             },
             {
               "type": "crate",
-              "id": "crt_vzqgtd2s",
+              "id": "sku_72wnqwtfmx",
               "quantity": 1
             },
             {
@@ -13842,7 +13842,7 @@
         },
         "offer_the_collector": {
           "offerId": "offer_the_collector",
-          "displayName": "THE COLLECTOR'S EDITION",
+          "displayName": "MYTHIC TROVE",
           "category": "whale",
           "currency": "USD",
           "amount": 79.99,
@@ -13855,12 +13855,12 @@
             },
             {
               "type": "crate",
-              "id": "crt_y8fywbrs",
+              "id": "sku_kgkjadrd79",
               "quantity": 1
             },
             {
               "type": "crate",
-              "id": "crt_7y8a6hca",
+              "id": "sku_e8e7jeba7v",
               "quantity": 2
             },
             {
@@ -13907,7 +13907,7 @@
         },
         "offer_elite_engineer": {
           "offerId": "offer_elite_engineer",
-          "displayName": "ELITE CREW PACKAGE",
+          "displayName": "LEGENDARY VAULT",
           "category": "whale",
           "currency": "USD",
           "amount": 89.99,
@@ -13920,7 +13920,7 @@
             },
             {
               "type": "crate",
-              "id": "crt_76ar1k2x",
+              "id": "sku_n9hsc0wxxk",
               "quantity": 4
             },
             {
@@ -13972,7 +13972,7 @@
         },
         "offer_garage_overhaul": {
           "offerId": "offer_garage_overhaul",
-          "displayName": "FULL GARAGE UPGRADE BUNDLE",
+          "displayName": "GARAGE GODS",
           "category": "whale",
           "currency": "USD",
           "amount": 129.99,
@@ -13985,12 +13985,12 @@
             },
             {
               "type": "crate",
-              "id": "crt_76ar1k2x",
+              "id": "sku_n9hsc0wxxk",
               "quantity": 3
             },
             {
               "type": "crate",
-              "id": "crt_7y8a6hca",
+              "id": "sku_e8e7jeba7v",
               "quantity": 5
             },
             {
@@ -14042,7 +14042,7 @@
         },
         "offer_grand_prix_hoard": {
           "offerId": "offer_grand_prix_hoard",
-          "displayName": "GRAND PRIX ELITE PACK",
+          "displayName": "GRAND HAUL",
           "category": "whale",
           "currency": "USD",
           "amount": 149.99,
@@ -14055,12 +14055,12 @@
             },
             {
               "type": "crate",
-              "id": "crt_y8fywbrs",
+              "id": "sku_kgkjadrd79",
               "quantity": 2
             },
             {
               "type": "crate",
-              "id": "crt_76ar1k2x",
+              "id": "sku_n9hsc0wxxk",
               "quantity": 2
             },
             {
@@ -14112,7 +14112,7 @@
         },
         "offer_the_sovereign": {
           "offerId": "offer_the_sovereign",
-          "displayName": "THE APEX COLLECTION BUNDLE",
+          "displayName": "SOVEREIGN CACHE",
           "category": "whale",
           "currency": "USD",
           "amount": 199.99,
@@ -14125,12 +14125,12 @@
             },
             {
               "type": "crate",
-              "id": "crt_y8fywbrs",
+              "id": "sku_kgkjadrd79",
               "quantity": 5
             },
             {
               "type": "crate",
-              "id": "crt_76ar1k2x",
+              "id": "sku_n9hsc0wxxk",
               "quantity": 5
             },
             {
@@ -14182,7 +14182,7 @@
         },
         "offer_championship_kit": {
           "offerId": "offer_championship_kit",
-          "displayName": "CHAMPIONSHIP CIRCUIT PACK",
+          "displayName": "CHAMPIONS VAULT",
           "category": "whale",
           "currency": "USD",
           "amount": 199.99,
@@ -14195,12 +14195,12 @@
             },
             {
               "type": "crate",
-              "id": "crt_y8fywbrs",
+              "id": "sku_kgkjadrd79",
               "quantity": 3
             },
             {
               "type": "crate",
-              "id": "crt_76ar1k2x",
+              "id": "sku_n9hsc0wxxk",
               "quantity": 3
             },
             {

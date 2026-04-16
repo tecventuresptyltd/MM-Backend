@@ -1,6 +1,6 @@
 {
   "version": "v4-offer-engine",
-  "notes": "V4 Offer Engine \u2014 4-slot Clash Royale-style system with upsell funnels. $1=100 gems base. True multipliers 6.5-10.2\u00d7.",
+  "notes": "V4 Offer Engine — 4-slot Clash Royale-style system with upsell funnels. $1=100 gems base. True multipliers 6.5-10.2×.",
   "slotConfig": {
     "slot1": {
       "label": "Micro-Hook",
@@ -26,10 +26,10 @@
   },
   "offers": {
     "offer_ignition_starter": {
-      "displayName": "Ignition Starter",
+      "displayName": "NIGHT SHIFT",
       "category": "micro_hook",
       "slotAssignment": 1,
-      "productId": "com.tecventures.mysticmotors.offer.ignition_starter",
+      "productId": "com.tecventures.mysticmotors.night.shift",
       "price": 1.99,
       "advertisedMultiplier": 5,
       "trueGemValue": 1046,
@@ -52,7 +52,7 @@
           "type": "crate",
           "id": "sku_zz3twgp0wx",
           "quantity": 2,
-          "label": "Common Crate \u00d72"
+          "label": "Common Crate ×2"
         },
         {
           "type": "booster",
@@ -68,24 +68,24 @@
         },
         {
           "type": "speedUp",
-          "id": "skip_1h",
+          "id": "sku_spd1h_m5t6",
           "quantity": 2,
-          "label": "1h Time Skip \u00d72"
+          "label": "1h Time Skip ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_15m",
+          "id": "sku_spd15m_j8k2",
           "quantity": 2,
-          "label": "15m Time Skip \u00d72"
+          "label": "15m Time Skip ×2"
         }
       ],
       "offerId": "offer_ignition_starter"
     },
     "offer_drift_king_upsell": {
-      "displayName": "Drift King Flash Deal",
+      "displayName": "FLASH CIRCUIT",
       "category": "upsell",
       "slotAssignment": null,
-      "productId": "com.tecventures.mysticmotors.offer.drift_king_upsell",
+      "productId": "com.tecventures.mysticmotors.flash.circuit",
       "price": 5.99,
       "originalPrice": 9.99,
       "advertisedMultiplier": 7,
@@ -104,7 +104,7 @@
           "type": "crate",
           "id": "sku_e8e7jeba7v",
           "quantity": 2,
-          "label": "Exotic Crate \u00d72"
+          "label": "Exotic Crate ×2"
         },
         {
           "type": "crate",
@@ -132,36 +132,36 @@
         },
         {
           "type": "speedUp",
-          "id": "skip_8h",
+          "id": "sku_spd8h_y7p4",
           "quantity": 1,
           "label": "8h Time Skip"
         },
         {
           "type": "speedUp",
-          "id": "skip_3h",
+          "id": "sku_spd3h_q2v8",
           "quantity": 2,
-          "label": "3h Time Skip \u00d72"
+          "label": "3h Time Skip ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_1h",
+          "id": "sku_spd1h_m5t6",
           "quantity": 3,
-          "label": "1h Time Skip \u00d73"
+          "label": "1h Time Skip ×3"
         },
         {
           "type": "speedUp",
-          "id": "skip_15m",
+          "id": "sku_spd15m_j8k2",
           "quantity": 4,
-          "label": "15m Time Skip \u00d74"
+          "label": "15m Time Skip ×4"
         }
       ],
       "offerId": "offer_drift_king_upsell"
     },
     "offer_fuel_emergency": {
-      "displayName": "Fuel Emergency",
+      "displayName": "GEM IGNITION",
       "category": "micro_hook",
       "slotAssignment": 1,
-      "productId": "com.tecventures.mysticmotors.offer.fuel_emergency",
+      "productId": "com.tecventures.mysticmotors.gem.ignition",
       "price": 1.99,
       "advertisedMultiplier": 6,
       "trueGemValue": 1136,
@@ -176,7 +176,7 @@
         },
         {
           "type": "crate",
-          "id": "sku_72wnqwtfmx",
+          "id": "sku_e8e7jeba7v",
           "quantity": 1,
           "label": "Exotic Crate"
         },
@@ -188,24 +188,24 @@
         },
         {
           "type": "speedUp",
-          "id": "skip_1h",
+          "id": "sku_spd1h_m5t6",
           "quantity": 2,
-          "label": "1h Time Skip \u00d72"
+          "label": "1h Time Skip ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_15m",
+          "id": "sku_spd15m_j8k2",
           "quantity": 2,
-          "label": "15m Time Skip \u00d72"
+          "label": "15m Time Skip ×2"
         }
       ],
       "offerId": "offer_fuel_emergency"
     },
     "offer_nitro_surge": {
-      "displayName": "Nitro Surge",
+      "displayName": "RARE STORM",
       "category": "micro_hook",
       "slotAssignment": 1,
-      "productId": "com.tecventures.mysticmotors.offer.nitro_surge",
+      "productId": "com.tecventures.mysticmotors.rare.storm",
       "price": 1.99,
       "advertisedMultiplier": 5,
       "trueGemValue": 936,
@@ -222,7 +222,7 @@
           "type": "crate",
           "id": "sku_72wnqwtfmx",
           "quantity": 2,
-          "label": "Rare Crate \u00d72"
+          "label": "Rare Crate ×2"
         },
         {
           "type": "booster",
@@ -232,24 +232,24 @@
         },
         {
           "type": "speedUp",
-          "id": "skip_1h",
+          "id": "sku_spd1h_m5t6",
           "quantity": 2,
-          "label": "1h Time Skip \u00d72"
+          "label": "1h Time Skip ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_15m",
+          "id": "sku_spd15m_j8k2",
           "quantity": 2,
-          "label": "15m Time Skip \u00d72"
+          "label": "15m Time Skip ×2"
         }
       ],
       "offerId": "offer_nitro_surge"
     },
     "offer_adrenaline_shot": {
-      "displayName": "Adrenaline Shot",
+      "displayName": "FUEL SURGE",
       "category": "micro_hook",
       "slotAssignment": 1,
-      "productId": "com.tecventures.mysticmotors.offer.adrenaline_shot",
+      "productId": "com.tecventures.mysticmotors.fuel.surge",
       "price": 1.99,
       "advertisedMultiplier": 5,
       "trueGemValue": 1056,
@@ -265,14 +265,14 @@
         {
           "type": "crate",
           "id": "sku_72wnqwtfmx",
-          "quantity": 1,
-          "label": "Rare Crate"
+          "quantity": 2,
+          "label": "Rare Crate ×2"
         },
         {
           "type": "crate",
           "id": "sku_zz3twgp0wx",
           "quantity": 2,
-          "label": "Common Crate \u00d72"
+          "label": "Common Crate ×2"
         },
         {
           "type": "booster",
@@ -281,31 +281,25 @@
           "label": "XP Booster 12h"
         },
         {
-          "type": "crate",
-          "id": "sku_72wnqwtfmx",
-          "quantity": 1,
-          "label": "Rare Crate"
+          "type": "speedUp",
+          "id": "sku_spd1h_m5t6",
+          "quantity": 2,
+          "label": "1h Time Skip ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_1h",
+          "id": "sku_spd15m_j8k2",
           "quantity": 2,
-          "label": "1h Time Skip \u00d72"
-        },
-        {
-          "type": "speedUp",
-          "id": "skip_15m",
-          "quantity": 2,
-          "label": "15m Time Skip \u00d72"
+          "label": "15m Time Skip ×2"
         }
       ],
       "offerId": "offer_adrenaline_shot"
     },
     "offer_sprint_starter": {
-      "displayName": "Sprint Starter",
+      "displayName": "SPARK CACHE",
       "category": "micro_hook",
       "slotAssignment": 1,
-      "productId": "com.tecventures.mysticmotors.offer.sprint_starter",
+      "productId": "com.tecventures.mysticmotors.spark.cache",
       "price": 1.99,
       "advertisedMultiplier": 5,
       "trueGemValue": 1036,
@@ -332,24 +326,24 @@
         },
         {
           "type": "speedUp",
-          "id": "skip_1h",
+          "id": "sku_spd1h_m5t6",
           "quantity": 2,
-          "label": "1h Time Skip \u00d72"
+          "label": "1h Time Skip ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_15m",
+          "id": "sku_spd15m_j8k2",
           "quantity": 2,
-          "label": "15m Time Skip \u00d72"
+          "label": "15m Time Skip ×2"
         }
       ],
       "offerId": "offer_sprint_starter"
     },
     "offer_midnight_oil": {
-      "displayName": "Midnight Oil",
+      "displayName": "RARE RUSH",
       "category": "micro_hook",
       "slotAssignment": 1,
-      "productId": "com.tecventures.mysticmotors.offer.midnight_oil",
+      "productId": "com.tecventures.mysticmotors.rare.rush",
       "price": 1.99,
       "advertisedMultiplier": 5,
       "trueGemValue": 986,
@@ -376,30 +370,30 @@
         },
         {
           "type": "speedUp",
-          "id": "skip_3h",
+          "id": "sku_spd3h_q2v8",
           "quantity": 1,
           "label": "3h Time Skip"
         },
         {
           "type": "speedUp",
-          "id": "skip_1h",
+          "id": "sku_spd1h_m5t6",
           "quantity": 2,
-          "label": "1h Time Skip \u00d72"
+          "label": "1h Time Skip ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_15m",
+          "id": "sku_spd15m_j8k2",
           "quantity": 2,
-          "label": "15m Time Skip \u00d72"
+          "label": "15m Time Skip ×2"
         }
       ],
       "offerId": "offer_midnight_oil"
     },
     "offer_nitro_boost_plus": {
-      "displayName": "Nitro Boost Plus",
+      "displayName": "SHARD STRIKE",
       "category": "micro_hook",
       "slotAssignment": 1,
-      "productId": "com.tecventures.mysticmotors.offer.nitro_boost_plus",
+      "productId": "com.tecventures.mysticmotors.shard.strike",
       "price": 2.99,
       "advertisedMultiplier": 5,
       "trueGemValue": 1386,
@@ -426,30 +420,30 @@
         },
         {
           "type": "speedUp",
-          "id": "skip_3h",
+          "id": "sku_spd3h_q2v8",
           "quantity": 1,
           "label": "3h Time Skip"
         },
         {
           "type": "speedUp",
-          "id": "skip_1h",
+          "id": "sku_spd1h_m5t6",
           "quantity": 2,
-          "label": "1h Time Skip \u00d72"
+          "label": "1h Time Skip ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_15m",
+          "id": "sku_spd15m_j8k2",
           "quantity": 2,
-          "label": "15m Time Skip \u00d72"
+          "label": "15m Time Skip ×2"
         }
       ],
       "offerId": "offer_nitro_boost_plus"
     },
     "offer_pit_stop_special": {
-      "displayName": "Pit Stop Special",
+      "displayName": "TURBO CACHE",
       "category": "micro_hook",
       "slotAssignment": 1,
-      "productId": "com.tecventures.mysticmotors.offer.pit_stop_special",
+      "productId": "com.tecventures.mysticmotors.turbo.cache",
       "price": 3.99,
       "advertisedMultiplier": 5,
       "trueGemValue": 1894,
@@ -476,30 +470,30 @@
         },
         {
           "type": "speedUp",
-          "id": "skip_3h",
+          "id": "sku_spd3h_q2v8",
           "quantity": 2,
-          "label": "3h Time Skip \u00d72"
+          "label": "3h Time Skip ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_1h",
+          "id": "sku_spd1h_m5t6",
           "quantity": 2,
-          "label": "1h Time Skip \u00d72"
+          "label": "1h Time Skip ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_30m",
+          "id": "sku_spd30m_w3n9",
           "quantity": 2,
-          "label": "30m Time Skip \u00d72"
+          "label": "30m Time Skip ×2"
         }
       ],
       "offerId": "offer_pit_stop_special"
     },
     "offer_drift_king": {
-      "displayName": "Drift King",
+      "displayName": "EXOTIC EDGE",
       "category": "sweet_spot",
       "slotAssignment": 2,
-      "productId": "com.tecventures.mysticmotors.offer.drift_king",
+      "productId": "com.tecventures.mysticmotors.exotic.edge",
       "price": 9.99,
       "advertisedMultiplier": 4,
       "trueGemValue": 4262,
@@ -516,7 +510,7 @@
           "type": "crate",
           "id": "sku_e8e7jeba7v",
           "quantity": 2,
-          "label": "Exotic Crate \u00d72"
+          "label": "Exotic Crate ×2"
         },
         {
           "type": "crate",
@@ -544,36 +538,36 @@
         },
         {
           "type": "speedUp",
-          "id": "skip_8h",
+          "id": "sku_spd8h_y7p4",
           "quantity": 1,
           "label": "8h Time Skip"
         },
         {
           "type": "speedUp",
-          "id": "skip_3h",
+          "id": "sku_spd3h_q2v8",
           "quantity": 2,
-          "label": "3h Time Skip \u00d72"
+          "label": "3h Time Skip ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_1h",
+          "id": "sku_spd1h_m5t6",
           "quantity": 3,
-          "label": "1h Time Skip \u00d73"
+          "label": "1h Time Skip ×3"
         },
         {
           "type": "speedUp",
-          "id": "skip_15m",
+          "id": "sku_spd15m_j8k2",
           "quantity": 4,
-          "label": "15m Time Skip \u00d74"
+          "label": "15m Time Skip ×4"
         }
       ],
       "offerId": "offer_drift_king"
     },
     "offer_mechanics_choice": {
-      "displayName": "Mechanic's Choice",
+      "displayName": "WEEKEND CIRCUIT",
       "category": "sweet_spot",
       "slotAssignment": 2,
-      "productId": "com.tecventures.mysticmotors.offer.mechanics_choice",
+      "productId": "com.tecventures.mysticmotors.weekend.circuit",
       "price": 6.99,
       "advertisedMultiplier": 4,
       "trueGemValue": 2960,
@@ -596,7 +590,7 @@
           "type": "crate",
           "id": "sku_72wnqwtfmx",
           "quantity": 2,
-          "label": "Rare Crate \u00d72"
+          "label": "Rare Crate ×2"
         },
         {
           "type": "booster",
@@ -612,30 +606,30 @@
         },
         {
           "type": "speedUp",
-          "id": "skip_8h",
+          "id": "sku_spd8h_y7p4",
           "quantity": 1,
           "label": "8h Time Skip"
         },
         {
           "type": "speedUp",
-          "id": "skip_3h",
+          "id": "sku_spd3h_q2v8",
           "quantity": 1,
           "label": "3h Time Skip"
         },
         {
           "type": "speedUp",
-          "id": "skip_1h",
+          "id": "sku_spd1h_m5t6",
           "quantity": 3,
-          "label": "1h Time Skip \u00d73"
+          "label": "1h Time Skip ×3"
         }
       ],
       "offerId": "offer_mechanics_choice"
     },
     "offer_tuners_vault": {
-      "displayName": "Tuner's Vault",
+      "displayName": "LEGENDARY EDGE",
       "category": "sweet_spot",
       "slotAssignment": 2,
-      "productId": "com.tecventures.mysticmotors.offer.tuners_vault",
+      "productId": "com.tecventures.mysticmotors.legendary.edge",
       "price": 24.99,
       "advertisedMultiplier": 3,
       "trueGemValue": 7752,
@@ -658,58 +652,58 @@
           "type": "crate",
           "id": "sku_e8e7jeba7v",
           "quantity": 2,
-          "label": "Exotic Crate \u00d72"
+          "label": "Exotic Crate ×2"
         },
         {
           "type": "booster",
           "id": "sku_tpt3379j8p",
           "quantity": 2,
-          "label": "Coin Booster 24h \u00d72"
+          "label": "Coin Booster 24h ×2"
         },
         {
           "type": "booster",
           "id": "sku_9pnmmjpscv",
           "quantity": 2,
-          "label": "XP Booster 24h \u00d72"
+          "label": "XP Booster 24h ×2"
         },
         {
           "type": "booster",
           "id": "sku_shrd24h_n8t5",
           "quantity": 2,
-          "label": "Shard Booster 24h \u00d72"
+          "label": "Shard Booster 24h ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_8h",
+          "id": "sku_spd8h_y7p4",
           "quantity": 2,
-          "label": "8h Time Skip \u00d72"
+          "label": "8h Time Skip ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_3h",
+          "id": "sku_spd3h_q2v8",
           "quantity": 2,
-          "label": "3h Time Skip \u00d72"
+          "label": "3h Time Skip ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_1h",
+          "id": "sku_spd1h_m5t6",
           "quantity": 4,
-          "label": "1h Time Skip \u00d74"
+          "label": "1h Time Skip ×4"
         },
         {
           "type": "speedUp",
-          "id": "skip_15m",
+          "id": "sku_spd15m_j8k2",
           "quantity": 4,
-          "label": "15m Time Skip \u00d74"
+          "label": "15m Time Skip ×4"
         }
       ],
       "offerId": "offer_tuners_vault"
     },
     "offer_street_legend": {
-      "displayName": "Street Legend",
+      "displayName": "LEGEND SURGE",
       "category": "mid_tier",
       "slotAssignment": 2,
-      "productId": "com.tecventures.mysticmotors.offer.street_legend",
+      "productId": "com.tecventures.mysticmotors.legend.surge",
       "price": 39.99,
       "advertisedMultiplier": 3,
       "trueGemValue": 11790,
@@ -726,58 +720,58 @@
           "type": "crate",
           "id": "sku_n9hsc0wxxk",
           "quantity": 2,
-          "label": "Legendary Crate \u00d72"
+          "label": "Legendary Crate ×2"
         },
         {
           "type": "booster",
           "id": "sku_tpt3379j8p",
           "quantity": 2,
-          "label": "Coin Booster 24h \u00d72"
+          "label": "Coin Booster 24h ×2"
         },
         {
           "type": "booster",
           "id": "sku_9pnmmjpscv",
           "quantity": 2,
-          "label": "XP Booster 24h \u00d72"
+          "label": "XP Booster 24h ×2"
         },
         {
           "type": "booster",
           "id": "sku_shrd24h_n8t5",
           "quantity": 2,
-          "label": "Shard Booster 24h \u00d72"
+          "label": "Shard Booster 24h ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_24h",
+          "id": "sku_spd24h_b9f1",
           "quantity": 1,
           "label": "24h Time Skip"
         },
         {
           "type": "speedUp",
-          "id": "skip_8h",
+          "id": "sku_spd8h_y7p4",
           "quantity": 2,
-          "label": "8h Time Skip \u00d72"
+          "label": "8h Time Skip ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_3h",
+          "id": "sku_spd3h_q2v8",
           "quantity": 3,
-          "label": "3h Time Skip \u00d73"
+          "label": "3h Time Skip ×3"
         },
         {
           "type": "speedUp",
-          "id": "skip_1h",
+          "id": "sku_spd1h_m5t6",
           "quantity": 5,
-          "label": "1h Time Skip \u00d75"
+          "label": "1h Time Skip ×5"
         }
       ],
       "offerId": "offer_street_legend"
     },
     "offer_pro_circuit_pack": {
-      "displayName": "Pro Circuit Pack",
+      "displayName": "GRAND CIRCUIT",
       "category": "mid_tier",
       "slotAssignment": 2,
-      "productId": "com.tecventures.mysticmotors.offer.pro_circuit",
+      "productId": "com.tecventures.mysticmotors.grand.circuit",
       "price": 69.99,
       "advertisedMultiplier": 2,
       "trueGemValue": 17608,
@@ -794,70 +788,70 @@
           "type": "crate",
           "id": "sku_n9hsc0wxxk",
           "quantity": 2,
-          "label": "Legendary Crate \u00d72"
+          "label": "Legendary Crate ×2"
         },
         {
           "type": "crate",
           "id": "sku_e8e7jeba7v",
           "quantity": 3,
-          "label": "Exotic Crate \u00d73"
+          "label": "Exotic Crate ×3"
         },
         {
           "type": "booster",
           "id": "sku_tpt3379j8p",
           "quantity": 3,
-          "label": "Coin Booster 24h \u00d73"
+          "label": "Coin Booster 24h ×3"
         },
         {
           "type": "booster",
           "id": "sku_9pnmmjpscv",
           "quantity": 3,
-          "label": "XP Booster 24h \u00d73"
+          "label": "XP Booster 24h ×3"
         },
         {
           "type": "booster",
           "id": "sku_shrd24h_n8t5",
           "quantity": 3,
-          "label": "Shard Booster 24h \u00d73"
+          "label": "Shard Booster 24h ×3"
         },
         {
           "type": "speedUp",
-          "id": "skip_24h",
+          "id": "sku_spd24h_b9f1",
           "quantity": 1,
           "label": "24h Time Skip"
         },
         {
           "type": "speedUp",
-          "id": "skip_8h",
+          "id": "sku_spd8h_y7p4",
           "quantity": 2,
-          "label": "8h Time Skip \u00d72"
+          "label": "8h Time Skip ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_3h",
+          "id": "sku_spd3h_q2v8",
           "quantity": 4,
-          "label": "3h Time Skip \u00d74"
+          "label": "3h Time Skip ×4"
         },
         {
           "type": "speedUp",
-          "id": "skip_1h",
+          "id": "sku_spd1h_m5t6",
           "quantity": 6,
-          "label": "1h Time Skip \u00d76"
+          "label": "1h Time Skip ×6"
         },
         {
           "type": "speedUp",
-          "id": "skip_15m",
+          "id": "sku_spd15m_j8k2",
           "quantity": 6,
-          "label": "15m Time Skip \u00d76"
+          "label": "15m Time Skip ×6"
         }
       ],
       "offerId": "offer_pro_circuit_pack"
     },
     "offer_weekend_warrior": {
-      "displayName": "Weekend Warrior",
+      "displayName": "EXOTIC STORM",
       "category": "sweet_spot",
       "slotAssignment": 2,
-      "productId": "com.tecventures.mysticmotors.offer.weekend_warrior",
+      "productId": "com.tecventures.mysticmotors.exotic.storm",
       "price": 19.99,
       "advertisedMultiplier": 3,
       "trueGemValue": 6652,
@@ -874,58 +868,58 @@
           "type": "crate",
           "id": "sku_e8e7jeba7v",
           "quantity": 3,
-          "label": "Exotic Crate \u00d73"
+          "label": "Exotic Crate ×3"
         },
         {
           "type": "booster",
           "id": "sku_tpt3379j8p",
           "quantity": 2,
-          "label": "Coin Booster 24h \u00d72"
+          "label": "Coin Booster 24h ×2"
         },
         {
           "type": "booster",
           "id": "sku_9pnmmjpscv",
           "quantity": 2,
-          "label": "XP Booster 24h \u00d72"
+          "label": "XP Booster 24h ×2"
         },
         {
           "type": "booster",
           "id": "sku_shrd24h_n8t5",
           "quantity": 2,
-          "label": "Shard Booster 24h \u00d72"
+          "label": "Shard Booster 24h ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_8h",
+          "id": "sku_spd8h_y7p4",
           "quantity": 2,
-          "label": "8h Time Skip \u00d72"
+          "label": "8h Time Skip ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_3h",
+          "id": "sku_spd3h_q2v8",
           "quantity": 2,
-          "label": "3h Time Skip \u00d72"
+          "label": "3h Time Skip ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_1h",
+          "id": "sku_spd1h_m5t6",
           "quantity": 4,
-          "label": "1h Time Skip \u00d74"
+          "label": "1h Time Skip ×4"
         },
         {
           "type": "speedUp",
-          "id": "skip_15m",
+          "id": "sku_spd15m_j8k2",
           "quantity": 4,
-          "label": "15m Time Skip \u00d74"
+          "label": "15m Time Skip ×4"
         }
       ],
       "offerId": "offer_weekend_warrior"
     },
     "offer_fast_lane_pack": {
-      "displayName": "Fast Lane Pack",
+      "displayName": "HORIZON CACHE",
       "category": "sweet_spot",
       "slotAssignment": 2,
-      "productId": "com.tecventures.mysticmotors.offer.fast_lane",
+      "productId": "com.tecventures.mysticmotors.horizon.cache",
       "price": 12.99,
       "advertisedMultiplier": 4,
       "trueGemValue": 5012,
@@ -948,7 +942,7 @@
           "type": "crate",
           "id": "sku_72wnqwtfmx",
           "quantity": 2,
-          "label": "Rare Crate \u00d72"
+          "label": "Rare Crate ×2"
         },
         {
           "type": "booster",
@@ -970,36 +964,36 @@
         },
         {
           "type": "speedUp",
-          "id": "skip_8h",
+          "id": "sku_spd8h_y7p4",
           "quantity": 1,
           "label": "8h Time Skip"
         },
         {
           "type": "speedUp",
-          "id": "skip_3h",
+          "id": "sku_spd3h_q2v8",
           "quantity": 2,
-          "label": "3h Time Skip \u00d72"
+          "label": "3h Time Skip ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_1h",
+          "id": "sku_spd1h_m5t6",
           "quantity": 3,
-          "label": "1h Time Skip \u00d73"
+          "label": "1h Time Skip ×3"
         },
         {
           "type": "speedUp",
-          "id": "skip_15m",
+          "id": "sku_spd15m_j8k2",
           "quantity": 4,
-          "label": "15m Time Skip \u00d74"
+          "label": "15m Time Skip ×4"
         }
       ],
       "offerId": "offer_fast_lane_pack"
     },
     "offer_pro_crew_kit": {
-      "displayName": "Pro Crew Kit",
+      "displayName": "LEGENDARY HAUL",
       "category": "mid_tier",
       "slotAssignment": 2,
-      "productId": "com.tecventures.mysticmotors.offer.pro_crew_kit",
+      "productId": "com.tecventures.mysticmotors.legendary.haul",
       "price": 29.99,
       "advertisedMultiplier": 3,
       "trueGemValue": 9100,
@@ -1022,52 +1016,52 @@
           "type": "booster",
           "id": "sku_tpt3379j8p",
           "quantity": 2,
-          "label": "Coin Booster 24h \u00d72"
+          "label": "Coin Booster 24h ×2"
         },
         {
           "type": "booster",
           "id": "sku_9pnmmjpscv",
           "quantity": 2,
-          "label": "XP Booster 24h \u00d72"
+          "label": "XP Booster 24h ×2"
         },
         {
           "type": "booster",
           "id": "sku_shrd24h_n8t5",
           "quantity": 2,
-          "label": "Shard Booster 24h \u00d72"
+          "label": "Shard Booster 24h ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_24h",
+          "id": "sku_spd24h_b9f1",
           "quantity": 1,
           "label": "24h Time Skip"
         },
         {
           "type": "speedUp",
-          "id": "skip_8h",
+          "id": "sku_spd8h_y7p4",
           "quantity": 1,
           "label": "8h Time Skip"
         },
         {
           "type": "speedUp",
-          "id": "skip_3h",
+          "id": "sku_spd3h_q2v8",
           "quantity": 2,
-          "label": "3h Time Skip \u00d72"
+          "label": "3h Time Skip ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_1h",
+          "id": "sku_spd1h_m5t6",
           "quantity": 4,
-          "label": "1h Time Skip \u00d74"
+          "label": "1h Time Skip ×4"
         }
       ],
       "offerId": "offer_pro_crew_kit"
     },
     "offer_grand_prix_hoard": {
-      "displayName": "Grand Prix Elite",
+      "displayName": "GRAND HAUL",
       "category": "whale",
       "slotAssignment": 3,
-      "productId": "com.tecventures.mysticmotors.offer.grand_prix",
+      "productId": "com.tecventures.mysticmotors.grand.haul",
       "price": 149.99,
       "advertisedMultiplier": 2,
       "trueGemValue": 37350,
@@ -1084,13 +1078,13 @@
           "type": "crate",
           "id": "sku_kgkjadrd79",
           "quantity": 2,
-          "label": "Mythical Crate \u00d72"
+          "label": "Mythical Crate ×2"
         },
         {
           "type": "crate",
           "id": "sku_n9hsc0wxxk",
           "quantity": 2,
-          "label": "Legendary Crate \u00d72"
+          "label": "Legendary Crate ×2"
         },
         {
           "type": "booster",
@@ -1112,48 +1106,48 @@
         },
         {
           "type": "speedUp",
-          "id": "skip_3d",
+          "id": "sku_spd3d_h6c3",
           "quantity": 2,
-          "label": "3d Time Skip \u00d72"
+          "label": "3d Time Skip ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_24h",
+          "id": "sku_spd24h_b9f1",
           "quantity": 2,
-          "label": "24h Time Skip \u00d72"
+          "label": "24h Time Skip ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_8h",
+          "id": "sku_spd8h_y7p4",
           "quantity": 3,
-          "label": "8h Time Skip \u00d73"
+          "label": "8h Time Skip ×3"
         },
         {
           "type": "speedUp",
-          "id": "skip_3h",
+          "id": "sku_spd3h_q2v8",
           "quantity": 5,
-          "label": "3h Time Skip \u00d75"
+          "label": "3h Time Skip ×5"
         },
         {
           "type": "speedUp",
-          "id": "skip_1h",
+          "id": "sku_spd1h_m5t6",
           "quantity": 8,
-          "label": "1h Time Skip \u00d78"
+          "label": "1h Time Skip ×8"
         },
         {
           "type": "speedUp",
-          "id": "skip_15m",
+          "id": "sku_spd15m_j8k2",
           "quantity": 10,
-          "label": "15m Time Skip \u00d710"
+          "label": "15m Time Skip ×10"
         }
       ],
       "offerId": "offer_grand_prix_hoard"
     },
     "offer_the_sovereign": {
-      "displayName": "The Apex Collection",
+      "displayName": "SOVEREIGN CACHE",
       "category": "whale",
       "slotAssignment": 3,
-      "productId": "com.tecventures.mysticmotors.offer.the_sovereign",
+      "productId": "com.tecventures.mysticmotors.sovereign.cache",
       "price": 199.99,
       "advertisedMultiplier": 4,
       "trueGemValue": 85900,
@@ -1170,76 +1164,76 @@
           "type": "crate",
           "id": "sku_kgkjadrd79",
           "quantity": 5,
-          "label": "Mythical Crate \u00d75"
+          "label": "Mythical Crate ×5"
         },
         {
           "type": "crate",
           "id": "sku_n9hsc0wxxk",
           "quantity": 5,
-          "label": "Legendary Crate \u00d75"
+          "label": "Legendary Crate ×5"
         },
         {
           "type": "booster",
           "id": "sku_coin7d_q5r8",
           "quantity": 2,
-          "label": "Coin Booster 7d \u00d72"
+          "label": "Coin Booster 7d ×2"
         },
         {
           "type": "booster",
           "id": "sku_exp7d_f2h6",
           "quantity": 2,
-          "label": "XP Booster 7d \u00d72"
+          "label": "XP Booster 7d ×2"
         },
         {
           "type": "booster",
           "id": "sku_shrd7d_w3j9",
           "quantity": 2,
-          "label": "Shard Booster 7d \u00d72"
+          "label": "Shard Booster 7d ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_3d",
+          "id": "sku_spd3d_h6c3",
           "quantity": 2,
-          "label": "3d Time Skip \u00d72"
+          "label": "3d Time Skip ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_24h",
+          "id": "sku_spd24h_b9f1",
           "quantity": 3,
-          "label": "24h Time Skip \u00d73"
+          "label": "24h Time Skip ×3"
         },
         {
           "type": "speedUp",
-          "id": "skip_8h",
+          "id": "sku_spd8h_y7p4",
           "quantity": 4,
-          "label": "8h Time Skip \u00d74"
+          "label": "8h Time Skip ×4"
         },
         {
           "type": "speedUp",
-          "id": "skip_3h",
+          "id": "sku_spd3h_q2v8",
           "quantity": 6,
-          "label": "3h Time Skip \u00d76"
+          "label": "3h Time Skip ×6"
         },
         {
           "type": "speedUp",
-          "id": "skip_1h",
+          "id": "sku_spd1h_m5t6",
           "quantity": 10,
-          "label": "1h Time Skip \u00d710"
+          "label": "1h Time Skip ×10"
         },
         {
           "type": "speedUp",
-          "id": "skip_30m",
+          "id": "sku_spd30m_w3n9",
           "quantity": 10,
-          "label": "30m Time Skip \u00d710"
+          "label": "30m Time Skip ×10"
         }
       ],
       "offerId": "offer_the_sovereign"
     },
     "offer_elite_engineer": {
-      "displayName": "Elite Crew Package",
+      "displayName": "LEGENDARY VAULT",
       "category": "whale",
       "slotAssignment": 3,
-      "productId": "com.tecventures.mysticmotors.offer.elite_engineer",
+      "productId": "com.tecventures.mysticmotors.legendary.vault",
       "price": 89.99,
       "advertisedMultiplier": 3,
       "trueGemValue": 23244,
@@ -1256,70 +1250,70 @@
           "type": "crate",
           "id": "sku_n9hsc0wxxk",
           "quantity": 4,
-          "label": "Legendary Crate \u00d74"
+          "label": "Legendary Crate ×4"
         },
         {
           "type": "booster",
           "id": "sku_tpt3379j8p",
           "quantity": 3,
-          "label": "Coin Booster 24h \u00d73"
+          "label": "Coin Booster 24h ×3"
         },
         {
           "type": "booster",
           "id": "sku_9pnmmjpscv",
           "quantity": 3,
-          "label": "XP Booster 24h \u00d73"
+          "label": "XP Booster 24h ×3"
         },
         {
           "type": "booster",
           "id": "sku_shrd24h_n8t5",
           "quantity": 3,
-          "label": "Shard Booster 24h \u00d73"
+          "label": "Shard Booster 24h ×3"
         },
         {
           "type": "speedUp",
-          "id": "skip_3d",
+          "id": "sku_spd3d_h6c3",
           "quantity": 1,
           "label": "3d Time Skip"
         },
         {
           "type": "speedUp",
-          "id": "skip_24h",
+          "id": "sku_spd24h_b9f1",
           "quantity": 1,
           "label": "24h Time Skip"
         },
         {
           "type": "speedUp",
-          "id": "skip_8h",
+          "id": "sku_spd8h_y7p4",
           "quantity": 3,
-          "label": "8h Time Skip \u00d73"
+          "label": "8h Time Skip ×3"
         },
         {
           "type": "speedUp",
-          "id": "skip_3h",
+          "id": "sku_spd3h_q2v8",
           "quantity": 4,
-          "label": "3h Time Skip \u00d74"
+          "label": "3h Time Skip ×4"
         },
         {
           "type": "speedUp",
-          "id": "skip_1h",
+          "id": "sku_spd1h_m5t6",
           "quantity": 6,
-          "label": "1h Time Skip \u00d76"
+          "label": "1h Time Skip ×6"
         },
         {
           "type": "speedUp",
-          "id": "skip_15m",
+          "id": "sku_spd15m_j8k2",
           "quantity": 8,
-          "label": "15m Time Skip \u00d78"
+          "label": "15m Time Skip ×8"
         }
       ],
       "offerId": "offer_elite_engineer"
     },
     "offer_the_collector": {
-      "displayName": "The Collector's Edition",
+      "displayName": "MYTHIC TROVE",
       "category": "whale",
       "slotAssignment": 3,
-      "productId": "com.tecventures.mysticmotors.offer.the_collector",
+      "productId": "com.tecventures.mysticmotors.mythic.trove",
       "price": 79.99,
       "advertisedMultiplier": 2,
       "trueGemValue": 19290,
@@ -1342,7 +1336,7 @@
           "type": "crate",
           "id": "sku_e8e7jeba7v",
           "quantity": 2,
-          "label": "Exotic Crate \u00d72"
+          "label": "Exotic Crate ×2"
         },
         {
           "type": "booster",
@@ -1364,42 +1358,42 @@
         },
         {
           "type": "speedUp",
-          "id": "skip_3d",
+          "id": "sku_spd3d_h6c3",
           "quantity": 1,
           "label": "3d Time Skip"
         },
         {
           "type": "speedUp",
-          "id": "skip_24h",
+          "id": "sku_spd24h_b9f1",
           "quantity": 1,
           "label": "24h Time Skip"
         },
         {
           "type": "speedUp",
-          "id": "skip_8h",
+          "id": "sku_spd8h_y7p4",
           "quantity": 2,
-          "label": "8h Time Skip \u00d72"
+          "label": "8h Time Skip ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_3h",
+          "id": "sku_spd3h_q2v8",
           "quantity": 3,
-          "label": "3h Time Skip \u00d73"
+          "label": "3h Time Skip ×3"
         },
         {
           "type": "speedUp",
-          "id": "skip_1h",
+          "id": "sku_spd1h_m5t6",
           "quantity": 5,
-          "label": "1h Time Skip \u00d75"
+          "label": "1h Time Skip ×5"
         }
       ],
       "offerId": "offer_the_collector"
     },
     "offer_garage_overhaul": {
-      "displayName": "Full Garage Upgrade",
+      "displayName": "GARAGE GODS",
       "category": "whale",
       "slotAssignment": 3,
-      "productId": "com.tecventures.mysticmotors.offer.garage_overhaul",
+      "productId": "com.tecventures.mysticmotors.garage.gods",
       "price": 129.99,
       "advertisedMultiplier": 2,
       "trueGemValue": 32150,
@@ -1416,76 +1410,76 @@
           "type": "crate",
           "id": "sku_n9hsc0wxxk",
           "quantity": 3,
-          "label": "Legendary Crate \u00d73"
+          "label": "Legendary Crate ×3"
         },
         {
           "type": "crate",
           "id": "sku_e8e7jeba7v",
           "quantity": 5,
-          "label": "Exotic Crate \u00d75"
+          "label": "Exotic Crate ×5"
         },
         {
           "type": "booster",
           "id": "sku_coin7d_q5r8",
           "quantity": 2,
-          "label": "Coin Booster 7d \u00d72"
+          "label": "Coin Booster 7d ×2"
         },
         {
           "type": "booster",
           "id": "sku_exp7d_f2h6",
           "quantity": 2,
-          "label": "XP Booster 7d \u00d72"
+          "label": "XP Booster 7d ×2"
         },
         {
           "type": "booster",
           "id": "sku_shrd7d_w3j9",
           "quantity": 2,
-          "label": "Shard Booster 7d \u00d72"
+          "label": "Shard Booster 7d ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_3d",
+          "id": "sku_spd3d_h6c3",
           "quantity": 1,
           "label": "3d Time Skip"
         },
         {
           "type": "speedUp",
-          "id": "skip_24h",
+          "id": "sku_spd24h_b9f1",
           "quantity": 2,
-          "label": "24h Time Skip \u00d72"
+          "label": "24h Time Skip ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_8h",
+          "id": "sku_spd8h_y7p4",
           "quantity": 3,
-          "label": "8h Time Skip \u00d73"
+          "label": "8h Time Skip ×3"
         },
         {
           "type": "speedUp",
-          "id": "skip_3h",
+          "id": "sku_spd3h_q2v8",
           "quantity": 5,
-          "label": "3h Time Skip \u00d75"
+          "label": "3h Time Skip ×5"
         },
         {
           "type": "speedUp",
-          "id": "skip_1h",
+          "id": "sku_spd1h_m5t6",
           "quantity": 8,
-          "label": "1h Time Skip \u00d78"
+          "label": "1h Time Skip ×8"
         },
         {
           "type": "speedUp",
-          "id": "skip_15m",
+          "id": "sku_spd15m_j8k2",
           "quantity": 10,
-          "label": "15m Time Skip \u00d710"
+          "label": "15m Time Skip ×10"
         }
       ],
       "offerId": "offer_garage_overhaul"
     },
     "offer_championship_kit": {
-      "displayName": "Championship Circuit",
+      "displayName": "CHAMPIONS VAULT",
       "category": "whale",
       "slotAssignment": 3,
-      "productId": "com.tecventures.mysticmotors.offer.championship_kit",
+      "productId": "com.tecventures.mysticmotors.champions.vault",
       "price": 199.99,
       "advertisedMultiplier": 2,
       "trueGemValue": 50900,
@@ -1502,76 +1496,76 @@
           "type": "crate",
           "id": "sku_kgkjadrd79",
           "quantity": 3,
-          "label": "Mythical Crate \u00d73"
+          "label": "Mythical Crate ×3"
         },
         {
           "type": "crate",
           "id": "sku_n9hsc0wxxk",
           "quantity": 3,
-          "label": "Legendary Crate \u00d73"
+          "label": "Legendary Crate ×3"
         },
         {
           "type": "booster",
           "id": "sku_tpt3379j8p",
           "quantity": 4,
-          "label": "Coin Booster 24h \u00d74"
+          "label": "Coin Booster 24h ×4"
         },
         {
           "type": "booster",
           "id": "sku_9pnmmjpscv",
           "quantity": 4,
-          "label": "XP Booster 24h \u00d74"
+          "label": "XP Booster 24h ×4"
         },
         {
           "type": "booster",
           "id": "sku_shrd24h_n8t5",
           "quantity": 4,
-          "label": "Shard Booster 24h \u00d74"
+          "label": "Shard Booster 24h ×4"
         },
         {
           "type": "speedUp",
-          "id": "skip_3d",
+          "id": "sku_spd3d_h6c3",
           "quantity": 2,
-          "label": "3d Time Skip \u00d72"
+          "label": "3d Time Skip ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_24h",
+          "id": "sku_spd24h_b9f1",
           "quantity": 3,
-          "label": "24h Time Skip \u00d73"
+          "label": "24h Time Skip ×3"
         },
         {
           "type": "speedUp",
-          "id": "skip_8h",
+          "id": "sku_spd8h_y7p4",
           "quantity": 4,
-          "label": "8h Time Skip \u00d74"
+          "label": "8h Time Skip ×4"
         },
         {
           "type": "speedUp",
-          "id": "skip_3h",
+          "id": "sku_spd3h_q2v8",
           "quantity": 6,
-          "label": "3h Time Skip \u00d76"
+          "label": "3h Time Skip ×6"
         },
         {
           "type": "speedUp",
-          "id": "skip_1h",
+          "id": "sku_spd1h_m5t6",
           "quantity": 10,
-          "label": "1h Time Skip \u00d710"
+          "label": "1h Time Skip ×10"
         },
         {
           "type": "speedUp",
-          "id": "skip_30m",
+          "id": "sku_spd30m_w3n9",
           "quantity": 10,
-          "label": "30m Time Skip \u00d710"
+          "label": "30m Time Skip ×10"
         }
       ],
       "offerId": "offer_championship_kit"
     },
     "offer_lvl10_milestone": {
-      "displayName": "Mastery 5 Milestone",
+      "displayName": "MASTERY SURGE",
       "category": "milestone",
       "slotAssignment": 4,
-      "productId": "com.tecventures.mysticmotors.offer.lvl10_milestone",
+      "productId": "com.tecventures.mysticmotors.mastery.surge",
       "price": 2.99,
       "advertisedMultiplier": 5,
       "trueGemValue": 1544,
@@ -1598,30 +1592,30 @@
         },
         {
           "type": "speedUp",
-          "id": "skip_3h",
+          "id": "sku_spd3h_q2v8",
           "quantity": 2,
-          "label": "3h Time Skip \u00d72"
+          "label": "3h Time Skip ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_1h",
+          "id": "sku_spd1h_m5t6",
           "quantity": 2,
-          "label": "1h Time Skip \u00d72"
+          "label": "1h Time Skip ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_30m",
+          "id": "sku_spd30m_w3n9",
           "quantity": 2,
-          "label": "30m Time Skip \u00d72"
+          "label": "30m Time Skip ×2"
         }
       ],
       "offerId": "offer_lvl10_milestone"
     },
     "offer_lvl20_milestone": {
-      "displayName": "Mastery 10 Milestone",
+      "displayName": "SPEED VAULT",
       "category": "milestone",
       "slotAssignment": 4,
-      "productId": "com.tecventures.mysticmotors.offer.lvl20_milestone",
+      "productId": "com.tecventures.mysticmotors.speed.vault",
       "price": 12.99,
       "advertisedMultiplier": 4,
       "trueGemValue": 4690,
@@ -1660,36 +1654,36 @@
         },
         {
           "type": "speedUp",
-          "id": "skip_24h",
+          "id": "sku_spd24h_b9f1",
           "quantity": 1,
           "label": "24h Time Skip"
         },
         {
           "type": "speedUp",
-          "id": "skip_8h",
+          "id": "sku_spd8h_y7p4",
           "quantity": 2,
-          "label": "8h Time Skip \u00d72"
+          "label": "8h Time Skip ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_3h",
+          "id": "sku_spd3h_q2v8",
           "quantity": 3,
-          "label": "3h Time Skip \u00d73"
+          "label": "3h Time Skip ×3"
         },
         {
           "type": "speedUp",
-          "id": "skip_1h",
+          "id": "sku_spd1h_m5t6",
           "quantity": 5,
-          "label": "1h Time Skip \u00d75"
+          "label": "1h Time Skip ×5"
         }
       ],
       "offerId": "offer_lvl20_milestone"
     },
     "offer_lvl50_milestone": {
-      "displayName": "Mastery 20 Milestone",
+      "displayName": "APEX VAULT",
       "category": "milestone",
       "slotAssignment": 4,
-      "productId": "com.tecventures.mysticmotors.offer.lvl50_milestone",
+      "productId": "com.tecventures.mysticmotors.apex.vault",
       "price": 99.99,
       "advertisedMultiplier": 2,
       "trueGemValue": 23744,
@@ -1712,7 +1706,7 @@
           "type": "crate",
           "id": "sku_n9hsc0wxxk",
           "quantity": 2,
-          "label": "Legendary Crate \u00d72"
+          "label": "Legendary Crate ×2"
         },
         {
           "type": "booster",
@@ -1734,48 +1728,48 @@
         },
         {
           "type": "speedUp",
-          "id": "skip_3d",
+          "id": "sku_spd3d_h6c3",
           "quantity": 1,
           "label": "3d Time Skip"
         },
         {
           "type": "speedUp",
-          "id": "skip_24h",
+          "id": "sku_spd24h_b9f1",
           "quantity": 1,
           "label": "24h Time Skip"
         },
         {
           "type": "speedUp",
-          "id": "skip_8h",
+          "id": "sku_spd8h_y7p4",
           "quantity": 3,
-          "label": "8h Time Skip \u00d73"
+          "label": "8h Time Skip ×3"
         },
         {
           "type": "speedUp",
-          "id": "skip_3h",
+          "id": "sku_spd3h_q2v8",
           "quantity": 4,
-          "label": "3h Time Skip \u00d74"
+          "label": "3h Time Skip ×4"
         },
         {
           "type": "speedUp",
-          "id": "skip_1h",
+          "id": "sku_spd1h_m5t6",
           "quantity": 6,
-          "label": "1h Time Skip \u00d76"
+          "label": "1h Time Skip ×6"
         },
         {
           "type": "speedUp",
-          "id": "skip_15m",
+          "id": "sku_spd15m_j8k2",
           "quantity": 8,
-          "label": "15m Time Skip \u00d78"
+          "label": "15m Time Skip ×8"
         }
       ],
       "offerId": "offer_lvl50_milestone"
     },
     "offer_resource_rush": {
-      "displayName": "Resource Rush",
+      "displayName": "GOLD FLOOD",
       "category": "context",
       "slotAssignment": 4,
-      "productId": "com.tecventures.mysticmotors.offer.resource_rush",
+      "productId": "com.tecventures.mysticmotors.gold.flood",
       "price": 24.99,
       "advertisedMultiplier": 3,
       "trueGemValue": 7552,
@@ -1792,58 +1786,58 @@
           "type": "crate",
           "id": "sku_e8e7jeba7v",
           "quantity": 4,
-          "label": "Exotic Crate \u00d74"
+          "label": "Exotic Crate ×4"
         },
         {
           "type": "booster",
           "id": "sku_tpt3379j8p",
           "quantity": 2,
-          "label": "Coin Booster 24h \u00d72"
+          "label": "Coin Booster 24h ×2"
         },
         {
           "type": "booster",
           "id": "sku_9pnmmjpscv",
           "quantity": 2,
-          "label": "XP Booster 24h \u00d72"
+          "label": "XP Booster 24h ×2"
         },
         {
           "type": "booster",
           "id": "sku_shrd24h_n8t5",
           "quantity": 2,
-          "label": "Shard Booster 24h \u00d72"
+          "label": "Shard Booster 24h ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_8h",
+          "id": "sku_spd8h_y7p4",
           "quantity": 2,
-          "label": "8h Time Skip \u00d72"
+          "label": "8h Time Skip ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_3h",
+          "id": "sku_spd3h_q2v8",
           "quantity": 2,
-          "label": "3h Time Skip \u00d72"
+          "label": "3h Time Skip ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_1h",
+          "id": "sku_spd1h_m5t6",
           "quantity": 4,
-          "label": "1h Time Skip \u00d74"
+          "label": "1h Time Skip ×4"
         },
         {
           "type": "speedUp",
-          "id": "skip_15m",
+          "id": "sku_spd15m_j8k2",
           "quantity": 4,
-          "label": "15m Time Skip \u00d74"
+          "label": "15m Time Skip ×4"
         }
       ],
       "offerId": "offer_resource_rush"
     },
     "offer_adrenaline_pro": {
-      "displayName": "Adrenaline Pro",
+      "displayName": "EXOTIC SURGE",
       "category": "context",
       "slotAssignment": 4,
-      "productId": "com.tecventures.mysticmotors.offer.adrenaline_pro",
+      "productId": "com.tecventures.mysticmotors.exotic.surge",
       "price": 5.99,
       "advertisedMultiplier": 4,
       "trueGemValue": 2494,
@@ -1860,7 +1854,7 @@
           "type": "crate",
           "id": "sku_e8e7jeba7v",
           "quantity": 2,
-          "label": "Exotic Crate \u00d72"
+          "label": "Exotic Crate ×2"
         },
         {
           "type": "booster",
@@ -1870,30 +1864,30 @@
         },
         {
           "type": "speedUp",
-          "id": "skip_3h",
+          "id": "sku_spd3h_q2v8",
           "quantity": 2,
-          "label": "3h Time Skip \u00d72"
+          "label": "3h Time Skip ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_1h",
+          "id": "sku_spd1h_m5t6",
           "quantity": 2,
-          "label": "1h Time Skip \u00d72"
+          "label": "1h Time Skip ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_30m",
+          "id": "sku_spd30m_w3n9",
           "quantity": 2,
-          "label": "30m Time Skip \u00d72"
+          "label": "30m Time Skip ×2"
         }
       ],
       "offerId": "offer_adrenaline_pro"
     },
     "offer_mythic_mystery": {
-      "displayName": "Mythic Mystery",
+      "displayName": "FORTUNE VAULT",
       "category": "context",
       "slotAssignment": 4,
-      "productId": "com.tecventures.mysticmotors.offer.mythic_mystery",
+      "productId": "com.tecventures.mysticmotors.fortune.vault",
       "price": 44.99,
       "advertisedMultiplier": 3,
       "trueGemValue": 12290,
@@ -1932,36 +1926,36 @@
         },
         {
           "type": "speedUp",
-          "id": "skip_24h",
+          "id": "sku_spd24h_b9f1",
           "quantity": 1,
           "label": "24h Time Skip"
         },
         {
           "type": "speedUp",
-          "id": "skip_8h",
+          "id": "sku_spd8h_y7p4",
           "quantity": 2,
-          "label": "8h Time Skip \u00d72"
+          "label": "8h Time Skip ×2"
         },
         {
           "type": "speedUp",
-          "id": "skip_3h",
+          "id": "sku_spd3h_q2v8",
           "quantity": 3,
-          "label": "3h Time Skip \u00d73"
+          "label": "3h Time Skip ×3"
         },
         {
           "type": "speedUp",
-          "id": "skip_1h",
+          "id": "sku_spd1h_m5t6",
           "quantity": 5,
-          "label": "1h Time Skip \u00d75"
+          "label": "1h Time Skip ×5"
         }
       ],
       "offerId": "offer_mythic_mystery"
     },
     "offer_double_clutch": {
-      "displayName": "Double Clutch",
+      "displayName": "GARAGE CIRCUIT",
       "category": "event",
       "slotAssignment": 4,
-      "productId": "com.tecventures.mysticmotors.offer.double_clutch",
+      "productId": "com.tecventures.mysticmotors.garage.circuit",
       "price": 6.99,
       "advertisedMultiplier": 4,
       "trueGemValue": 2760,
@@ -1978,7 +1972,7 @@
           "type": "crate",
           "id": "sku_72wnqwtfmx",
           "quantity": 2,
-          "label": "Rare Crate \u00d72"
+          "label": "Rare Crate ×2"
         },
         {
           "type": "booster",
@@ -1994,21 +1988,21 @@
         },
         {
           "type": "speedUp",
-          "id": "skip_8h",
+          "id": "sku_spd8h_y7p4",
           "quantity": 1,
           "label": "8h Time Skip"
         },
         {
           "type": "speedUp",
-          "id": "skip_3h",
+          "id": "sku_spd3h_q2v8",
           "quantity": 1,
           "label": "3h Time Skip"
         },
         {
           "type": "speedUp",
-          "id": "skip_1h",
+          "id": "sku_spd1h_m5t6",
           "quantity": 3,
-          "label": "1h Time Skip \u00d73"
+          "label": "1h Time Skip ×3"
         }
       ],
       "offerId": "offer_double_clutch"

@@ -12633,212 +12633,17 @@
     "data": {
       "version": "v3-normalized",
       "offers": {
-        "offer_adrenaline_pro": {
-          "offerId": "offer_adrenaline_pro",
-          "displayName": "EXOTIC SURGE",
-          "category": "context",
-          "currency": "USD",
-          "amount": 5.99,
-          "productId": "io.tecventures.mysticmotors.iap.offer_adrenaline_pro",
-          "entitlements": [
-            {
-              "type": "gems",
-              "id": "gems",
-              "quantity": 1400
-            },
-            {
-              "type": "crate",
-              "id": "sku_e8e7jeba7v",
-              "quantity": 2
-            },
-            {
-              "type": "booster",
-              "id": "sku_wkm0amtg",
-              "quantity": 1
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd3h_q2v8",
-              "quantity": 2
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd1h_m5t6",
-              "quantity": 2
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd30m_w3n9",
-              "quantity": 2
-            }
-          ],
-          "triggerType": "win_streak_3"
-        },
-        "offer_resource_rush": {
-          "offerId": "offer_resource_rush",
-          "displayName": "GOLD FLOOD",
-          "category": "context",
-          "currency": "USD",
-          "amount": 24.99,
-          "productId": "io.tecventures.mysticmotors.iap.offer_resource_rush",
-          "entitlements": [
-            {
-              "type": "gems",
-              "id": "gems",
-              "quantity": 4500
-            },
-            {
-              "type": "crate",
-              "id": "sku_e8e7jeba7v",
-              "quantity": 4
-            },
-            {
-              "type": "booster",
-              "id": "sku_tpt3379j8p",
-              "quantity": 2
-            },
-            {
-              "type": "booster",
-              "id": "sku_9pnmmjpscv",
-              "quantity": 2
-            },
-            {
-              "type": "booster",
-              "id": "sku_shrd24h_n8t5",
-              "quantity": 2
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd8h_y7p4",
-              "quantity": 2
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd3h_q2v8",
-              "quantity": 2
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd1h_m5t6",
-              "quantity": 4
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd15m_j8k2",
-              "quantity": 4
-            }
-          ],
-          "triggerType": "fuel_empty"
-        },
-        "offer_mythic_mystery": {
-          "offerId": "offer_mythic_mystery",
-          "displayName": "FORTUNE VAULT",
-          "category": "context",
-          "currency": "USD",
-          "amount": 44.99,
-          "productId": "io.tecventures.mysticmotors.iap.offer_mythic_mystery",
-          "entitlements": [
-            {
-              "type": "gems",
-              "id": "gems",
-              "quantity": 8500
-            },
-            {
-              "type": "crate",
-              "id": "sku_kgkjadrd79",
-              "quantity": 1
-            },
-            {
-              "type": "booster",
-              "id": "sku_tpt3379j8p",
-              "quantity": 1
-            },
-            {
-              "type": "booster",
-              "id": "sku_9pnmmjpscv",
-              "quantity": 1
-            },
-            {
-              "type": "booster",
-              "id": "sku_shrd24h_n8t5",
-              "quantity": 1
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd24h_b9f1",
-              "quantity": 1
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd8h_y7p4",
-              "quantity": 2
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd3h_q2v8",
-              "quantity": 3
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd1h_m5t6",
-              "quantity": 5
-            }
-          ],
-          "triggerType": "mythical_crate_earned"
-        },
-        "offer_double_clutch": {
-          "offerId": "offer_double_clutch",
-          "displayName": "WEEKEND CIRCUIT",
-          "category": "event",
-          "currency": "USD",
-          "amount": 6.99,
-          "productId": "io.tecventures.mysticmotors.iap.offer_double_clutch",
-          "entitlements": [
-            {
-              "type": "gems",
-              "id": "gems",
-              "quantity": 2000
-            },
-            {
-              "type": "crate",
-              "id": "sku_72wnqwtfmx",
-              "quantity": 2
-            },
-            {
-              "type": "booster",
-              "id": "sku_wkm0amtg",
-              "quantity": 1
-            },
-            {
-              "type": "booster",
-              "id": "sku_nhh7jtda",
-              "quantity": 1
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd8h_y7p4",
-              "quantity": 1
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd3h_q2v8",
-              "quantity": 1
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd1h_m5t6",
-              "quantity": 3
-            }
-          ],
-          "triggerType": "weekend"
-        },
         "offer_ignition_starter": {
-          "offerId": "offer_ignition_starter",
-          "displayName": "GEM IGNITION",
+          "displayName": "NIGHT SHIFT",
           "category": "micro_hook",
-          "currency": "USD",
-          "amount": 1.99,
-          "productId": "io.tecventures.mysticmotors.iap.offer_ignition_starter",
+          "slotAssignment": 1,
+          "productId": "com.tecventures.mysticmotors.night.shift",
+          "price": 1.99,
+          "advertisedMultiplier": 5,
+          "trueGemValue": 1046,
+          "validityHours": 24,
+          "upsellOfferId": "offer_drift_king_upsell",
+          "triggerCondition": null,
           "entitlements": [
             {
               "type": "gems",
@@ -12848,233 +12653,361 @@
             {
               "type": "crate",
               "id": "sku_72wnqwtfmx",
-              "quantity": 1
+              "quantity": 1,
+              "label": "Rare Crate"
             },
             {
               "type": "crate",
               "id": "sku_zz3twgp0wx",
-              "quantity": 2
+              "quantity": 2,
+              "label": "Common Crate ×2"
             },
             {
               "type": "booster",
               "id": "sku_eqzbetwm",
-              "quantity": 1
+              "quantity": 1,
+              "label": "Coin Booster 6h"
             },
             {
               "type": "booster",
               "id": "sku_60fdgqkm",
-              "quantity": 1
+              "quantity": 1,
+              "label": "XP Booster 6h"
             },
             {
               "type": "speedUp",
               "id": "sku_spd1h_m5t6",
-              "quantity": 2
+              "quantity": 2,
+              "label": "1h Time Skip ×2"
             },
             {
               "type": "speedUp",
               "id": "sku_spd15m_j8k2",
-              "quantity": 2
+              "quantity": 2,
+              "label": "15m Time Skip ×2"
             }
           ],
-          "dependsOnId": "offer_drift_king_upsell"
+          "offerId": "offer_ignition_starter"
         },
-        "offer_fuel_emergency": {
-          "offerId": "offer_fuel_emergency",
-          "displayName": "FUEL SURGE",
-          "category": "micro_hook",
-          "currency": "USD",
-          "amount": 1.99,
-          "productId": "io.tecventures.mysticmotors.iap.offer_fuel_emergency",
+        "offer_drift_king_upsell": {
+          "displayName": "FLASH CIRCUIT",
+          "category": "upsell",
+          "slotAssignment": null,
+          "productId": "com.tecventures.mysticmotors.flash.circuit",
+          "price": 5.99,
+          "originalPrice": 9.99,
+          "advertisedMultiplier": 7,
+          "trueGemValue": 4262,
+          "validityMinutes": 15,
+          "validityHours": 0.25,
+          "upsellOfferId": "offer_stage3_choice",
+          "triggerCondition": "post_purchase_upsell",
           "entitlements": [
             {
               "type": "gems",
               "id": "gems",
-              "quantity": 600
+              "quantity": 2500
             },
             {
               "type": "crate",
               "id": "sku_e8e7jeba7v",
-              "quantity": 1
-            },
-            {
-              "type": "booster",
-              "id": "sku_eqzbetwm",
-              "quantity": 1
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd1h_m5t6",
-              "quantity": 2
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd15m_j8k2",
-              "quantity": 2
-            }
-          ],
-          "dependsOnId": "offer_drift_king_upsell"
-        },
-        "offer_nitro_surge": {
-          "offerId": "offer_nitro_surge",
-          "displayName": "RARE RUSH",
-          "category": "micro_hook",
-          "currency": "USD",
-          "amount": 1.99,
-          "productId": "io.tecventures.mysticmotors.iap.offer_nitro_surge",
-          "entitlements": [
-            {
-              "type": "gems",
-              "id": "gems",
-              "quantity": 500
+              "quantity": 2,
+              "label": "Exotic Crate ×2"
             },
             {
               "type": "crate",
               "id": "sku_72wnqwtfmx",
-              "quantity": 2
+              "quantity": 1,
+              "label": "Rare Crate"
             },
             {
               "type": "booster",
-              "id": "sku_shrd6h_k7w2",
-              "quantity": 1
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd1h_m5t6",
-              "quantity": 2
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd15m_j8k2",
-              "quantity": 2
-            }
-          ],
-          "dependsOnId": "offer_drift_king_upsell"
-        },
-        "offer_adrenaline_shot": {
-          "offerId": "offer_adrenaline_shot",
-          "displayName": "RARE STORM",
-          "category": "micro_hook",
-          "currency": "USD",
-          "amount": 1.99,
-          "productId": "io.tecventures.mysticmotors.iap.offer_adrenaline_shot",
-          "entitlements": [
-            {
-              "type": "gems",
-              "id": "gems",
-              "quantity": 500
-            },
-            {
-              "type": "crate",
-              "id": "sku_72wnqwtfmx",
-              "quantity": 2
-            },
-            {
-              "type": "crate",
-              "id": "sku_zz3twgp0wx",
-              "quantity": 2
+              "id": "sku_tpt3379j8p",
+              "quantity": 1,
+              "label": "Coin Booster 24h"
             },
             {
               "type": "booster",
-              "id": "sku_nhh7jtda",
-              "quantity": 1
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd1h_m5t6",
-              "quantity": 2
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd15m_j8k2",
-              "quantity": 2
-            }
-          ],
-          "dependsOnId": "offer_drift_king_upsell"
-        },
-        "offer_sprint_starter": {
-          "offerId": "offer_sprint_starter",
-          "displayName": "SPARK CACHE",
-          "category": "micro_hook",
-          "currency": "USD",
-          "amount": 1.99,
-          "productId": "io.tecventures.mysticmotors.iap.offer_sprint_starter",
-          "entitlements": [
-            {
-              "type": "gems",
-              "id": "gems",
-              "quantity": 500
-            },
-            {
-              "type": "crate",
-              "id": "sku_e8e7jeba7v",
-              "quantity": 1
+              "id": "sku_9pnmmjpscv",
+              "quantity": 1,
+              "label": "XP Booster 24h"
             },
             {
               "type": "booster",
-              "id": "sku_eqzbetwm",
-              "quantity": 1
+              "id": "sku_shrd24h_n8t5",
+              "quantity": 1,
+              "label": "Shard Booster 24h"
             },
             {
               "type": "speedUp",
-              "id": "sku_spd1h_m5t6",
-              "quantity": 2
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd15m_j8k2",
-              "quantity": 2
-            }
-          ],
-          "dependsOnId": "offer_drift_king_upsell"
-        },
-        "offer_midnight_oil": {
-          "offerId": "offer_midnight_oil",
-          "displayName": "NIGHT SHIFT",
-          "category": "micro_hook",
-          "currency": "USD",
-          "amount": 1.99,
-          "productId": "io.tecventures.mysticmotors.iap.offer_midnight_oil",
-          "entitlements": [
-            {
-              "type": "gems",
-              "id": "gems",
-              "quantity": 600
-            },
-            {
-              "type": "crate",
-              "id": "sku_72wnqwtfmx",
-              "quantity": 1
-            },
-            {
-              "type": "booster",
-              "id": "sku_wkm0amtg",
-              "quantity": 1
+              "id": "sku_spd8h_y7p4",
+              "quantity": 1,
+              "label": "8h Time Skip"
             },
             {
               "type": "speedUp",
               "id": "sku_spd3h_q2v8",
-              "quantity": 1
+              "quantity": 2,
+              "label": "3h Time Skip ×2"
             },
             {
               "type": "speedUp",
               "id": "sku_spd1h_m5t6",
-              "quantity": 2
+              "quantity": 3,
+              "label": "1h Time Skip ×3"
             },
             {
               "type": "speedUp",
               "id": "sku_spd15m_j8k2",
-              "quantity": 2
+              "quantity": 4,
+              "label": "15m Time Skip ×4"
             }
           ],
-          "dependsOnId": "offer_drift_king_upsell"
+          "offerId": "offer_drift_king_upsell"
+        },
+        "offer_fuel_emergency": {
+          "displayName": "GEM IGNITION",
+          "category": "micro_hook",
+          "slotAssignment": 1,
+          "productId": "com.tecventures.mysticmotors.gem.ignition",
+          "price": 1.99,
+          "advertisedMultiplier": 6,
+          "trueGemValue": 1136,
+          "validityHours": 24,
+          "upsellOfferId": "offer_drift_king_upsell",
+          "triggerCondition": null,
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 600
+            },
+            {
+              "type": "crate",
+              "id": "sku_e8e7jeba7v",
+              "quantity": 1,
+              "label": "Exotic Crate"
+            },
+            {
+              "type": "booster",
+              "id": "sku_eqzbetwm",
+              "quantity": 1,
+              "label": "Coin Booster 6h"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 2,
+              "label": "1h Time Skip ×2"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd15m_j8k2",
+              "quantity": 2,
+              "label": "15m Time Skip ×2"
+            }
+          ],
+          "offerId": "offer_fuel_emergency"
+        },
+        "offer_nitro_surge": {
+          "displayName": "RARE STORM",
+          "category": "micro_hook",
+          "slotAssignment": 1,
+          "productId": "com.tecventures.mysticmotors.rare.storm",
+          "price": 1.99,
+          "advertisedMultiplier": 5,
+          "trueGemValue": 936,
+          "validityHours": 24,
+          "upsellOfferId": "offer_drift_king_upsell",
+          "triggerCondition": null,
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 500
+            },
+            {
+              "type": "crate",
+              "id": "sku_72wnqwtfmx",
+              "quantity": 2,
+              "label": "Rare Crate ×2"
+            },
+            {
+              "type": "booster",
+              "id": "sku_shrd6h_k7w2",
+              "quantity": 1,
+              "label": "Shard Booster 6h"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 2,
+              "label": "1h Time Skip ×2"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd15m_j8k2",
+              "quantity": 2,
+              "label": "15m Time Skip ×2"
+            }
+          ],
+          "offerId": "offer_nitro_surge"
+        },
+        "offer_adrenaline_shot": {
+          "displayName": "FUEL SURGE",
+          "category": "micro_hook",
+          "slotAssignment": 1,
+          "productId": "com.tecventures.mysticmotors.fuel.surge",
+          "price": 1.99,
+          "advertisedMultiplier": 5,
+          "trueGemValue": 1056,
+          "validityHours": 24,
+          "upsellOfferId": "offer_drift_king_upsell",
+          "triggerCondition": null,
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 500
+            },
+            {
+              "type": "crate",
+              "id": "sku_72wnqwtfmx",
+              "quantity": 2,
+              "label": "Rare Crate ×2"
+            },
+            {
+              "type": "crate",
+              "id": "sku_zz3twgp0wx",
+              "quantity": 2,
+              "label": "Common Crate ×2"
+            },
+            {
+              "type": "booster",
+              "id": "sku_nhh7jtda",
+              "quantity": 1,
+              "label": "XP Booster 12h"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 2,
+              "label": "1h Time Skip ×2"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd15m_j8k2",
+              "quantity": 2,
+              "label": "15m Time Skip ×2"
+            }
+          ],
+          "offerId": "offer_adrenaline_shot"
+        },
+        "offer_sprint_starter": {
+          "displayName": "SPARK CACHE",
+          "category": "micro_hook",
+          "slotAssignment": 1,
+          "productId": "com.tecventures.mysticmotors.spark.cache",
+          "price": 1.99,
+          "advertisedMultiplier": 5,
+          "trueGemValue": 1036,
+          "validityHours": 24,
+          "upsellOfferId": "offer_drift_king_upsell",
+          "triggerCondition": null,
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 500
+            },
+            {
+              "type": "crate",
+              "id": "sku_e8e7jeba7v",
+              "quantity": 1,
+              "label": "Exotic Crate"
+            },
+            {
+              "type": "booster",
+              "id": "sku_eqzbetwm",
+              "quantity": 1,
+              "label": "Coin Booster 6h"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 2,
+              "label": "1h Time Skip ×2"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd15m_j8k2",
+              "quantity": 2,
+              "label": "15m Time Skip ×2"
+            }
+          ],
+          "offerId": "offer_sprint_starter"
+        },
+        "offer_midnight_oil": {
+          "displayName": "RARE RUSH",
+          "category": "micro_hook",
+          "slotAssignment": 1,
+          "productId": "com.tecventures.mysticmotors.rare.rush",
+          "price": 1.99,
+          "advertisedMultiplier": 5,
+          "trueGemValue": 986,
+          "validityHours": 24,
+          "upsellOfferId": "offer_drift_king_upsell",
+          "triggerCondition": null,
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 600
+            },
+            {
+              "type": "crate",
+              "id": "sku_72wnqwtfmx",
+              "quantity": 1,
+              "label": "Rare Crate"
+            },
+            {
+              "type": "booster",
+              "id": "sku_wkm0amtg",
+              "quantity": 1,
+              "label": "Coin Booster 12h"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 1,
+              "label": "3h Time Skip"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 2,
+              "label": "1h Time Skip ×2"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd15m_j8k2",
+              "quantity": 2,
+              "label": "15m Time Skip ×2"
+            }
+          ],
+          "offerId": "offer_midnight_oil"
         },
         "offer_nitro_boost_plus": {
-          "offerId": "offer_nitro_boost_plus",
           "displayName": "SHARD STRIKE",
           "category": "micro_hook",
-          "currency": "USD",
-          "amount": 2.99,
-          "productId": "io.tecventures.mysticmotors.iap.offer_nitro_boost_plus",
+          "slotAssignment": 1,
+          "productId": "com.tecventures.mysticmotors.shard.strike",
+          "price": 2.99,
+          "advertisedMultiplier": 5,
+          "trueGemValue": 1386,
+          "validityHours": 24,
+          "upsellOfferId": "offer_drift_king_upsell",
+          "triggerCondition": null,
           "entitlements": [
             {
               "type": "gems",
@@ -13084,38 +13017,47 @@
             {
               "type": "crate",
               "id": "sku_e8e7jeba7v",
-              "quantity": 1
+              "quantity": 1,
+              "label": "Exotic Crate"
             },
             {
               "type": "booster",
               "id": "sku_shrd6h_k7w2",
-              "quantity": 1
+              "quantity": 1,
+              "label": "Shard Booster 6h"
             },
             {
               "type": "speedUp",
               "id": "sku_spd3h_q2v8",
-              "quantity": 1
+              "quantity": 1,
+              "label": "3h Time Skip"
             },
             {
               "type": "speedUp",
               "id": "sku_spd1h_m5t6",
-              "quantity": 2
+              "quantity": 2,
+              "label": "1h Time Skip ×2"
             },
             {
               "type": "speedUp",
               "id": "sku_spd15m_j8k2",
-              "quantity": 2
+              "quantity": 2,
+              "label": "15m Time Skip ×2"
             }
           ],
-          "dependsOnId": "offer_drift_king_upsell"
+          "offerId": "offer_nitro_boost_plus"
         },
         "offer_pit_stop_special": {
-          "offerId": "offer_pit_stop_special",
           "displayName": "TURBO CACHE",
           "category": "micro_hook",
-          "currency": "USD",
-          "amount": 3.99,
-          "productId": "io.tecventures.mysticmotors.iap.offer_pit_stop_special",
+          "slotAssignment": 1,
+          "productId": "com.tecventures.mysticmotors.turbo.cache",
+          "price": 3.99,
+          "advertisedMultiplier": 5,
+          "trueGemValue": 1894,
+          "validityHours": 24,
+          "upsellOfferId": "offer_drift_king_upsell",
+          "triggerCondition": null,
           "entitlements": [
             {
               "type": "gems",
@@ -13125,381 +13067,121 @@
             {
               "type": "crate",
               "id": "sku_e8e7jeba7v",
-              "quantity": 1
+              "quantity": 1,
+              "label": "Exotic Crate"
             },
             {
               "type": "booster",
               "id": "sku_wkm0amtg",
-              "quantity": 1
+              "quantity": 1,
+              "label": "Coin Booster 12h"
             },
             {
               "type": "speedUp",
               "id": "sku_spd3h_q2v8",
-              "quantity": 2
+              "quantity": 2,
+              "label": "3h Time Skip ×2"
             },
             {
               "type": "speedUp",
               "id": "sku_spd1h_m5t6",
-              "quantity": 2
+              "quantity": 2,
+              "label": "1h Time Skip ×2"
             },
             {
               "type": "speedUp",
               "id": "sku_spd30m_w3n9",
-              "quantity": 2
+              "quantity": 2,
+              "label": "30m Time Skip ×2"
             }
           ],
-          "dependsOnId": "offer_drift_king_upsell"
+          "offerId": "offer_pit_stop_special"
         },
-        "offer_pro_crew_kit": {
-          "offerId": "offer_pro_crew_kit",
-          "displayName": "LEGENDARY HAUL",
-          "category": "mid_tier",
-          "currency": "USD",
-          "amount": 29.99,
-          "productId": "io.tecventures.mysticmotors.iap.offer_pro_crew_kit",
+        "offer_drift_king": {
+          "displayName": "EXOTIC EDGE",
+          "category": "sweet_spot",
+          "slotAssignment": 2,
+          "productId": "com.tecventures.mysticmotors.exotic.edge",
+          "price": 9.99,
+          "advertisedMultiplier": 4,
+          "trueGemValue": 4262,
+          "validityHours": 48,
+          "upsellOfferId": null,
+          "triggerCondition": null,
           "entitlements": [
             {
               "type": "gems",
               "id": "gems",
-              "quantity": 6500
-            },
-            {
-              "type": "crate",
-              "id": "sku_n9hsc0wxxk",
-              "quantity": 1
-            },
-            {
-              "type": "booster",
-              "id": "sku_tpt3379j8p",
-              "quantity": 2
-            },
-            {
-              "type": "booster",
-              "id": "sku_9pnmmjpscv",
-              "quantity": 2
-            },
-            {
-              "type": "booster",
-              "id": "sku_shrd24h_n8t5",
-              "quantity": 2
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd24h_b9f1",
-              "quantity": 1
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd8h_y7p4",
-              "quantity": 1
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd3h_q2v8",
-              "quantity": 2
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd1h_m5t6",
-              "quantity": 4
-            }
-          ]
-        },
-        "offer_street_legend": {
-          "offerId": "offer_street_legend",
-          "displayName": "LEGEND SURGE",
-          "category": "mid_tier",
-          "currency": "USD",
-          "amount": 39.99,
-          "productId": "io.tecventures.mysticmotors.iap.offer_street_legend",
-          "entitlements": [
-            {
-              "type": "gems",
-              "id": "gems",
-              "quantity": 8000
-            },
-            {
-              "type": "crate",
-              "id": "sku_n9hsc0wxxk",
-              "quantity": 2
-            },
-            {
-              "type": "booster",
-              "id": "sku_tpt3379j8p",
-              "quantity": 2
-            },
-            {
-              "type": "booster",
-              "id": "sku_9pnmmjpscv",
-              "quantity": 2
-            },
-            {
-              "type": "booster",
-              "id": "sku_shrd24h_n8t5",
-              "quantity": 2
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd24h_b9f1",
-              "quantity": 1
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd8h_y7p4",
-              "quantity": 2
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd3h_q2v8",
-              "quantity": 3
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd1h_m5t6",
-              "quantity": 5
-            }
-          ]
-        },
-        "offer_pro_circuit_pack": {
-          "offerId": "offer_pro_circuit_pack",
-          "displayName": "GRAND CIRCUIT",
-          "category": "mid_tier",
-          "currency": "USD",
-          "amount": 69.99,
-          "productId": "io.tecventures.mysticmotors.iap.offer_pro_circuit_pack",
-          "entitlements": [
-            {
-              "type": "gems",
-              "id": "gems",
-              "quantity": 12000
-            },
-            {
-              "type": "crate",
-              "id": "sku_n9hsc0wxxk",
-              "quantity": 2
+              "quantity": 2500
             },
             {
               "type": "crate",
               "id": "sku_e8e7jeba7v",
-              "quantity": 3
-            },
-            {
-              "type": "booster",
-              "id": "sku_tpt3379j8p",
-              "quantity": 3
-            },
-            {
-              "type": "booster",
-              "id": "sku_9pnmmjpscv",
-              "quantity": 3
-            },
-            {
-              "type": "booster",
-              "id": "sku_shrd24h_n8t5",
-              "quantity": 3
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd24h_b9f1",
-              "quantity": 1
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd8h_y7p4",
-              "quantity": 2
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd3h_q2v8",
-              "quantity": 4
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd1h_m5t6",
-              "quantity": 6
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd15m_j8k2",
-              "quantity": 6
-            }
-          ]
-        },
-        "offer_lvl10_milestone": {
-          "offerId": "offer_lvl10_milestone",
-          "displayName": "MASTERY SURGE",
-          "category": "milestone",
-          "currency": "USD",
-          "amount": 2.99,
-          "productId": "io.tecventures.mysticmotors.iap.offer_lvl10_milestone",
-          "entitlements": [
-            {
-              "type": "gems",
-              "id": "gems",
-              "quantity": 1100
+              "quantity": 2,
+              "label": "Exotic Crate ×2"
             },
             {
               "type": "crate",
               "id": "sku_72wnqwtfmx",
-              "quantity": 1
-            },
-            {
-              "type": "booster",
-              "id": "sku_wkm0amtg",
-              "quantity": 1
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd3h_q2v8",
-              "quantity": 2
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd1h_m5t6",
-              "quantity": 2
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd30m_w3n9",
-              "quantity": 2
-            }
-          ],
-          "triggerType": "mastery_rank_5"
-        },
-        "offer_lvl20_milestone": {
-          "offerId": "offer_lvl20_milestone",
-          "displayName": "HORIZON CACHE",
-          "category": "milestone",
-          "currency": "USD",
-          "amount": 12.99,
-          "productId": "io.tecventures.mysticmotors.iap.offer_lvl20_milestone",
-          "entitlements": [
-            {
-              "type": "gems",
-              "id": "gems",
-              "quantity": 3000
-            },
-            {
-              "type": "crate",
-              "id": "sku_e8e7jeba7v",
-              "quantity": 1
+              "quantity": 1,
+              "label": "Rare Crate"
             },
             {
               "type": "booster",
               "id": "sku_tpt3379j8p",
-              "quantity": 1
+              "quantity": 1,
+              "label": "Coin Booster 24h"
             },
             {
               "type": "booster",
               "id": "sku_9pnmmjpscv",
-              "quantity": 1
+              "quantity": 1,
+              "label": "XP Booster 24h"
             },
             {
               "type": "booster",
               "id": "sku_shrd24h_n8t5",
-              "quantity": 1
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd24h_b9f1",
-              "quantity": 1
+              "quantity": 1,
+              "label": "Shard Booster 24h"
             },
             {
               "type": "speedUp",
               "id": "sku_spd8h_y7p4",
-              "quantity": 2
+              "quantity": 1,
+              "label": "8h Time Skip"
             },
             {
               "type": "speedUp",
               "id": "sku_spd3h_q2v8",
-              "quantity": 3
+              "quantity": 2,
+              "label": "3h Time Skip ×2"
             },
             {
               "type": "speedUp",
               "id": "sku_spd1h_m5t6",
-              "quantity": 5
-            }
-          ],
-          "triggerType": "mastery_rank_10"
-        },
-        "offer_lvl50_milestone": {
-          "offerId": "offer_lvl50_milestone",
-          "displayName": "APEX VAULT",
-          "category": "milestone",
-          "currency": "USD",
-          "amount": 99.99,
-          "productId": "io.tecventures.mysticmotors.iap.offer_lvl50_milestone",
-          "entitlements": [
-            {
-              "type": "gems",
-              "id": "gems",
-              "quantity": 15000
-            },
-            {
-              "type": "crate",
-              "id": "sku_kgkjadrd79",
-              "quantity": 1
-            },
-            {
-              "type": "crate",
-              "id": "sku_n9hsc0wxxk",
-              "quantity": 2
-            },
-            {
-              "type": "booster",
-              "id": "sku_coin7d_q5r8",
-              "quantity": 1
-            },
-            {
-              "type": "booster",
-              "id": "sku_exp7d_f2h6",
-              "quantity": 1
-            },
-            {
-              "type": "booster",
-              "id": "sku_shrd7d_w3j9",
-              "quantity": 1
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd3d_h6c3",
-              "quantity": 1
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd24h_b9f1",
-              "quantity": 1
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd8h_y7p4",
-              "quantity": 3
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd3h_q2v8",
-              "quantity": 4
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd1h_m5t6",
-              "quantity": 6
+              "quantity": 3,
+              "label": "1h Time Skip ×3"
             },
             {
               "type": "speedUp",
               "id": "sku_spd15m_j8k2",
-              "quantity": 8
+              "quantity": 4,
+              "label": "15m Time Skip ×4"
             }
           ],
-          "triggerType": "mastery_rank_20"
+          "offerId": "offer_drift_king"
         },
         "offer_mechanics_choice": {
-          "offerId": "offer_mechanics_choice",
-          "displayName": "GARAGE CIRCUIT",
+          "displayName": "WEEKEND CIRCUIT",
           "category": "sweet_spot",
-          "currency": "USD",
-          "amount": 6.99,
-          "productId": "io.tecventures.mysticmotors.iap.offer_mechanics_choice",
+          "slotAssignment": 2,
+          "productId": "com.tecventures.mysticmotors.weekend.circuit",
+          "price": 6.99,
+          "advertisedMultiplier": 4,
+          "trueGemValue": 2960,
+          "validityHours": 48,
+          "upsellOfferId": null,
+          "triggerCondition": null,
           "entitlements": [
             {
               "type": "gems",
@@ -13509,222 +13191,59 @@
             {
               "type": "crate",
               "id": "sku_e8e7jeba7v",
-              "quantity": 1
+              "quantity": 1,
+              "label": "Exotic Crate"
             },
             {
               "type": "crate",
               "id": "sku_72wnqwtfmx",
-              "quantity": 2
+              "quantity": 2,
+              "label": "Rare Crate ×2"
             },
             {
               "type": "booster",
               "id": "sku_wkm0amtg",
-              "quantity": 1
+              "quantity": 1,
+              "label": "Coin Booster 12h"
             },
             {
               "type": "booster",
               "id": "sku_nhh7jtda",
-              "quantity": 1
+              "quantity": 1,
+              "label": "XP Booster 12h"
             },
             {
               "type": "speedUp",
               "id": "sku_spd8h_y7p4",
-              "quantity": 1
+              "quantity": 1,
+              "label": "8h Time Skip"
             },
             {
               "type": "speedUp",
               "id": "sku_spd3h_q2v8",
-              "quantity": 1
+              "quantity": 1,
+              "label": "3h Time Skip"
             },
             {
               "type": "speedUp",
               "id": "sku_spd1h_m5t6",
-              "quantity": 3
+              "quantity": 3,
+              "label": "1h Time Skip ×3"
             }
-          ]
-        },
-        "offer_drift_king": {
-          "offerId": "offer_drift_king",
-          "displayName": "EXOTIC EDGE",
-          "category": "sweet_spot",
-          "currency": "USD",
-          "amount": 9.99,
-          "productId": "io.tecventures.mysticmotors.iap.offer_drift_king",
-          "entitlements": [
-            {
-              "type": "gems",
-              "id": "gems",
-              "quantity": 2500
-            },
-            {
-              "type": "crate",
-              "id": "sku_e8e7jeba7v",
-              "quantity": 2
-            },
-            {
-              "type": "crate",
-              "id": "sku_72wnqwtfmx",
-              "quantity": 1
-            },
-            {
-              "type": "booster",
-              "id": "sku_tpt3379j8p",
-              "quantity": 1
-            },
-            {
-              "type": "booster",
-              "id": "sku_9pnmmjpscv",
-              "quantity": 1
-            },
-            {
-              "type": "booster",
-              "id": "sku_shrd24h_n8t5",
-              "quantity": 1
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd8h_y7p4",
-              "quantity": 1
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd3h_q2v8",
-              "quantity": 2
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd1h_m5t6",
-              "quantity": 3
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd15m_j8k2",
-              "quantity": 4
-            }
-          ]
-        },
-        "offer_fast_lane_pack": {
-          "offerId": "offer_fast_lane_pack",
-          "displayName": "SPEED VAULT",
-          "category": "sweet_spot",
-          "currency": "USD",
-          "amount": 12.99,
-          "productId": "io.tecventures.mysticmotors.iap.offer_fast_lane_pack",
-          "entitlements": [
-            {
-              "type": "gems",
-              "id": "gems",
-              "quantity": 3500
-            },
-            {
-              "type": "crate",
-              "id": "sku_e8e7jeba7v",
-              "quantity": 1
-            },
-            {
-              "type": "crate",
-              "id": "sku_72wnqwtfmx",
-              "quantity": 2
-            },
-            {
-              "type": "booster",
-              "id": "sku_tpt3379j8p",
-              "quantity": 1
-            },
-            {
-              "type": "booster",
-              "id": "sku_9pnmmjpscv",
-              "quantity": 1
-            },
-            {
-              "type": "booster",
-              "id": "sku_shrd24h_n8t5",
-              "quantity": 1
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd8h_y7p4",
-              "quantity": 1
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd3h_q2v8",
-              "quantity": 2
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd1h_m5t6",
-              "quantity": 3
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd15m_j8k2",
-              "quantity": 4
-            }
-          ]
-        },
-        "offer_weekend_warrior": {
-          "offerId": "offer_weekend_warrior",
-          "displayName": "EXOTIC STORM",
-          "category": "sweet_spot",
-          "currency": "USD",
-          "amount": 19.99,
-          "productId": "io.tecventures.mysticmotors.iap.offer_weekend_warrior",
-          "entitlements": [
-            {
-              "type": "gems",
-              "id": "gems",
-              "quantity": 4000
-            },
-            {
-              "type": "crate",
-              "id": "sku_e8e7jeba7v",
-              "quantity": 3
-            },
-            {
-              "type": "booster",
-              "id": "sku_tpt3379j8p",
-              "quantity": 2
-            },
-            {
-              "type": "booster",
-              "id": "sku_9pnmmjpscv",
-              "quantity": 2
-            },
-            {
-              "type": "booster",
-              "id": "sku_shrd24h_n8t5",
-              "quantity": 2
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd8h_y7p4",
-              "quantity": 2
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd3h_q2v8",
-              "quantity": 2
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd1h_m5t6",
-              "quantity": 4
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd15m_j8k2",
-              "quantity": 4
-            }
-          ]
+          ],
+          "offerId": "offer_mechanics_choice"
         },
         "offer_tuners_vault": {
-          "offerId": "offer_tuners_vault",
           "displayName": "LEGENDARY EDGE",
           "category": "sweet_spot",
-          "currency": "USD",
-          "amount": 24.99,
-          "productId": "io.tecventures.mysticmotors.iap.offer_tuners_vault",
+          "slotAssignment": 2,
+          "productId": "com.tecventures.mysticmotors.legendary.edge",
+          "price": 24.99,
+          "advertisedMultiplier": 3,
+          "trueGemValue": 7752,
+          "validityHours": 48,
+          "upsellOfferId": null,
+          "triggerCondition": null,
           "entitlements": [
             {
               "type": "gems",
@@ -13734,119 +13253,139 @@
             {
               "type": "crate",
               "id": "sku_n9hsc0wxxk",
-              "quantity": 1
+              "quantity": 1,
+              "label": "Legendary Crate"
             },
             {
               "type": "crate",
               "id": "sku_e8e7jeba7v",
-              "quantity": 2
+              "quantity": 2,
+              "label": "Exotic Crate ×2"
             },
             {
               "type": "booster",
               "id": "sku_tpt3379j8p",
-              "quantity": 2
+              "quantity": 2,
+              "label": "Coin Booster 24h ×2"
             },
             {
               "type": "booster",
               "id": "sku_9pnmmjpscv",
-              "quantity": 2
+              "quantity": 2,
+              "label": "XP Booster 24h ×2"
             },
             {
               "type": "booster",
               "id": "sku_shrd24h_n8t5",
-              "quantity": 2
+              "quantity": 2,
+              "label": "Shard Booster 24h ×2"
             },
             {
               "type": "speedUp",
               "id": "sku_spd8h_y7p4",
-              "quantity": 2
+              "quantity": 2,
+              "label": "8h Time Skip ×2"
             },
             {
               "type": "speedUp",
               "id": "sku_spd3h_q2v8",
-              "quantity": 2
+              "quantity": 2,
+              "label": "3h Time Skip ×2"
             },
             {
               "type": "speedUp",
               "id": "sku_spd1h_m5t6",
-              "quantity": 4
+              "quantity": 4,
+              "label": "1h Time Skip ×4"
             },
             {
               "type": "speedUp",
               "id": "sku_spd15m_j8k2",
-              "quantity": 4
+              "quantity": 4,
+              "label": "15m Time Skip ×4"
             }
-          ]
+          ],
+          "offerId": "offer_tuners_vault"
         },
-        "offer_drift_king_upsell": {
-          "offerId": "offer_drift_king_upsell",
-          "displayName": "FLASH CIRCUIT",
-          "category": "upsell",
-          "currency": "USD",
-          "amount": 5.99,
-          "productId": "io.tecventures.mysticmotors.iap.offer_drift_king_upsell",
+        "offer_street_legend": {
+          "displayName": "LEGEND SURGE",
+          "category": "mid_tier",
+          "slotAssignment": 2,
+          "productId": "com.tecventures.mysticmotors.legend.surge",
+          "price": 39.99,
+          "advertisedMultiplier": 3,
+          "trueGemValue": 11790,
+          "validityHours": 48,
+          "upsellOfferId": null,
+          "triggerCondition": null,
           "entitlements": [
             {
               "type": "gems",
               "id": "gems",
-              "quantity": 2500
+              "quantity": 8000
             },
             {
               "type": "crate",
-              "id": "sku_e8e7jeba7v",
-              "quantity": 2
-            },
-            {
-              "type": "crate",
-              "id": "sku_72wnqwtfmx",
-              "quantity": 1
+              "id": "sku_n9hsc0wxxk",
+              "quantity": 2,
+              "label": "Legendary Crate ×2"
             },
             {
               "type": "booster",
               "id": "sku_tpt3379j8p",
-              "quantity": 1
+              "quantity": 2,
+              "label": "Coin Booster 24h ×2"
             },
             {
               "type": "booster",
               "id": "sku_9pnmmjpscv",
-              "quantity": 1
+              "quantity": 2,
+              "label": "XP Booster 24h ×2"
             },
             {
               "type": "booster",
               "id": "sku_shrd24h_n8t5",
-              "quantity": 1
+              "quantity": 2,
+              "label": "Shard Booster 24h ×2"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd24h_b9f1",
+              "quantity": 1,
+              "label": "24h Time Skip"
             },
             {
               "type": "speedUp",
               "id": "sku_spd8h_y7p4",
-              "quantity": 1
+              "quantity": 2,
+              "label": "8h Time Skip ×2"
             },
             {
               "type": "speedUp",
               "id": "sku_spd3h_q2v8",
-              "quantity": 2
+              "quantity": 3,
+              "label": "3h Time Skip ×3"
             },
             {
               "type": "speedUp",
               "id": "sku_spd1h_m5t6",
-              "quantity": 3
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd15m_j8k2",
-              "quantity": 4
+              "quantity": 5,
+              "label": "1h Time Skip ×5"
             }
           ],
-          "triggerType": "post_purchase_upsell",
-          "dependsOnId": "offer_stage3_choice"
+          "offerId": "offer_street_legend"
         },
-        "offer_the_collector": {
-          "offerId": "offer_the_collector",
-          "displayName": "MYTHIC TROVE",
-          "category": "whale",
-          "currency": "USD",
-          "amount": 79.99,
-          "productId": "io.tecventures.mysticmotors.iap.offer_the_collector",
+        "offer_pro_circuit_pack": {
+          "displayName": "GRAND CIRCUIT",
+          "category": "mid_tier",
+          "slotAssignment": 2,
+          "productId": "com.tecventures.mysticmotors.grand.circuit",
+          "price": 69.99,
+          "advertisedMultiplier": 2,
+          "trueGemValue": 17608,
+          "validityHours": 48,
+          "upsellOfferId": null,
+          "triggerCondition": null,
           "entitlements": [
             {
               "type": "gems",
@@ -13855,198 +13394,288 @@
             },
             {
               "type": "crate",
-              "id": "sku_kgkjadrd79",
-              "quantity": 1
+              "id": "sku_n9hsc0wxxk",
+              "quantity": 2,
+              "label": "Legendary Crate ×2"
             },
             {
               "type": "crate",
               "id": "sku_e8e7jeba7v",
-              "quantity": 2
-            },
-            {
-              "type": "booster",
-              "id": "sku_coin7d_q5r8",
-              "quantity": 1
-            },
-            {
-              "type": "booster",
-              "id": "sku_exp7d_f2h6",
-              "quantity": 1
-            },
-            {
-              "type": "booster",
-              "id": "sku_shrd7d_w3j9",
-              "quantity": 1
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd3d_h6c3",
-              "quantity": 1
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd24h_b9f1",
-              "quantity": 1
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd8h_y7p4",
-              "quantity": 2
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd3h_q2v8",
-              "quantity": 3
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd1h_m5t6",
-              "quantity": 5
-            }
-          ]
-        },
-        "offer_elite_engineer": {
-          "offerId": "offer_elite_engineer",
-          "displayName": "LEGENDARY VAULT",
-          "category": "whale",
-          "currency": "USD",
-          "amount": 89.99,
-          "productId": "io.tecventures.mysticmotors.iap.offer_elite_engineer",
-          "entitlements": [
-            {
-              "type": "gems",
-              "id": "gems",
-              "quantity": 16000
-            },
-            {
-              "type": "crate",
-              "id": "sku_n9hsc0wxxk",
-              "quantity": 4
+              "quantity": 3,
+              "label": "Exotic Crate ×3"
             },
             {
               "type": "booster",
               "id": "sku_tpt3379j8p",
-              "quantity": 3
+              "quantity": 3,
+              "label": "Coin Booster 24h ×3"
             },
             {
               "type": "booster",
               "id": "sku_9pnmmjpscv",
-              "quantity": 3
+              "quantity": 3,
+              "label": "XP Booster 24h ×3"
             },
             {
               "type": "booster",
               "id": "sku_shrd24h_n8t5",
-              "quantity": 3
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd3d_h6c3",
-              "quantity": 1
+              "quantity": 3,
+              "label": "Shard Booster 24h ×3"
             },
             {
               "type": "speedUp",
               "id": "sku_spd24h_b9f1",
-              "quantity": 1
+              "quantity": 1,
+              "label": "24h Time Skip"
             },
             {
               "type": "speedUp",
               "id": "sku_spd8h_y7p4",
-              "quantity": 3
+              "quantity": 2,
+              "label": "8h Time Skip ×2"
             },
             {
               "type": "speedUp",
               "id": "sku_spd3h_q2v8",
-              "quantity": 4
+              "quantity": 4,
+              "label": "3h Time Skip ×4"
             },
             {
               "type": "speedUp",
               "id": "sku_spd1h_m5t6",
-              "quantity": 6
+              "quantity": 6,
+              "label": "1h Time Skip ×6"
             },
             {
               "type": "speedUp",
               "id": "sku_spd15m_j8k2",
-              "quantity": 8
+              "quantity": 6,
+              "label": "15m Time Skip ×6"
             }
-          ]
+          ],
+          "offerId": "offer_pro_circuit_pack"
         },
-        "offer_garage_overhaul": {
-          "offerId": "offer_garage_overhaul",
-          "displayName": "GARAGE GODS",
-          "category": "whale",
-          "currency": "USD",
-          "amount": 129.99,
-          "productId": "io.tecventures.mysticmotors.iap.offer_garage_overhaul",
+        "offer_weekend_warrior": {
+          "displayName": "EXOTIC STORM",
+          "category": "sweet_spot",
+          "slotAssignment": 2,
+          "productId": "com.tecventures.mysticmotors.exotic.storm",
+          "price": 19.99,
+          "advertisedMultiplier": 3,
+          "trueGemValue": 6652,
+          "validityHours": 48,
+          "upsellOfferId": null,
+          "triggerCondition": null,
           "entitlements": [
             {
               "type": "gems",
               "id": "gems",
-              "quantity": 20000
-            },
-            {
-              "type": "crate",
-              "id": "sku_n9hsc0wxxk",
-              "quantity": 3
+              "quantity": 4000
             },
             {
               "type": "crate",
               "id": "sku_e8e7jeba7v",
-              "quantity": 5
+              "quantity": 3,
+              "label": "Exotic Crate ×3"
             },
             {
               "type": "booster",
-              "id": "sku_coin7d_q5r8",
-              "quantity": 2
+              "id": "sku_tpt3379j8p",
+              "quantity": 2,
+              "label": "Coin Booster 24h ×2"
             },
             {
               "type": "booster",
-              "id": "sku_exp7d_f2h6",
-              "quantity": 2
+              "id": "sku_9pnmmjpscv",
+              "quantity": 2,
+              "label": "XP Booster 24h ×2"
             },
             {
               "type": "booster",
-              "id": "sku_shrd7d_w3j9",
-              "quantity": 2
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd3d_h6c3",
-              "quantity": 1
-            },
-            {
-              "type": "speedUp",
-              "id": "sku_spd24h_b9f1",
-              "quantity": 2
+              "id": "sku_shrd24h_n8t5",
+              "quantity": 2,
+              "label": "Shard Booster 24h ×2"
             },
             {
               "type": "speedUp",
               "id": "sku_spd8h_y7p4",
-              "quantity": 3
+              "quantity": 2,
+              "label": "8h Time Skip ×2"
             },
             {
               "type": "speedUp",
               "id": "sku_spd3h_q2v8",
-              "quantity": 5
+              "quantity": 2,
+              "label": "3h Time Skip ×2"
             },
             {
               "type": "speedUp",
               "id": "sku_spd1h_m5t6",
-              "quantity": 8
+              "quantity": 4,
+              "label": "1h Time Skip ×4"
             },
             {
               "type": "speedUp",
               "id": "sku_spd15m_j8k2",
-              "quantity": 10
+              "quantity": 4,
+              "label": "15m Time Skip ×4"
             }
-          ]
+          ],
+          "offerId": "offer_weekend_warrior"
+        },
+        "offer_fast_lane_pack": {
+          "displayName": "HORIZON CACHE",
+          "category": "sweet_spot",
+          "slotAssignment": 2,
+          "productId": "com.tecventures.mysticmotors.horizon.cache",
+          "price": 12.99,
+          "advertisedMultiplier": 4,
+          "trueGemValue": 5012,
+          "validityHours": 48,
+          "upsellOfferId": null,
+          "triggerCondition": null,
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 3500
+            },
+            {
+              "type": "crate",
+              "id": "sku_e8e7jeba7v",
+              "quantity": 1,
+              "label": "Exotic Crate"
+            },
+            {
+              "type": "crate",
+              "id": "sku_72wnqwtfmx",
+              "quantity": 2,
+              "label": "Rare Crate ×2"
+            },
+            {
+              "type": "booster",
+              "id": "sku_tpt3379j8p",
+              "quantity": 1,
+              "label": "Coin Booster 24h"
+            },
+            {
+              "type": "booster",
+              "id": "sku_9pnmmjpscv",
+              "quantity": 1,
+              "label": "XP Booster 24h"
+            },
+            {
+              "type": "booster",
+              "id": "sku_shrd24h_n8t5",
+              "quantity": 1,
+              "label": "Shard Booster 24h"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd8h_y7p4",
+              "quantity": 1,
+              "label": "8h Time Skip"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 2,
+              "label": "3h Time Skip ×2"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 3,
+              "label": "1h Time Skip ×3"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd15m_j8k2",
+              "quantity": 4,
+              "label": "15m Time Skip ×4"
+            }
+          ],
+          "offerId": "offer_fast_lane_pack"
+        },
+        "offer_pro_crew_kit": {
+          "displayName": "LEGENDARY HAUL",
+          "category": "mid_tier",
+          "slotAssignment": 2,
+          "productId": "com.tecventures.mysticmotors.legendary.haul",
+          "price": 29.99,
+          "advertisedMultiplier": 3,
+          "trueGemValue": 9100,
+          "validityHours": 48,
+          "upsellOfferId": null,
+          "triggerCondition": null,
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 6500
+            },
+            {
+              "type": "crate",
+              "id": "sku_n9hsc0wxxk",
+              "quantity": 1,
+              "label": "Legendary Crate"
+            },
+            {
+              "type": "booster",
+              "id": "sku_tpt3379j8p",
+              "quantity": 2,
+              "label": "Coin Booster 24h ×2"
+            },
+            {
+              "type": "booster",
+              "id": "sku_9pnmmjpscv",
+              "quantity": 2,
+              "label": "XP Booster 24h ×2"
+            },
+            {
+              "type": "booster",
+              "id": "sku_shrd24h_n8t5",
+              "quantity": 2,
+              "label": "Shard Booster 24h ×2"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd24h_b9f1",
+              "quantity": 1,
+              "label": "24h Time Skip"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd8h_y7p4",
+              "quantity": 1,
+              "label": "8h Time Skip"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 2,
+              "label": "3h Time Skip ×2"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 4,
+              "label": "1h Time Skip ×4"
+            }
+          ],
+          "offerId": "offer_pro_crew_kit"
         },
         "offer_grand_prix_hoard": {
-          "offerId": "offer_grand_prix_hoard",
           "displayName": "GRAND HAUL",
           "category": "whale",
-          "currency": "USD",
-          "amount": 149.99,
-          "productId": "io.tecventures.mysticmotors.iap.offer_grand_prix_hoard",
+          "slotAssignment": 3,
+          "productId": "com.tecventures.mysticmotors.grand.haul",
+          "price": 149.99,
+          "advertisedMultiplier": 2,
+          "trueGemValue": 37350,
+          "validityHours": 72,
+          "upsellOfferId": null,
+          "triggerCondition": null,
           "entitlements": [
             {
               "type": "gems",
@@ -14056,67 +13685,83 @@
             {
               "type": "crate",
               "id": "sku_kgkjadrd79",
-              "quantity": 2
+              "quantity": 2,
+              "label": "Mythical Crate ×2"
             },
             {
               "type": "crate",
               "id": "sku_n9hsc0wxxk",
-              "quantity": 2
+              "quantity": 2,
+              "label": "Legendary Crate ×2"
             },
             {
               "type": "booster",
               "id": "sku_coin7d_q5r8",
-              "quantity": 1
+              "quantity": 1,
+              "label": "Coin Booster 7d"
             },
             {
               "type": "booster",
               "id": "sku_exp7d_f2h6",
-              "quantity": 1
+              "quantity": 1,
+              "label": "XP Booster 7d"
             },
             {
               "type": "booster",
               "id": "sku_shrd7d_w3j9",
-              "quantity": 1
+              "quantity": 1,
+              "label": "Shard Booster 7d"
             },
             {
               "type": "speedUp",
               "id": "sku_spd3d_h6c3",
-              "quantity": 2
+              "quantity": 2,
+              "label": "3d Time Skip ×2"
             },
             {
               "type": "speedUp",
               "id": "sku_spd24h_b9f1",
-              "quantity": 2
+              "quantity": 2,
+              "label": "24h Time Skip ×2"
             },
             {
               "type": "speedUp",
               "id": "sku_spd8h_y7p4",
-              "quantity": 3
+              "quantity": 3,
+              "label": "8h Time Skip ×3"
             },
             {
               "type": "speedUp",
               "id": "sku_spd3h_q2v8",
-              "quantity": 5
+              "quantity": 5,
+              "label": "3h Time Skip ×5"
             },
             {
               "type": "speedUp",
               "id": "sku_spd1h_m5t6",
-              "quantity": 8
+              "quantity": 8,
+              "label": "1h Time Skip ×8"
             },
             {
               "type": "speedUp",
               "id": "sku_spd15m_j8k2",
-              "quantity": 10
+              "quantity": 10,
+              "label": "15m Time Skip ×10"
             }
-          ]
+          ],
+          "offerId": "offer_grand_prix_hoard"
         },
         "offer_the_sovereign": {
-          "offerId": "offer_the_sovereign",
           "displayName": "SOVEREIGN CACHE",
           "category": "whale",
-          "currency": "USD",
-          "amount": 199.99,
-          "productId": "io.tecventures.mysticmotors.iap.offer_the_sovereign",
+          "slotAssignment": 3,
+          "productId": "com.tecventures.mysticmotors.sovereign.cache",
+          "price": 199.99,
+          "advertisedMultiplier": 4,
+          "trueGemValue": 85900,
+          "validityHours": 72,
+          "upsellOfferId": null,
+          "triggerCondition": null,
           "entitlements": [
             {
               "type": "gems",
@@ -14126,67 +13771,329 @@
             {
               "type": "crate",
               "id": "sku_kgkjadrd79",
-              "quantity": 5
+              "quantity": 5,
+              "label": "Mythical Crate ×5"
             },
             {
               "type": "crate",
               "id": "sku_n9hsc0wxxk",
-              "quantity": 5
+              "quantity": 5,
+              "label": "Legendary Crate ×5"
             },
             {
               "type": "booster",
               "id": "sku_coin7d_q5r8",
-              "quantity": 2
+              "quantity": 2,
+              "label": "Coin Booster 7d ×2"
             },
             {
               "type": "booster",
               "id": "sku_exp7d_f2h6",
-              "quantity": 2
+              "quantity": 2,
+              "label": "XP Booster 7d ×2"
             },
             {
               "type": "booster",
               "id": "sku_shrd7d_w3j9",
-              "quantity": 2
+              "quantity": 2,
+              "label": "Shard Booster 7d ×2"
             },
             {
               "type": "speedUp",
               "id": "sku_spd3d_h6c3",
-              "quantity": 2
+              "quantity": 2,
+              "label": "3d Time Skip ×2"
             },
             {
               "type": "speedUp",
               "id": "sku_spd24h_b9f1",
-              "quantity": 3
+              "quantity": 3,
+              "label": "24h Time Skip ×3"
             },
             {
               "type": "speedUp",
               "id": "sku_spd8h_y7p4",
-              "quantity": 4
+              "quantity": 4,
+              "label": "8h Time Skip ×4"
             },
             {
               "type": "speedUp",
               "id": "sku_spd3h_q2v8",
-              "quantity": 6
+              "quantity": 6,
+              "label": "3h Time Skip ×6"
             },
             {
               "type": "speedUp",
               "id": "sku_spd1h_m5t6",
-              "quantity": 10
+              "quantity": 10,
+              "label": "1h Time Skip ×10"
             },
             {
               "type": "speedUp",
               "id": "sku_spd30m_w3n9",
-              "quantity": 10
+              "quantity": 10,
+              "label": "30m Time Skip ×10"
             }
-          ]
+          ],
+          "offerId": "offer_the_sovereign"
+        },
+        "offer_elite_engineer": {
+          "displayName": "LEGENDARY VAULT",
+          "category": "whale",
+          "slotAssignment": 3,
+          "productId": "com.tecventures.mysticmotors.legendary.vault",
+          "price": 89.99,
+          "advertisedMultiplier": 3,
+          "trueGemValue": 23244,
+          "validityHours": 72,
+          "upsellOfferId": null,
+          "triggerCondition": null,
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 16000
+            },
+            {
+              "type": "crate",
+              "id": "sku_n9hsc0wxxk",
+              "quantity": 4,
+              "label": "Legendary Crate ×4"
+            },
+            {
+              "type": "booster",
+              "id": "sku_tpt3379j8p",
+              "quantity": 3,
+              "label": "Coin Booster 24h ×3"
+            },
+            {
+              "type": "booster",
+              "id": "sku_9pnmmjpscv",
+              "quantity": 3,
+              "label": "XP Booster 24h ×3"
+            },
+            {
+              "type": "booster",
+              "id": "sku_shrd24h_n8t5",
+              "quantity": 3,
+              "label": "Shard Booster 24h ×3"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3d_h6c3",
+              "quantity": 1,
+              "label": "3d Time Skip"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd24h_b9f1",
+              "quantity": 1,
+              "label": "24h Time Skip"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd8h_y7p4",
+              "quantity": 3,
+              "label": "8h Time Skip ×3"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 4,
+              "label": "3h Time Skip ×4"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 6,
+              "label": "1h Time Skip ×6"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd15m_j8k2",
+              "quantity": 8,
+              "label": "15m Time Skip ×8"
+            }
+          ],
+          "offerId": "offer_elite_engineer"
+        },
+        "offer_the_collector": {
+          "displayName": "MYTHIC TROVE",
+          "category": "whale",
+          "slotAssignment": 3,
+          "productId": "com.tecventures.mysticmotors.mythic.trove",
+          "price": 79.99,
+          "advertisedMultiplier": 2,
+          "trueGemValue": 19290,
+          "validityHours": 72,
+          "upsellOfferId": null,
+          "triggerCondition": null,
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 12000
+            },
+            {
+              "type": "crate",
+              "id": "sku_kgkjadrd79",
+              "quantity": 1,
+              "label": "Mythical Crate"
+            },
+            {
+              "type": "crate",
+              "id": "sku_e8e7jeba7v",
+              "quantity": 2,
+              "label": "Exotic Crate ×2"
+            },
+            {
+              "type": "booster",
+              "id": "sku_coin7d_q5r8",
+              "quantity": 1,
+              "label": "Coin Booster 7d"
+            },
+            {
+              "type": "booster",
+              "id": "sku_exp7d_f2h6",
+              "quantity": 1,
+              "label": "XP Booster 7d"
+            },
+            {
+              "type": "booster",
+              "id": "sku_shrd7d_w3j9",
+              "quantity": 1,
+              "label": "Shard Booster 7d"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3d_h6c3",
+              "quantity": 1,
+              "label": "3d Time Skip"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd24h_b9f1",
+              "quantity": 1,
+              "label": "24h Time Skip"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd8h_y7p4",
+              "quantity": 2,
+              "label": "8h Time Skip ×2"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 3,
+              "label": "3h Time Skip ×3"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 5,
+              "label": "1h Time Skip ×5"
+            }
+          ],
+          "offerId": "offer_the_collector"
+        },
+        "offer_garage_overhaul": {
+          "displayName": "GARAGE GODS",
+          "category": "whale",
+          "slotAssignment": 3,
+          "productId": "com.tecventures.mysticmotors.garage.gods",
+          "price": 129.99,
+          "advertisedMultiplier": 2,
+          "trueGemValue": 32150,
+          "validityHours": 72,
+          "upsellOfferId": null,
+          "triggerCondition": null,
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 20000
+            },
+            {
+              "type": "crate",
+              "id": "sku_n9hsc0wxxk",
+              "quantity": 3,
+              "label": "Legendary Crate ×3"
+            },
+            {
+              "type": "crate",
+              "id": "sku_e8e7jeba7v",
+              "quantity": 5,
+              "label": "Exotic Crate ×5"
+            },
+            {
+              "type": "booster",
+              "id": "sku_coin7d_q5r8",
+              "quantity": 2,
+              "label": "Coin Booster 7d ×2"
+            },
+            {
+              "type": "booster",
+              "id": "sku_exp7d_f2h6",
+              "quantity": 2,
+              "label": "XP Booster 7d ×2"
+            },
+            {
+              "type": "booster",
+              "id": "sku_shrd7d_w3j9",
+              "quantity": 2,
+              "label": "Shard Booster 7d ×2"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3d_h6c3",
+              "quantity": 1,
+              "label": "3d Time Skip"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd24h_b9f1",
+              "quantity": 2,
+              "label": "24h Time Skip ×2"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd8h_y7p4",
+              "quantity": 3,
+              "label": "8h Time Skip ×3"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 5,
+              "label": "3h Time Skip ×5"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 8,
+              "label": "1h Time Skip ×8"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd15m_j8k2",
+              "quantity": 10,
+              "label": "15m Time Skip ×10"
+            }
+          ],
+          "offerId": "offer_garage_overhaul"
         },
         "offer_championship_kit": {
-          "offerId": "offer_championship_kit",
           "displayName": "CHAMPIONS VAULT",
           "category": "whale",
-          "currency": "USD",
-          "amount": 199.99,
-          "productId": "io.tecventures.mysticmotors.iap.offer_championship_kit",
+          "slotAssignment": 3,
+          "productId": "com.tecventures.mysticmotors.champions.vault",
+          "price": 199.99,
+          "advertisedMultiplier": 2,
+          "trueGemValue": 50900,
+          "validityHours": 72,
+          "upsellOfferId": null,
+          "triggerCondition": null,
           "entitlements": [
             {
               "type": "gems",
@@ -14196,59 +14103,517 @@
             {
               "type": "crate",
               "id": "sku_kgkjadrd79",
-              "quantity": 3
+              "quantity": 3,
+              "label": "Mythical Crate ×3"
             },
             {
               "type": "crate",
               "id": "sku_n9hsc0wxxk",
-              "quantity": 3
+              "quantity": 3,
+              "label": "Legendary Crate ×3"
             },
             {
               "type": "booster",
               "id": "sku_tpt3379j8p",
-              "quantity": 4
+              "quantity": 4,
+              "label": "Coin Booster 24h ×4"
             },
             {
               "type": "booster",
               "id": "sku_9pnmmjpscv",
-              "quantity": 4
+              "quantity": 4,
+              "label": "XP Booster 24h ×4"
             },
             {
               "type": "booster",
               "id": "sku_shrd24h_n8t5",
-              "quantity": 4
+              "quantity": 4,
+              "label": "Shard Booster 24h ×4"
             },
             {
               "type": "speedUp",
               "id": "sku_spd3d_h6c3",
-              "quantity": 2
+              "quantity": 2,
+              "label": "3d Time Skip ×2"
             },
             {
               "type": "speedUp",
               "id": "sku_spd24h_b9f1",
-              "quantity": 3
+              "quantity": 3,
+              "label": "24h Time Skip ×3"
             },
             {
               "type": "speedUp",
               "id": "sku_spd8h_y7p4",
-              "quantity": 4
+              "quantity": 4,
+              "label": "8h Time Skip ×4"
             },
             {
               "type": "speedUp",
               "id": "sku_spd3h_q2v8",
-              "quantity": 6
+              "quantity": 6,
+              "label": "3h Time Skip ×6"
             },
             {
               "type": "speedUp",
               "id": "sku_spd1h_m5t6",
-              "quantity": 10
+              "quantity": 10,
+              "label": "1h Time Skip ×10"
             },
             {
               "type": "speedUp",
               "id": "sku_spd30m_w3n9",
-              "quantity": 10
+              "quantity": 10,
+              "label": "30m Time Skip ×10"
             }
-          ]
+          ],
+          "offerId": "offer_championship_kit"
+        },
+        "offer_lvl10_milestone": {
+          "displayName": "MASTERY SURGE",
+          "category": "milestone",
+          "slotAssignment": 4,
+          "productId": "com.tecventures.mysticmotors.mastery.surge",
+          "price": 2.99,
+          "advertisedMultiplier": 5,
+          "trueGemValue": 1544,
+          "validityHours": 24,
+          "upsellOfferId": null,
+          "triggerCondition": "mastery_rank_5",
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 1100
+            },
+            {
+              "type": "crate",
+              "id": "sku_72wnqwtfmx",
+              "quantity": 1,
+              "label": "Rare Crate"
+            },
+            {
+              "type": "booster",
+              "id": "sku_wkm0amtg",
+              "quantity": 1,
+              "label": "Coin Booster 12h"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 2,
+              "label": "3h Time Skip ×2"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 2,
+              "label": "1h Time Skip ×2"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd30m_w3n9",
+              "quantity": 2,
+              "label": "30m Time Skip ×2"
+            }
+          ],
+          "offerId": "offer_lvl10_milestone"
+        },
+        "offer_lvl20_milestone": {
+          "displayName": "SPEED VAULT",
+          "category": "milestone",
+          "slotAssignment": 4,
+          "productId": "com.tecventures.mysticmotors.speed.vault",
+          "price": 12.99,
+          "advertisedMultiplier": 4,
+          "trueGemValue": 4690,
+          "validityHours": 24,
+          "upsellOfferId": null,
+          "triggerCondition": "mastery_rank_10",
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 3000
+            },
+            {
+              "type": "crate",
+              "id": "sku_e8e7jeba7v",
+              "quantity": 1,
+              "label": "Exotic Crate"
+            },
+            {
+              "type": "booster",
+              "id": "sku_tpt3379j8p",
+              "quantity": 1,
+              "label": "Coin Booster 24h"
+            },
+            {
+              "type": "booster",
+              "id": "sku_9pnmmjpscv",
+              "quantity": 1,
+              "label": "XP Booster 24h"
+            },
+            {
+              "type": "booster",
+              "id": "sku_shrd24h_n8t5",
+              "quantity": 1,
+              "label": "Shard Booster 24h"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd24h_b9f1",
+              "quantity": 1,
+              "label": "24h Time Skip"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd8h_y7p4",
+              "quantity": 2,
+              "label": "8h Time Skip ×2"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 3,
+              "label": "3h Time Skip ×3"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 5,
+              "label": "1h Time Skip ×5"
+            }
+          ],
+          "offerId": "offer_lvl20_milestone"
+        },
+        "offer_lvl50_milestone": {
+          "displayName": "APEX VAULT",
+          "category": "milestone",
+          "slotAssignment": 4,
+          "productId": "com.tecventures.mysticmotors.apex.vault",
+          "price": 99.99,
+          "advertisedMultiplier": 2,
+          "trueGemValue": 23744,
+          "validityHours": 48,
+          "upsellOfferId": null,
+          "triggerCondition": "mastery_rank_20",
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 15000
+            },
+            {
+              "type": "crate",
+              "id": "sku_kgkjadrd79",
+              "quantity": 1,
+              "label": "Mythical Crate"
+            },
+            {
+              "type": "crate",
+              "id": "sku_n9hsc0wxxk",
+              "quantity": 2,
+              "label": "Legendary Crate ×2"
+            },
+            {
+              "type": "booster",
+              "id": "sku_coin7d_q5r8",
+              "quantity": 1,
+              "label": "Coin Booster 7d"
+            },
+            {
+              "type": "booster",
+              "id": "sku_exp7d_f2h6",
+              "quantity": 1,
+              "label": "XP Booster 7d"
+            },
+            {
+              "type": "booster",
+              "id": "sku_shrd7d_w3j9",
+              "quantity": 1,
+              "label": "Shard Booster 7d"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3d_h6c3",
+              "quantity": 1,
+              "label": "3d Time Skip"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd24h_b9f1",
+              "quantity": 1,
+              "label": "24h Time Skip"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd8h_y7p4",
+              "quantity": 3,
+              "label": "8h Time Skip ×3"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 4,
+              "label": "3h Time Skip ×4"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 6,
+              "label": "1h Time Skip ×6"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd15m_j8k2",
+              "quantity": 8,
+              "label": "15m Time Skip ×8"
+            }
+          ],
+          "offerId": "offer_lvl50_milestone"
+        },
+        "offer_resource_rush": {
+          "displayName": "GOLD FLOOD",
+          "category": "context",
+          "slotAssignment": 4,
+          "productId": "com.tecventures.mysticmotors.gold.flood",
+          "price": 24.99,
+          "advertisedMultiplier": 3,
+          "trueGemValue": 7552,
+          "validityHours": 4,
+          "upsellOfferId": null,
+          "triggerCondition": "fuel_empty",
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 4500
+            },
+            {
+              "type": "crate",
+              "id": "sku_e8e7jeba7v",
+              "quantity": 4,
+              "label": "Exotic Crate ×4"
+            },
+            {
+              "type": "booster",
+              "id": "sku_tpt3379j8p",
+              "quantity": 2,
+              "label": "Coin Booster 24h ×2"
+            },
+            {
+              "type": "booster",
+              "id": "sku_9pnmmjpscv",
+              "quantity": 2,
+              "label": "XP Booster 24h ×2"
+            },
+            {
+              "type": "booster",
+              "id": "sku_shrd24h_n8t5",
+              "quantity": 2,
+              "label": "Shard Booster 24h ×2"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd8h_y7p4",
+              "quantity": 2,
+              "label": "8h Time Skip ×2"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 2,
+              "label": "3h Time Skip ×2"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 4,
+              "label": "1h Time Skip ×4"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd15m_j8k2",
+              "quantity": 4,
+              "label": "15m Time Skip ×4"
+            }
+          ],
+          "offerId": "offer_resource_rush"
+        },
+        "offer_adrenaline_pro": {
+          "displayName": "EXOTIC SURGE",
+          "category": "context",
+          "slotAssignment": 4,
+          "productId": "com.tecventures.mysticmotors.exotic.surge",
+          "price": 5.99,
+          "advertisedMultiplier": 4,
+          "trueGemValue": 2494,
+          "validityHours": 1,
+          "upsellOfferId": null,
+          "triggerCondition": "win_streak_3",
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 1400
+            },
+            {
+              "type": "crate",
+              "id": "sku_e8e7jeba7v",
+              "quantity": 2,
+              "label": "Exotic Crate ×2"
+            },
+            {
+              "type": "booster",
+              "id": "sku_wkm0amtg",
+              "quantity": 1,
+              "label": "Coin Booster 12h"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 2,
+              "label": "3h Time Skip ×2"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 2,
+              "label": "1h Time Skip ×2"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd30m_w3n9",
+              "quantity": 2,
+              "label": "30m Time Skip ×2"
+            }
+          ],
+          "offerId": "offer_adrenaline_pro"
+        },
+        "offer_mythic_mystery": {
+          "displayName": "FORTUNE VAULT",
+          "category": "context",
+          "slotAssignment": 4,
+          "productId": "com.tecventures.mysticmotors.fortune.vault",
+          "price": 44.99,
+          "advertisedMultiplier": 3,
+          "trueGemValue": 12290,
+          "validityHours": 8,
+          "upsellOfferId": null,
+          "triggerCondition": "mythical_crate_earned",
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 8500
+            },
+            {
+              "type": "crate",
+              "id": "sku_kgkjadrd79",
+              "quantity": 1,
+              "label": "Mythical Crate"
+            },
+            {
+              "type": "booster",
+              "id": "sku_tpt3379j8p",
+              "quantity": 1,
+              "label": "Coin Booster 24h"
+            },
+            {
+              "type": "booster",
+              "id": "sku_9pnmmjpscv",
+              "quantity": 1,
+              "label": "XP Booster 24h"
+            },
+            {
+              "type": "booster",
+              "id": "sku_shrd24h_n8t5",
+              "quantity": 1,
+              "label": "Shard Booster 24h"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd24h_b9f1",
+              "quantity": 1,
+              "label": "24h Time Skip"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd8h_y7p4",
+              "quantity": 2,
+              "label": "8h Time Skip ×2"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 3,
+              "label": "3h Time Skip ×3"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 5,
+              "label": "1h Time Skip ×5"
+            }
+          ],
+          "offerId": "offer_mythic_mystery"
+        },
+        "offer_double_clutch": {
+          "displayName": "GARAGE CIRCUIT",
+          "category": "event",
+          "slotAssignment": 4,
+          "productId": "com.tecventures.mysticmotors.garage.circuit",
+          "price": 6.99,
+          "advertisedMultiplier": 4,
+          "trueGemValue": 2760,
+          "validityHours": 24,
+          "upsellOfferId": null,
+          "triggerCondition": "weekend",
+          "entitlements": [
+            {
+              "type": "gems",
+              "id": "gems",
+              "quantity": 2000
+            },
+            {
+              "type": "crate",
+              "id": "sku_72wnqwtfmx",
+              "quantity": 2,
+              "label": "Rare Crate ×2"
+            },
+            {
+              "type": "booster",
+              "id": "sku_wkm0amtg",
+              "quantity": 1,
+              "label": "Coin Booster 12h"
+            },
+            {
+              "type": "booster",
+              "id": "sku_nhh7jtda",
+              "quantity": 1,
+              "label": "XP Booster 12h"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd8h_y7p4",
+              "quantity": 1,
+              "label": "8h Time Skip"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd3h_q2v8",
+              "quantity": 1,
+              "label": "3h Time Skip"
+            },
+            {
+              "type": "speedUp",
+              "id": "sku_spd1h_m5t6",
+              "quantity": 3,
+              "label": "1h Time Skip ×3"
+            }
+          ],
+          "offerId": "offer_double_clutch"
         }
       },
       "createdAt": 1761228851445,
@@ -14774,7 +15139,7 @@
             "type": "starter"
           },
           "levels": {
-            "0": {
+            "1": {
               "xpToNext": 150,
               "upgradeTimerSeconds": 0,
               "priceCoins": 1100,
@@ -14785,7 +15150,7 @@
               "boostRegen": 1,
               "boostPower": 1
             },
-            "1": {
+            "2": {
               "xpToNext": 150,
               "upgradeTimerSeconds": 60,
               "priceCoins": 1600,
@@ -14796,7 +15161,7 @@
               "boostRegen": 1.04,
               "boostPower": 1.06
             },
-            "2": {
+            "3": {
               "xpToNext": 200,
               "upgradeTimerSeconds": 120,
               "priceCoins": 2100,
@@ -14807,7 +15172,7 @@
               "boostRegen": 1.09,
               "boostPower": 1.11
             },
-            "3": {
+            "4": {
               "xpToNext": 250,
               "upgradeTimerSeconds": 300,
               "priceCoins": 3200,
@@ -14818,7 +15183,7 @@
               "boostRegen": 1.13,
               "boostPower": 1.17
             },
-            "4": {
+            "5": {
               "xpToNext": 250,
               "upgradeTimerSeconds": 480,
               "priceCoins": 4300,
@@ -14829,7 +15194,7 @@
               "boostRegen": 1.18,
               "boostPower": 1.22
             },
-            "5": {
+            "6": {
               "xpToNext": 350,
               "upgradeTimerSeconds": 900,
               "priceCoins": 5400,
@@ -14840,7 +15205,7 @@
               "boostRegen": 1.22,
               "boostPower": 1.28
             },
-            "6": {
+            "7": {
               "xpToNext": 400,
               "upgradeTimerSeconds": 1800,
               "priceCoins": 6400,
@@ -14851,7 +15216,7 @@
               "boostRegen": 1.27,
               "boostPower": 1.33
             },
-            "7": {
+            "8": {
               "xpToNext": 450,
               "upgradeTimerSeconds": 3600,
               "priceCoins": 8600,
@@ -14862,7 +15227,7 @@
               "boostRegen": 1.31,
               "boostPower": 1.39
             },
-            "8": {
+            "9": {
               "xpToNext": 500,
               "upgradeTimerSeconds": 7200,
               "priceCoins": 10500,
@@ -14873,7 +15238,7 @@
               "boostRegen": 1.36,
               "boostPower": 1.44
             },
-            "9": {
+            "10": {
               "xpToNext": 0,
               "upgradeTimerSeconds": 0,
               "priceCoins": 0,
@@ -14905,7 +15270,7 @@
             "minPlayerLevel": 3
           },
           "levels": {
-            "0": {
+            "1": {
               "xpToNext": 150,
               "upgradeTimerSeconds": 0,
               "priceCoins": 1100,
@@ -14916,7 +15281,7 @@
               "boostRegen": 1,
               "boostPower": 1
             },
-            "1": {
+            "2": {
               "xpToNext": 150,
               "upgradeTimerSeconds": 60,
               "priceCoins": 1600,
@@ -14927,7 +15292,7 @@
               "boostRegen": 1.06,
               "boostPower": 1.08
             },
-            "2": {
+            "3": {
               "xpToNext": 200,
               "upgradeTimerSeconds": 120,
               "priceCoins": 2100,
@@ -14938,7 +15303,7 @@
               "boostRegen": 1.11,
               "boostPower": 1.16
             },
-            "3": {
+            "4": {
               "xpToNext": 250,
               "upgradeTimerSeconds": 300,
               "priceCoins": 3200,
@@ -14949,7 +15314,7 @@
               "boostRegen": 1.17,
               "boostPower": 1.23
             },
-            "4": {
+            "5": {
               "xpToNext": 250,
               "upgradeTimerSeconds": 480,
               "priceCoins": 4300,
@@ -14960,7 +15325,7 @@
               "boostRegen": 1.22,
               "boostPower": 1.31
             },
-            "5": {
+            "6": {
               "xpToNext": 350,
               "upgradeTimerSeconds": 900,
               "priceCoins": 5400,
@@ -14971,7 +15336,7 @@
               "boostRegen": 1.28,
               "boostPower": 1.39
             },
-            "6": {
+            "7": {
               "xpToNext": 400,
               "upgradeTimerSeconds": 1800,
               "priceCoins": 6400,
@@ -14982,7 +15347,7 @@
               "boostRegen": 1.33,
               "boostPower": 1.47
             },
-            "7": {
+            "8": {
               "xpToNext": 450,
               "upgradeTimerSeconds": 3600,
               "priceCoins": 8600,
@@ -14993,7 +15358,7 @@
               "boostRegen": 1.39,
               "boostPower": 1.54
             },
-            "8": {
+            "9": {
               "xpToNext": 500,
               "upgradeTimerSeconds": 7200,
               "priceCoins": 10500,
@@ -15004,7 +15369,7 @@
               "boostRegen": 1.44,
               "boostPower": 1.62
             },
-            "9": {
+            "10": {
               "xpToNext": 0,
               "upgradeTimerSeconds": 0,
               "priceCoins": 0,
@@ -15037,7 +15402,7 @@
             "minPlayerLevel": 7
           },
           "levels": {
-            "0": {
+            "1": {
               "xpToNext": 150,
               "upgradeTimerSeconds": 0,
               "priceCoins": 1100,
@@ -15048,7 +15413,7 @@
               "boostRegen": 1,
               "boostPower": 1
             },
-            "1": {
+            "2": {
               "xpToNext": 150,
               "upgradeTimerSeconds": 60,
               "priceCoins": 1600,
@@ -15059,7 +15424,7 @@
               "boostRegen": 1.06,
               "boostPower": 1.08
             },
-            "2": {
+            "3": {
               "xpToNext": 200,
               "upgradeTimerSeconds": 120,
               "priceCoins": 2100,
@@ -15070,7 +15435,7 @@
               "boostRegen": 1.11,
               "boostPower": 1.16
             },
-            "3": {
+            "4": {
               "xpToNext": 250,
               "upgradeTimerSeconds": 300,
               "priceCoins": 3200,
@@ -15081,7 +15446,7 @@
               "boostRegen": 1.17,
               "boostPower": 1.23
             },
-            "4": {
+            "5": {
               "xpToNext": 250,
               "upgradeTimerSeconds": 480,
               "priceCoins": 4300,
@@ -15092,7 +15457,7 @@
               "boostRegen": 1.22,
               "boostPower": 1.31
             },
-            "5": {
+            "6": {
               "xpToNext": 350,
               "upgradeTimerSeconds": 900,
               "priceCoins": 5400,
@@ -15103,7 +15468,7 @@
               "boostRegen": 1.28,
               "boostPower": 1.39
             },
-            "6": {
+            "7": {
               "xpToNext": 400,
               "upgradeTimerSeconds": 1800,
               "priceCoins": 6400,
@@ -15114,7 +15479,7 @@
               "boostRegen": 1.33,
               "boostPower": 1.47
             },
-            "7": {
+            "8": {
               "xpToNext": 450,
               "upgradeTimerSeconds": 3600,
               "priceCoins": 8600,
@@ -15125,7 +15490,7 @@
               "boostRegen": 1.39,
               "boostPower": 1.54
             },
-            "8": {
+            "9": {
               "xpToNext": 500,
               "upgradeTimerSeconds": 7200,
               "priceCoins": 10500,
@@ -15136,7 +15501,7 @@
               "boostRegen": 1.44,
               "boostPower": 1.62
             },
-            "9": {
+            "10": {
               "xpToNext": 0,
               "upgradeTimerSeconds": 0,
               "priceCoins": 0,
@@ -15169,7 +15534,7 @@
             "minPlayerLevel": 12
           },
           "levels": {
-            "0": {
+            "1": {
               "xpToNext": 400,
               "upgradeTimerSeconds": 300,
               "priceCoins": 4500,
@@ -15180,7 +15545,7 @@
               "boostRegen": 1,
               "boostPower": 1
             },
-            "1": {
+            "2": {
               "xpToNext": 500,
               "upgradeTimerSeconds": 600,
               "priceCoins": 6700,
@@ -15191,7 +15556,7 @@
               "boostRegen": 1.08,
               "boostPower": 1.1
             },
-            "2": {
+            "3": {
               "xpToNext": 600,
               "upgradeTimerSeconds": 900,
               "priceCoins": 8900,
@@ -15202,7 +15567,7 @@
               "boostRegen": 1.16,
               "boostPower": 1.2
             },
-            "3": {
+            "4": {
               "xpToNext": 700,
               "upgradeTimerSeconds": 1800,
               "priceCoins": 13500,
@@ -15213,7 +15578,7 @@
               "boostRegen": 1.23,
               "boostPower": 1.3
             },
-            "4": {
+            "5": {
               "xpToNext": 800,
               "upgradeTimerSeconds": 2700,
               "priceCoins": 18000,
@@ -15224,7 +15589,7 @@
               "boostRegen": 1.31,
               "boostPower": 1.4
             },
-            "5": {
+            "6": {
               "xpToNext": 1000,
               "upgradeTimerSeconds": 3600,
               "priceCoins": 22500,
@@ -15235,7 +15600,7 @@
               "boostRegen": 1.39,
               "boostPower": 1.5
             },
-            "6": {
+            "7": {
               "xpToNext": 1200,
               "upgradeTimerSeconds": 7200,
               "priceCoins": 26500,
@@ -15246,7 +15611,7 @@
               "boostRegen": 1.47,
               "boostPower": 1.6
             },
-            "7": {
+            "8": {
               "xpToNext": 1400,
               "upgradeTimerSeconds": 10800,
               "priceCoins": 35500,
@@ -15257,7 +15622,7 @@
               "boostRegen": 1.54,
               "boostPower": 1.7
             },
-            "8": {
+            "9": {
               "xpToNext": 1600,
               "upgradeTimerSeconds": 14400,
               "priceCoins": 44500,
@@ -15268,7 +15633,7 @@
               "boostRegen": 1.62,
               "boostPower": 1.8
             },
-            "9": {
+            "10": {
               "xpToNext": 0,
               "upgradeTimerSeconds": 0,
               "priceCoins": 0,
@@ -15300,7 +15665,7 @@
             "minPlayerLevel": 18
           },
           "levels": {
-            "0": {
+            "1": {
               "xpToNext": 400,
               "upgradeTimerSeconds": 300,
               "priceCoins": 4500,
@@ -15311,7 +15676,7 @@
               "boostRegen": 1,
               "boostPower": 1
             },
-            "1": {
+            "2": {
               "xpToNext": 500,
               "upgradeTimerSeconds": 600,
               "priceCoins": 6700,
@@ -15322,7 +15687,7 @@
               "boostRegen": 1.08,
               "boostPower": 1.1
             },
-            "2": {
+            "3": {
               "xpToNext": 600,
               "upgradeTimerSeconds": 900,
               "priceCoins": 8900,
@@ -15333,7 +15698,7 @@
               "boostRegen": 1.16,
               "boostPower": 1.2
             },
-            "3": {
+            "4": {
               "xpToNext": 700,
               "upgradeTimerSeconds": 1800,
               "priceCoins": 13500,
@@ -15344,7 +15709,7 @@
               "boostRegen": 1.23,
               "boostPower": 1.3
             },
-            "4": {
+            "5": {
               "xpToNext": 800,
               "upgradeTimerSeconds": 2700,
               "priceCoins": 18000,
@@ -15355,7 +15720,7 @@
               "boostRegen": 1.31,
               "boostPower": 1.4
             },
-            "5": {
+            "6": {
               "xpToNext": 1000,
               "upgradeTimerSeconds": 3600,
               "priceCoins": 22500,
@@ -15366,7 +15731,7 @@
               "boostRegen": 1.39,
               "boostPower": 1.5
             },
-            "6": {
+            "7": {
               "xpToNext": 1200,
               "upgradeTimerSeconds": 7200,
               "priceCoins": 26500,
@@ -15377,7 +15742,7 @@
               "boostRegen": 1.47,
               "boostPower": 1.6
             },
-            "7": {
+            "8": {
               "xpToNext": 1400,
               "upgradeTimerSeconds": 10800,
               "priceCoins": 35500,
@@ -15388,7 +15753,7 @@
               "boostRegen": 1.54,
               "boostPower": 1.7
             },
-            "8": {
+            "9": {
               "xpToNext": 1600,
               "upgradeTimerSeconds": 14400,
               "priceCoins": 44500,
@@ -15399,7 +15764,7 @@
               "boostRegen": 1.62,
               "boostPower": 1.8
             },
-            "9": {
+            "10": {
               "xpToNext": 0,
               "upgradeTimerSeconds": 0,
               "priceCoins": 0,
@@ -15432,7 +15797,7 @@
             "minPlayerLevel": 25
           },
           "levels": {
-            "0": {
+            "1": {
               "xpToNext": 400,
               "upgradeTimerSeconds": 300,
               "priceCoins": 4500,
@@ -15443,7 +15808,7 @@
               "boostRegen": 1,
               "boostPower": 1
             },
-            "1": {
+            "2": {
               "xpToNext": 500,
               "upgradeTimerSeconds": 600,
               "priceCoins": 6700,
@@ -15454,7 +15819,7 @@
               "boostRegen": 1.1,
               "boostPower": 1.12
             },
-            "2": {
+            "3": {
               "xpToNext": 600,
               "upgradeTimerSeconds": 900,
               "priceCoins": 8900,
@@ -15465,7 +15830,7 @@
               "boostRegen": 1.2,
               "boostPower": 1.24
             },
-            "3": {
+            "4": {
               "xpToNext": 700,
               "upgradeTimerSeconds": 1800,
               "priceCoins": 13500,
@@ -15476,7 +15841,7 @@
               "boostRegen": 1.3,
               "boostPower": 1.37
             },
-            "4": {
+            "5": {
               "xpToNext": 800,
               "upgradeTimerSeconds": 2700,
               "priceCoins": 18000,
@@ -15487,7 +15852,7 @@
               "boostRegen": 1.4,
               "boostPower": 1.49
             },
-            "5": {
+            "6": {
               "xpToNext": 1000,
               "upgradeTimerSeconds": 3600,
               "priceCoins": 22500,
@@ -15498,7 +15863,7 @@
               "boostRegen": 1.5,
               "boostPower": 1.61
             },
-            "6": {
+            "7": {
               "xpToNext": 1200,
               "upgradeTimerSeconds": 7200,
               "priceCoins": 26500,
@@ -15509,7 +15874,7 @@
               "boostRegen": 1.6,
               "boostPower": 1.73
             },
-            "7": {
+            "8": {
               "xpToNext": 1400,
               "upgradeTimerSeconds": 10800,
               "priceCoins": 35500,
@@ -15520,7 +15885,7 @@
               "boostRegen": 1.7,
               "boostPower": 1.86
             },
-            "8": {
+            "9": {
               "xpToNext": 1600,
               "upgradeTimerSeconds": 14400,
               "priceCoins": 44500,
@@ -15531,7 +15896,7 @@
               "boostRegen": 1.8,
               "boostPower": 1.98
             },
-            "9": {
+            "10": {
               "xpToNext": 0,
               "upgradeTimerSeconds": 0,
               "priceCoins": 0,
@@ -15564,7 +15929,7 @@
             "minPlayerLevel": 33
           },
           "levels": {
-            "0": {
+            "1": {
               "xpToNext": 950,
               "upgradeTimerSeconds": 1800,
               "priceCoins": 25500,
@@ -15575,7 +15940,7 @@
               "boostRegen": 1,
               "boostPower": 1
             },
-            "1": {
+            "2": {
               "xpToNext": 1200,
               "upgradeTimerSeconds": 2700,
               "priceCoins": 38200,
@@ -15586,7 +15951,7 @@
               "boostRegen": 1.1,
               "boostPower": 1.12
             },
-            "2": {
+            "3": {
               "xpToNext": 1400,
               "upgradeTimerSeconds": 3600,
               "priceCoins": 51800,
@@ -15597,7 +15962,7 @@
               "boostRegen": 1.2,
               "boostPower": 1.24
             },
-            "3": {
+            "4": {
               "xpToNext": 1700,
               "upgradeTimerSeconds": 7200,
               "priceCoins": 77200,
@@ -15608,7 +15973,7 @@
               "boostRegen": 1.3,
               "boostPower": 1.37
             },
-            "4": {
+            "5": {
               "xpToNext": 1900,
               "upgradeTimerSeconds": 10800,
               "priceCoins": 102800,
@@ -15619,7 +15984,7 @@
               "boostRegen": 1.4,
               "boostPower": 1.49
             },
-            "5": {
+            "6": {
               "xpToNext": 2400,
               "upgradeTimerSeconds": 14400,
               "priceCoins": 128200,
@@ -15630,7 +15995,7 @@
               "boostRegen": 1.5,
               "boostPower": 1.61
             },
-            "6": {
+            "7": {
               "xpToNext": 2800,
               "upgradeTimerSeconds": 21600,
               "priceCoins": 154500,
@@ -15641,7 +16006,7 @@
               "boostRegen": 1.6,
               "boostPower": 1.73
             },
-            "7": {
+            "8": {
               "xpToNext": 3300,
               "upgradeTimerSeconds": 28800,
               "priceCoins": 205500,
@@ -15652,7 +16017,7 @@
               "boostRegen": 1.7,
               "boostPower": 1.86
             },
-            "8": {
+            "9": {
               "xpToNext": 3800,
               "upgradeTimerSeconds": 43200,
               "priceCoins": 256500,
@@ -15663,7 +16028,7 @@
               "boostRegen": 1.8,
               "boostPower": 1.98
             },
-            "9": {
+            "10": {
               "xpToNext": 0,
               "upgradeTimerSeconds": 0,
               "priceCoins": 0,
@@ -15695,7 +16060,7 @@
             "minPlayerLevel": 42
           },
           "levels": {
-            "0": {
+            "1": {
               "xpToNext": 950,
               "upgradeTimerSeconds": 1800,
               "priceCoins": 25500,
@@ -15706,7 +16071,7 @@
               "boostRegen": 1,
               "boostPower": 1
             },
-            "1": {
+            "2": {
               "xpToNext": 1200,
               "upgradeTimerSeconds": 2700,
               "priceCoins": 38200,
@@ -15717,7 +16082,7 @@
               "boostRegen": 1.1,
               "boostPower": 1.12
             },
-            "2": {
+            "3": {
               "xpToNext": 1400,
               "upgradeTimerSeconds": 3600,
               "priceCoins": 51800,
@@ -15728,7 +16093,7 @@
               "boostRegen": 1.2,
               "boostPower": 1.24
             },
-            "3": {
+            "4": {
               "xpToNext": 1700,
               "upgradeTimerSeconds": 7200,
               "priceCoins": 77200,
@@ -15739,7 +16104,7 @@
               "boostRegen": 1.3,
               "boostPower": 1.37
             },
-            "4": {
+            "5": {
               "xpToNext": 1900,
               "upgradeTimerSeconds": 10800,
               "priceCoins": 102800,
@@ -15750,7 +16115,7 @@
               "boostRegen": 1.4,
               "boostPower": 1.49
             },
-            "5": {
+            "6": {
               "xpToNext": 2400,
               "upgradeTimerSeconds": 14400,
               "priceCoins": 128200,
@@ -15761,7 +16126,7 @@
               "boostRegen": 1.5,
               "boostPower": 1.61
             },
-            "6": {
+            "7": {
               "xpToNext": 2800,
               "upgradeTimerSeconds": 21600,
               "priceCoins": 154500,
@@ -15772,7 +16137,7 @@
               "boostRegen": 1.6,
               "boostPower": 1.73
             },
-            "7": {
+            "8": {
               "xpToNext": 3300,
               "upgradeTimerSeconds": 28800,
               "priceCoins": 205500,
@@ -15783,7 +16148,7 @@
               "boostRegen": 1.7,
               "boostPower": 1.86
             },
-            "8": {
+            "9": {
               "xpToNext": 3800,
               "upgradeTimerSeconds": 43200,
               "priceCoins": 256500,
@@ -15794,7 +16159,7 @@
               "boostRegen": 1.8,
               "boostPower": 1.98
             },
-            "9": {
+            "10": {
               "xpToNext": 0,
               "upgradeTimerSeconds": 0,
               "priceCoins": 0,
@@ -15827,7 +16192,7 @@
             "minPlayerLevel": 52
           },
           "levels": {
-            "0": {
+            "1": {
               "xpToNext": 950,
               "upgradeTimerSeconds": 1800,
               "priceCoins": 25500,
@@ -15838,7 +16203,7 @@
               "boostRegen": 1,
               "boostPower": 1
             },
-            "1": {
+            "2": {
               "xpToNext": 1200,
               "upgradeTimerSeconds": 2700,
               "priceCoins": 38200,
@@ -15849,7 +16214,7 @@
               "boostRegen": 1.11,
               "boostPower": 1.14
             },
-            "2": {
+            "3": {
               "xpToNext": 1400,
               "upgradeTimerSeconds": 3600,
               "priceCoins": 51800,
@@ -15860,7 +16225,7 @@
               "boostRegen": 1.22,
               "boostPower": 1.29
             },
-            "3": {
+            "4": {
               "xpToNext": 1700,
               "upgradeTimerSeconds": 7200,
               "priceCoins": 77200,
@@ -15871,7 +16236,7 @@
               "boostRegen": 1.33,
               "boostPower": 1.43
             },
-            "4": {
+            "5": {
               "xpToNext": 1900,
               "upgradeTimerSeconds": 10800,
               "priceCoins": 102800,
@@ -15882,7 +16247,7 @@
               "boostRegen": 1.44,
               "boostPower": 1.58
             },
-            "5": {
+            "6": {
               "xpToNext": 2400,
               "upgradeTimerSeconds": 14400,
               "priceCoins": 128200,
@@ -15893,7 +16258,7 @@
               "boostRegen": 1.56,
               "boostPower": 1.72
             },
-            "6": {
+            "7": {
               "xpToNext": 2800,
               "upgradeTimerSeconds": 21600,
               "priceCoins": 154500,
@@ -15904,7 +16269,7 @@
               "boostRegen": 1.67,
               "boostPower": 1.87
             },
-            "7": {
+            "8": {
               "xpToNext": 3300,
               "upgradeTimerSeconds": 28800,
               "priceCoins": 205500,
@@ -15915,7 +16280,7 @@
               "boostRegen": 1.78,
               "boostPower": 2.01
             },
-            "8": {
+            "9": {
               "xpToNext": 3800,
               "upgradeTimerSeconds": 43200,
               "priceCoins": 256500,
@@ -15926,7 +16291,7 @@
               "boostRegen": 1.89,
               "boostPower": 2.16
             },
-            "9": {
+            "10": {
               "xpToNext": 0,
               "upgradeTimerSeconds": 0,
               "priceCoins": 0,
@@ -15959,7 +16324,7 @@
             "minPlayerLevel": 63
           },
           "levels": {
-            "0": {
+            "1": {
               "xpToNext": 1900,
               "upgradeTimerSeconds": 3600,
               "priceCoins": 118000,
@@ -15970,7 +16335,7 @@
               "boostRegen": 1,
               "boostPower": 1
             },
-            "1": {
+            "2": {
               "xpToNext": 2400,
               "upgradeTimerSeconds": 7200,
               "priceCoins": 178000,
@@ -15981,7 +16346,7 @@
               "boostRegen": 1.11,
               "boostPower": 1.14
             },
-            "2": {
+            "3": {
               "xpToNext": 2900,
               "upgradeTimerSeconds": 10800,
               "priceCoins": 236000,
@@ -15992,7 +16357,7 @@
               "boostRegen": 1.22,
               "boostPower": 1.29
             },
-            "3": {
+            "4": {
               "xpToNext": 3400,
               "upgradeTimerSeconds": 14400,
               "priceCoins": 356000,
@@ -16003,7 +16368,7 @@
               "boostRegen": 1.33,
               "boostPower": 1.43
             },
-            "4": {
+            "5": {
               "xpToNext": 3900,
               "upgradeTimerSeconds": 21600,
               "priceCoins": 474000,
@@ -16014,7 +16379,7 @@
               "boostRegen": 1.44,
               "boostPower": 1.58
             },
-            "5": {
+            "6": {
               "xpToNext": 4800,
               "upgradeTimerSeconds": 28800,
               "priceCoins": 592000,
@@ -16025,7 +16390,7 @@
               "boostRegen": 1.56,
               "boostPower": 1.72
             },
-            "6": {
+            "7": {
               "xpToNext": 5800,
               "upgradeTimerSeconds": 43200,
               "priceCoins": 710000,
@@ -16036,7 +16401,7 @@
               "boostRegen": 1.67,
               "boostPower": 1.87
             },
-            "7": {
+            "8": {
               "xpToNext": 6700,
               "upgradeTimerSeconds": 57600,
               "priceCoins": 948000,
@@ -16047,7 +16412,7 @@
               "boostRegen": 1.78,
               "boostPower": 2.01
             },
-            "8": {
+            "9": {
               "xpToNext": 7700,
               "upgradeTimerSeconds": 86400,
               "priceCoins": 1184000,
@@ -16058,7 +16423,7 @@
               "boostRegen": 1.89,
               "boostPower": 2.16
             },
-            "9": {
+            "10": {
               "xpToNext": 0,
               "upgradeTimerSeconds": 0,
               "priceCoins": 0,
@@ -16090,7 +16455,7 @@
             "minPlayerLevel": 75
           },
           "levels": {
-            "0": {
+            "1": {
               "xpToNext": 1900,
               "upgradeTimerSeconds": 3600,
               "priceCoins": 118000,
@@ -16101,7 +16466,7 @@
               "boostRegen": 1,
               "boostPower": 1
             },
-            "1": {
+            "2": {
               "xpToNext": 2400,
               "upgradeTimerSeconds": 7200,
               "priceCoins": 178000,
@@ -16112,7 +16477,7 @@
               "boostRegen": 1.11,
               "boostPower": 1.14
             },
-            "2": {
+            "3": {
               "xpToNext": 2900,
               "upgradeTimerSeconds": 10800,
               "priceCoins": 236000,
@@ -16123,7 +16488,7 @@
               "boostRegen": 1.22,
               "boostPower": 1.29
             },
-            "3": {
+            "4": {
               "xpToNext": 3400,
               "upgradeTimerSeconds": 14400,
               "priceCoins": 356000,
@@ -16134,7 +16499,7 @@
               "boostRegen": 1.33,
               "boostPower": 1.43
             },
-            "4": {
+            "5": {
               "xpToNext": 3900,
               "upgradeTimerSeconds": 21600,
               "priceCoins": 474000,
@@ -16145,7 +16510,7 @@
               "boostRegen": 1.44,
               "boostPower": 1.58
             },
-            "5": {
+            "6": {
               "xpToNext": 4800,
               "upgradeTimerSeconds": 28800,
               "priceCoins": 592000,
@@ -16156,7 +16521,7 @@
               "boostRegen": 1.56,
               "boostPower": 1.72
             },
-            "6": {
+            "7": {
               "xpToNext": 5800,
               "upgradeTimerSeconds": 43200,
               "priceCoins": 710000,
@@ -16167,7 +16532,7 @@
               "boostRegen": 1.67,
               "boostPower": 1.87
             },
-            "7": {
+            "8": {
               "xpToNext": 6700,
               "upgradeTimerSeconds": 57600,
               "priceCoins": 948000,
@@ -16178,7 +16543,7 @@
               "boostRegen": 1.78,
               "boostPower": 2.01
             },
-            "8": {
+            "9": {
               "xpToNext": 7700,
               "upgradeTimerSeconds": 86400,
               "priceCoins": 1184000,
@@ -16189,7 +16554,7 @@
               "boostRegen": 1.89,
               "boostPower": 2.16
             },
-            "9": {
+            "10": {
               "xpToNext": 0,
               "upgradeTimerSeconds": 0,
               "priceCoins": 0,
@@ -16222,7 +16587,7 @@
             "minPlayerLevel": 88
           },
           "levels": {
-            "0": {
+            "1": {
               "xpToNext": 1900,
               "upgradeTimerSeconds": 3600,
               "priceCoins": 118000,
@@ -16233,7 +16598,7 @@
               "boostRegen": 1,
               "boostPower": 1
             },
-            "1": {
+            "2": {
               "xpToNext": 2400,
               "upgradeTimerSeconds": 7200,
               "priceCoins": 178000,
@@ -16244,7 +16609,7 @@
               "boostRegen": 1.11,
               "boostPower": 1.14
             },
-            "2": {
+            "3": {
               "xpToNext": 2900,
               "upgradeTimerSeconds": 10800,
               "priceCoins": 236000,
@@ -16255,7 +16620,7 @@
               "boostRegen": 1.22,
               "boostPower": 1.29
             },
-            "3": {
+            "4": {
               "xpToNext": 3400,
               "upgradeTimerSeconds": 14400,
               "priceCoins": 356000,
@@ -16266,7 +16631,7 @@
               "boostRegen": 1.33,
               "boostPower": 1.43
             },
-            "4": {
+            "5": {
               "xpToNext": 3900,
               "upgradeTimerSeconds": 21600,
               "priceCoins": 474000,
@@ -16277,7 +16642,7 @@
               "boostRegen": 1.44,
               "boostPower": 1.58
             },
-            "5": {
+            "6": {
               "xpToNext": 4800,
               "upgradeTimerSeconds": 28800,
               "priceCoins": 592000,
@@ -16288,7 +16653,7 @@
               "boostRegen": 1.56,
               "boostPower": 1.72
             },
-            "6": {
+            "7": {
               "xpToNext": 5800,
               "upgradeTimerSeconds": 43200,
               "priceCoins": 710000,
@@ -16299,7 +16664,7 @@
               "boostRegen": 1.67,
               "boostPower": 1.87
             },
-            "7": {
+            "8": {
               "xpToNext": 6700,
               "upgradeTimerSeconds": 57600,
               "priceCoins": 948000,
@@ -16310,7 +16675,7 @@
               "boostRegen": 1.78,
               "boostPower": 2.01
             },
-            "8": {
+            "9": {
               "xpToNext": 7700,
               "upgradeTimerSeconds": 86400,
               "priceCoins": 1184000,
@@ -16321,7 +16686,7 @@
               "boostRegen": 1.89,
               "boostPower": 2.16
             },
-            "9": {
+            "10": {
               "xpToNext": 0,
               "upgradeTimerSeconds": 0,
               "priceCoins": 0,
@@ -16354,7 +16719,7 @@
             "minPlayerLevel": 102
           },
           "levels": {
-            "0": {
+            "1": {
               "xpToNext": 3500,
               "upgradeTimerSeconds": 7200,
               "priceCoins": 472500,
@@ -16365,7 +16730,7 @@
               "boostRegen": 1,
               "boostPower": 1
             },
-            "1": {
+            "2": {
               "xpToNext": 4400,
               "upgradeTimerSeconds": 14400,
               "priceCoins": 710000,
@@ -16376,7 +16741,7 @@
               "boostRegen": 1.11,
               "boostPower": 1.14
             },
-            "2": {
+            "3": {
               "xpToNext": 5300,
               "upgradeTimerSeconds": 21600,
               "priceCoins": 945000,
@@ -16387,7 +16752,7 @@
               "boostRegen": 1.22,
               "boostPower": 1.29
             },
-            "3": {
+            "4": {
               "xpToNext": 6200,
               "upgradeTimerSeconds": 28800,
               "priceCoins": 1417500,
@@ -16398,7 +16763,7 @@
               "boostRegen": 1.33,
               "boostPower": 1.43
             },
-            "4": {
+            "5": {
               "xpToNext": 7100,
               "upgradeTimerSeconds": 43200,
               "priceCoins": 1890000,
@@ -16409,7 +16774,7 @@
               "boostRegen": 1.44,
               "boostPower": 1.58
             },
-            "5": {
+            "6": {
               "xpToNext": 8800,
               "upgradeTimerSeconds": 57600,
               "priceCoins": 2362500,
@@ -16420,7 +16785,7 @@
               "boostRegen": 1.56,
               "boostPower": 1.72
             },
-            "6": {
+            "7": {
               "xpToNext": 10500,
               "upgradeTimerSeconds": 86400,
               "priceCoins": 2837500,
@@ -16431,7 +16796,7 @@
               "boostRegen": 1.67,
               "boostPower": 1.87
             },
-            "7": {
+            "8": {
               "xpToNext": 12500,
               "upgradeTimerSeconds": 115200,
               "priceCoins": 3775000,
@@ -16442,7 +16807,7 @@
               "boostRegen": 1.78,
               "boostPower": 2.01
             },
-            "8": {
+            "9": {
               "xpToNext": 14000,
               "upgradeTimerSeconds": 172800,
               "priceCoins": 4725000,
@@ -16453,7 +16818,7 @@
               "boostRegen": 1.89,
               "boostPower": 2.16
             },
-            "9": {
+            "10": {
               "xpToNext": 0,
               "upgradeTimerSeconds": 0,
               "priceCoins": 0,
@@ -16485,7 +16850,7 @@
             "minPlayerLevel": 117
           },
           "levels": {
-            "0": {
+            "1": {
               "xpToNext": 3500,
               "upgradeTimerSeconds": 7200,
               "priceCoins": 472500,
@@ -16496,7 +16861,7 @@
               "boostRegen": 1,
               "boostPower": 1
             },
-            "1": {
+            "2": {
               "xpToNext": 4400,
               "upgradeTimerSeconds": 14400,
               "priceCoins": 710000,
@@ -16507,7 +16872,7 @@
               "boostRegen": 1.11,
               "boostPower": 1.14
             },
-            "2": {
+            "3": {
               "xpToNext": 5300,
               "upgradeTimerSeconds": 21600,
               "priceCoins": 945000,
@@ -16518,7 +16883,7 @@
               "boostRegen": 1.22,
               "boostPower": 1.29
             },
-            "3": {
+            "4": {
               "xpToNext": 6200,
               "upgradeTimerSeconds": 28800,
               "priceCoins": 1417500,
@@ -16529,7 +16894,7 @@
               "boostRegen": 1.33,
               "boostPower": 1.43
             },
-            "4": {
+            "5": {
               "xpToNext": 7100,
               "upgradeTimerSeconds": 43200,
               "priceCoins": 1890000,
@@ -16540,7 +16905,7 @@
               "boostRegen": 1.44,
               "boostPower": 1.58
             },
-            "5": {
+            "6": {
               "xpToNext": 8800,
               "upgradeTimerSeconds": 57600,
               "priceCoins": 2362500,
@@ -16551,7 +16916,7 @@
               "boostRegen": 1.56,
               "boostPower": 1.72
             },
-            "6": {
+            "7": {
               "xpToNext": 10500,
               "upgradeTimerSeconds": 86400,
               "priceCoins": 2837500,
@@ -16562,7 +16927,7 @@
               "boostRegen": 1.67,
               "boostPower": 1.87
             },
-            "7": {
+            "8": {
               "xpToNext": 12500,
               "upgradeTimerSeconds": 115200,
               "priceCoins": 3775000,
@@ -16573,7 +16938,7 @@
               "boostRegen": 1.78,
               "boostPower": 2.01
             },
-            "8": {
+            "9": {
               "xpToNext": 14000,
               "upgradeTimerSeconds": 172800,
               "priceCoins": 4725000,
@@ -16584,7 +16949,7 @@
               "boostRegen": 1.89,
               "boostPower": 2.16
             },
-            "9": {
+            "10": {
               "xpToNext": 0,
               "upgradeTimerSeconds": 0,
               "priceCoins": 0,
@@ -16617,7 +16982,7 @@
             "minPlayerLevel": 133
           },
           "levels": {
-            "0": {
+            "1": {
               "xpToNext": 3500,
               "upgradeTimerSeconds": 7200,
               "priceCoins": 472500,
@@ -16628,7 +16993,7 @@
               "boostRegen": 1,
               "boostPower": 1
             },
-            "1": {
+            "2": {
               "xpToNext": 4400,
               "upgradeTimerSeconds": 14400,
               "priceCoins": 710000,
@@ -16639,7 +17004,7 @@
               "boostRegen": 1.11,
               "boostPower": 1.14
             },
-            "2": {
+            "3": {
               "xpToNext": 5300,
               "upgradeTimerSeconds": 21600,
               "priceCoins": 945000,
@@ -16650,7 +17015,7 @@
               "boostRegen": 1.22,
               "boostPower": 1.29
             },
-            "3": {
+            "4": {
               "xpToNext": 6200,
               "upgradeTimerSeconds": 28800,
               "priceCoins": 1417500,
@@ -16661,7 +17026,7 @@
               "boostRegen": 1.33,
               "boostPower": 1.43
             },
-            "4": {
+            "5": {
               "xpToNext": 7100,
               "upgradeTimerSeconds": 43200,
               "priceCoins": 1890000,
@@ -16672,7 +17037,7 @@
               "boostRegen": 1.44,
               "boostPower": 1.58
             },
-            "5": {
+            "6": {
               "xpToNext": 8800,
               "upgradeTimerSeconds": 57600,
               "priceCoins": 2362500,
@@ -16683,7 +17048,7 @@
               "boostRegen": 1.56,
               "boostPower": 1.72
             },
-            "6": {
+            "7": {
               "xpToNext": 10500,
               "upgradeTimerSeconds": 86400,
               "priceCoins": 2837500,
@@ -16694,7 +17059,7 @@
               "boostRegen": 1.67,
               "boostPower": 1.87
             },
-            "7": {
+            "8": {
               "xpToNext": 12500,
               "upgradeTimerSeconds": 115200,
               "priceCoins": 3775000,
@@ -16705,7 +17070,7 @@
               "boostRegen": 1.78,
               "boostPower": 2.01
             },
-            "8": {
+            "9": {
               "xpToNext": 14000,
               "upgradeTimerSeconds": 172800,
               "priceCoins": 4725000,
@@ -16716,7 +17081,7 @@
               "boostRegen": 1.89,
               "boostPower": 2.16
             },
-            "9": {
+            "10": {
               "xpToNext": 0,
               "upgradeTimerSeconds": 0,
               "priceCoins": 0,

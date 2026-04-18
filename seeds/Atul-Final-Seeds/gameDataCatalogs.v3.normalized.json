@@ -4327,7 +4327,7 @@
               "rarity": "rare",
               "stackable": true,
               "purchasable": true,
-              "gemPrice": 100
+              "gemPrice": 150
             }
           ]
         },
@@ -4346,7 +4346,7 @@
               "rarity": "exotic",
               "stackable": true,
               "purchasable": true,
-              "gemPrice": 175
+              "gemPrice": 400
             }
           ]
         },
@@ -4365,7 +4365,7 @@
               "rarity": "legendary",
               "stackable": true,
               "purchasable": true,
-              "gemPrice": 300
+              "gemPrice": 1000
             }
           ]
         },
@@ -4384,7 +4384,7 @@
               "rarity": "mythical",
               "stackable": true,
               "purchasable": true,
-              "gemPrice": 500
+              "gemPrice": 2500
             }
           ]
         },
@@ -10020,10 +10020,10 @@
           "subType": null,
           "purchasable": {
             "currency": "gems",
-            "amount": 100
+            "amount": 150
           },
           "metadata": null,
-          "gemPrice": 100,
+          "gemPrice": 150,
           "durationSeconds": null
         },
         "sku_e8e7jeba7v": {
@@ -10038,10 +10038,10 @@
           "subType": null,
           "purchasable": {
             "currency": "gems",
-            "amount": 175
+            "amount": 400
           },
           "metadata": null,
-          "gemPrice": 175,
+          "gemPrice": 400,
           "durationSeconds": null
         },
         "sku_n9hsc0wxxk": {
@@ -10056,10 +10056,10 @@
           "subType": null,
           "purchasable": {
             "currency": "gems",
-            "amount": 300
+            "amount": 1000
           },
           "metadata": null,
-          "gemPrice": 300,
+          "gemPrice": 1000,
           "durationSeconds": null
         },
         "sku_kgkjadrd79": {
@@ -10074,10 +10074,10 @@
           "subType": null,
           "purchasable": {
             "currency": "gems",
-            "amount": 500
+            "amount": 2500
           },
           "metadata": null,
-          "gemPrice": 500,
+          "gemPrice": 2500,
           "durationSeconds": null
         },
         "sku_p3yxnyhkpx": {
@@ -11077,7 +11077,8 @@
               "sku_ysvyyj6c",
               "sku_yz875z4t"
             ]
-          }
+          },
+          "gemPrice": 50
         },
         "crt_vzqgtd2s": {
           "crateSkuId": "sku_72wnqwtfmx",
@@ -11463,7 +11464,8 @@
               "sku_ysvyyj6c",
               "sku_yz875z4t"
             ]
-          }
+          },
+          "gemPrice": 150
         },
         "crt_7y8a6hca": {
           "crateSkuId": "sku_e8e7jeba7v",
@@ -11849,7 +11851,8 @@
               "sku_ysvyyj6c",
               "sku_yz875z4t"
             ]
-          }
+          },
+          "gemPrice": 400
         },
         "crt_76ar1k2x": {
           "crateSkuId": "sku_n9hsc0wxxk",
@@ -12235,7 +12238,8 @@
               "sku_ysvyyj6c",
               "sku_yz875z4t"
             ]
-          }
+          },
+          "gemPrice": 1000
         },
         "crt_y8fywbrs": {
           "crateSkuId": "sku_kgkjadrd79",
@@ -12621,7 +12625,8 @@
               "sku_ysvyyj6c",
               "sku_yz875z4t"
             ]
-          }
+          },
+          "gemPrice": 2500
         }
       },
       "createdAt": 1761228851445,

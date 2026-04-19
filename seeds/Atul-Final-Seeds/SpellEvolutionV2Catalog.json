@@ -1,7 +1,7 @@
 {
-  "version": "v3-timer-rebalance",
-  "updatedAt": 1744364400000,
-  "notes": "Spell research rebalanced for car parity. L1-2=early game (free skip), L3-4=mid game, L5=endgame. Shards reduced ~30%. Mastery gates aligned to tier unlock points.",
+  "version": "v4-timer-rebalance",
+  "updatedAt": 1745000000000,
+  "notes": "Spell timers increased ~2.4x to align skip items with spell levels. L1-2=30min (first real timer), L2-3=4hr (session break), L3-4=12hr (overnight), L4-5=24hr (full day). Shards adjusted proportionally.",
   "unlockCost": {
     "shards": 30,
     "durationSeconds": 600,
@@ -19,27 +19,27 @@
     },
     "2": {
       "targetLevel": 2,
-      "shards": 20,
-      "durationSeconds": 600,
-      "displayDuration": "10 minutes"
+      "shards": 30,
+      "durationSeconds": 1800,
+      "displayDuration": "30 minutes"
     },
     "3": {
       "targetLevel": 3,
-      "shards": 100,
-      "durationSeconds": 3600,
-      "displayDuration": "1 hour"
-    },
-    "4": {
-      "targetLevel": 4,
-      "shards": 400,
+      "shards": 150,
       "durationSeconds": 14400,
       "displayDuration": "4 hours"
     },
-    "5": {
-      "targetLevel": 5,
-      "shards": 1200,
+    "4": {
+      "targetLevel": 4,
+      "shards": 600,
       "durationSeconds": 43200,
       "displayDuration": "12 hours"
+    },
+    "5": {
+      "targetLevel": 5,
+      "shards": 1500,
+      "durationSeconds": 86400,
+      "displayDuration": "24 hours"
     }
   },
   "skipCost": {

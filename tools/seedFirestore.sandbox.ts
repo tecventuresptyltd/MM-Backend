@@ -84,7 +84,7 @@ async function seedCatalogs() {
     const spellEvoFile = path.join(seedsRoot, 'SpellEvolutionV2Catalog.json');
     if (fs.existsSync(spellEvoFile)) {
         const spellEvoData = JSON.parse(fs.readFileSync(spellEvoFile, 'utf-8'));
-        seedData.push({ path: '/GameData/v1/config/SpellEvolutionV2Catalog', data: spellEvoData });
+        seedData.push({ path: '/GameData/v1/catalogs/SpellEvolutionV2Catalog', data: spellEvoData });
     }
 
     console.log(`📦 Found ${seedData.length} catalogs to seed\n`);

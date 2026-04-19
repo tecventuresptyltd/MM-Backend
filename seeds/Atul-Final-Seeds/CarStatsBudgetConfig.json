@@ -1,13 +1,16 @@
 {
-    "version": "v1-car-stats-budget",
-    "updatedAt": 1739616330000,
-    "notes": "Dynamic stat budget system. globalStatCap divided equally across tiers. Stars contribute starWeight%, car levels contribute levelWeight%. Archetype profiles define how the budget distributes across the 5 stats.",
-    "globalStatCap": 100,
+    "version": "v4-archetype-balancing",
+    "updatedAt": 1744900000000,
+    "notes": "Normalized archetype balancing system. Each stat is on a 1-10 scale. Total budget (sum of 5 stats) ranges from 5.0 (T1L1) to 47.5 (T5L10), giving average stat of 1.0 to 9.5. Archetype profiles distribute the total budget across 5 stats (weights sum to 1.0). ±2% flavor variance makes each car feel subtly different within its archetype. Car rating = average stat × 100.",
+    "globalStatCap": 47.5,
     "tierCount": 5,
     "maxStarLevel": 10,
-    "maxCarLevel": 50,
+    "maxCarLevel": 10,
+    "globalFloor": 5.0,
     "starWeight": 0.60,
     "levelWeight": 0.40,
+    "flavorVariance": 0.02,
+    "ratingMultiplier": 100,
     "statKeys": [
         "topSpeed",
         "acceleration",
@@ -17,35 +20,29 @@
     ],
     "archetypeProfiles": {
         "guardian": {
-            "description": "High durability, strong handling and boost regen. Lower top speed.",
-            "topSpeed": 0.15,
-            "acceleration": 0.15,
-            "handling": 0.25,
-            "boostRegen": 0.25,
-            "boostPower": 0.20
+            "description": "Heavy Hitter / Tank — Slow off the line but reaches the highest speeds. When they boost, it's devastating. Best on long straights, punishes opponents who can't keep up. Weakest acceleration in the game.",
+            "topSpeed": 0.24,
+            "acceleration": 0.12,
+            "handling": 0.18,
+            "boostRegen": 0.18,
+            "boostPower": 0.28
         },
         "phantom": {
-            "description": "Maximum top speed and acceleration. Weak handling and boost regen.",
-            "topSpeed": 0.30,
-            "acceleration": 0.25,
-            "handling": 0.15,
-            "boostRegen": 0.10,
-            "boostPower": 0.20
+            "description": "Speed Demon — Explosive acceleration and strong top speed. Gets to full speed faster than anyone. Wins by maintaining pace and accelerating out of corners. Weakest boost power — relies on raw speed, not nitro.",
+            "topSpeed": 0.22,
+            "acceleration": 0.28,
+            "handling": 0.18,
+            "boostRegen": 0.20,
+            "boostPower": 0.12
         },
         "arcanist": {
-            "description": "Balanced across all stats. Jack of all trades.",
-            "topSpeed": 0.20,
+            "description": "Tactical Driver — Best handling and constant boost availability. Wins through clean lines, never losing speed in corners, and always having boost ready. Slowest on straights but never wastes a second in turns.",
+            "topSpeed": 0.14,
             "acceleration": 0.20,
-            "handling": 0.20,
-            "boostRegen": 0.20,
-            "boostPower": 0.20
+            "handling": 0.28,
+            "boostRegen": 0.22,
+            "boostPower": 0.16
         }
     },
-    "tierOverrides": {
-        "_comment": "Optional per-tier overrides. Leave empty to use even distribution. Keys are tier order (1-based).",
-        "_example_1": {
-            "budgetOverride": 22,
-            "floorOverride": 0
-        }
-    }
+    "tierOverrides": {}
 }

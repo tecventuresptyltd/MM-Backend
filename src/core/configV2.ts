@@ -595,16 +595,21 @@ export async function getCarStatsBudgetConfig(): Promise<CarStatsBudgetConfig> {
  * Compute a car's 5 stats dynamically based on tier, archetype, star level,
  * and car level. This is a pure function — no Firestore calls.
  *
- * How it works:
- *   1. budgetPerTier = globalStatCap / tierCount        (e.g. 100/5 = 20)
- *   2. tierFloor     = (tierOrder - 1) × budgetPerTier  (e.g. Tier 1 = 0, Tier 3 = 40)
- *   3. tierCeiling   = tierOrder × budgetPerTier        (e.g. Tier 1 = 20, Tier 3 = 60)
- *   4. starProgress  = starLevel / maxStarLevel         (0.0 to 1.0)
- *   5. levelProgress = carLevel / maxCarLevel            (0.0 to 1.0)
- *   6. starContrib   = budgetPerTier × starWeight × starProgress
- *   7. levelContrib  = budgetPerTier × levelWeight × levelProgress
- *   8. totalBudget   = tierFloor + starContrib + levelContrib
- *   9. Each stat     = totalBudget × archetypeProfile[stat]
+ * Budget model (v2-archetype-balancing):
+ *   - globalStatCap = 10.0, globalFloor = 1.0
+ *   - budgetPerTier = (globalStatCap - 1.0) / tierCount   (e.g. 9.0/5 = 1.8)
+ *   - tierFloor     = 1.0 + (tierOrder - 1) × budgetPerTier
+ *   - starProgress  = starLevel / maxStarLevel              (0.0 to 1.0)
+ *   - starContrib   = budgetPerTier × starWeight × starProgress
+ *   - levelContrib  = budgetPerTier × levelWeight × starProgress  (star==level in 1:1)
+ *   - totalBudget   = tierFloor + starContrib + levelContrib
+ *   - Each stat     = totalBudget × archetypeProfile[stat]
+ *   - carRating     = totalBudget × ratingMultiplier         (e.g. ×100 → 100–1000)
+ *
+ * Archetype profiles sum to 1.0 and define per-class playstyle:
+ *   - Guardian: High boostPower/boostRegen, low acceleration/topSpeed
+ *   - Phantom:  High topSpeed/acceleration, low boostRegen/handling
+ *   - Arcanist: High handling/boostRegen, low topSpeed/boostPower
  *
  * @param input - The car's current state (tier, archetype, star, level)
  * @param config - The CarStatsBudgetConfig from Firestore
@@ -625,21 +630,27 @@ export function computeCarStats(
         tierOverrides,
     } = config;
 
+    const GLOBAL_FLOOR = (config as any).globalFloor ?? 5.0;
+    const STAT_COUNT = 5;
+
     // --- Safety clamps ---
     const safeTierOrder = Math.max(1, Math.min(input.tierOrder, tierCount));
     const safeStarLevel = Math.max(0, Math.min(input.starLevel, maxStarLevel));
     const safeCarLevel = Math.max(0, Math.min(input.carLevel, maxCarLevel));
 
     // --- Tier budget ---
-    const defaultBudgetPerTier = globalStatCap / tierCount;
+    // Total budget spans from GLOBAL_FLOOR (5.0) to globalStatCap (47.5)
+    // Individual stats are on a 1-10 scale (avg = totalBudget / 5)
+    const defaultBudgetPerTier = (globalStatCap - GLOBAL_FLOOR) / tierCount;
     const tierKey = String(safeTierOrder);
     const override = tierOverrides?.[tierKey];
 
     const budgetPerTier = override?.budgetOverride ?? defaultBudgetPerTier;
-    const tierFloor = override?.floorOverride ?? (safeTierOrder - 1) * defaultBudgetPerTier;
+    const tierFloor = override?.floorOverride ?? (GLOBAL_FLOOR + (safeTierOrder - 1) * defaultBudgetPerTier);
     const tierCeiling = tierFloor + budgetPerTier;
 
     // --- Progression within tier ---
+    // In 1:1 star==level model, use starProgress for both contributions
     const starProgress = maxStarLevel > 0 ? safeStarLevel / maxStarLevel : 0;
     const levelProgress = maxCarLevel > 0 ? safeCarLevel / maxCarLevel : 0;
 
@@ -656,6 +667,12 @@ export function computeCarStats(
     // Round to 2 decimal places for clean values
     const round2 = (n: number) => Math.round(n * 100) / 100;
 
+    // --- Car rating = average stat × ratingMultiplier ---
+    // totalBudget is the sum of all 5 stats; avgStat is on the 1-10 scale
+    const ratingMultiplier = (config as any).ratingMultiplier ?? 100;
+    const avgStat = totalBudget / STAT_COUNT;
+    const carRating = Math.round(avgStat * ratingMultiplier);
+
     return {
         topSpeed: round2(totalBudget * profile.topSpeed),
         acceleration: round2(totalBudget * profile.acceleration),
@@ -667,6 +684,7 @@ export function computeCarStats(
         tierCeiling: round2(tierCeiling),
         starContribution: round2(starContribution),
         levelContribution: round2(levelContribution),
+        carRating,
     };
 }
 

@@ -789,6 +789,8 @@ export interface ComputedCarStats {
     starContribution: number;
     /** Budget allocated from car level progression */
     levelContribution: number;
+    /** Computed car rating (totalBudget × ratingMultiplier, e.g. 100–1000) */
+    carRating: number;
 }
 
 /**

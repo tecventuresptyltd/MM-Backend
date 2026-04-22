@@ -130,11 +130,6 @@ export const updateUpgradeCompletionTime = async (
     const docId = buildQueueDocId(uid, upgradeType, targetId);
     const now = Date.now();
 
-    if (newCompletesAt <= now) {
-        // Already complete — no need for the queue entry
-        await cancelUpgradeCompletion(uid, upgradeType, targetId);
-        return;
-    }
 
     try {
         await db.collection(COMPLETION_QUEUE_PATH).doc(docId).update({

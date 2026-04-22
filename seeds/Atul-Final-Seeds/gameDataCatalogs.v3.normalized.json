@@ -4902,6 +4902,68 @@
               }
             }
           ]
+        },
+        "curr_mn6bshnfrb": {
+          "itemId": "curr_mn6bshnfrb",
+          "displayName": "Spell Shards",
+          "category": "currency",
+          "type": "currency",
+          "rarity": "common",
+          "stackable": true,
+          "purchasable": true,
+          "metadata": {
+            "currency": "spellShards"
+          },
+          "variants": [
+            {
+              "skuId": "sku_y7quunjg7f",
+              "displayName": "50 Shards",
+              "rarity": "common",
+              "stackable": true,
+              "purchasable": true,
+              "gemPrice": 10,
+              "subType": "shard",
+              "variant": {
+                "shardAmount": 50
+              }
+            },
+            {
+              "skuId": "sku_wuqz6rvk0y",
+              "displayName": "100 Shards",
+              "rarity": "common",
+              "stackable": true,
+              "purchasable": true,
+              "gemPrice": 20,
+              "subType": "shard",
+              "variant": {
+                "shardAmount": 100
+              }
+            },
+            {
+              "skuId": "sku_hfqhbnhq8m",
+              "displayName": "500 Shards",
+              "rarity": "common",
+              "stackable": true,
+              "purchasable": true,
+              "gemPrice": 100,
+              "subType": "shard",
+              "variant": {
+                "shardAmount": 500
+              }
+            },
+            {
+              "skuId": "sku_ix8tc4y9bz",
+              "displayName": "1000 Shards",
+              "rarity": "common",
+              "stackable": true,
+              "purchasable": true,
+              "gemPrice": 200,
+              "subType": "shard",
+              "variant": {
+                "shardAmount": 1000
+              }
+            }
+          ]
         }
       },
       "index": {
@@ -10679,6 +10741,94 @@
           "metadata": null,
           "gemPrice": 1200,
           "durationSeconds": 604800
+        },
+        "sku_y7quunjg7f": {
+          "skuId": "sku_y7quunjg7f",
+          "itemId": "curr_mn6bshnfrb",
+          "displayName": "50 Shards",
+          "category": "currency",
+          "type": "currency",
+          "rarity": "common",
+          "stackable": true,
+          "subType": "shard",
+          "purchasable": {
+            "currency": "gems",
+            "amount": 10
+          },
+          "metadata": {
+            "currency": "spellShards"
+          },
+          "variant": {
+            "shardAmount": 50
+          },
+          "gemPrice": 10,
+          "durationSeconds": null
+        },
+        "sku_wuqz6rvk0y": {
+          "skuId": "sku_wuqz6rvk0y",
+          "itemId": "curr_mn6bshnfrb",
+          "displayName": "100 Shards",
+          "category": "currency",
+          "type": "currency",
+          "rarity": "common",
+          "stackable": true,
+          "subType": "shard",
+          "purchasable": {
+            "currency": "gems",
+            "amount": 20
+          },
+          "metadata": {
+            "currency": "spellShards"
+          },
+          "variant": {
+            "shardAmount": 100
+          },
+          "gemPrice": 20,
+          "durationSeconds": null
+        },
+        "sku_hfqhbnhq8m": {
+          "skuId": "sku_hfqhbnhq8m",
+          "itemId": "curr_mn6bshnfrb",
+          "displayName": "500 Shards",
+          "category": "currency",
+          "type": "currency",
+          "rarity": "common",
+          "stackable": true,
+          "subType": "shard",
+          "purchasable": {
+            "currency": "gems",
+            "amount": 100
+          },
+          "metadata": {
+            "currency": "spellShards"
+          },
+          "variant": {
+            "shardAmount": 500
+          },
+          "gemPrice": 100,
+          "durationSeconds": null
+        },
+        "sku_ix8tc4y9bz": {
+          "skuId": "sku_ix8tc4y9bz",
+          "itemId": "curr_mn6bshnfrb",
+          "displayName": "1000 Shards",
+          "category": "currency",
+          "type": "currency",
+          "rarity": "common",
+          "stackable": true,
+          "subType": "shard",
+          "purchasable": {
+            "currency": "gems",
+            "amount": 200
+          },
+          "metadata": {
+            "currency": "spellShards"
+          },
+          "variant": {
+            "shardAmount": 1000
+          },
+          "gemPrice": 200,
+          "durationSeconds": null
         }
       }
     }

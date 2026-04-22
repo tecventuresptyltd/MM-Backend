@@ -49,16 +49,6 @@ const COMPLETION_QUEUE_PATH = "System/Upgrades/CompletionQueue";
  */
 const TASK_QUEUE_NAME = "completeUpgradeTask";
 
-/**
- * Build a deterministic Cloud Task name for an upgrade.
- * Must match: [a-zA-Z0-9_-]{1,500}
- */
-const buildTaskName = (uid: string, upgradeType: string, targetId: string): string => {
-    // Replace any non-alphanumeric chars with dashes for safety
-    const safeUid = uid.replace(/[^a-zA-Z0-9]/g, "-");
-    const safeTarget = targetId.replace(/[^a-zA-Z0-9]/g, "-");
-    return `${safeUid}-${upgradeType}-${safeTarget}`;
-};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Queue Management (exported for use by start/skip/speedup functions)
@@ -108,7 +98,7 @@ export const scheduleUpgradeCompletion = async (
 /**
  * Cancel a scheduled upgrade completion.
  * Called when a player skips (instant complete) or the upgrade is otherwise cancelled.
- * Deletes both the queue doc and the Cloud Task.
+ * Deletes the queue doc (the orphan Cloud Task will gracefully no-op when it fires).
  */
 export const cancelUpgradeCompletion = async (
     uid: string,
@@ -123,14 +113,6 @@ export const cancelUpgradeCompletion = async (
     } catch (error) {
         // Non-fatal: doc may not exist if it was already processed
         logger.warn(`[upgradeScheduler] Failed to cancel ${upgradeType} for ${uid}/${targetId}`, error);
-    }
-
-    // Also cancel the Cloud Task
-    try {
-        await deleteUpgradeTask(uid, upgradeType, targetId);
-    } catch (error) {
-        // Non-fatal: task may not exist or already executed
-        logger.warn(`[upgradeScheduler] Failed to delete Cloud Task for ${upgradeType}: ${uid}/${targetId}`, error);
     }
 };
 
@@ -148,11 +130,6 @@ export const updateUpgradeCompletionTime = async (
     const docId = buildQueueDocId(uid, upgradeType, targetId);
     const now = Date.now();
 
-    if (newCompletesAt <= now) {
-        // Already complete — no need for the queue entry
-        await cancelUpgradeCompletion(uid, upgradeType, targetId);
-        return;
-    }
 
     try {
         await db.collection(COMPLETION_QUEUE_PATH).doc(docId).update({
@@ -166,20 +143,24 @@ export const updateUpgradeCompletionTime = async (
         logger.warn(`[upgradeScheduler] Failed to update completesAt for ${uid}/${targetId}`, error);
     }
 
-    // Replace the Cloud Task: delete old, enqueue new
+    // Enqueue a new Cloud Task at the updated time. 
+    // The old Cloud Task is left orphaned and will gracefully no-op when it fires later.
     try {
-        await deleteUpgradeTask(uid, upgradeType, targetId);
+        // Fetch the targetLevel from the document to include in the new task payload
+        const docSnap = await db.collection(COMPLETION_QUEUE_PATH).doc(docId).get();
+        const entry = docSnap.data() as UpgradeCompletionEntry | undefined;
+
         await enqueueUpgradeTask({
             uid,
             upgradeType,
             targetId,
-            targetLevel: 0, // Not critical — the task handler reads from the queue doc
+            targetLevel: entry?.targetLevel ?? 0,
             completesAt: newCompletesAt,
             createdAt: now,
         });
     } catch (error) {
         // Non-fatal: poller safety net will catch it
-        logger.warn(`[upgradeScheduler] Failed to replace Cloud Task for ${upgradeType}: ${uid}/${targetId}`, error);
+        logger.warn(`[upgradeScheduler] Failed to enqueue updated Cloud Task for ${upgradeType}: ${uid}/${targetId}`, error);
     }
 };
 
@@ -512,11 +493,6 @@ export const upgradeCompletionJob = {
 const enqueueUpgradeTask = async (entry: UpgradeCompletionEntry): Promise<void> => {
     const queue = getFunctions().taskQueue(TASK_QUEUE_NAME);
 
-    // Deterministic task ID for deduplication and cancellation
-    // Reversed strings per Firebase docs to avoid hotspotting
-    const rawId = buildTaskName(entry.uid, entry.upgradeType, entry.targetId);
-    const id = rawId.split("").reverse().join("");
-
     // Calculate schedule time
     const now = Date.now();
     const delayMs = Math.max(0, entry.completesAt - now);
@@ -533,45 +509,19 @@ const enqueueUpgradeTask = async (entry: UpgradeCompletionEntry): Promise<void> 
     };
 
     try {
+        // We do NOT provide an 'id' to Cloud Tasks. This allows Cloud Tasks to auto-generate 
+        // a unique ID, bypassing the 9-day deduplication tombstone issue which breaks
+        // subsequent upgrades or speedup changes for the same car/spell.
         await queue.enqueue(payload, {
-            id,
             scheduleTime: new Date(scheduleTimeSeconds * 1000),
         });
 
         logger.info(
-            `[upgradeScheduler] Enqueued Cloud Task: ${entry.upgradeType} uid=${entry.uid} target=${entry.targetId} ` +
+            `[upgradeScheduler] Enqueued Cloud Task: ${entry.upgradeType} uid=${entry.uid} target=${entry.targetId} targetLevel=${entry.targetLevel} ` +
             `fires at ${new Date(scheduleTimeSeconds * 1000).toISOString()} (delay=${Math.round(delayMs / 1000)}s)`,
         );
     } catch (error: any) {
-        // If the task already exists, that's fine — idempotent
-        if (error.code === "functions/task-already-exists") {
-            logger.info(`[upgradeScheduler] Cloud Task already exists for ${entry.uid}/${entry.targetId} — skipping`);
-            return;
-        }
         throw error;
     }
 };
 
-/**
- * Delete a scheduled Cloud Task (called on cancel/skip/manual claim).
- */
-const deleteUpgradeTask = async (
-    uid: string,
-    upgradeType: string,
-    targetId: string,
-): Promise<void> => {
-    const queue = getFunctions().taskQueue(TASK_QUEUE_NAME);
-    const rawId = buildTaskName(uid, upgradeType, targetId);
-    const id = rawId.split("").reverse().join("");
-
-    try {
-        await queue.delete(id);
-        logger.info(`[upgradeScheduler] Deleted Cloud Task: ${upgradeType} uid=${uid} target=${targetId}`);
-    } catch (error: any) {
-        if (error.code === "functions/not-found") {
-            logger.info(`[upgradeScheduler] Cloud Task not found (already completed): ${uid}/${targetId}`);
-            return;
-        }
-        throw error;
-    }
-};

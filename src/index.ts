@@ -19,6 +19,17 @@ export const ping = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (
   return { status: "ok", timestamp: new Date().toISOString() };
 });
 
+export const testEnqueueTask = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async () => {
+  const { getFunctions } = require("firebase-admin/functions");
+  const queue = getFunctions().taskQueue("completeUpgradeTask");
+  try {
+    await queue.enqueue({ test: true }, { scheduleTime: new Date(Date.now() + 10000) });
+    return { success: true, message: "Enqueued successfully" };
+  } catch (error: any) {
+    return { success: false, error: error.message, code: error.code, stack: error.stack };
+  }
+});
+
 export * from "./auth";
 // Export functions from other modules
 export { exchangeGemsForCoins, claimRankUpReward, getLeaderboard } from "./economy";

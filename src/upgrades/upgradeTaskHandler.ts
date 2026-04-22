@@ -86,6 +86,14 @@ export const completeUpgradeTask = onTaskDispatched(
 
         const entry = queueDoc.data() as UpgradeCompletionEntry;
 
+        if (entry.targetLevel !== targetLevel) {
+            // Orphaned task for a previous upgrade (player started the next upgrade before this fired)
+            logger.info(
+                `[upgradeTask] Task targetLevel ${targetLevel} does not match queue entry ${entry.targetLevel}. Skipping orphaned task.`,
+            );
+            return;
+        }
+
         const success = await processUpgradeCompletionEntry(entry);
 
         if (success) {

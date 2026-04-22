@@ -41,7 +41,7 @@ export { purchaseShopSku, activateBooster, purchaseOffer, getDailyOffers, verify
 export { purchaseCar, upgradeCar, equipCosmetic, purchaseCrateItem, grantItem } from "./garage";
 export { openCrate } from "./crates";
 export { upgradeSpell, setLoadout, equipCosmetics, setSpellDeck, selectActiveSpellDeck } from "./spells";
-export { startRace, generateBotLoadout, recordRaceResult, claimDoubleReward } from "./race";
+export { startRace, generateBotLoadout, recordRaceResult, claimDoubleReward, getRaceResult } from "./race";
 export { prepareRace } from "./race/prepareRace";
 export { submitFeedback } from "./feedback";
 export * from "./clan";

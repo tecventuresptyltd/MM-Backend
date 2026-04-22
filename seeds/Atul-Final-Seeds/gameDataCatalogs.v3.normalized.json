@@ -4480,7 +4480,7 @@
               "rarity": "special",
               "stackable": true,
               "purchasable": true,
-              "gemPrice": 80,
+              "gemPrice": 18,
               "durationSeconds": 3600,
               "subType": "coin",
               "variant": {
@@ -4493,7 +4493,7 @@
               "rarity": "special",
               "stackable": true,
               "purchasable": true,
-              "gemPrice": 320,
+              "gemPrice": 80,
               "durationSeconds": 21600,
               "subType": "coin",
               "variant": {
@@ -4506,7 +4506,7 @@
               "rarity": "special",
               "stackable": true,
               "purchasable": true,
-              "gemPrice": 560,
+              "gemPrice": 130,
               "durationSeconds": 43200,
               "subType": "coin",
               "variant": {
@@ -4519,24 +4519,11 @@
               "rarity": "special",
               "stackable": true,
               "purchasable": true,
-              "gemPrice": 960,
+              "gemPrice": 200,
               "subType": "coin",
               "durationSeconds": 86400,
               "variant": {
                 "durationLabel": "24h"
-              }
-            },
-            {
-              "skuId": "sku_coin7d_q5r8",
-              "displayName": "Coin Booster (7d)",
-              "rarity": "special",
-              "stackable": true,
-              "purchasable": true,
-              "gemPrice": 1600,
-              "durationSeconds": 604800,
-              "subType": "coin",
-              "variant": {
-                "durationLabel": "7d"
               }
             }
           ]
@@ -4557,7 +4544,7 @@
               "rarity": "special",
               "stackable": true,
               "purchasable": true,
-              "gemPrice": 60,
+              "gemPrice": 15,
               "durationSeconds": 3600,
               "subType": "exp",
               "variant": {
@@ -4570,7 +4557,7 @@
               "rarity": "special",
               "stackable": true,
               "purchasable": true,
-              "gemPrice": 240,
+              "gemPrice": 60,
               "durationSeconds": 21600,
               "subType": "exp",
               "variant": {
@@ -4583,7 +4570,7 @@
               "rarity": "special",
               "stackable": true,
               "purchasable": true,
-              "gemPrice": 420,
+              "gemPrice": 100,
               "durationSeconds": 43200,
               "subType": "exp",
               "variant": {
@@ -4596,153 +4583,11 @@
               "rarity": "special",
               "stackable": true,
               "purchasable": true,
-              "gemPrice": 720,
+              "gemPrice": 160,
               "subType": "exp",
               "durationSeconds": 86400,
               "variant": {
                 "durationLabel": "24h"
-              }
-            },
-            {
-              "skuId": "sku_exp7d_f2h6",
-              "displayName": "EXP Booster (7d)",
-              "rarity": "special",
-              "stackable": true,
-              "purchasable": true,
-              "gemPrice": 1200,
-              "durationSeconds": 604800,
-              "subType": "exp",
-              "variant": {
-                "durationLabel": "7d"
-              }
-            }
-          ]
-        },
-        "spd_v8kn3qw2": {
-          "itemId": "spd_v8kn3qw2",
-          "displayName": "Speed Up",
-          "category": "speedup",
-          "type": "speedup",
-          "subType": "speedup",
-          "rarity": "special",
-          "stackable": true,
-          "purchasable": true,
-          "variants": [
-            {
-              "skuId": "sku_spd5m_r4x7",
-              "displayName": "Speed Up (5m)",
-              "rarity": "special",
-              "stackable": true,
-              "purchasable": true,
-              "gemPrice": 60,
-              "durationSeconds": 300,
-              "subType": "speedup",
-              "variant": {
-                "durationLabel": "5m"
-              }
-            },
-            {
-              "skuId": "sku_spd15m_j8k2",
-              "displayName": "Speed Up (15m)",
-              "rarity": "special",
-              "stackable": true,
-              "purchasable": true,
-              "gemPrice": 120,
-              "durationSeconds": 900,
-              "subType": "speedup",
-              "variant": {
-                "durationLabel": "15m"
-              }
-            },
-            {
-              "skuId": "sku_spd30m_w3n9",
-              "displayName": "Speed Up (30m)",
-              "rarity": "special",
-              "stackable": true,
-              "purchasable": true,
-              "gemPrice": 180,
-              "durationSeconds": 1800,
-              "subType": "speedup",
-              "variant": {
-                "durationLabel": "30m"
-              }
-            },
-            {
-              "skuId": "sku_spd1h_m5t6",
-              "displayName": "Speed Up (1h)",
-              "rarity": "special",
-              "stackable": true,
-              "purchasable": true,
-              "gemPrice": 240,
-              "durationSeconds": 3600,
-              "subType": "speedup",
-              "variant": {
-                "durationLabel": "1h"
-              }
-            },
-            {
-              "skuId": "sku_spd3h_q2v8",
-              "displayName": "Speed Up (3h)",
-              "rarity": "special",
-              "stackable": true,
-              "purchasable": true,
-              "gemPrice": 300,
-              "durationSeconds": 10800,
-              "subType": "speedup",
-              "variant": {
-                "durationLabel": "3h"
-              }
-            },
-            {
-              "skuId": "sku_spd8h_y7p4",
-              "displayName": "Speed Up (8h)",
-              "rarity": "special",
-              "stackable": true,
-              "purchasable": true,
-              "gemPrice": 360,
-              "durationSeconds": 28800,
-              "subType": "speedup",
-              "variant": {
-                "durationLabel": "8h"
-              }
-            },
-            {
-              "skuId": "sku_spd24h_b9f1",
-              "displayName": "Speed Up (24h)",
-              "rarity": "special",
-              "stackable": true,
-              "purchasable": true,
-              "gemPrice": 420,
-              "durationSeconds": 86400,
-              "subType": "speedup",
-              "variant": {
-                "durationLabel": "24h"
-              }
-            },
-            {
-              "skuId": "sku_spd3d_h6c3",
-              "displayName": "Speed Up (3d)",
-              "rarity": "special",
-              "stackable": true,
-              "purchasable": true,
-              "gemPrice": 480,
-              "durationSeconds": 259200,
-              "subType": "speedup",
-              "variant": {
-                "durationLabel": "3d"
-              }
-            },
-            {
-              "skuId": "sku_spd7d_e1g5",
-              "displayName": "Speed Up (7d)",
-              "rarity": "special",
-              "stackable": true,
-              "purchasable": true,
-              "gemPrice": 540,
-              "durationSeconds": 604800,
-              "subType": "speedup",
-              "variant": {
-                "durationLabel": "7d"
               }
             }
           ]
@@ -4763,7 +4608,7 @@
               "rarity": "special",
               "stackable": true,
               "purchasable": true,
-              "gemPrice": 60,
+              "gemPrice": 18,
               "durationSeconds": 3600,
               "subType": "shard",
               "variant": {
@@ -4776,7 +4621,7 @@
               "rarity": "special",
               "stackable": true,
               "purchasable": true,
-              "gemPrice": 240,
+              "gemPrice": 80,
               "durationSeconds": 21600,
               "subType": "shard",
               "variant": {
@@ -4789,7 +4634,7 @@
               "rarity": "special",
               "stackable": true,
               "purchasable": true,
-              "gemPrice": 420,
+              "gemPrice": 130,
               "durationSeconds": 43200,
               "subType": "shard",
               "variant": {
@@ -4802,103 +4647,140 @@
               "rarity": "special",
               "stackable": true,
               "purchasable": true,
-              "gemPrice": 720,
+              "gemPrice": 200,
               "subType": "shard",
               "durationSeconds": 86400,
               "variant": {
                 "durationLabel": "24h"
               }
-            },
-            {
-              "skuId": "sku_shrd7d_w3j9",
-              "displayName": "Shard Booster (7d)",
-              "rarity": "special",
-              "stackable": true,
-              "purchasable": true,
-              "gemPrice": 1200,
-              "durationSeconds": 604800,
-              "subType": "shard",
-              "variant": {
-                "durationLabel": "7d"
-              }
             }
           ]
         },
-        "cur_spell_shards": {
-          "itemId": "cur_spell_shards",
-          "displayName": "Spell Shards",
-          "category": "currency",
-          "type": "currency",
-          "subType": "spellShards",
+        "spd_v8kn3qw2": {
+          "itemId": "spd_v8kn3qw2",
+          "displayName": "Speed Up",
+          "category": "speedup",
+          "type": "speedup",
+          "subType": "speedup",
           "rarity": "special",
           "stackable": true,
           "purchasable": true,
-          "metadata": {
-            "currency": "spellShards"
-          },
           "variants": [
             {
-              "skuId": "sku_9o72e3ap",
-              "displayName": "Spell Shards (+50)",
+              "skuId": "sku_spd5m_r4x7",
+              "displayName": "Speed Up (5m)",
               "rarity": "special",
               "stackable": true,
               "purchasable": true,
-              "gemPrice": 10,
-              "subType": "spellShards",
+              "gemPrice": 5,
+              "durationSeconds": 300,
+              "subType": "speedup",
               "variant": {
-                "shardAmount": 50
-              },
-              "metadata": {
-                "currency": "spellShards",
-                "amount": 50
+                "durationLabel": "5m"
               }
             },
             {
-              "skuId": "sku_uz3h5d38",
-              "displayName": "Spell Shards (+100)",
+              "skuId": "sku_spd15m_j8k2",
+              "displayName": "Speed Up (15m)",
               "rarity": "special",
               "stackable": true,
               "purchasable": true,
-              "gemPrice": 80,
-              "subType": "spellShards",
+              "gemPrice": 8,
+              "durationSeconds": 900,
+              "subType": "speedup",
               "variant": {
-                "shardAmount": 100
-              },
-              "metadata": {
-                "currency": "spellShards",
-                "amount": 100
+                "durationLabel": "15m"
               }
             },
             {
-              "skuId": "sku_1e4kdvhy",
-              "displayName": "Spell Shards (+500)",
+              "skuId": "sku_spd30m_w3n9",
+              "displayName": "Speed Up (30m)",
               "rarity": "special",
               "stackable": true,
               "purchasable": true,
-              "gemPrice": 320,
-              "subType": "spellShards",
+              "gemPrice": 12,
+              "durationSeconds": 1800,
+              "subType": "speedup",
               "variant": {
-                "shardAmount": 500
-              },
-              "metadata": {
-                "currency": "spellShards",
-                "amount": 500
+                "durationLabel": "30m"
               }
             },
             {
-              "skuId": "sku_r7am2us0",
-              "displayName": "Spell Shards (+1,000)",
+              "skuId": "sku_spd1h_m5t6",
+              "displayName": "Speed Up (1h)",
               "rarity": "special",
               "stackable": true,
               "purchasable": true,
-              "gemPrice": 600,
-              "subType": "spellShards",
+              "gemPrice": 20,
+              "durationSeconds": 3600,
+              "subType": "speedup",
               "variant": {
-                "shardAmount": 1000
-              },
-              "metadata": {
-                "currency": "spellShards",
-                "amount": 1000
+                "durationLabel": "1h"
+              }
+            },
+            {
+              "skuId": "sku_spd3h_q2v8",
+              "displayName": "Speed Up (3h)",
+              "rarity": "special",
+              "stackable": true,
+              "purchasable": true,
+              "gemPrice": 50,
+              "durationSeconds": 10800,
+              "subType": "speedup",
+              "variant": {
+                "durationLabel": "3h"
+              }
+            },
+            {
+              "skuId": "sku_spd8h_y7p4",
+              "displayName": "Speed Up (8h)",
+              "rarity": "special",
+              "stackable": true,
+              "purchasable": true,
+              "gemPrice": 120,
+              "durationSeconds": 28800,
+              "subType": "speedup",
+              "variant": {
+                "durationLabel": "8h"
+              }
+            },
+            {
+              "skuId": "sku_spd24h_b9f1",
+              "displayName": "Speed Up (24h)",
+              "rarity": "special",
+              "stackable": true,
+              "purchasable": true,
+              "gemPrice": 300,
+              "durationSeconds": 86400,
+              "subType": "speedup",
+              "variant": {
+                "durationLabel": "24h"
+              }
+            },
+            {
+              "skuId": "sku_spd3d_h6c3",
+              "displayName": "Speed Up (3d)",
+              "rarity": "special",
+              "stackable": true,
+              "purchasable": true,
+              "gemPrice": 700,
+              "durationSeconds": 259200,
+              "subType": "speedup",
+              "variant": {
+                "durationLabel": "3d"
+              }
+            },
+            {
+              "skuId": "sku_spd7d_e1g5",
+              "displayName": "Speed Up (7d)",
+              "rarity": "special",
+              "stackable": true,
+              "purchasable": true,
+              "gemPrice": 1400,
+              "durationSeconds": 604800,
+              "subType": "speedup",
+              "variant": {
+                "durationLabel": "7d"
               }
             }
           ]
@@ -5269,11 +5151,7 @@
           "sku_2v6tnwwgz8",
           "sku_s0zt9m2nay",
           "sku_4srnd7mqpc",
-          "sku_xkr4mzwakn",
-          "sku_0fw2i0ag2",
-          "sku_z3xg8muts",
-          "sku_h0mektxnw",
-          "sku_4biqyhvoe"
+          "sku_xkr4mzwakn"
         ],
         "family_item_fa4y1dwfr5": [
           "sku_1fsytkfyhx"
@@ -5382,13 +5260,19 @@
           "sku_amf7txny",
           "sku_eqzbetwm",
           "sku_wkm0amtg",
-          "sku_amf7txny"
+          "sku_tpt3379j8p"
         ],
         "family_bst_hhhb8w5q": [
           "sku_07hw4ry3",
           "sku_60fdgqkm",
           "sku_nhh7jtda",
-          "sku_07hw4ry3"
+          "sku_9pnmmjpscv"
+        ],
+        "family_bst_shrd7k9m": [
+          "sku_shrd1h_p3x9",
+          "sku_shrd6h_k7w2",
+          "sku_shrd12h_m4v6",
+          "sku_shrd24h_n8t5"
         ],
         "family_spd_v8kn3qw2": [
           "sku_spd5m_r4x7",
@@ -5400,12 +5284,6 @@
           "sku_spd24h_b9f1",
           "sku_spd3d_h6c3",
           "sku_spd7d_e1g5"
-        ],
-        "family_bst_shrd7k9m": [
-          "sku_shrd1h_p3x9",
-          "sku_shrd6h_k7w2",
-          "sku_shrd12h_m4v6",
-          "sku_shrd24h_n8t5"
         ]
       }
     }
@@ -5893,13 +5771,19 @@
           "sku_amf7txny",
           "sku_eqzbetwm",
           "sku_wkm0amtg",
-          "sku_amf7txny"
+          "sku_tpt3379j8p"
         ],
         "family_bst_hhhb8w5q": [
           "sku_07hw4ry3",
           "sku_60fdgqkm",
           "sku_nhh7jtda",
-          "sku_07hw4ry3"
+          "sku_9pnmmjpscv"
+        ],
+        "family_bst_shrd7k9m": [
+          "sku_shrd1h_p3x9",
+          "sku_shrd6h_k7w2",
+          "sku_shrd12h_m4v6",
+          "sku_shrd24h_n8t5"
         ],
         "family_crt_ayvncyt0": [
           "sku_zz3twgp0wx"
@@ -5926,12 +5810,6 @@
           "sku_spd24h_b9f1",
           "sku_spd3d_h6c3",
           "sku_spd7d_e1g5"
-        ],
-        "family_bst_shrd7k9m": [
-          "sku_shrd1h_p3x9",
-          "sku_shrd6h_k7w2",
-          "sku_shrd12h_m4v6",
-          "sku_shrd24h_n8t5"
         ]
       }
     }
@@ -10164,10 +10042,10 @@
           "subType": "coin",
           "purchasable": {
             "currency": "gems",
-            "amount": 80
+            "amount": 18
           },
           "metadata": null,
-          "gemPrice": 80,
+          "gemPrice": 18,
           "durationSeconds": 3600
         },
         "sku_eqzbetwm": {
@@ -10182,10 +10060,10 @@
           "subType": "coin",
           "purchasable": {
             "currency": "gems",
-            "amount": 320
+            "amount": 80
           },
           "metadata": null,
-          "gemPrice": 320,
+          "gemPrice": 80,
           "durationSeconds": 21600
         },
         "sku_wkm0amtg": {
@@ -10200,10 +10078,10 @@
           "subType": "coin",
           "purchasable": {
             "currency": "gems",
-            "amount": 560
+            "amount": 130
           },
           "metadata": null,
-          "gemPrice": 560,
+          "gemPrice": 130,
           "durationSeconds": 43200
         },
         "sku_tpt3379j8p": {
@@ -10218,10 +10096,10 @@
           "subType": "coin",
           "purchasable": {
             "currency": "gems",
-            "amount": 960
+            "amount": 200
           },
           "metadata": null,
-          "gemPrice": 960,
+          "gemPrice": 200,
           "durationSeconds": 86400
         },
         "sku_07hw4ry3": {
@@ -10236,10 +10114,10 @@
           "subType": "exp",
           "purchasable": {
             "currency": "gems",
-            "amount": 60
+            "amount": 15
           },
           "metadata": null,
-          "gemPrice": 60,
+          "gemPrice": 15,
           "durationSeconds": 3600
         },
         "sku_60fdgqkm": {
@@ -10254,10 +10132,10 @@
           "subType": "exp",
           "purchasable": {
             "currency": "gems",
-            "amount": 240
+            "amount": 60
           },
           "metadata": null,
-          "gemPrice": 240,
+          "gemPrice": 60,
           "durationSeconds": 21600
         },
         "sku_nhh7jtda": {
@@ -10272,10 +10150,10 @@
           "subType": "exp",
           "purchasable": {
             "currency": "gems",
-            "amount": 420
+            "amount": 100
           },
           "metadata": null,
-          "gemPrice": 420,
+          "gemPrice": 100,
           "durationSeconds": 43200
         },
         "sku_9pnmmjpscv": {
@@ -10290,173 +10168,11 @@
           "subType": "exp",
           "purchasable": {
             "currency": "gems",
-            "amount": 720
+            "amount": 160
           },
           "metadata": null,
-          "gemPrice": 720,
+          "gemPrice": 160,
           "durationSeconds": 86400
-        },
-        "sku_spd5m_r4x7": {
-          "skuId": "sku_spd5m_r4x7",
-          "itemId": "spd_v8kn3qw2",
-          "displayName": "Speed Up (5m)",
-          "category": "speedup",
-          "type": "speedup",
-          "rarity": "special",
-          "stackable": true,
-          "variant": null,
-          "subType": "speedup",
-          "purchasable": {
-            "currency": "gems",
-            "amount": 60
-          },
-          "metadata": null,
-          "gemPrice": 60,
-          "durationSeconds": 300
-        },
-        "sku_spd15m_j8k2": {
-          "skuId": "sku_spd15m_j8k2",
-          "itemId": "spd_v8kn3qw2",
-          "displayName": "Speed Up (15m)",
-          "category": "speedup",
-          "type": "speedup",
-          "rarity": "special",
-          "stackable": true,
-          "variant": null,
-          "subType": "speedup",
-          "purchasable": {
-            "currency": "gems",
-            "amount": 120
-          },
-          "metadata": null,
-          "gemPrice": 120,
-          "durationSeconds": 900
-        },
-        "sku_spd30m_w3n9": {
-          "skuId": "sku_spd30m_w3n9",
-          "itemId": "spd_v8kn3qw2",
-          "displayName": "Speed Up (30m)",
-          "category": "speedup",
-          "type": "speedup",
-          "rarity": "special",
-          "stackable": true,
-          "variant": null,
-          "subType": "speedup",
-          "purchasable": {
-            "currency": "gems",
-            "amount": 180
-          },
-          "metadata": null,
-          "gemPrice": 180,
-          "durationSeconds": 1800
-        },
-        "sku_spd1h_m5t6": {
-          "skuId": "sku_spd1h_m5t6",
-          "itemId": "spd_v8kn3qw2",
-          "displayName": "Speed Up (1h)",
-          "category": "speedup",
-          "type": "speedup",
-          "rarity": "special",
-          "stackable": true,
-          "variant": null,
-          "subType": "speedup",
-          "purchasable": {
-            "currency": "gems",
-            "amount": 240
-          },
-          "metadata": null,
-          "gemPrice": 240,
-          "durationSeconds": 3600
-        },
-        "sku_spd3h_q2v8": {
-          "skuId": "sku_spd3h_q2v8",
-          "itemId": "spd_v8kn3qw2",
-          "displayName": "Speed Up (3h)",
-          "category": "speedup",
-          "type": "speedup",
-          "rarity": "special",
-          "stackable": true,
-          "variant": null,
-          "subType": "speedup",
-          "purchasable": {
-            "currency": "gems",
-            "amount": 300
-          },
-          "metadata": null,
-          "gemPrice": 300,
-          "durationSeconds": 10800
-        },
-        "sku_spd8h_y7p4": {
-          "skuId": "sku_spd8h_y7p4",
-          "itemId": "spd_v8kn3qw2",
-          "displayName": "Speed Up (8h)",
-          "category": "speedup",
-          "type": "speedup",
-          "rarity": "special",
-          "stackable": true,
-          "variant": null,
-          "subType": "speedup",
-          "purchasable": {
-            "currency": "gems",
-            "amount": 360
-          },
-          "metadata": null,
-          "gemPrice": 360,
-          "durationSeconds": 28800
-        },
-        "sku_spd24h_b9f1": {
-          "skuId": "sku_spd24h_b9f1",
-          "itemId": "spd_v8kn3qw2",
-          "displayName": "Speed Up (24h)",
-          "category": "speedup",
-          "type": "speedup",
-          "rarity": "special",
-          "stackable": true,
-          "variant": null,
-          "subType": "speedup",
-          "purchasable": {
-            "currency": "gems",
-            "amount": 420
-          },
-          "metadata": null,
-          "gemPrice": 420,
-          "durationSeconds": 86400
-        },
-        "sku_spd3d_h6c3": {
-          "skuId": "sku_spd3d_h6c3",
-          "itemId": "spd_v8kn3qw2",
-          "displayName": "Speed Up (3d)",
-          "category": "speedup",
-          "type": "speedup",
-          "rarity": "special",
-          "stackable": true,
-          "variant": null,
-          "subType": "speedup",
-          "purchasable": {
-            "currency": "gems",
-            "amount": 480
-          },
-          "metadata": null,
-          "gemPrice": 480,
-          "durationSeconds": 259200
-        },
-        "sku_spd7d_e1g5": {
-          "skuId": "sku_spd7d_e1g5",
-          "itemId": "spd_v8kn3qw2",
-          "displayName": "Speed Up (7d)",
-          "category": "speedup",
-          "type": "speedup",
-          "rarity": "special",
-          "stackable": true,
-          "variant": null,
-          "subType": "speedup",
-          "purchasable": {
-            "currency": "gems",
-            "amount": 540
-          },
-          "metadata": null,
-          "gemPrice": 540,
-          "durationSeconds": 604800
         },
         "sku_shrd1h_p3x9": {
           "skuId": "sku_shrd1h_p3x9",
@@ -10470,10 +10186,10 @@
           "subType": "shard",
           "purchasable": {
             "currency": "gems",
-            "amount": 60
+            "amount": 18
           },
           "metadata": null,
-          "gemPrice": 60,
+          "gemPrice": 18,
           "durationSeconds": 3600
         },
         "sku_shrd6h_k7w2": {
@@ -10488,10 +10204,10 @@
           "subType": "shard",
           "purchasable": {
             "currency": "gems",
-            "amount": 240
+            "amount": 80
           },
           "metadata": null,
-          "gemPrice": 240,
+          "gemPrice": 80,
           "durationSeconds": 21600
         },
         "sku_shrd12h_m4v6": {
@@ -10506,10 +10222,10 @@
           "subType": "shard",
           "purchasable": {
             "currency": "gems",
-            "amount": 420
+            "amount": 130
           },
           "metadata": null,
-          "gemPrice": 420,
+          "gemPrice": 130,
           "durationSeconds": 43200
         },
         "sku_shrd24h_n8t5": {
@@ -10524,107 +10240,173 @@
           "subType": "shard",
           "purchasable": {
             "currency": "gems",
-            "amount": 720
+            "amount": 200
           },
           "metadata": null,
-          "gemPrice": 720,
+          "gemPrice": 200,
           "durationSeconds": 86400
         },
-        "sku_9o72e3ap": {
-          "skuId": "sku_9o72e3ap",
-          "itemId": "cur_spell_shards",
-          "type": "currency",
-          "displayName": "Spell Shards (+50)",
-          "itemDisplayName": "Spell Shards",
-          "category": "currency",
-          "subType": "spellShards",
+        "sku_spd5m_r4x7": {
+          "skuId": "sku_spd5m_r4x7",
+          "itemId": "spd_v8kn3qw2",
+          "displayName": "Speed Up (5m)",
+          "category": "speedup",
+          "type": "speedup",
           "rarity": "special",
           "stackable": true,
-          "variant": {
-            "shardAmount": 50
+          "variant": null,
+          "subType": "speedup",
+          "purchasable": {
+            "currency": "gems",
+            "amount": 5
           },
-          "metadata": {
-            "currency": "spellShards",
+          "metadata": null,
+          "gemPrice": 5,
+          "durationSeconds": 300
+        },
+        "sku_spd15m_j8k2": {
+          "skuId": "sku_spd15m_j8k2",
+          "itemId": "spd_v8kn3qw2",
+          "displayName": "Speed Up (15m)",
+          "category": "speedup",
+          "type": "speedup",
+          "rarity": "special",
+          "stackable": true,
+          "variant": null,
+          "subType": "speedup",
+          "purchasable": {
+            "currency": "gems",
+            "amount": 8
+          },
+          "metadata": null,
+          "gemPrice": 8,
+          "durationSeconds": 900
+        },
+        "sku_spd30m_w3n9": {
+          "skuId": "sku_spd30m_w3n9",
+          "itemId": "spd_v8kn3qw2",
+          "displayName": "Speed Up (30m)",
+          "category": "speedup",
+          "type": "speedup",
+          "rarity": "special",
+          "stackable": true,
+          "variant": null,
+          "subType": "speedup",
+          "purchasable": {
+            "currency": "gems",
+            "amount": 12
+          },
+          "metadata": null,
+          "gemPrice": 12,
+          "durationSeconds": 1800
+        },
+        "sku_spd1h_m5t6": {
+          "skuId": "sku_spd1h_m5t6",
+          "itemId": "spd_v8kn3qw2",
+          "displayName": "Speed Up (1h)",
+          "category": "speedup",
+          "type": "speedup",
+          "rarity": "special",
+          "stackable": true,
+          "variant": null,
+          "subType": "speedup",
+          "purchasable": {
+            "currency": "gems",
+            "amount": 20
+          },
+          "metadata": null,
+          "gemPrice": 20,
+          "durationSeconds": 3600
+        },
+        "sku_spd3h_q2v8": {
+          "skuId": "sku_spd3h_q2v8",
+          "itemId": "spd_v8kn3qw2",
+          "displayName": "Speed Up (3h)",
+          "category": "speedup",
+          "type": "speedup",
+          "rarity": "special",
+          "stackable": true,
+          "variant": null,
+          "subType": "speedup",
+          "purchasable": {
+            "currency": "gems",
             "amount": 50
           },
-          "purchasable": {
-            "currency": "gems",
-            "amount": 10
-          },
-          "gemPrice": 10,
-          "durationSeconds": null
+          "metadata": null,
+          "gemPrice": 50,
+          "durationSeconds": 10800
         },
-        "sku_uz3h5d38": {
-          "skuId": "sku_uz3h5d38",
-          "itemId": "cur_spell_shards",
-          "type": "currency",
-          "displayName": "Spell Shards (+100)",
-          "itemDisplayName": "Spell Shards",
-          "category": "currency",
-          "subType": "spellShards",
+        "sku_spd8h_y7p4": {
+          "skuId": "sku_spd8h_y7p4",
+          "itemId": "spd_v8kn3qw2",
+          "displayName": "Speed Up (8h)",
+          "category": "speedup",
+          "type": "speedup",
           "rarity": "special",
           "stackable": true,
-          "variant": {
-            "shardAmount": 100
-          },
-          "metadata": {
-            "currency": "spellShards",
-            "amount": 100
-          },
+          "variant": null,
+          "subType": "speedup",
           "purchasable": {
             "currency": "gems",
-            "amount": 80
+            "amount": 120
           },
-          "gemPrice": 80,
-          "durationSeconds": null
+          "metadata": null,
+          "gemPrice": 120,
+          "durationSeconds": 28800
         },
-        "sku_1e4kdvhy": {
-          "skuId": "sku_1e4kdvhy",
-          "itemId": "cur_spell_shards",
-          "type": "currency",
-          "displayName": "Spell Shards (+500)",
-          "itemDisplayName": "Spell Shards",
-          "category": "currency",
-          "subType": "spellShards",
+        "sku_spd24h_b9f1": {
+          "skuId": "sku_spd24h_b9f1",
+          "itemId": "spd_v8kn3qw2",
+          "displayName": "Speed Up (24h)",
+          "category": "speedup",
+          "type": "speedup",
           "rarity": "special",
           "stackable": true,
-          "variant": {
-            "shardAmount": 500
-          },
-          "metadata": {
-            "currency": "spellShards",
-            "amount": 500
-          },
+          "variant": null,
+          "subType": "speedup",
           "purchasable": {
             "currency": "gems",
-            "amount": 320
+            "amount": 300
           },
-          "gemPrice": 320,
-          "durationSeconds": null
+          "metadata": null,
+          "gemPrice": 300,
+          "durationSeconds": 86400
         },
-        "sku_r7am2us0": {
-          "skuId": "sku_r7am2us0",
-          "itemId": "cur_spell_shards",
-          "type": "currency",
-          "displayName": "Spell Shards (+1,000)",
-          "itemDisplayName": "Spell Shards",
-          "category": "currency",
-          "subType": "spellShards",
+        "sku_spd3d_h6c3": {
+          "skuId": "sku_spd3d_h6c3",
+          "itemId": "spd_v8kn3qw2",
+          "displayName": "Speed Up (3d)",
+          "category": "speedup",
+          "type": "speedup",
           "rarity": "special",
           "stackable": true,
-          "variant": {
-            "shardAmount": 1000
-          },
-          "metadata": {
-            "currency": "spellShards",
-            "amount": 1000
-          },
+          "variant": null,
+          "subType": "speedup",
           "purchasable": {
             "currency": "gems",
-            "amount": 600
+            "amount": 700
           },
-          "gemPrice": 600,
-          "durationSeconds": null
+          "metadata": null,
+          "gemPrice": 700,
+          "durationSeconds": 259200
+        },
+        "sku_spd7d_e1g5": {
+          "skuId": "sku_spd7d_e1g5",
+          "itemId": "spd_v8kn3qw2",
+          "displayName": "Speed Up (7d)",
+          "category": "speedup",
+          "type": "speedup",
+          "rarity": "special",
+          "stackable": true,
+          "variant": null,
+          "subType": "speedup",
+          "purchasable": {
+            "currency": "gems",
+            "amount": 1400
+          },
+          "metadata": null,
+          "gemPrice": 1400,
+          "durationSeconds": 604800
         },
         "sku_coin7d_q5r8": {
           "skuId": "sku_coin7d_q5r8",
@@ -10638,10 +10420,10 @@
           "subType": "coin",
           "purchasable": {
             "currency": "gems",
-            "amount": 1600
+            "amount": 1000
           },
           "metadata": null,
-          "gemPrice": 1600,
+          "gemPrice": 1000,
           "durationSeconds": 604800
         },
         "sku_exp7d_f2h6": {
@@ -10656,10 +10438,10 @@
           "subType": "exp",
           "purchasable": {
             "currency": "gems",
-            "amount": 1200
+            "amount": 800
           },
           "metadata": null,
-          "gemPrice": 1200,
+          "gemPrice": 800,
           "durationSeconds": 604800
         },
         "sku_shrd7d_w3j9": {
@@ -10674,10 +10456,10 @@
           "subType": "shard",
           "purchasable": {
             "currency": "gems",
-            "amount": 1200
+            "amount": 1000
           },
           "metadata": null,
-          "gemPrice": 1200,
+          "gemPrice": 1000,
           "durationSeconds": 604800
         }
       }
@@ -11077,8 +10859,7 @@
               "sku_ysvyyj6c",
               "sku_yz875z4t"
             ]
-          },
-          "gemPrice": 50
+          }
         },
         "crt_vzqgtd2s": {
           "crateSkuId": "sku_72wnqwtfmx",
@@ -11464,8 +11245,7 @@
               "sku_ysvyyj6c",
               "sku_yz875z4t"
             ]
-          },
-          "gemPrice": 150
+          }
         },
         "crt_7y8a6hca": {
           "crateSkuId": "sku_e8e7jeba7v",
@@ -11851,8 +11631,7 @@
               "sku_ysvyyj6c",
               "sku_yz875z4t"
             ]
-          },
-          "gemPrice": 400
+          }
         },
         "crt_76ar1k2x": {
           "crateSkuId": "sku_n9hsc0wxxk",
@@ -12238,8 +12017,7 @@
               "sku_ysvyyj6c",
               "sku_yz875z4t"
             ]
-          },
-          "gemPrice": 1000
+          }
         },
         "crt_y8fywbrs": {
           "crateSkuId": "sku_kgkjadrd79",
@@ -12625,8 +12403,7 @@
               "sku_ysvyyj6c",
               "sku_yz875z4t"
             ]
-          },
-          "gemPrice": 2500
+          }
         }
       },
       "createdAt": 1761228851445,
@@ -12636,7 +12413,31 @@
   {
     "path": "/GameData/v1/catalogs/OffersCatalog",
     "data": {
-      "version": "v3-normalized",
+      "version": "v4-offer-engine",
+      "notes": "V4 Offer Engine — 4-slot Clash Royale-style system with upsell funnels. $1=100 gems base. True multipliers 6.5-10.2×.",
+      "slotConfig": {
+        "slot1": {
+          "label": "Micro-Hook",
+          "priceRange": "$0.99-$1.99",
+          "rotationHours": 24
+        },
+        "slot2": {
+          "label": "Progression",
+          "priceRange": "$4.99-$14.99",
+          "rotationHours": 48
+        },
+        "slot3": {
+          "label": "The Anchor",
+          "priceRange": "$49.99-$149.99",
+          "rotationHours": 72
+        },
+        "slot4": {
+          "label": "Dynamic",
+          "priceRange": "$1.99-$24.99",
+          "rotationHours": null,
+          "triggerBased": true
+        }
+      },
       "offers": {
         "offer_ignition_starter": {
           "displayName": "NIGHT SHIFT",
@@ -14621,8 +14422,8 @@
           "offerId": "offer_double_clutch"
         }
       },
-      "createdAt": 1761228851445,
-      "updatedAt": 1762566874422
+      "createdAt": 0,
+      "updatedAt": 0
     }
   },
   {
@@ -14928,11 +14729,11 @@
               "name": "Duration",
               "unit": "seconds",
               "values": [
-                2,
-                3,
                 4,
                 5,
-                6
+                6,
+                7,
+                8
               ]
             }
           ],
@@ -15071,11 +14872,11 @@
               "name": "Speed",
               "unit": "km/hr",
               "values": [
-                125,
-                150,
-                175,
                 200,
-                225
+                250,
+                300,
+                350,
+                400
               ]
             },
             {
@@ -15137,7 +14938,7 @@
       "updatedAt": 1744364400000,
       "cars": {
         "car_h4ayzwf31g": {
-          "displayName": "Mitsabi Eon",
+          "displayName": "Chevaro ZLE",
           "class": "street",
           "basePrice": 0,
           "unlock": {
@@ -15267,7 +15068,7 @@
           }
         },
         "car_1wp1gr2p": {
-          "displayName": "Doge Chaser",
+          "displayName": "Aura PS5",
           "class": "street",
           "basePrice": 10800,
           "unlock": {
@@ -15399,7 +15200,7 @@
           }
         },
         "car_4bbp20vv": {
-          "displayName": "Nisaro 360X",
+          "displayName": "Chevaro Rider",
           "class": "street",
           "basePrice": 19400,
           "unlock": {
@@ -15531,7 +15332,7 @@
           }
         },
         "car_3n27817s": {
-          "displayName": "Mercian SLR Apex",
+          "displayName": "Chevaro Camara",
           "class": "street",
           "basePrice": 35000,
           "unlock": {
@@ -15662,7 +15463,7 @@
           }
         },
         "car_xtm9htbs": {
-          "displayName": "Nisaro Surya",
+          "displayName": "Aster Marlin",
           "class": "street",
           "basePrice": 63000,
           "unlock": {
@@ -15794,7 +15595,7 @@
           }
         },
         "car_a9x2mkp3": {
-          "displayName": "Aster Marlin D9",
+          "displayName": "Mazza Recks",
           "class": "street",
           "basePrice": 113000,
           "unlock": {
@@ -15926,7 +15727,7 @@
           }
         },
         "car_jh5tqxqk": {
-          "displayName": "Mclovin MP3",
+          "displayName": "Beamer L4",
           "class": "street",
           "basePrice": 204000,
           "unlock": {
@@ -16057,7 +15858,7 @@
           }
         },
         "car_0yhea29t": {
-          "displayName": "Chevaro Camara",
+          "displayName": "Ferano SPF90",
           "class": "street",
           "basePrice": 367000,
           "unlock": {
@@ -16189,7 +15990,7 @@
           }
         },
         "car_p4n7mm2z": {
-          "displayName": "Aura R9",
+          "displayName": "Porza 912",
           "class": "street",
           "basePrice": 661000,
           "unlock": {
@@ -16321,7 +16122,7 @@
           }
         },
         "car_8m8qttmy": {
-          "displayName": "Nisaro GR-X",
+          "displayName": "Nissaro Skyround",
           "class": "street",
           "basePrice": 1190000,
           "unlock": {
@@ -16452,7 +16253,7 @@
           }
         },
         "car_rqjrt91b": {
-          "displayName": "Porza 919",
+          "displayName": "Mclovin Cena",
           "class": "street",
           "basePrice": 2140000,
           "unlock": {
@@ -16716,7 +16517,7 @@
           }
         },
         "car_d2ap3yms": {
-          "displayName": "Ferano LaVita",
+          "displayName": "Porza 3G",
           "class": "street",
           "basePrice": 6940000,
           "unlock": {
@@ -16847,7 +16648,7 @@
           }
         },
         "car_enmdcw5t": {
-          "displayName": "Bugarri Chronos",
+          "displayName": "Aster Valkry",
           "class": "street",
           "basePrice": 12490000,
           "unlock": {
@@ -16979,7 +16780,7 @@
           }
         },
         "car_2n5hnes4": {
-          "displayName": "Kosegg Agere",
+          "displayName": "Bugarri Century",
           "class": "street",
           "basePrice": 22490000,
           "unlock": {

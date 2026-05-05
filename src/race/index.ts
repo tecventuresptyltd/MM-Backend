@@ -392,7 +392,30 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
     const raceRef = db.doc(`/Races/${raceId}`);
     const raceDoc = await transaction.get(raceRef);
 
-    if (!raceDoc.exists || raceDoc.data()?.status !== "pending") {
+    if (!raceDoc.exists) {
+      throw new HttpsError("failed-precondition", "Race does not exist.");
+    }
+
+    const raceStatus = raceDoc.data()?.status;
+
+    // ── Idempotency guard ──────────────────────────────────────────────────────
+    // If this race was already settled (e.g. the client sent the request, the
+    // server processed it, but the client was backgrounded and missed the
+    // response), return the cached result stored on the Participants doc so the
+    // client GUI can populate normally without any duplicate writes.
+    if (raceStatus === "settled") {
+      const participantRef = db.doc(`/Races/${raceId}/Participants/${uid}`);
+      const participantDoc = await transaction.get(participantRef);
+      const cached = participantDoc.data()?.cachedResult;
+      if (cached) {
+        logger.info("[recordRaceResult] Race already settled — returning cached result", { uid, raceId });
+        return cached;
+      }
+      // Cached result missing (older race pre-caching) — surface a clear error
+      throw new HttpsError("already-exists", "Race already recorded.");
+    }
+
+    if (raceStatus !== "pending") {
       throw new HttpsError("failed-precondition", "Race is not pending or does not exist.");
     }
 
@@ -890,7 +913,7 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
 
     transaction.update(raceRef, { status: "settled", updatedAt: admin.firestore.FieldValue.serverTimestamp() });
 
-    return {
+    const resultPayload = {
       success: true,
       gamemode,
       rewards: {
@@ -933,6 +956,14 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
       spellXp: spellXpResults.length > 0 ? spellXpResults : null,
       crateSlot: crateSlotResult,
     };
+
+    // Cache the result on the Participant doc so recordRaceResult can return it
+    // idempotently if the client missed the response (e.g. app was backgrounded).
+    transaction.update(participantRef, {
+      cachedResult: resultPayload,
+    });
+
+    return resultPayload;
   });
 
   // VERIFICATION: Confirm the trophies were actually persisted
@@ -1213,3 +1244,50 @@ export const claimDoubleReward = onCall(callableOptions({ memory: "256MiB", cpu:
   return result;
 });
 
+// ── getRaceResult ──────────────────────────────────────────────────────────────
+// Safety-net for clients that sent recordRaceResult successfully but were
+// backgrounded/suspended before the response arrived.  Returns the cached
+// result payload that recordRaceResult stored on the Participants doc.
+// The client calls this only when recordRaceResult returns "race already recorded".
+export const getRaceResult = onCall(callableOptions({ memory: "256MiB", cpu: 1, concurrency: 80 }, true), async (request) => {
+  const uid = request.auth?.uid;
+  if (!uid) {
+    throw new HttpsError("unauthenticated", "User is not authenticated.");
+  }
+
+  const { raceId } = request.data;
+  if (typeof raceId !== "string" || !raceId) {
+    throw new HttpsError("invalid-argument", "Valid raceId string is required.");
+  }
+
+  const raceRef = db.doc(`/Races/${raceId}`);
+  const participantRef = db.doc(`/Races/${raceId}/Participants/${uid}`);
+
+  const [raceDoc, participantDoc] = await Promise.all([
+    raceRef.get(),
+    participantRef.get(),
+  ]);
+
+  if (!raceDoc.exists) {
+    throw new HttpsError("not-found", "Race not found.");
+  }
+
+  if (!participantDoc.exists) {
+    throw new HttpsError("not-found", "Participant record not found for this race.");
+  }
+
+  // Verify the requesting player owns this participant entry
+  const raceStatus = raceDoc.data()?.status;
+  if (raceStatus !== "settled") {
+    throw new HttpsError("failed-precondition", `Race is not yet settled (status: ${raceStatus}).`);
+  }
+
+  const cached = participantDoc.data()?.cachedResult;
+  if (!cached) {
+    // Pre-caching race — the result cannot be reconstructed
+    throw new HttpsError("not-found", "Cached result not available for this race. It may be too old.");
+  }
+
+  logger.info("[getRaceResult] Returning cached result for backgrounded client", { uid, raceId });
+  return cached;
+});

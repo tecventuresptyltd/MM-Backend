@@ -106,6 +106,7 @@ interface PurchaseOfferReadState {
   stateRef: FirebaseFirestore.DocumentReference;
   activeUpdate: ActiveOfferUpdate;
   activeUpdatedAt: number;
+  activeData: any;
   flowState: OfferFlowState;
   isIapPurchase: boolean;
   offerId: string;
@@ -350,7 +351,7 @@ export const purchaseOffer = onCall(callableOptions({ minInstances: getMinInstan
       return {
         timestamp, economyRef, charge: { currency: chargeCurrency, amount: chargeAmount },
         balances: { gemsBefore, gemsAfter, coinsBefore, coinsAfter }, grantPlans, summaryState,
-        activeRef, stateRef, activeUpdate, activeUpdatedAt: nowMillis, flowState, isIapPurchase: shouldProgressLadder, offerId,
+        activeRef, stateRef, activeUpdate, activeUpdatedAt: nowMillis, activeData: activeSnap.data() || {}, flowState, isIapPurchase: shouldProgressLadder, offerId,
       };
     },
     async (transaction, reads) => {
@@ -371,16 +372,12 @@ export const purchaseOffer = onCall(callableOptions({ minInstances: getMinInstan
         await txUpdateInventorySummary(transaction, db, uid, summaryChanges, { state: reads.summaryState, timestamp: reads.timestamp });
       }
 
-      const activeRef = reads.activeRef;
-      const activeSnap = await transaction.get(activeRef);
-      const activeData = activeSnap.data() as any;
+      const activeData = reads.activeData;
 
       if (reads.activeUpdate.rotatingUpdate && Array.isArray(activeData.rotating)) {
-        activeData.rotating[reads.activeUpdate.rotatingUpdate.index] = {
-          ...activeData.rotating[reads.activeUpdate.rotatingUpdate.index],
-          state: "purchase_delay",
-          nextOfferAt: reads.activeUpdate.rotatingUpdate.nextOfferAt
-        };
+        activeData.rotating = activeData.rotating.filter(
+          (_: any, i: number) => i !== reads.activeUpdate.rotatingUpdate!.index
+        );
       } else if (reads.activeUpdate.slot === "special") {
         activeData.special = reads.activeUpdate.special ?? [];
       }

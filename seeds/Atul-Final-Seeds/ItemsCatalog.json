@@ -4522,6 +4522,19 @@
           "variant": {
             "durationLabel": "24h"
           }
+        },
+        {
+          "skuId": "sku_coin7d_q5r8",
+          "displayName": "Coin Booster (7d)",
+          "rarity": "special",
+          "stackable": true,
+          "purchasable": true,
+          "gemPrice": 50,
+          "durationSeconds": 604800,
+          "subType": "coin",
+          "variant": {
+            "durationLabel": "7d"
+          }
         }
       ]
     },
@@ -4586,6 +4599,19 @@
           "variant": {
             "durationLabel": "24h"
           }
+        },
+        {
+          "skuId": "sku_exp7d_f2h6",
+          "displayName": "EXP Booster (7d)",
+          "rarity": "special",
+          "stackable": true,
+          "purchasable": true,
+          "gemPrice": 50,
+          "durationSeconds": 604800,
+          "subType": "exp",
+          "variant": {
+            "durationLabel": "7d"
+          }
         }
       ]
     },
@@ -4649,6 +4675,19 @@
           "durationSeconds": 86400,
           "variant": {
             "durationLabel": "24h"
+          }
+        },
+        {
+          "skuId": "sku_shrd7d_w3j9",
+          "displayName": "Shard Booster (7d)",
+          "rarity": "special",
+          "stackable": true,
+          "purchasable": true,
+          "gemPrice": 50,
+          "durationSeconds": 604800,
+          "subType": "shard",
+          "variant": {
+            "durationLabel": "7d"
           }
         }
       ]
@@ -5319,19 +5358,22 @@
       "sku_amf7txny",
       "sku_eqzbetwm",
       "sku_wkm0amtg",
-      "sku_tpt3379j8p"
+      "sku_tpt3379j8p",
+      "sku_coin7d_q5r8"
     ],
     "family_bst_hhhb8w5q": [
       "sku_07hw4ry3",
       "sku_60fdgqkm",
       "sku_nhh7jtda",
-      "sku_9pnmmjpscv"
+      "sku_9pnmmjpscv",
+      "sku_exp7d_f2h6"
     ],
     "family_bst_shrd7k9m": [
       "sku_shrd1h_p3x9",
       "sku_shrd6h_k7w2",
       "sku_shrd12h_m4v6",
-      "sku_shrd24h_n8t5"
+      "sku_shrd24h_n8t5",
+      "sku_shrd7d_w3j9"
     ],
     "family_spd_v8kn3qw2": [
       "sku_spd5m_r4x7",

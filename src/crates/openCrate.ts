@@ -21,6 +21,7 @@ import { HttpsError, onCall } from "firebase-functions/v2/https";
 import {
   getCratesCatalogDoc,
   listSkusByFilter,
+  getSkuRecord,
 } from "../core/config.js";
 import {
   getCrateRewardsConfig,
@@ -296,6 +297,11 @@ export const openCrate = onCall(
             quantity: slotCoinAmount,
           });
         } else if (picked.skuId) {
+          const validSku = await getSkuRecord(picked.skuId);
+          if (!validSku) {
+            logger.warn(`CrateRewardsConfig contains invalid skuId: ${picked.skuId}, skipping.`);
+            continue;
+          }
           const item: AwardedItem = {
             type: picked.type,
             displayName: picked.displayName,

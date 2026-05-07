@@ -1,7 +1,7 @@
 {
-  "version": "v4-timer-rebalance",
-  "updatedAt": 1745000000000,
-  "notes": "Spell timers increased ~2.4x to align skip items with spell levels. L1-2=30min (first real timer), L2-3=4hr (session break), L3-4=12hr (overnight), L4-5=24hr (full day). Shards adjusted proportionally.",
+  "version": "v5-mastery-rebalance",
+  "updatedAt": 1746460000000,
+  "notes": "Spell XP caps increased ~50x and earning rates 10x to achieve 65/35 car/spell mastery split. Spells now take ~158 races to max (was ~42). Per-race mastery balance preserved via 0.33 dampener. L1-2=30min, L2-3=4hr, L3-4=12hr, L4-5=24hr timers unchanged.",
   "unlockCost": {
     "shards": 30,
     "durationSeconds": 600,
@@ -48,14 +48,14 @@
     "freeSkipThresholdSeconds": 600
   },
   "spellXpConfig": {
-    "xpPerRace": 10,
-    "xpPerWin": 25,
-    "xpPerSpellCast": 5,
+    "xpPerRace": 100,
+    "xpPerWin": 250,
+    "xpPerSpellCast": 50,
     "xpCapPerLevel": {
-      "1": 50,
-      "2": 150,
-      "3": 350,
-      "4": 700
+      "1": 4000,
+      "2": 12000,
+      "3": 20000,
+      "4": 27000
     }
   },
   "shardRewards": {

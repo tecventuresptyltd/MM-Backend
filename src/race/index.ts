@@ -886,12 +886,8 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
       });
     }
 
-    // Spell tokens: 1 per mastery rank gained (not old exp level)
-    if (masteryRankGained > 0) {
-      transaction.update(economyRef, {
-        spellTokens: admin.firestore.FieldValue.increment(masteryRankGained),
-      });
-    }
+    // NOTE: V1 granted spellTokens on rank-up. Removed in V2 — spell progression
+    // now uses shards earned from races + crates via researchV2.
 
     // Debug logging for trophy investigation
     logger.info("[recordRaceResult] Trophy calculation debug", {

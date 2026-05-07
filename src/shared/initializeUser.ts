@@ -74,6 +74,7 @@ const DEFAULT_ECONOMY = (now: admin.firestore.FieldValue) => ({
   coins: 1000,
   gems: 0,
   spellTokens: 0,
+  spellShards: 0,
   createdAt: now,
   updatedAt: now,
 });
@@ -734,7 +735,7 @@ export async function initializeUserIfNeeded(
         if (!playerDoc.exists) {
           tx.set(
             playerRef,
-            { ...identityPayload, createdAt: timestamp, updatedAt: timestamp },
+            { ...identityPayload, migrationVersion: "v2", createdAt: timestamp, updatedAt: timestamp },
             { merge: false },
           );
         } else {

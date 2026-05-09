@@ -7,7 +7,7 @@
  * Features:
  *   --dry-run           Log changes without writing
  *   --single-player UID Migrate one player only
- *   --batch-size N      Players per batch (default: 50)
+ *   --batch-size N      Players per batch (default: 500)
  *   --skip-backup       Skip writing backups (faster, for re-runs)
  *
  * Run: node tools/migrateV1ToV2.mjs [--dry-run] [--single-player <uid>]
@@ -29,7 +29,7 @@ const SKIP_BACKUP = args.includes("--skip-backup");
 const singleIdx = args.indexOf("--single-player");
 const SINGLE_PLAYER = singleIdx !== -1 ? args[singleIdx + 1] : null;
 const batchIdx = args.indexOf("--batch-size");
-const BATCH_SIZE = batchIdx !== -1 ? parseInt(args[batchIdx + 1], 10) : 50;
+const BATCH_SIZE = batchIdx !== -1 ? parseInt(args[batchIdx + 1], 10) : 500;
 
 // ─── Firebase Init ────────────────────────────────────────────────
 const credFile = join(__dirname, "..", "backend-production-mystic-motors-prod.json");

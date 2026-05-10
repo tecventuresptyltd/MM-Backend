@@ -14,7 +14,7 @@
  */
 
 import { initializeApp, cert } from "firebase-admin/app";
-import { getFirestore, FieldValue, Timestamp } from "firebase-admin/firestore";
+import { getFirestore, FieldValue, Timestamp, FieldPath } from "firebase-admin/firestore";
 import { readFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
@@ -207,44 +207,34 @@ function hasV2Signals(garageData, profileData, licensesExists) {
 
 // ─── Per-Player Migration ─────────────────────────────────────────
 
-async function migratePlayer(uid, stats) {
+async function migratePlayer(uid, stats, prefetched) {
   const prefix = DRY_RUN ? "[DRY-RUN] " : "";
   const playerRef = db.doc(`Players/${uid}`);
 
   // ── Step 0: Guard — check migrationVersion ──
-  const playerDoc = await playerRef.get();
-  if (!playerDoc.exists) {
+  const playerData = prefetched.playerData;
+  if (!playerData) {
     console.log(`${prefix}⏭️  ${uid}: Player doc missing, skipping.`);
     stats.skipped++;
     return;
   }
 
-  const playerData = playerDoc.data();
   if (playerData.migrationVersion >= "v2") {
     console.log(`${prefix}⏭️  ${uid}: Already migrated (migrationVersion=${playerData.migrationVersion}).`);
     stats.skipped++;
     return;
   }
 
-  // ── Read all subdocs ──
-  const [garageDoc, economyDoc, spellsDoc, profileDoc, licensesDoc] = await Promise.all([
-    db.doc(`Players/${uid}/Garage/Cars`).get(),
-    db.doc(`Players/${uid}/Economy/Stats`).get(),
-    db.doc(`Players/${uid}/Spells/Levels`).get(),
-    db.doc(`Players/${uid}/Profile/Profile`).get(),
-    db.doc(`Players/${uid}/Licenses/Owned`).get(),
-  ]);
-
-  // Read inventory (for crate/key migration)
-  const inventorySnap = await db.collection(`Players/${uid}/Inventory`).get();
-
-  const garageData = garageDoc.exists ? garageDoc.data() : null;
-  const economyData = economyDoc.exists ? economyDoc.data() : null;
-  const spellsData = spellsDoc.exists ? spellsDoc.data() : null;
-  const profileData = profileDoc.exists ? profileDoc.data() : null;
+  // Use pre-fetched data (already bulk-read)
+  const garageData = prefetched.garage;
+  const economyData = prefetched.economy;
+  const spellsData = prefetched.spells;
+  const profileData = prefetched.profile;
+  const licensesExists = prefetched.licensesExists;
+  const inventoryItems = prefetched.inventory; // array of {id, data}
 
   // ── Secondary V2 signal check ──
-  if (hasV2Signals(garageData, profileData, licensesDoc.exists)) {
+  if (hasV2Signals(garageData, profileData, licensesExists)) {
     console.log(`${prefix}⏭️  ${uid}: V2 signals detected, stamping marker only.`);
     if (!DRY_RUN) {
       await playerRef.update({ migrationVersion: "v2", migratedAt: FieldValue.serverTimestamp() });
@@ -405,13 +395,13 @@ async function migratePlayer(uid, stats) {
   const keysByRarity = {};    // rarity → [{ skuId, qty }]
   const crateKeyDocIds = [];  // inventory doc IDs to delete
 
-  for (const invDoc of inventorySnap.docs) {
-    const skuId = invDoc.id;
+  for (const invItem of inventoryItems) {
+    const skuId = invItem.id;
     if (skuId === "_summary") continue;
     const meta = CRATE_KEY_SKUS[skuId];
     if (!meta) continue; // not a crate or key — skip (cosmetics stay)
 
-    const qty = Math.floor(Number(invDoc.data()?.quantity ?? invDoc.data()?.qty ?? 0));
+    const qty = Math.floor(Number(invItem.data?.quantity ?? invItem.data?.qty ?? 0));
     if (qty <= 0) continue;
 
     crateKeyDocIds.push(skuId);
@@ -509,14 +499,14 @@ async function migratePlayer(uid, stats) {
   if (Object.keys(v1Levels).length > 0) {
     spellWriteData.levels = v1Levels;
   }
-  if (spellsDoc.exists) {
+  if (spellsData) {
     batch.update(db.doc(`Players/${uid}/Spells/Levels`), spellWriteData);
   } else if (Object.keys(migratedSpells).length > 0) {
     batch.set(db.doc(`Players/${uid}/Spells/Levels`), spellWriteData);
   }
 
   // Economy (spellShards init + crate/key rewards + gem refunds)
-  if (economyDoc.exists) {
+  if (economyData) {
     batch.update(db.doc(`Players/${uid}/Economy/Stats`), economyUpdates);
   }
 
@@ -551,7 +541,7 @@ async function migratePlayer(uid, stats) {
     librarySlots: 1,
     updatedAt: timestamp,
   };
-  if (profileDoc.exists) {
+  if (profileData) {
     batch.update(db.doc(`Players/${uid}/Profile/Profile`), profileUpdates);
   }
 
@@ -584,7 +574,26 @@ async function main() {
 
   if (SINGLE_PLAYER) {
     try {
-      await migratePlayer(SINGLE_PLAYER, stats);
+      const uid = SINGLE_PLAYER;
+      const [playerDoc, garageDoc, economyDoc, spellsDoc, profileDoc, licensesDoc] = await Promise.all([
+        db.doc(`Players/${uid}`).get(),
+        db.doc(`Players/${uid}/Garage/Cars`).get(),
+        db.doc(`Players/${uid}/Economy/Stats`).get(),
+        db.doc(`Players/${uid}/Spells/Levels`).get(),
+        db.doc(`Players/${uid}/Profile/Profile`).get(),
+        db.doc(`Players/${uid}/Licenses/Owned`).get(),
+      ]);
+      const inventorySnap = await db.collection(`Players/${uid}/Inventory`).get();
+      const prefetched = {
+        playerData: playerDoc.exists ? playerDoc.data() : null,
+        garage: garageDoc.exists ? garageDoc.data() : null,
+        economy: economyDoc.exists ? economyDoc.data() : null,
+        spells: spellsDoc.exists ? spellsDoc.data() : null,
+        profile: profileDoc.exists ? profileDoc.data() : null,
+        licensesExists: licensesDoc.exists,
+        inventory: inventorySnap.docs.map(d => ({ id: d.id, data: d.data() })),
+      };
+      await migratePlayer(uid, stats, prefetched);
     } catch (err) {
       console.error(`❌ ${SINGLE_PLAYER}: ${err.message}`);
       stats.errors++;
@@ -596,7 +605,7 @@ async function main() {
 
     while (true) {
       batchNum++;
-      let query = db.collection("Players").limit(BATCH_SIZE);
+      let query = db.collection("Players").orderBy(FieldPath.documentId()).limit(BATCH_SIZE);
       if (lastDoc) query = query.startAfter(lastDoc);
 
       const snapshot = await query.get();
@@ -604,11 +613,48 @@ async function main() {
 
       console.log(`\n── Batch ${batchNum} (${snapshot.size} players) ──`);
 
-      for (const doc of snapshot.docs) {
+      // Bulk-read ALL subcollection docs for this batch in 5 getAll calls
+      const uids = snapshot.docs.map(d => d.id);
+      const playerDataMap = new Map();
+      snapshot.docs.forEach(d => playerDataMap.set(d.id, d.data()));
+
+      const garageRefs = uids.map(uid => db.doc(`Players/${uid}/Garage/Cars`));
+      const economyRefs = uids.map(uid => db.doc(`Players/${uid}/Economy/Stats`));
+      const spellsRefs = uids.map(uid => db.doc(`Players/${uid}/Spells/Levels`));
+      const profileRefs = uids.map(uid => db.doc(`Players/${uid}/Profile/Profile`));
+      const licensesRefs = uids.map(uid => db.doc(`Players/${uid}/Licenses/Owned`));
+
+      const [garageDocs, economyDocs, spellsDocs, profileDocs, licensesDocs] = await Promise.all([
+        db.getAll(...garageRefs),
+        db.getAll(...economyRefs),
+        db.getAll(...spellsRefs),
+        db.getAll(...profileRefs),
+        db.getAll(...licensesRefs),
+      ]);
+
+      // Bulk-read inventory collections (fire all concurrently)
+      const inventoryResults = await Promise.all(
+        uids.map(uid => db.collection(`Players/${uid}/Inventory`).get())
+      );
+
+      console.log(`   📥 Bulk-read complete for ${uids.length} players`);
+
+      // Process all players locally (no more network calls in dry-run)
+      for (let i = 0; i < uids.length; i++) {
+        const uid = uids[i];
+        const prefetched = {
+          playerData: playerDataMap.get(uid),
+          garage: garageDocs[i].exists ? garageDocs[i].data() : null,
+          economy: economyDocs[i].exists ? economyDocs[i].data() : null,
+          spells: spellsDocs[i].exists ? spellsDocs[i].data() : null,
+          profile: profileDocs[i].exists ? profileDocs[i].data() : null,
+          licensesExists: licensesDocs[i].exists,
+          inventory: inventoryResults[i].docs.map(d => ({ id: d.id, data: d.data() })),
+        };
         try {
-          await migratePlayer(doc.id, stats);
+          await migratePlayer(uid, stats, prefetched);
         } catch (err) {
-          console.error(`❌ ${doc.id}: ${err.message}`);
+          console.error(`❌ ${uid}: ${err.message}`);
           stats.errors++;
         }
       }

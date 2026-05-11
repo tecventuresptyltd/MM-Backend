@@ -33,7 +33,11 @@ export const checkSession = onCall(
 
     const uid = request.auth.uid;
     const now = Date.now();
-    const rootRef = admin.database().ref(`${PRESENCE_ROOT}/${uid}`);
+
+    // Sanitize UID for RTDB paths — some auth providers may include chars
+    // that are invalid in Realtime Database paths ('.', '#', '$', '[', ']')
+    const safeUid = uid.replace(/[.#$\[\]]/g, "_");
+    const rootRef = admin.database().ref(`${PRESENCE_ROOT}/${safeUid}`);
     const connectionsRef = rootRef.child("connections");
 
     const [rootSnap, connectionsSnap] = await Promise.all([rootRef.get(), connectionsRef.get()]);

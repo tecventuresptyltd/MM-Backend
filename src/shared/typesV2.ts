@@ -362,7 +362,7 @@ export interface MasteryConfig {
     updatedAt: number;
     notes?: string;
     carWeight: number;    // Multiplier for car XP contribution (1.0)
-    spellWeight: number;  // Multiplier for spell XP contribution (0.33)
+    spellWeight: number;  // Multiplier for spell XP contribution (1.0 — earn rates pre-scaled)
     maxRank: number;
     rankThresholds: Record<string, number>; // rank -> cumulative MP required
 }

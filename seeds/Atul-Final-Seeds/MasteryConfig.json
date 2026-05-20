@@ -1,9 +1,9 @@
 {
-  "version": "v3-pacing-rebalance",
-  "updatedAt": 1742900000000,
-  "notes": "Rebalanced mastery thresholds: R1-5 unchanged, R6-10 reduced 0-15%, R11-20 reduced 15-20%, R21-30 reduced 20-25%, R31+ reduced 25%. Targets: T2=wk1, T3=wk3, T4=month2, T5=month3.5 for hardcore.",
+  "version": "v4-spell-weight-unity",
+  "updatedAt": 1747036800000,
+  "notes": "spellWeight changed from 0.33 to 1.0. Spell XP earn rates pre-scaled by 0.35x in SpellEvolutionV2Catalog so 1 XP earned = 1 mastery XP. Net spell mastery contribution ~35%.",
   "carWeight": 1.0,
-  "spellWeight": 0.33,
+  "spellWeight": 1.0,
   "maxRank": 50,
   "rankThresholds": {
     "1": 700,

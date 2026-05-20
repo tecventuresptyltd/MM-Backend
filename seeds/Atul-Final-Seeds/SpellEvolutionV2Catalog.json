@@ -1,7 +1,7 @@
 {
-  "version": "v5-mastery-rebalance",
-  "updatedAt": 1746460000000,
-  "notes": "Spell XP caps increased ~50x and earning rates 10x to achieve 65/35 car/spell mastery split. Spells now take ~158 races to max (was ~42). Per-race mastery balance preserved via 0.33 dampener. L1-2=30min, L2-3=4hr, L3-4=12hr, L4-5=24hr timers unchanged.",
+  "version": "v6-spell-xp-rescale",
+  "updatedAt": 1747036800000,
+  "notes": "Spell XP earn rates scaled by 0.35x to match spellWeight=1.0 in MasteryConfig. 1 spell XP earned = 1 mastery XP. Per-race: 35xp base, 88xp win, 18xp cast. Caps scaled proportionally. Spell leveling pace unchanged.",
   "unlockCost": {
     "shards": 30,
     "durationSeconds": 600,
@@ -48,14 +48,14 @@
     "freeSkipThresholdSeconds": 600
   },
   "spellXpConfig": {
-    "xpPerRace": 100,
-    "xpPerWin": 250,
-    "xpPerSpellCast": 50,
+    "xpPerRace": 35,
+    "xpPerWin": 88,
+    "xpPerSpellCast": 18,
     "xpCapPerLevel": {
-      "1": 4000,
-      "2": 12000,
-      "3": 20000,
-      "4": 27000
+      "1": 1400,
+      "2": 4200,
+      "3": 7000,
+      "4": 9450
     }
   },
   "shardRewards": {

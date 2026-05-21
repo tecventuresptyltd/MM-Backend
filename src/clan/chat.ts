@@ -1,6 +1,6 @@
 import * as admin from "firebase-admin";
 import { onSchedule } from "firebase-functions/v2/scheduler";
-import { onValueDeleted } from "firebase-functions/v2/database";
+import { onValueWritten } from "firebase-functions/v2/database";
 import { REGION } from "../shared/region.js";
 import { clansCollection, playerProfileRef } from "./helpers.js";
 import { roomsCollection, roomRef } from "../chat/rooms.js";
@@ -192,7 +192,24 @@ export const cleanupChatHistory = onSchedule(
   },
 );
 
-export const onPresenceOffline = onValueDeleted(
+const extractRoomIds = (data: any): string[] => {
+  if (!data || typeof data !== "object") return [];
+  const roomIds: string[] = [];
+  if (typeof data.roomId === "string" && data.roomId.length > 0) {
+    roomIds.push(data.roomId);
+  }
+  if (data.connections && typeof data.connections === "object") {
+    for (const key of Object.keys(data.connections)) {
+      const conn = data.connections[key];
+      if (conn && typeof conn.roomId === "string" && conn.roomId.length > 0) {
+        roomIds.push(conn.roomId);
+      }
+    }
+  }
+  return roomIds;
+};
+
+export const onPresenceUpdate = onValueWritten(
   {
     region: REGION,
     ref: "presence/online/{uid}",
@@ -203,28 +220,57 @@ export const onPresenceOffline = onValueDeleted(
       return;
     }
     try {
-      // Get roomId from the presence data that was just deleted
-      const presenceData = event.data.val();
-      const roomId = typeof presenceData?.roomId === "string" ? presenceData.roomId : null;
-      if (!roomId || roomId.length === 0) {
+      const beforeRoomIds = extractRoomIds(event.data.before.val());
+      const afterRoomIds = extractRoomIds(event.data.after.val());
+
+      // Find roomIds that were present before but are no longer present (or present fewer times)
+      const removedRoomIds: string[] = [];
+      const afterRoomIdsCopy = [...afterRoomIds];
+
+      for (const roomId of beforeRoomIds) {
+        const index = afterRoomIdsCopy.indexOf(roomId);
+        if (index !== -1) {
+          afterRoomIdsCopy.splice(index, 1);
+        } else {
+          removedRoomIds.push(roomId);
+        }
+      }
+
+      if (removedRoomIds.length === 0) {
         return;
       }
+
+      const decrements: Record<string, number> = {};
+      for (const roomId of removedRoomIds) {
+        decrements[roomId] = (decrements[roomId] || 0) + 1;
+      }
+
       await admin.firestore().runTransaction(async (transaction) => {
-        const ref = roomRef(roomId);
-        const snap = await transaction.get(ref);
-        if (!snap.exists) {
-          return;
+        const uniqueRoomIds = Object.keys(decrements);
+        const refs = uniqueRoomIds.map(id => roomRef(id));
+
+        // Perform all reads first (required by Firestore transactions)
+        const snaps = await Promise.all(refs.map(ref => transaction.get(ref)));
+
+        // Perform all writes
+        for (let i = 0; i < snaps.length; i++) {
+          const snap = snaps[i];
+          if (!snap.exists) continue;
+
+          const roomId = uniqueRoomIds[i];
+          const decrementAmount = decrements[roomId];
+          const current = Number(snap.data()?.connectedCount ?? 0);
+          const next = Math.max(0, current - decrementAmount);
+
+          transaction.update(refs[i], {
+            connectedCount: next,
+            updatedAt: FieldValue.serverTimestamp(),
+            lastActivityAt: FieldValue.serverTimestamp(),
+          });
         }
-        const current = Number(snap.data()?.connectedCount ?? 0);
-        const next = Math.max(0, current - 1);
-        transaction.update(ref, {
-          connectedCount: next,
-          updatedAt: FieldValue.serverTimestamp(),
-          lastActivityAt: FieldValue.serverTimestamp(),
-        });
       });
     } catch (error) {
-      console.error("[chat.onPresenceOffline] failed to decrement room count", error);
+      console.error("[chat.onPresenceUpdate] failed to decrement room count", error);
     }
   },
 );

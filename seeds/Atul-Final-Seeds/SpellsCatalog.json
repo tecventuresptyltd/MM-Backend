@@ -357,7 +357,7 @@
       "displayName": "Power Out",
       "type": "TargetLock",
       "description": "Emits a screech that disables boosts and spells of everyone in the map for a period of time.",
-      "requiredLevel": -1,
+      "requiredLevel": 45,
       "displayOrder": 12,
       "isUnlocked": false,
       "attributes": [

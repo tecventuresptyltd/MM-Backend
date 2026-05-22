@@ -14,8 +14,9 @@
 import * as admin from 'firebase-admin';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as readline from 'readline';
 
-const serviceAccountPath = path.join(__dirname, '..', 'backend-production-mystic-motors-prod.json');
+const serviceAccountPath = path.join(__dirname, '..', 'mystic-motors-prod-8c9cbf7066fa.json');
 
 if (!fs.existsSync(serviceAccountPath)) {
     console.error('❌ ERROR: Production service account key not found!');
@@ -38,20 +39,28 @@ admin.initializeApp({
 const db = admin.firestore();
 
 async function seedCatalogs() {
-    // Verify owner before allowing production seeding
-    const { execSync } = require('child_process');
-    try {
-        const currentUser = execSync('gcloud config get-value account 2>/dev/null', { encoding: 'utf-8' }).trim();
-        if (currentUser !== 'tecventurescorp@gmail.com') {
-            console.error('❌ ERROR: Only tecventurescorp@gmail.com can seed production!');
-            console.error(`   Current user: ${currentUser}`);
-            console.error('\n🔐 This is a security measure to prevent unauthorized production changes.');
-            process.exit(1);
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+
+    const password = await new Promise<string>(resolve => {
+        rl.question('🔒 Enter Production Password: ', resolve);
+    });
+    rl.close();
+
+    const envPath = path.join(__dirname, '..', '.env.mystic-motors-prod');
+    let expectedPassword = 'MysticDeploy2026';
+    if (fs.existsSync(envPath)) {
+        const envContent = fs.readFileSync(envPath, 'utf-8');
+        const match = envContent.match(/^DEPLOY_PASSWORD=(.*)$/m);
+        if (match && match[1]) {
+            expectedPassword = match[1].trim();
         }
-        console.log(`✅ Verified owner: ${currentUser}\n`);
-    } catch (error) {
-        console.error('❌ ERROR: Could not verify gcloud user');
-        console.error('   Make sure you are authenticated with: gcloud auth login');
+    }
+
+    if (password !== expectedPassword) {
+        console.error('\n❌ Incorrect password. Seeding cancelled.');
         process.exit(1);
     }
 
@@ -65,11 +74,6 @@ async function seedCatalogs() {
 
     const seedsRoot = path.join(__dirname, '..', 'seeds', 'Atul-Final-Seeds');
     const seedFile = path.join(seedsRoot, 'gameDataCatalogs.v3.normalized.json');
-    const botNamesSeedFile = path.join(seedsRoot, 'BotNamesConfig.json');
-    const botConfigSeedFile = path.join(seedsRoot, 'BotConfig.json');
-    const spellUpgradeCostsSeedFile = path.join(seedsRoot, 'SpellUpgradeCosts.json');
-    const carTuningConfigSeedFile = path.join(seedsRoot, 'CarTuningConfig.json');
-
     if (!fs.existsSync(seedFile)) {
         console.error('❌ Seed file not found:', seedFile);
         process.exit(1);
@@ -77,37 +81,58 @@ async function seedCatalogs() {
 
     const seedData = JSON.parse(fs.readFileSync(seedFile, 'utf-8'));
 
-    // Add BotNamesConfig if it exists
-    if (fs.existsSync(botNamesSeedFile)) {
-        const botNamesDoc = JSON.parse(fs.readFileSync(botNamesSeedFile, 'utf-8'));
-        if (Array.isArray(botNamesDoc)) {
-            seedData.push(...botNamesDoc);
-        } else if (botNamesDoc && typeof botNamesDoc === 'object') {
-            seedData.push(botNamesDoc);
+    // Configs to load
+    const configFiles = [
+        'BotNamesConfig',
+        'BotConfig',
+        'SpellUpgradeCosts',
+        'CarTuningConfig',
+        'CarStatsBudgetConfig',
+        'CrateRewardsConfig',
+        'CrateSlotsConfig',
+        'DailyRewardsConfig',
+        'FuelConfig',
+        'MasteryConfig',
+        'PlayerSlotsConfig',
+        'ShopPricingConfig',
+        'SpeedUpsCatalog',
+        'StarterCrateConfig'
+    ];
+
+    for (const configName of configFiles) {
+        const file = path.join(seedsRoot, `${configName}.json`);
+        if (fs.existsSync(file)) {
+            const data = JSON.parse(fs.readFileSync(file, 'utf-8'));
+            if (Array.isArray(data)) {
+                seedData.push(...data);
+            } else if (data && data.path && data.data) {
+                seedData.push(data);
+            } else {
+                seedData.push({ path: `/GameData/v1/config/${configName}`, data });
+            }
         }
     }
 
-    // Add BotConfig if it exists
-    if (fs.existsSync(botConfigSeedFile)) {
-        const botConfigDoc = JSON.parse(fs.readFileSync(botConfigSeedFile, 'utf-8'));
-        if (botConfigDoc && typeof botConfigDoc === 'object') {
-            seedData.push(botConfigDoc);
-        }
-    }
+    // Additional Catalogs to load
+    const catalogFiles = [
+        'BoostersCatalog',
+        'CarEvolutionV2Catalog',
+        'SpellEvolutionV2Catalog',
+        'TiersCatalog',
+        'XpCurve'
+    ];
 
-    // Add SpellUpgradeCosts if it exists
-    if (fs.existsSync(spellUpgradeCostsSeedFile)) {
-        const spellUpgradeCostsDoc = JSON.parse(fs.readFileSync(spellUpgradeCostsSeedFile, 'utf-8'));
-        if (spellUpgradeCostsDoc && typeof spellUpgradeCostsDoc === 'object') {
-            seedData.push(spellUpgradeCostsDoc);
-        }
-    }
-
-    // Add CarTuningConfig if it exists
-    if (fs.existsSync(carTuningConfigSeedFile)) {
-        const carTuningConfigDoc = JSON.parse(fs.readFileSync(carTuningConfigSeedFile, 'utf-8'));
-        if (carTuningConfigDoc && typeof carTuningConfigDoc === 'object') {
-            seedData.push(carTuningConfigDoc);
+    for (const catalogName of catalogFiles) {
+        const file = path.join(seedsRoot, `${catalogName}.json`);
+        if (fs.existsSync(file)) {
+            const data = JSON.parse(fs.readFileSync(file, 'utf-8'));
+            if (Array.isArray(data)) {
+                seedData.push(...data);
+            } else if (data && data.path && data.data) {
+                seedData.push(data);
+            } else {
+                seedData.push({ path: `/GameData/v1/catalogs/${catalogName}`, data });
+            }
         }
     }
 

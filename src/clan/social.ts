@@ -44,7 +44,7 @@ const DEFAULT_GLOBAL_ROOM_REGION: string = "global_general";
 const GLOBAL_ROOM_WARMUP_TARGET = 20;
 const GLOBAL_ROOM_SOFT_CAP = 80;
 const GLOBAL_ROOM_HARD_CAP = 100;
-const GLOBAL_ROOM_QUERY_LIMIT = 40;
+const GLOBAL_ROOM_QUERY_LIMIT = 100;
 
 const sanitizeRoomRegion = (value?: unknown): string | null => {
   if (typeof value !== "string") {
@@ -111,19 +111,12 @@ const chooseRoomCandidate = (rooms: RoomCandidate[]): RoomCandidate | null => {
   if (available.length === 0) {
     return null;
   }
-  const warmTargets = available.filter(
-    (room) => room.connectedCount < Math.min(room.softCap, GLOBAL_ROOM_WARMUP_TARGET),
-  );
-  const warm = pickAscending(warmTargets);
-  if (warm) {
-    return warm;
-  }
   const underSoftCap = available.filter((room) => room.connectedCount < room.softCap);
   const soft = pickDescending(underSoftCap);
   if (soft) {
     return soft;
   }
-  return pickAscending(available);
+  return pickDescending(available);
 };
 
 const roomsQueryForRegion = (region: string) =>

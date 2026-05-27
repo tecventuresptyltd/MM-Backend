@@ -25,69 +25,41 @@ export const searchPlayer = onCall(
 
     const nameLower = name.toLowerCase();
 
-    if (name.length <= 2) {
-      const usernamesQuery = db
-        .collection("Usernames")
-        .where(admin.firestore.FieldPath.documentId(), ">=", nameLower)
-        .where(admin.firestore.FieldPath.documentId(), "<", `${nameLower}~`)
-        .limit(10);
-      const usernamesSnap = await usernamesQuery.get();
-      const uids: string[] = [];
+    const usernamesQuery = db
+      .collection("Usernames")
+      .where(admin.firestore.FieldPath.documentId(), ">=", nameLower)
+      .where(admin.firestore.FieldPath.documentId(), "<", `${nameLower}~`)
+      .limit(10);
+    const usernamesSnap = await usernamesQuery.get();
+    const uids: string[] = [];
 
-      for (const doc of usernamesSnap.docs) {
-        const usernameData = doc.data() ?? {};
-        const uid = typeof usernameData.uid === "string" ? usernameData.uid : null;
-        if (!uid) {
-          continue;
-        }
-        uids.push(uid);
+    for (const doc of usernamesSnap.docs) {
+      const usernameData = doc.data() ?? {};
+      const uid = typeof usernameData.uid === "string" ? usernameData.uid : null;
+      if (!uid) {
+        continue;
       }
-
-      if (uids.length === 0) {
-        return { success: true, results: [] };
-      }
-
-      const summaries = await getPlayerSummaries(uids);
-      const results = uids
-        .map((uid) => summaries.get(uid))
-        .filter((summary): summary is NonNullable<typeof summary> => !!summary)
-        .map((summary) => ({
-          uid: summary.uid,
-          displayName: summary.displayName,
-          avatarId: summary.avatarId,
-          level: summary.level,
-          trophies: summary.trophies,
-          clan: summary.clan ?? null,
-        }));
-
-      return { success: true, results };
+      uids.push(uid);
     }
 
-    const usernameDoc = await db.collection("Usernames").doc(nameLower).get();
-    if (!usernameDoc.exists) {
-      return { success: false, message: "user not found" };
-    }
-    const usernameData = usernameDoc.data() ?? {};
-    const uid = typeof usernameData.uid === "string" ? usernameData.uid : null;
-    if (!uid) {
-      return { success: false, message: "user not found" };
-    }
-    const summary = await getPlayerSummary(uid);
-    if (!summary) {
-      return { success: false, message: "user not found" };
+    if (uids.length === 0) {
+      return { success: true, results: [] };
     }
 
-    return {
-      success: true,
-      player: {
+    const summaries = await getPlayerSummaries(uids);
+    const results = uids
+      .map((uid) => summaries.get(uid))
+      .filter((summary): summary is NonNullable<typeof summary> => !!summary)
+      .map((summary) => ({
         uid: summary.uid,
         displayName: summary.displayName,
         avatarId: summary.avatarId,
         level: summary.level,
         trophies: summary.trophies,
         clan: summary.clan ?? null,
-      },
-    };
+      }));
+
+    return { success: true, results };
   },
 );
 

@@ -278,3 +278,139 @@ export const submitRelayJoinCode = onCall(callableOptions({ cpu: 1, concurrency:
   logger.info(`[LobbyService] Host registered Relay Code: ${relayJoinCode} for lobby ${lobbyId}`);
   return { success: true };
 });
+
+/**
+ * Toggles or sets the ready state of a member in the lobby.
+ */
+export const toggleReadyState = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
+  const auth = request.auth;
+  if (!auth) {
+    throw new HttpsError("unauthenticated", "User must be logged in.");
+  }
+
+  const lobbyId = request.data?.lobbyId;
+  const isReady = request.data?.isReady;
+
+  if (typeof lobbyId !== "string" || typeof isReady !== "boolean") {
+    throw new HttpsError("invalid-argument", "Missing lobbyId or isReady boolean parameter.");
+  }
+
+  const uid = auth.uid;
+  const rtdb = admin.database();
+  const memberRef = rtdb.ref(`lobbies/${lobbyId}/members/${uid}`);
+
+  const snapshot = await memberRef.get();
+  if (!snapshot.exists()) {
+    throw new HttpsError("not-found", "User is not a member of this lobby.");
+  }
+
+  await memberRef.child("isReady").set(isReady);
+  logger.info(`[LobbyService] User ${uid} set ready state to ${isReady} in lobby ${lobbyId}`);
+  return { success: true };
+});
+
+/**
+ * Promotes another player in the lobby to Host (Host Authoritative).
+ */
+export const promoteToHost = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
+  const auth = request.auth;
+  if (!auth) {
+    throw new HttpsError("unauthenticated", "User must be logged in.");
+  }
+
+  const lobbyId = request.data?.lobbyId;
+  const newHostUid = request.data?.newHostUid;
+
+  if (typeof lobbyId !== "string" || typeof newHostUid !== "string") {
+    throw new HttpsError("invalid-argument", "Missing lobbyId or newHostUid parameter.");
+  }
+
+  const rtdb = admin.database();
+  const lobbyRef = rtdb.ref(`lobbies/${lobbyId}`);
+
+  const snapshot = await lobbyRef.get();
+  if (!snapshot.exists()) {
+    throw new HttpsError("not-found", "Lobby not found.");
+  }
+
+  const lobby = snapshot.val();
+  if (lobby.hostUid !== auth.uid) {
+    throw new HttpsError("permission-denied", "Only the host can promote another player to host.");
+  }
+
+  const roster = lobby.members || {};
+  if (!roster[newHostUid]) {
+    throw new HttpsError("invalid-argument", "The specified player is not a member of this lobby.");
+  }
+
+  // Update hostUid
+  await lobbyRef.child("hostUid").set(newHostUid);
+
+  // Move matchmaking entry to new host's rank bucket
+  const oldHostProfile = await getPlayerProfile(auth.uid);
+  const oldHostBucket = Math.floor(oldHostProfile.elo / 200);
+
+  const newHostProfile = await getPlayerProfile(newHostUid);
+  const newHostBucket = Math.floor(newHostProfile.elo / 200);
+
+  const rosterSize = Object.keys(roster).length;
+
+  await rtdb.ref(`matchmaking/bucket_${oldHostBucket}/${lobbyId}`).remove();
+  await rtdb.ref(`matchmaking/bucket_${newHostBucket}/${lobbyId}`).set({
+    hostUid: newHostUid,
+    rosterSize: rosterSize,
+    createdAt: lobby.createdAt
+  });
+
+  logger.info(`[LobbyService] Host promoted from ${auth.uid} to ${newHostUid} in lobby ${lobbyId}`);
+  return { success: true };
+});
+
+/**
+ * Sends a chat message to the lobby chat.
+ */
+export const sendLobbyChatMessage = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
+  const auth = request.auth;
+  if (!auth) {
+    throw new HttpsError("unauthenticated", "User must be logged in.");
+  }
+
+  const lobbyId = request.data?.lobbyId;
+  const message = request.data?.message;
+
+  if (typeof lobbyId !== "string" || typeof message !== "string" || message.trim().length === 0) {
+    throw new HttpsError("invalid-argument", "Missing lobbyId or message parameter.");
+  }
+
+  const uid = auth.uid;
+  const rtdb = admin.database();
+  const lobbyRef = rtdb.ref(`lobbies/${lobbyId}`);
+
+  const snapshot = await lobbyRef.get();
+  if (!snapshot.exists()) {
+    throw new HttpsError("not-found", "Lobby not found.");
+  }
+
+  const lobby = snapshot.val();
+  const roster = lobby.members || {};
+  if (!roster[uid]) {
+    throw new HttpsError("permission-denied", "You are not a member of this lobby.");
+  }
+
+  const senderProfile = roster[uid];
+  const username = senderProfile.username || "Racer";
+
+  const chatMessage = {
+    senderUid: uid,
+    username: username,
+    message: message.trim(),
+    timestamp: admin.database.ServerValue.TIMESTAMP
+  };
+
+  const messageRef = lobbyRef.child("chat").push();
+  await messageRef.set(chatMessage);
+
+  logger.info(`[LobbyService] User ${uid} (${username}) sent message in lobby ${lobbyId}`);
+  return { success: true };
+});
+

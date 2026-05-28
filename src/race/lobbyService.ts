@@ -9,7 +9,7 @@ const db = admin.firestore();
  * Gets a player's ELO and profile details from Firestore.
  */
 async function getPlayerProfile(uid: string) {
-  const profileRef = db.collection("users").doc(uid);
+  const profileRef = db.collection("Players").doc(uid).collection("Profile").doc("Profile");
   const profileDoc = await profileRef.get();
   
   if (!profileDoc.exists) {
@@ -23,10 +23,10 @@ async function getPlayerProfile(uid: string) {
 
   const data = profileDoc.data() || {};
   return {
-    username: data.username || "Speedster_" + uid.substring(0, 5),
-    elo: typeof data.elo === "number" ? data.elo : 1000,
+    username: data.displayName || data.username || "Speedster_" + uid.substring(0, 5),
+    elo: typeof data.trophies === "number" ? data.trophies : (typeof data.elo === "number" ? data.elo : 1000),
     spells: Array.isArray(data.activeSpellDeck) ? data.activeSpellDeck : ["fireball", "icelock", "shield", "boost"],
-    carSkin: data.equippedCarSkin || "default"
+    carSkin: data.equippedCarSkin || data.carSkin || "default"
   };
 }
 

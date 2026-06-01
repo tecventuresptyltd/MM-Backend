@@ -52,6 +52,8 @@ const DEFAULT_PROFILE = (
     highestTrophies: 0,
     eliminationTrophies: 0,
     highestEliminationTrophies: 0,
+    policeTrophies: 0,
+    highestPoliceTrophies: 0,
     careerCoins: 0,
     totalWins: 0,
     totalRaces: 0,

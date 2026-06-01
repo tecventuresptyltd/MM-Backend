@@ -109,6 +109,12 @@ export const RANKED_TROPHY_CONFIG: TrophyConfig = { ...DEFAULT_TROPHY_CONFIG };
 export const ELIMINATION_TROPHY_CONFIG: TrophyConfig = { ...DEFAULT_TROPHY_CONFIG };
 
 /**
+ * Trophy config for POLICE gamemode.
+ * Currently identical to RANKED/ELIMINATION - can be customized independently in the future.
+ */
+export const POLICE_TROPHY_CONFIG: TrophyConfig = { ...DEFAULT_TROPHY_CONFIG };
+
+/**
  * Trophy config for UNRANKED gamemode.
  * UNRANKED doesn't modify trophies, but still needs config for ELO calculations.
  */
@@ -123,10 +129,12 @@ export const UNRANKED_TROPHY_CONFIG: TrophyConfig = {
 /**
  * Get the trophy config for a specific gamemode.
  */
-export const getTrophyConfigForGameMode = (mode: "RANKED" | "ELIMINATION" | "UNRANKED"): TrophyConfig => {
+export const getTrophyConfigForGameMode = (mode: "RANKED" | "ELIMINATION" | "UNRANKED" | "POLICE"): TrophyConfig => {
   switch (mode) {
     case "ELIMINATION":
       return ELIMINATION_TROPHY_CONFIG;
+    case "POLICE":
+      return POLICE_TROPHY_CONFIG;
     case "UNRANKED":
       return UNRANKED_TROPHY_CONFIG;
     case "RANKED":
@@ -139,7 +147,7 @@ export const getTrophyConfigForGameMode = (mode: "RANKED" | "ELIMINATION" | "UNR
  * Get the reward multiplier for a specific gamemode.
  * UNRANKED mode provides 70% of normal rewards.
  */
-export const getRewardMultiplierForGameMode = (mode: "RANKED" | "ELIMINATION" | "UNRANKED"): number => {
+export const getRewardMultiplierForGameMode = (mode: "RANKED" | "ELIMINATION" | "UNRANKED" | "POLICE"): number => {
   return mode === "UNRANKED" ? 0.7 : 1.0;
 };
 
@@ -281,17 +289,31 @@ export const ELIMINATION_EXP_CONFIG: ExpConfig = {
 };
 
 /**
+ * POLICE mode coin config - uses same reduced caps as ELIMINATION.
+ */
+export const POLICE_COIN_CONFIG: CoinConfig = { ...ELIMINATION_COIN_CONFIG };
+
+/**
+ * POLICE mode XP config - uses same reduced multipliers as ELIMINATION.
+ */
+export const POLICE_EXP_CONFIG: ExpConfig = { ...ELIMINATION_EXP_CONFIG };
+
+/**
  * Get the coin config for a specific gamemode.
  */
-export const getCoinConfigForGameMode = (mode: "RANKED" | "ELIMINATION" | "UNRANKED"): CoinConfig => {
-  return mode === "ELIMINATION" ? ELIMINATION_COIN_CONFIG : DEFAULT_COIN_CONFIG;
+export const getCoinConfigForGameMode = (mode: "RANKED" | "ELIMINATION" | "UNRANKED" | "POLICE"): CoinConfig => {
+  if (mode === "ELIMINATION") return ELIMINATION_COIN_CONFIG;
+  if (mode === "POLICE") return POLICE_COIN_CONFIG;
+  return DEFAULT_COIN_CONFIG;
 };
 
 /**
  * Get the XP config for a specific gamemode.
  */
-export const getExpConfigForGameMode = (mode: "RANKED" | "ELIMINATION" | "UNRANKED"): ExpConfig => {
-  return mode === "ELIMINATION" ? ELIMINATION_EXP_CONFIG : DEFAULT_EXP_CONFIG;
+export const getExpConfigForGameMode = (mode: "RANKED" | "ELIMINATION" | "UNRANKED" | "POLICE"): ExpConfig => {
+  if (mode === "ELIMINATION") return ELIMINATION_EXP_CONFIG;
+  if (mode === "POLICE") return POLICE_EXP_CONFIG;
+  return DEFAULT_EXP_CONFIG;
 };
 
 interface PrecomputedPlayerState {
@@ -460,11 +482,41 @@ const syntheticLastPlaceFinishOrder = (count: number, playerIndex: number): numb
   return order;
 };
 
+export const calculatePolicePvEElo = (
+  playerTrophies: number,
+  survivalSeconds: number,
+  cfg: TrophyConfig,
+): number => {
+  // Expected survival time: ranges from 30s (at 0 ELO) to 150s (at 7000 ELO)
+  const expectedSurvival = Math.max(30, Math.min(150, 30 + 120 * (playerTrophies / 7000)));
+
+  // Base ELO K-factor
+  const K = baseK(playerTrophies, cfg);
+
+  // High-rank damping (soft ceiling)
+  const H = highRankDamping(playerTrophies, cfg);
+
+  // ELO delta relative to target survival time
+  const delta = K * H * ((survivalSeconds - expectedSurvival) / 180);
+
+  let rounded = Math.round(delta);
+  if (rounded < cfg.CLAMP_MIN) rounded = cfg.CLAMP_MIN;
+  if (rounded > cfg.CLAMP_MAX) rounded = cfg.CLAMP_MAX;
+
+  return rounded;
+};
+
 export const calculateLastPlaceDelta = (
   playerIndex: number,
   ratings: number[],
   cfg: TrophyConfig,
+  gamemode?: "RANKED" | "ELIMINATION" | "UNRANKED" | "POLICE",
 ): number => {
+  if (gamemode === "POLICE") {
+    // In POLICE mode, worst case pre-deduct is at survivalSeconds = 0
+    const playerTrophies = ratings[playerIndex] ?? 0;
+    return calculatePolicePvEElo(playerTrophies, 0, cfg);
+  }
   const order = syntheticLastPlaceFinishOrder(ratings.length, playerIndex);
   return calculateTrophies(playerIndex, order, ratings, cfg);
 };
@@ -499,6 +551,7 @@ export interface RaceInputsWithPrededuction {
   hasExpBooster?: boolean;
   lastPlaceDeltaApplied: number;
   placeIndexForI?: number;
+  timeRatio?: number;
 }
 
 export interface RaceRewardsWithSettlement {
@@ -527,10 +580,11 @@ export const computeRaceRewardsWithPrededuction = (
   trophyCfg: TrophyConfig,
   coinCfg: CoinConfig,
   expCfg: ExpConfig,
-  gamemode?: "RANKED" | "ELIMINATION" | "UNRANKED",
+  gamemode?: "RANKED" | "ELIMINATION" | "UNRANKED" | "POLICE",
 ): RaceRewardsWithSettlement => {
   const oldTrophies = input.ratings[input.playerIndex] ?? 0;
   const oldRank = getRankForTrophies(oldTrophies);
+  const timeRatio = input.timeRatio !== undefined ? Math.max(0, Math.min(1, input.timeRatio)) : 1.0;
 
   // Calculate base coins (multiplier = 1)
   const coinCfgBase: CoinConfig = {
@@ -564,10 +618,10 @@ export const computeRaceRewardsWithPrededuction = (
 
   const boosterCoins = coins - baseCoins;
 
-  // Apply gamemode reward multiplier (70% for UNRANKED)
+  // Apply gamemode reward multiplier (70% for UNRANKED, 80% for POLICE) and survival time ratio
   const rewardMultiplier = gamemode ? getRewardMultiplierForGameMode(gamemode) : 1.0;
-  const adjustedCoins = Math.round(coins * rewardMultiplier);
-  const adjustedBaseCoins = Math.round(baseCoins * rewardMultiplier);
+  const adjustedCoins = Math.round(coins * rewardMultiplier * timeRatio);
+  const adjustedBaseCoins = Math.round(baseCoins * rewardMultiplier * timeRatio);
   const adjustedBoosterCoins = adjustedCoins - adjustedBaseCoins;
 
   // Calculate base XP (multiplier = 1)
@@ -602,26 +656,35 @@ export const computeRaceRewardsWithPrededuction = (
 
   const boosterXp = exp - baseXp;
 
-  // Apply gamemode reward multiplier to XP (70% for UNRANKED)
-  const adjustedExp = Math.round(exp * rewardMultiplier);
-  const adjustedBaseXp = Math.round(baseXp * rewardMultiplier);
+  // Apply gamemode reward multiplier to XP (70% for UNRANKED, 80% for POLICE) and survival time ratio
+  const adjustedExp = Math.round(exp * rewardMultiplier * timeRatio);
+  const adjustedBaseXp = Math.round(baseXp * rewardMultiplier * timeRatio);
   const adjustedBoosterXp = adjustedExp - adjustedBaseXp;
 
-  const settlement = settleTrophiesAfterFinish(
-    input.playerIndex,
-    input.finishOrder,
-    input.ratings,
-    trophyCfg,
-    input.lastPlaceDeltaApplied,
-    input.placeIndexForI,
-  );
+  let trophiesActual: number;
+  if (gamemode === "POLICE") {
+    // Reconstruct reported survival time from timeRatio
+    const survivalSeconds = timeRatio * 180;
+    trophiesActual = calculatePolicePvEElo(oldTrophies, survivalSeconds, trophyCfg);
+  } else {
+    const settlement = settleTrophiesAfterFinish(
+      input.playerIndex,
+      input.finishOrder,
+      input.ratings,
+      trophyCfg,
+      input.lastPlaceDeltaApplied,
+      input.placeIndexForI,
+    );
+    trophiesActual = settlement.actualTrophiesDelta;
+  }
 
-  const newTrophies = oldTrophies + settlement.settlementDelta;
+  const trophiesSettlement = trophiesActual - input.lastPlaceDeltaApplied;
+  const newTrophies = oldTrophies + trophiesSettlement;
   const newRank = getRankForTrophies(newTrophies);
 
   return {
-    trophiesActual: settlement.actualTrophiesDelta,
-    trophiesSettlement: settlement.settlementDelta,
+    trophiesActual: trophiesActual,
+    trophiesSettlement: trophiesSettlement,
     coins: adjustedCoins,
     exp: adjustedExp,
     baseCoins: adjustedBaseCoins,

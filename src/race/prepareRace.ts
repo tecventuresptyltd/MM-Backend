@@ -525,7 +525,7 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
     console.log(`  Sample aiLevels: [${bots.slice(0, 3).map(b => (b.carStats.real as any).aiLevel).join(', ')}]`);
 
     const lobbyRatings: number[] = [playerTrophies, ...bots.map((bot) => bot.trophies)];
-    const rawPreDeduct = calculateLastPlaceDelta(0, lobbyRatings, trophyConfig);
+    const rawPreDeduct = calculateLastPlaceDelta(0, lobbyRatings, trophyConfig, gamemode);
     const normalizedPlayerTrophies = Math.max(
       0,
       Math.floor(Number.isFinite(playerTrophies) ? playerTrophies : 0),

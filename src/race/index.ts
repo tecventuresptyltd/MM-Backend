@@ -27,6 +27,7 @@ import {
   toMillis,
   getCoinConfigForGameMode,
   getExpConfigForGameMode,
+  getRewardMultiplierForGameMode,
 } from "./economy.js";
 import { PlayerBoostersState } from "../shared/types.js";
 import { LeaderboardMetric } from "../Socials/types.js";
@@ -382,7 +383,7 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
     throw new HttpsError("unauthenticated", "User is not authenticated.");
   }
 
-  const { raceId, finishOrder, botNames } = request.data;
+  const { raceId, finishOrder, botNames, survivalSeconds } = request.data;
   if (typeof raceId !== "string" || !Array.isArray(finishOrder)) {
     throw new HttpsError("invalid-argument", "Invalid arguments provided.");
   }
@@ -445,6 +446,20 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
     const gamemode: GameMode = resolveGameMode(participantData.gamemode);
     const trophyFields = getTrophyFields(gamemode);
     const trophyConfig = getTrophyConfigForGameMode(gamemode);
+
+    // Calculate server-side clamped survival time ratio for POLICE mode
+    let timeRatio = 1.0;
+    const raceData = raceDoc.data() ?? {};
+    const createdAt = raceData.createdAt as admin.firestore.Timestamp | undefined;
+    if (gamemode === "POLICE" && createdAt) {
+      const elapsedMs = Date.now() - createdAt.toMillis();
+      const elapsedSeconds = Math.max(0, elapsedMs / 1000);
+      const reportedSurvival = typeof survivalSeconds === "number" && Number.isFinite(survivalSeconds)
+        ? Math.max(0, survivalSeconds)
+        : 180;
+      const clampedSurvival = Math.min(reportedSurvival, elapsedSeconds, 180);
+      timeRatio = Math.max(0, Math.min(1, clampedSurvival / 180));
+    }
 
     const playerIndex = Number(participantData.playerIndex);
     const lastPlaceDeltaApplied = Number.isFinite(Number(participantData.preDeductedTrophies))
@@ -514,6 +529,7 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
       hasExpBooster,
       lastPlaceDeltaApplied,
       placeIndexForI: resolvedPlaceIndex,
+      timeRatio,
     };
 
     // Get gamemode-specific configs for rewards
@@ -544,12 +560,14 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
 
     // Use the same position multipliers as XP: [1.2, 1.14, 1.09, 1.03, 0.97, 0.91, 0.86, 0.80]
     // Or Elimination: [1.2, 1.14, 1.09, 1.03, 0.84, 0.72, 0.54, 0.36]
-    const shardMultiplierArray = gamemode === "ELIMINATION"
+    const shardMultiplierArray = gamemode === "ELIMINATION" || gamemode === "POLICE"
       ? [1.2, 1.14, 1.09, 1.03, 0.84, 0.72, 0.54, 0.36]
       : [1.2, 1.14, 1.09, 1.03, 0.97, 0.91, 0.86, 0.80];
 
     const positionMult = shardMultiplierArray[resolvedPlaceIndex] ?? 0.80;
-    const baseShards = Math.round(shardBase * positionMult);
+    // Apply timeRatio and gamemode reward multiplier (80% for POLICE) to spell shards
+    const modeMultiplier = getRewardMultiplierForGameMode(gamemode);
+    const baseShards = Math.round(shardBase * positionMult * modeMultiplier * timeRatio);
 
     // Apply shard booster (2x multiplier if active)
     const shardBoosterMult = hasShardBooster ? 2 : 1;
@@ -784,7 +802,9 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
         const maxSpellLevel = researchCatalog.maxSpellLevel;
         const baseXp = xpConfig.xpPerRace ?? 10;
         const winBonus = place === 1 ? (xpConfig.xpPerWin ?? 25) : 0;
-        const spellXpAmount = baseXp + winBonus;
+        // Apply timeRatio and gamemode reward multiplier (80% for POLICE) to spell XP
+        const modeMultiplier = getRewardMultiplierForGameMode(gamemode);
+        const spellXpAmount = Math.max(0, Math.round((baseXp + winBonus) * modeMultiplier * timeRatio));
 
         const spellsNestedData: Record<string, { xp: number; isXpCapped: boolean; level: number }> = {};
         for (const spellId of deckSpells) {

@@ -7,8 +7,9 @@
  * - RANKED: Standard competitive mode with clan trophy sync
  * - ELIMINATION: New game mode with separate trophy tracking
  * - UNRANKED: Training mode with no trophy impact, reduced rewards
+ * - POLICE: Police game mode with separate trophy tracking, mimicking ELIMINATION
  */
-export type GameMode = "RANKED" | "ELIMINATION" | "UNRANKED";
+export type GameMode = "RANKED" | "ELIMINATION" | "UNRANKED" | "POLICE";
 
 /**
  * Default gamemode when none is specified (backward compatibility).
@@ -19,9 +20,9 @@ export const DEFAULT_GAMEMODE: GameMode = "RANKED";
  * Trophy field mappings per gamemode.
  */
 export const GAMEMODE_TROPHY_FIELDS: Record<GameMode, {
-    current: "trophies" | "eliminationTrophies";
-    highest: "highestTrophies" | "highestEliminationTrophies";
-    leaderboardMetric: "trophies" | "eliminationTrophies" | null;
+    current: "trophies" | "eliminationTrophies" | "policeTrophies";
+    highest: "highestTrophies" | "highestEliminationTrophies" | "highestPoliceTrophies";
+    leaderboardMetric: "trophies" | "eliminationTrophies" | "policeTrophies" | null;
 }> = {
     RANKED: {
         current: "trophies",
@@ -32,6 +33,11 @@ export const GAMEMODE_TROPHY_FIELDS: Record<GameMode, {
         current: "eliminationTrophies",
         highest: "highestEliminationTrophies",
         leaderboardMetric: "eliminationTrophies",
+    },
+    POLICE: {
+        current: "policeTrophies",
+        highest: "highestPoliceTrophies",
+        leaderboardMetric: "policeTrophies",
     },
     UNRANKED: {
         current: "trophies",  // Read-only, uses RANKED trophies
@@ -44,7 +50,7 @@ export const GAMEMODE_TROPHY_FIELDS: Record<GameMode, {
  * Type guard for GameMode.
  */
 export const isValidGameMode = (value: unknown): value is GameMode =>
-    value === "RANKED" || value === "ELIMINATION" || value === "UNRANKED";
+    value === "RANKED" || value === "ELIMINATION" || value === "UNRANKED" || value === "POLICE";
 
 /**
  * Resolve gamemode from input, defaulting to RANKED for backward compatibility.
@@ -79,5 +85,9 @@ export const hasLeaderboard = (mode: GameMode): boolean => mode !== "UNRANKED";
  * Get the trophy source for bot difficulty calculation.
  * UNRANKED always uses RANKED trophies.
  */
-export const getTrophySourceForBots = (mode: GameMode): "trophies" | "eliminationTrophies" =>
-    mode === "ELIMINATION" ? "eliminationTrophies" : "trophies";
+export const getTrophySourceForBots = (mode: GameMode): "trophies" | "eliminationTrophies" | "policeTrophies" => {
+    if (mode === "ELIMINATION") return "eliminationTrophies";
+    if (mode === "POLICE") return "policeTrophies";
+    return "trophies";
+};
+

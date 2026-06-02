@@ -293,24 +293,53 @@ export const startRace = onCall(callableOptions({ minInstances: getMinInstances(
   }
 
   const lobbySnapshot = normalizeLobbySnapshot(lobbyRatings, uid, playerIndex);
-  const ratingVector = lobbySnapshot.map((entry) => entry.rating);
 
   const raceId = db.collection("Races").doc().id;
-  // NOTE: Trophy pre-deduction is handled by prepareRace, NOT startRace
-  // This function only creates the race and participant documents
-  const preDeductedTrophies = calculateLastPlaceDelta(playerIndex, ratingVector, trophyConfig);
 
   const result = await db.runTransaction(async (transaction) => {
-    const profileRef = db.doc(`/Players/${uid}/Profile/Profile`);
     const timestamp = admin.firestore.FieldValue.serverTimestamp();
 
-    // Read profile to verify it exists (no trophy modification here - prepareRace handles it)
-    const profileSnap = await transaction.get(profileRef);
-    if (!profileSnap.exists) {
+    // 1. Get unique participantIds for all real players (excluding null/bots)
+    const realPlayers = lobbySnapshot.filter(
+      (entry) => typeof entry.participantId === "string" && entry.participantId.length > 0
+    );
+    const uniqueUids = Array.from(new Set(realPlayers.map((entry) => entry.participantId!)));
+
+    // 2. Fetch all real player profiles in parallel
+    const profileRefs = uniqueUids.map((pId) => db.doc(`/Players/${pId}/Profile/Profile`));
+    const allSnaps = await transaction.getAll(...profileRefs);
+
+    // 3. Map participant UIDs to their authoritative trophies
+    const trophiesByUid = new Map<string, number>();
+    uniqueUids.forEach((pId, idx) => {
+      const snap = allSnaps[idx];
+      if (snap && snap.exists) {
+        trophiesByUid.set(pId, sanitizeTrophyCount(snap.data()?.[trophyFields.current]));
+      }
+    });
+
+    // Verify caller profile exists
+    const callerSnap = allSnaps[uniqueUids.indexOf(uid)];
+    if (!callerSnap || !callerSnap.exists) {
       throw new HttpsError("failed-precondition", "Player profile not found.");
     }
+    const currentTrophies = trophiesByUid.get(uid) ?? 0;
 
-    const currentTrophies = sanitizeTrophyCount(profileSnap.data()?.[trophyFields.current]);
+    // 4. Update the lobby snapshot with the authoritative trophies from Firestore
+    const updatedLobbySnapshot = lobbySnapshot.map((entry) => {
+      if (entry.participantId && trophiesByUid.has(entry.participantId)) {
+        return {
+          rating: trophiesByUid.get(entry.participantId)!,
+          participantId: entry.participantId,
+        };
+      }
+      return entry; // Keep bot/fallback rating as is
+    });
+
+    // 5. Calculate pre-deductions using the updated ratings vector
+    const ratingVector = updatedLobbySnapshot.map((entry) => entry.rating);
+    const preDeductedTrophies = calculateLastPlaceDelta(playerIndex, ratingVector, trophyConfig);
+
     const appliedPreDeduction =
       preDeductedTrophies < 0 ? Math.max(preDeductedTrophies, -currentTrophies) : preDeductedTrophies;
 
@@ -322,6 +351,7 @@ export const startRace = onCall(callableOptions({ minInstances: getMinInstances(
       calculatedPreDeduction: preDeductedTrophies,
       appliedPreDeduction,
       gamemode,
+      resolvedTrophies: Object.fromEntries(trophiesByUid),
     });
 
     // Create Race document
@@ -331,7 +361,7 @@ export const startRace = onCall(callableOptions({ minInstances: getMinInstances(
       gamemode,
       createdAt: timestamp,
       updatedAt: timestamp,
-      lobbySnapshot: lobbySnapshot.map((entry) => ({
+      lobbySnapshot: updatedLobbySnapshot.map((entry) => ({
         rating: entry.rating,
         participantId: entry.participantId,
       })),
@@ -384,8 +414,8 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
   }
 
   const { raceId, finishOrder, botNames, survivalSeconds } = request.data;
-  if (typeof raceId !== "string" || !Array.isArray(finishOrder)) {
-    throw new HttpsError("invalid-argument", "Invalid arguments provided.");
+  if (typeof raceId !== "string") {
+    throw new HttpsError("invalid-argument", "raceId is required.");
   }
   const botDisplayNames = normaliseBotNames(botNames);
 
@@ -500,10 +530,24 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
     };
 
     const ratingsVector = lobbySnapshot.map((entry) => entry.rating);
-    const finishOrderIndexes = buildFinishOrderIndexes(finishOrder, lobbySnapshot, uid, playerIndex);
-    const placeIndex = finishOrderIndexes.indexOf(playerIndex);
-    const resolvedPlaceIndex = placeIndex >= 0 ? placeIndex : finishOrderIndexes.length - 1;
-    const place = resolvedPlaceIndex + 1;
+    let finishOrderIndexes: number[];
+    let resolvedPlaceIndex: number;
+    let place: number;
+
+    if (gamemode === "POLICE") {
+      finishOrderIndexes = [playerIndex];
+      resolvedPlaceIndex = 0;
+      // Surviving 3 minutes (180s) is a Win (1st place), otherwise it counts as 2nd place
+      place = timeRatio >= 1.0 ? 1 : 2;
+    } else {
+      if (!Array.isArray(finishOrder)) {
+        throw new HttpsError("invalid-argument", "finishOrder is required for standard competitive races.");
+      }
+      finishOrderIndexes = buildFinishOrderIndexes(finishOrder, lobbySnapshot, uid, playerIndex);
+      const placeIndex = finishOrderIndexes.indexOf(playerIndex);
+      resolvedPlaceIndex = placeIndex >= 0 ? placeIndex : finishOrderIndexes.length - 1;
+      place = resolvedPlaceIndex + 1;
+    }
     const totalPositions = ratingsVector.length;
 
     if (totalPositions === 0) {
@@ -595,7 +639,7 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
     const demoted = rankIndex(newRankLabel) < rankIndex(oldRankLabel);
 
     // Resolve loot before any other writes to keep transaction read-before-write ordering valid.
-    // Skip loot for UNRANKED mode
+    // Skip loot for UNRANKED/POLICE mode
     let drops: RaceDropResolution;
     if (gamemode === "UNRANKED") {
       drops = {
@@ -604,6 +648,11 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
           bot,
           drop: { type: "noreward", skuId: null },
         })),
+      };
+    } else if (gamemode === "POLICE") {
+      drops = {
+        playerDrop: rollRaceDrop(),
+        botDrops: [],
       };
     } else {
       drops = await resolveRaceDrops(transaction, uid, botDisplayNames);

@@ -651,8 +651,8 @@ export function computeCarStats(
 
     // --- Progression within tier ---
     // In 1:1 star==level model, use starProgress for both contributions
-    const starProgress = maxStarLevel > 0 ? safeStarLevel / maxStarLevel : 0;
-    const levelProgress = maxCarLevel > 0 ? safeCarLevel / maxCarLevel : 0;
+    const starProgress = maxStarLevel > 1 ? Math.max(0, safeStarLevel - 1) / (maxStarLevel - 1) : 0;
+    const levelProgress = maxCarLevel > 1 ? Math.max(0, safeCarLevel - 1) / (maxCarLevel - 1) : 0;
 
     const starContribution = budgetPerTier * starWeight * starProgress;
     const levelContribution = budgetPerTier * levelWeight * levelProgress;

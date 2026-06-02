@@ -4,7 +4,7 @@
     "cars": {
         "car_h4ayzwf31g": {
             "displayName": "Chevaro ZLE",
-            "class": "tank",
+            "class": "guardian",
             "basePrice": 0,
             "unlock": {
                 "type": "starter"
@@ -15,110 +15,110 @@
                     "upgradeTimerSeconds": 0,
                     "priceCoins": 1100,
                     "carRating": 100,
-                    "topSpeed": 0.75,
-                    "acceleration": 0.75,
-                    "handling": 1.25,
-                    "boostRegen": 1.25,
-                    "boostPower": 1
+                    "topSpeed": 1.2,
+                    "acceleration": 0.6,
+                    "handling": 0.9,
+                    "boostRegen": 0.9,
+                    "boostPower": 1.4
                 },
                 "2": {
                     "xpToNext": 150,
                     "upgradeTimerSeconds": 60,
                     "priceCoins": 1600,
-                    "carRating": 110,
-                    "topSpeed": 0.97,
-                    "acceleration": 0.97,
-                    "handling": 1.47,
-                    "boostRegen": 1.47,
-                    "boostPower": 1.22
+                    "carRating": 119,
+                    "topSpeed": 1.43,
+                    "acceleration": 0.71,
+                    "handling": 1.07,
+                    "boostRegen": 1.07,
+                    "boostPower": 1.66
                 },
                 "3": {
                     "xpToNext": 200,
                     "upgradeTimerSeconds": 120,
                     "priceCoins": 2100,
-                    "carRating": 120,
-                    "topSpeed": 1.19,
-                    "acceleration": 1.19,
-                    "handling": 1.69,
-                    "boostRegen": 1.69,
-                    "boostPower": 1.44
+                    "carRating": 138,
+                    "topSpeed": 1.65,
+                    "acceleration": 0.83,
+                    "handling": 1.24,
+                    "boostRegen": 1.24,
+                    "boostPower": 1.93
                 },
                 "4": {
                     "xpToNext": 250,
                     "upgradeTimerSeconds": 300,
                     "priceCoins": 3200,
-                    "carRating": 130,
-                    "topSpeed": 1.42,
-                    "acceleration": 1.42,
-                    "handling": 1.92,
-                    "boostRegen": 1.92,
-                    "boostPower": 1.67
+                    "carRating": 157,
+                    "topSpeed": 1.88,
+                    "acceleration": 0.94,
+                    "handling": 1.41,
+                    "boostRegen": 1.41,
+                    "boostPower": 2.19
                 },
                 "5": {
                     "xpToNext": 250,
                     "upgradeTimerSeconds": 480,
                     "priceCoins": 4300,
-                    "carRating": 140,
-                    "topSpeed": 1.64,
-                    "acceleration": 1.64,
-                    "handling": 2.14,
-                    "boostRegen": 2.14,
-                    "boostPower": 1.89
+                    "carRating": 176,
+                    "topSpeed": 2.11,
+                    "acceleration": 1.05,
+                    "handling": 1.58,
+                    "boostRegen": 1.58,
+                    "boostPower": 2.46
                 },
                 "6": {
                     "xpToNext": 350,
                     "upgradeTimerSeconds": 900,
                     "priceCoins": 5400,
-                    "carRating": 150,
-                    "topSpeed": 1.86,
-                    "acceleration": 1.86,
-                    "handling": 2.36,
-                    "boostRegen": 2.36,
-                    "boostPower": 2.11
+                    "carRating": 194,
+                    "topSpeed": 2.33,
+                    "acceleration": 1.17,
+                    "handling": 1.75,
+                    "boostRegen": 1.75,
+                    "boostPower": 2.72
                 },
                 "7": {
                     "xpToNext": 400,
                     "upgradeTimerSeconds": 1800,
                     "priceCoins": 6400,
-                    "carRating": 160,
-                    "topSpeed": 2.08,
-                    "acceleration": 2.08,
-                    "handling": 2.58,
-                    "boostRegen": 2.58,
-                    "boostPower": 2.33
+                    "carRating": 213,
+                    "topSpeed": 2.56,
+                    "acceleration": 1.28,
+                    "handling": 1.92,
+                    "boostRegen": 1.92,
+                    "boostPower": 2.99
                 },
                 "8": {
                     "xpToNext": 450,
                     "upgradeTimerSeconds": 3600,
                     "priceCoins": 8600,
-                    "carRating": 170,
-                    "topSpeed": 2.31,
-                    "acceleration": 2.31,
-                    "handling": 2.81,
-                    "boostRegen": 2.81,
-                    "boostPower": 2.56
+                    "carRating": 232,
+                    "topSpeed": 2.79,
+                    "acceleration": 1.39,
+                    "handling": 2.09,
+                    "boostRegen": 2.09,
+                    "boostPower": 3.25
                 },
                 "9": {
                     "xpToNext": 500,
                     "upgradeTimerSeconds": 7200,
                     "priceCoins": 10500,
-                    "carRating": 180,
-                    "topSpeed": 2.53,
-                    "acceleration": 2.53,
-                    "handling": 3.03,
-                    "boostRegen": 3.03,
-                    "boostPower": 2.78
+                    "carRating": 251,
+                    "topSpeed": 3.01,
+                    "acceleration": 1.51,
+                    "handling": 2.26,
+                    "boostRegen": 2.26,
+                    "boostPower": 3.52
                 },
                 "10": {
                     "xpToNext": 0,
                     "upgradeTimerSeconds": 0,
                     "priceCoins": 0,
-                    "carRating": 190,
-                    "topSpeed": 2.75,
-                    "acceleration": 2.75,
-                    "handling": 3.25,
-                    "boostRegen": 3.25,
-                    "boostPower": 3
+                    "carRating": 270,
+                    "topSpeed": 3.24,
+                    "acceleration": 1.62,
+                    "handling": 2.43,
+                    "boostRegen": 2.43,
+                    "boostPower": 3.78
                 }
             },
             "i18n": {
@@ -132,11 +132,11 @@
                 "cooldown": 20
             },
             "tier": 1,
-            "archetype": "tank"
+            "archetype": "guardian"
         },
         "car_1wp1gr2p": {
             "displayName": "Aura PS5",
-            "class": "speedster",
+            "class": "phantom",
             "basePrice": 10800,
             "unlock": {
                 "type": "shop",
@@ -147,111 +147,111 @@
                     "xpToNext": 150,
                     "upgradeTimerSeconds": 0,
                     "priceCoins": 1100,
-                    "carRating": 150,
-                    "topSpeed": 1.5,
-                    "acceleration": 1.25,
-                    "handling": 0.75,
-                    "boostRegen": 0.5,
-                    "boostPower": 1
+                    "carRating": 100,
+                    "topSpeed": 1.1,
+                    "acceleration": 1.4,
+                    "handling": 0.9,
+                    "boostRegen": 1,
+                    "boostPower": 0.6
                 },
                 "2": {
                     "xpToNext": 150,
                     "upgradeTimerSeconds": 60,
                     "priceCoins": 1600,
-                    "carRating": 160,
-                    "topSpeed": 1.72,
-                    "acceleration": 1.47,
-                    "handling": 0.97,
-                    "boostRegen": 0.72,
-                    "boostPower": 1.22
+                    "carRating": 119,
+                    "topSpeed": 1.31,
+                    "acceleration": 1.66,
+                    "handling": 1.07,
+                    "boostRegen": 1.19,
+                    "boostPower": 0.71
                 },
                 "3": {
                     "xpToNext": 200,
                     "upgradeTimerSeconds": 120,
                     "priceCoins": 2100,
-                    "carRating": 170,
-                    "topSpeed": 1.94,
-                    "acceleration": 1.69,
-                    "handling": 1.19,
-                    "boostRegen": 0.94,
-                    "boostPower": 1.44
+                    "carRating": 138,
+                    "topSpeed": 1.52,
+                    "acceleration": 1.93,
+                    "handling": 1.24,
+                    "boostRegen": 1.38,
+                    "boostPower": 0.83
                 },
                 "4": {
                     "xpToNext": 250,
                     "upgradeTimerSeconds": 300,
                     "priceCoins": 3200,
-                    "carRating": 180,
-                    "topSpeed": 2.17,
-                    "acceleration": 1.92,
-                    "handling": 1.42,
-                    "boostRegen": 1.17,
-                    "boostPower": 1.67
+                    "carRating": 157,
+                    "topSpeed": 1.72,
+                    "acceleration": 2.19,
+                    "handling": 1.41,
+                    "boostRegen": 1.57,
+                    "boostPower": 0.94
                 },
                 "5": {
                     "xpToNext": 250,
                     "upgradeTimerSeconds": 480,
                     "priceCoins": 4300,
-                    "carRating": 190,
-                    "topSpeed": 2.39,
-                    "acceleration": 2.14,
-                    "handling": 1.64,
-                    "boostRegen": 1.39,
-                    "boostPower": 1.89
+                    "carRating": 176,
+                    "topSpeed": 1.93,
+                    "acceleration": 2.46,
+                    "handling": 1.58,
+                    "boostRegen": 1.76,
+                    "boostPower": 1.05
                 },
                 "6": {
                     "xpToNext": 350,
                     "upgradeTimerSeconds": 900,
                     "priceCoins": 5400,
-                    "carRating": 200,
-                    "topSpeed": 2.61,
-                    "acceleration": 2.36,
-                    "handling": 1.86,
-                    "boostRegen": 1.61,
-                    "boostPower": 2.11
+                    "carRating": 194,
+                    "topSpeed": 2.14,
+                    "acceleration": 2.72,
+                    "handling": 1.75,
+                    "boostRegen": 1.94,
+                    "boostPower": 1.17
                 },
                 "7": {
                     "xpToNext": 400,
                     "upgradeTimerSeconds": 1800,
                     "priceCoins": 6400,
-                    "carRating": 210,
-                    "topSpeed": 2.83,
-                    "acceleration": 2.58,
-                    "handling": 2.08,
-                    "boostRegen": 1.83,
-                    "boostPower": 2.33
+                    "carRating": 213,
+                    "topSpeed": 2.35,
+                    "acceleration": 2.99,
+                    "handling": 1.92,
+                    "boostRegen": 2.13,
+                    "boostPower": 1.28
                 },
                 "8": {
                     "xpToNext": 450,
                     "upgradeTimerSeconds": 3600,
                     "priceCoins": 8600,
-                    "carRating": 220,
-                    "topSpeed": 3.06,
-                    "acceleration": 2.81,
-                    "handling": 2.31,
-                    "boostRegen": 2.06,
-                    "boostPower": 2.56
+                    "carRating": 232,
+                    "topSpeed": 2.55,
+                    "acceleration": 3.25,
+                    "handling": 2.09,
+                    "boostRegen": 2.32,
+                    "boostPower": 1.39
                 },
                 "9": {
                     "xpToNext": 500,
                     "upgradeTimerSeconds": 7200,
                     "priceCoins": 10500,
-                    "carRating": 230,
-                    "topSpeed": 3.28,
-                    "acceleration": 3.03,
-                    "handling": 2.53,
-                    "boostRegen": 2.28,
-                    "boostPower": 2.78
+                    "carRating": 251,
+                    "topSpeed": 2.76,
+                    "acceleration": 3.52,
+                    "handling": 2.26,
+                    "boostRegen": 2.51,
+                    "boostPower": 1.51
                 },
                 "10": {
                     "xpToNext": 0,
                     "upgradeTimerSeconds": 0,
                     "priceCoins": 0,
-                    "carRating": 240,
-                    "topSpeed": 3.5,
-                    "acceleration": 3.25,
-                    "handling": 2.75,
-                    "boostRegen": 2.5,
-                    "boostPower": 3
+                    "carRating": 270,
+                    "topSpeed": 2.97,
+                    "acceleration": 3.78,
+                    "handling": 2.43,
+                    "boostRegen": 2.7,
+                    "boostPower": 1.62
                 }
             },
             "i18n": {
@@ -266,11 +266,11 @@
                 "cooldown": 15
             },
             "tier": 1,
-            "archetype": "speedster"
+            "archetype": "phantom"
         },
         "car_4bbp20vv": {
             "displayName": "Chevaro Rider",
-            "class": "specialist",
+            "class": "arcanist",
             "basePrice": 19400,
             "unlock": {
                 "type": "shop",
@@ -281,111 +281,111 @@
                     "xpToNext": 150,
                     "upgradeTimerSeconds": 0,
                     "priceCoins": 1100,
-                    "carRating": 150,
-                    "topSpeed": 1,
+                    "carRating": 100,
+                    "topSpeed": 0.7,
                     "acceleration": 1,
-                    "handling": 1,
-                    "boostRegen": 1,
-                    "boostPower": 1
+                    "handling": 1.4,
+                    "boostRegen": 1.1,
+                    "boostPower": 0.8
                 },
                 "2": {
                     "xpToNext": 150,
                     "upgradeTimerSeconds": 60,
                     "priceCoins": 1600,
-                    "carRating": 160,
-                    "topSpeed": 1.22,
-                    "acceleration": 1.22,
-                    "handling": 1.22,
-                    "boostRegen": 1.22,
-                    "boostPower": 1.22
+                    "carRating": 119,
+                    "topSpeed": 0.83,
+                    "acceleration": 1.19,
+                    "handling": 1.66,
+                    "boostRegen": 1.31,
+                    "boostPower": 0.95
                 },
                 "3": {
                     "xpToNext": 200,
                     "upgradeTimerSeconds": 120,
                     "priceCoins": 2100,
-                    "carRating": 170,
-                    "topSpeed": 1.44,
-                    "acceleration": 1.44,
-                    "handling": 1.44,
-                    "boostRegen": 1.44,
-                    "boostPower": 1.44
+                    "carRating": 138,
+                    "topSpeed": 0.96,
+                    "acceleration": 1.38,
+                    "handling": 1.93,
+                    "boostRegen": 1.52,
+                    "boostPower": 1.1
                 },
                 "4": {
                     "xpToNext": 250,
                     "upgradeTimerSeconds": 300,
                     "priceCoins": 3200,
-                    "carRating": 180,
-                    "topSpeed": 1.67,
-                    "acceleration": 1.67,
-                    "handling": 1.67,
-                    "boostRegen": 1.67,
-                    "boostPower": 1.67
+                    "carRating": 157,
+                    "topSpeed": 1.1,
+                    "acceleration": 1.57,
+                    "handling": 2.19,
+                    "boostRegen": 1.72,
+                    "boostPower": 1.25
                 },
                 "5": {
                     "xpToNext": 250,
                     "upgradeTimerSeconds": 480,
                     "priceCoins": 4300,
-                    "carRating": 190,
-                    "topSpeed": 1.89,
-                    "acceleration": 1.89,
-                    "handling": 1.89,
-                    "boostRegen": 1.89,
-                    "boostPower": 1.89
+                    "carRating": 176,
+                    "topSpeed": 1.23,
+                    "acceleration": 1.76,
+                    "handling": 2.46,
+                    "boostRegen": 1.93,
+                    "boostPower": 1.4
                 },
                 "6": {
                     "xpToNext": 350,
                     "upgradeTimerSeconds": 900,
                     "priceCoins": 5400,
-                    "carRating": 200,
-                    "topSpeed": 2.11,
-                    "acceleration": 2.11,
-                    "handling": 2.11,
-                    "boostRegen": 2.11,
-                    "boostPower": 2.11
+                    "carRating": 194,
+                    "topSpeed": 1.36,
+                    "acceleration": 1.94,
+                    "handling": 2.72,
+                    "boostRegen": 2.14,
+                    "boostPower": 1.56
                 },
                 "7": {
                     "xpToNext": 400,
                     "upgradeTimerSeconds": 1800,
                     "priceCoins": 6400,
-                    "carRating": 210,
-                    "topSpeed": 2.33,
-                    "acceleration": 2.33,
-                    "handling": 2.33,
-                    "boostRegen": 2.33,
-                    "boostPower": 2.33
+                    "carRating": 213,
+                    "topSpeed": 1.49,
+                    "acceleration": 2.13,
+                    "handling": 2.99,
+                    "boostRegen": 2.35,
+                    "boostPower": 1.71
                 },
                 "8": {
                     "xpToNext": 450,
                     "upgradeTimerSeconds": 3600,
                     "priceCoins": 8600,
-                    "carRating": 220,
-                    "topSpeed": 2.56,
-                    "acceleration": 2.56,
-                    "handling": 2.56,
-                    "boostRegen": 2.56,
-                    "boostPower": 2.56
+                    "carRating": 232,
+                    "topSpeed": 1.63,
+                    "acceleration": 2.32,
+                    "handling": 3.25,
+                    "boostRegen": 2.55,
+                    "boostPower": 1.86
                 },
                 "9": {
                     "xpToNext": 500,
                     "upgradeTimerSeconds": 7200,
                     "priceCoins": 10500,
-                    "carRating": 230,
-                    "topSpeed": 2.78,
-                    "acceleration": 2.78,
-                    "handling": 2.78,
-                    "boostRegen": 2.78,
-                    "boostPower": 2.78
+                    "carRating": 251,
+                    "topSpeed": 1.76,
+                    "acceleration": 2.51,
+                    "handling": 3.52,
+                    "boostRegen": 2.76,
+                    "boostPower": 2.01
                 },
                 "10": {
                     "xpToNext": 0,
                     "upgradeTimerSeconds": 0,
                     "priceCoins": 0,
-                    "carRating": 240,
-                    "topSpeed": 3,
-                    "acceleration": 3,
-                    "handling": 3,
-                    "boostRegen": 3,
-                    "boostPower": 3
+                    "carRating": 270,
+                    "topSpeed": 1.89,
+                    "acceleration": 2.7,
+                    "handling": 3.78,
+                    "boostRegen": 2.97,
+                    "boostPower": 2.16
                 }
             },
             "i18n": {
@@ -400,11 +400,11 @@
                 "cooldown": 5
             },
             "tier": 1,
-            "archetype": "specialist"
+            "archetype": "arcanist"
         },
         "car_3n27817s": {
             "displayName": "Chevaro Camara",
-            "class": "tank",
+            "class": "guardian",
             "basePrice": 35000,
             "unlock": {
                 "type": "shop",
@@ -415,111 +415,111 @@
                     "xpToNext": 400,
                     "upgradeTimerSeconds": 300,
                     "priceCoins": 4500,
-                    "carRating": 200,
-                    "topSpeed": 2.06,
-                    "acceleration": 2.06,
-                    "handling": 3.44,
-                    "boostRegen": 3.44,
-                    "boostPower": 2.75
+                    "carRating": 270,
+                    "topSpeed": 3.24,
+                    "acceleration": 1.62,
+                    "handling": 2.43,
+                    "boostRegen": 2.43,
+                    "boostPower": 3.78
                 },
                 "2": {
                     "xpToNext": 500,
                     "upgradeTimerSeconds": 600,
                     "priceCoins": 6700,
-                    "carRating": 210,
-                    "topSpeed": 2.28,
-                    "acceleration": 2.28,
-                    "handling": 3.66,
-                    "boostRegen": 3.66,
-                    "boostPower": 2.97
+                    "carRating": 289,
+                    "topSpeed": 3.47,
+                    "acceleration": 1.73,
+                    "handling": 2.6,
+                    "boostRegen": 2.6,
+                    "boostPower": 4.04
                 },
                 "3": {
                     "xpToNext": 600,
                     "upgradeTimerSeconds": 900,
                     "priceCoins": 8900,
-                    "carRating": 220,
-                    "topSpeed": 2.51,
-                    "acceleration": 2.51,
-                    "handling": 3.88,
-                    "boostRegen": 3.88,
-                    "boostPower": 3.19
+                    "carRating": 308,
+                    "topSpeed": 3.69,
+                    "acceleration": 1.85,
+                    "handling": 2.77,
+                    "boostRegen": 2.77,
+                    "boostPower": 4.31
                 },
                 "4": {
                     "xpToNext": 700,
                     "upgradeTimerSeconds": 1800,
                     "priceCoins": 13500,
-                    "carRating": 230,
-                    "topSpeed": 2.73,
-                    "acceleration": 2.73,
-                    "handling": 4.1,
-                    "boostRegen": 4.1,
-                    "boostPower": 3.42
+                    "carRating": 327,
+                    "topSpeed": 3.92,
+                    "acceleration": 1.96,
+                    "handling": 2.94,
+                    "boostRegen": 2.94,
+                    "boostPower": 4.57
                 },
                 "5": {
                     "xpToNext": 800,
                     "upgradeTimerSeconds": 2700,
                     "priceCoins": 18000,
-                    "carRating": 240,
-                    "topSpeed": 2.95,
-                    "acceleration": 2.95,
-                    "handling": 4.33,
-                    "boostRegen": 4.33,
-                    "boostPower": 3.64
+                    "carRating": 346,
+                    "topSpeed": 4.15,
+                    "acceleration": 2.07,
+                    "handling": 3.11,
+                    "boostRegen": 3.11,
+                    "boostPower": 4.84
                 },
                 "6": {
                     "xpToNext": 1000,
                     "upgradeTimerSeconds": 3600,
                     "priceCoins": 22500,
-                    "carRating": 250,
-                    "topSpeed": 3.17,
-                    "acceleration": 3.17,
-                    "handling": 4.55,
-                    "boostRegen": 4.55,
-                    "boostPower": 3.86
+                    "carRating": 364,
+                    "topSpeed": 4.37,
+                    "acceleration": 2.19,
+                    "handling": 3.28,
+                    "boostRegen": 3.28,
+                    "boostPower": 5.1
                 },
                 "7": {
                     "xpToNext": 1200,
                     "upgradeTimerSeconds": 7200,
                     "priceCoins": 26500,
-                    "carRating": 260,
-                    "topSpeed": 3.4,
-                    "acceleration": 3.4,
-                    "handling": 4.77,
-                    "boostRegen": 4.77,
-                    "boostPower": 4.08
+                    "carRating": 383,
+                    "topSpeed": 4.6,
+                    "acceleration": 2.3,
+                    "handling": 3.45,
+                    "boostRegen": 3.45,
+                    "boostPower": 5.37
                 },
                 "8": {
                     "xpToNext": 1400,
                     "upgradeTimerSeconds": 10800,
                     "priceCoins": 35500,
-                    "carRating": 270,
-                    "topSpeed": 3.62,
-                    "acceleration": 3.62,
-                    "handling": 4.99,
-                    "boostRegen": 4.99,
-                    "boostPower": 4.31
+                    "carRating": 402,
+                    "topSpeed": 4.83,
+                    "acceleration": 2.41,
+                    "handling": 3.62,
+                    "boostRegen": 3.62,
+                    "boostPower": 5.63
                 },
                 "9": {
                     "xpToNext": 1600,
                     "upgradeTimerSeconds": 14400,
                     "priceCoins": 44500,
-                    "carRating": 280,
-                    "topSpeed": 3.84,
-                    "acceleration": 3.84,
-                    "handling": 5.22,
-                    "boostRegen": 5.22,
-                    "boostPower": 4.53
+                    "carRating": 421,
+                    "topSpeed": 5.05,
+                    "acceleration": 2.53,
+                    "handling": 3.79,
+                    "boostRegen": 3.79,
+                    "boostPower": 5.9
                 },
                 "10": {
                     "xpToNext": 0,
                     "upgradeTimerSeconds": 0,
                     "priceCoins": 0,
-                    "carRating": 290,
-                    "topSpeed": 4.06,
-                    "acceleration": 4.06,
-                    "handling": 5.44,
-                    "boostRegen": 5.44,
-                    "boostPower": 4.75
+                    "carRating": 440,
+                    "topSpeed": 5.28,
+                    "acceleration": 2.64,
+                    "handling": 3.96,
+                    "boostRegen": 3.96,
+                    "boostPower": 6.16
                 }
             },
             "i18n": {
@@ -533,11 +533,11 @@
                 "cooldown": 20
             },
             "tier": 2,
-            "archetype": "tank"
+            "archetype": "guardian"
         },
         "car_xtm9htbs": {
             "displayName": "Aster Marlin",
-            "class": "speedster",
+            "class": "phantom",
             "basePrice": 63000,
             "unlock": {
                 "type": "shop",
@@ -548,111 +548,111 @@
                     "xpToNext": 400,
                     "upgradeTimerSeconds": 300,
                     "priceCoins": 4500,
-                    "carRating": 200,
-                    "topSpeed": 4.13,
-                    "acceleration": 3.44,
-                    "handling": 2.06,
-                    "boostRegen": 1.38,
-                    "boostPower": 2.75
+                    "carRating": 270,
+                    "topSpeed": 2.97,
+                    "acceleration": 3.78,
+                    "handling": 2.43,
+                    "boostRegen": 2.7,
+                    "boostPower": 1.62
                 },
                 "2": {
                     "xpToNext": 500,
                     "upgradeTimerSeconds": 600,
                     "priceCoins": 6700,
-                    "carRating": 210,
-                    "topSpeed": 4.35,
-                    "acceleration": 3.66,
-                    "handling": 2.28,
-                    "boostRegen": 1.6,
-                    "boostPower": 2.97
+                    "carRating": 289,
+                    "topSpeed": 3.18,
+                    "acceleration": 4.04,
+                    "handling": 2.6,
+                    "boostRegen": 2.89,
+                    "boostPower": 1.73
                 },
                 "3": {
                     "xpToNext": 600,
                     "upgradeTimerSeconds": 900,
                     "priceCoins": 8900,
-                    "carRating": 220,
-                    "topSpeed": 4.57,
-                    "acceleration": 3.88,
-                    "handling": 2.51,
-                    "boostRegen": 1.82,
-                    "boostPower": 3.19
+                    "carRating": 308,
+                    "topSpeed": 3.39,
+                    "acceleration": 4.31,
+                    "handling": 2.77,
+                    "boostRegen": 3.08,
+                    "boostPower": 1.85
                 },
                 "4": {
                     "xpToNext": 700,
                     "upgradeTimerSeconds": 1800,
                     "priceCoins": 13500,
-                    "carRating": 230,
-                    "topSpeed": 4.79,
-                    "acceleration": 4.1,
-                    "handling": 2.73,
-                    "boostRegen": 2.04,
-                    "boostPower": 3.42
+                    "carRating": 327,
+                    "topSpeed": 3.59,
+                    "acceleration": 4.57,
+                    "handling": 2.94,
+                    "boostRegen": 3.27,
+                    "boostPower": 1.96
                 },
                 "5": {
                     "xpToNext": 800,
                     "upgradeTimerSeconds": 2700,
                     "priceCoins": 18000,
-                    "carRating": 240,
-                    "topSpeed": 5.01,
-                    "acceleration": 4.33,
-                    "handling": 2.95,
-                    "boostRegen": 2.26,
-                    "boostPower": 3.64
+                    "carRating": 346,
+                    "topSpeed": 3.8,
+                    "acceleration": 4.84,
+                    "handling": 3.11,
+                    "boostRegen": 3.46,
+                    "boostPower": 2.07
                 },
                 "6": {
                     "xpToNext": 1000,
                     "upgradeTimerSeconds": 3600,
                     "priceCoins": 22500,
-                    "carRating": 250,
-                    "topSpeed": 5.24,
-                    "acceleration": 4.55,
-                    "handling": 3.17,
-                    "boostRegen": 2.49,
-                    "boostPower": 3.86
+                    "carRating": 364,
+                    "topSpeed": 4.01,
+                    "acceleration": 5.1,
+                    "handling": 3.28,
+                    "boostRegen": 3.64,
+                    "boostPower": 2.19
                 },
                 "7": {
                     "xpToNext": 1200,
                     "upgradeTimerSeconds": 7200,
                     "priceCoins": 26500,
-                    "carRating": 260,
-                    "topSpeed": 5.46,
-                    "acceleration": 4.77,
-                    "handling": 3.4,
-                    "boostRegen": 2.71,
-                    "boostPower": 4.08
+                    "carRating": 383,
+                    "topSpeed": 4.22,
+                    "acceleration": 5.37,
+                    "handling": 3.45,
+                    "boostRegen": 3.83,
+                    "boostPower": 2.3
                 },
                 "8": {
                     "xpToNext": 1400,
                     "upgradeTimerSeconds": 10800,
                     "priceCoins": 35500,
-                    "carRating": 270,
-                    "topSpeed": 5.68,
-                    "acceleration": 4.99,
+                    "carRating": 402,
+                    "topSpeed": 4.42,
+                    "acceleration": 5.63,
                     "handling": 3.62,
-                    "boostRegen": 2.93,
-                    "boostPower": 4.31
+                    "boostRegen": 4.02,
+                    "boostPower": 2.41
                 },
                 "9": {
                     "xpToNext": 1600,
                     "upgradeTimerSeconds": 14400,
                     "priceCoins": 44500,
-                    "carRating": 280,
-                    "topSpeed": 5.9,
-                    "acceleration": 5.22,
-                    "handling": 3.84,
-                    "boostRegen": 3.15,
-                    "boostPower": 4.53
+                    "carRating": 421,
+                    "topSpeed": 4.63,
+                    "acceleration": 5.9,
+                    "handling": 3.79,
+                    "boostRegen": 4.21,
+                    "boostPower": 2.53
                 },
                 "10": {
                     "xpToNext": 0,
                     "upgradeTimerSeconds": 0,
                     "priceCoins": 0,
-                    "carRating": 290,
-                    "topSpeed": 6.13,
-                    "acceleration": 5.44,
-                    "handling": 4.06,
-                    "boostRegen": 3.38,
-                    "boostPower": 4.75
+                    "carRating": 440,
+                    "topSpeed": 4.84,
+                    "acceleration": 6.16,
+                    "handling": 3.96,
+                    "boostRegen": 4.4,
+                    "boostPower": 2.64
                 }
             },
             "i18n": {
@@ -667,11 +667,11 @@
                 "cooldown": 15
             },
             "tier": 2,
-            "archetype": "speedster"
+            "archetype": "phantom"
         },
         "car_a9x2mkp3": {
             "displayName": "Mazza Recks",
-            "class": "specialist",
+            "class": "arcanist",
             "basePrice": 113000,
             "unlock": {
                 "type": "shop",
@@ -682,111 +682,111 @@
                     "xpToNext": 400,
                     "upgradeTimerSeconds": 300,
                     "priceCoins": 4500,
-                    "carRating": 300,
-                    "topSpeed": 2.75,
-                    "acceleration": 2.75,
-                    "handling": 2.75,
-                    "boostRegen": 2.75,
-                    "boostPower": 2.75
+                    "carRating": 270,
+                    "topSpeed": 1.89,
+                    "acceleration": 2.7,
+                    "handling": 3.78,
+                    "boostRegen": 2.97,
+                    "boostPower": 2.16
                 },
                 "2": {
                     "xpToNext": 500,
                     "upgradeTimerSeconds": 600,
                     "priceCoins": 6700,
-                    "carRating": 310,
-                    "topSpeed": 2.97,
-                    "acceleration": 2.97,
-                    "handling": 2.97,
-                    "boostRegen": 2.97,
-                    "boostPower": 2.97
+                    "carRating": 289,
+                    "topSpeed": 2.02,
+                    "acceleration": 2.89,
+                    "handling": 4.04,
+                    "boostRegen": 3.18,
+                    "boostPower": 2.31
                 },
                 "3": {
                     "xpToNext": 600,
                     "upgradeTimerSeconds": 900,
                     "priceCoins": 8900,
-                    "carRating": 320,
-                    "topSpeed": 3.19,
-                    "acceleration": 3.19,
-                    "handling": 3.19,
-                    "boostRegen": 3.19,
-                    "boostPower": 3.19
+                    "carRating": 308,
+                    "topSpeed": 2.15,
+                    "acceleration": 3.08,
+                    "handling": 4.31,
+                    "boostRegen": 3.39,
+                    "boostPower": 2.46
                 },
                 "4": {
                     "xpToNext": 700,
                     "upgradeTimerSeconds": 1800,
                     "priceCoins": 13500,
-                    "carRating": 330,
-                    "topSpeed": 3.42,
-                    "acceleration": 3.42,
-                    "handling": 3.42,
-                    "boostRegen": 3.42,
-                    "boostPower": 3.42
+                    "carRating": 327,
+                    "topSpeed": 2.29,
+                    "acceleration": 3.27,
+                    "handling": 4.57,
+                    "boostRegen": 3.59,
+                    "boostPower": 2.61
                 },
                 "5": {
                     "xpToNext": 800,
                     "upgradeTimerSeconds": 2700,
                     "priceCoins": 18000,
-                    "carRating": 340,
-                    "topSpeed": 3.64,
-                    "acceleration": 3.64,
-                    "handling": 3.64,
-                    "boostRegen": 3.64,
-                    "boostPower": 3.64
+                    "carRating": 346,
+                    "topSpeed": 2.42,
+                    "acceleration": 3.46,
+                    "handling": 4.84,
+                    "boostRegen": 3.8,
+                    "boostPower": 2.76
                 },
                 "6": {
                     "xpToNext": 1000,
                     "upgradeTimerSeconds": 3600,
                     "priceCoins": 22500,
-                    "carRating": 350,
-                    "topSpeed": 3.86,
-                    "acceleration": 3.86,
-                    "handling": 3.86,
-                    "boostRegen": 3.86,
-                    "boostPower": 3.86
+                    "carRating": 364,
+                    "topSpeed": 2.55,
+                    "acceleration": 3.64,
+                    "handling": 5.1,
+                    "boostRegen": 4.01,
+                    "boostPower": 2.92
                 },
                 "7": {
                     "xpToNext": 1200,
                     "upgradeTimerSeconds": 7200,
                     "priceCoins": 26500,
-                    "carRating": 360,
-                    "topSpeed": 4.08,
-                    "acceleration": 4.08,
-                    "handling": 4.08,
-                    "boostRegen": 4.08,
-                    "boostPower": 4.08
+                    "carRating": 383,
+                    "topSpeed": 2.68,
+                    "acceleration": 3.83,
+                    "handling": 5.37,
+                    "boostRegen": 4.22,
+                    "boostPower": 3.07
                 },
                 "8": {
                     "xpToNext": 1400,
                     "upgradeTimerSeconds": 10800,
                     "priceCoins": 35500,
-                    "carRating": 370,
-                    "topSpeed": 4.31,
-                    "acceleration": 4.31,
-                    "handling": 4.31,
-                    "boostRegen": 4.31,
-                    "boostPower": 4.31
+                    "carRating": 402,
+                    "topSpeed": 2.82,
+                    "acceleration": 4.02,
+                    "handling": 5.63,
+                    "boostRegen": 4.42,
+                    "boostPower": 3.22
                 },
                 "9": {
                     "xpToNext": 1600,
                     "upgradeTimerSeconds": 14400,
                     "priceCoins": 44500,
-                    "carRating": 380,
-                    "topSpeed": 4.53,
-                    "acceleration": 4.53,
-                    "handling": 4.53,
-                    "boostRegen": 4.53,
-                    "boostPower": 4.53
+                    "carRating": 421,
+                    "topSpeed": 2.95,
+                    "acceleration": 4.21,
+                    "handling": 5.9,
+                    "boostRegen": 4.63,
+                    "boostPower": 3.37
                 },
                 "10": {
                     "xpToNext": 0,
                     "upgradeTimerSeconds": 0,
                     "priceCoins": 0,
-                    "carRating": 390,
-                    "topSpeed": 4.75,
-                    "acceleration": 4.75,
-                    "handling": 4.75,
-                    "boostRegen": 4.75,
-                    "boostPower": 4.75
+                    "carRating": 440,
+                    "topSpeed": 3.08,
+                    "acceleration": 4.4,
+                    "handling": 6.16,
+                    "boostRegen": 4.84,
+                    "boostPower": 3.52
                 }
             },
             "i18n": {
@@ -801,11 +801,11 @@
                 "cooldown": 5
             },
             "tier": 2,
-            "archetype": "specialist"
+            "archetype": "arcanist"
         },
         "car_jh5tqxqk": {
             "displayName": "Beamer L4",
-            "class": "tank",
+            "class": "guardian",
             "basePrice": 204000,
             "unlock": {
                 "type": "shop",
@@ -816,111 +816,111 @@
                     "xpToNext": 950,
                     "upgradeTimerSeconds": 1800,
                     "priceCoins": 25500,
-                    "carRating": 300,
-                    "topSpeed": 3.38,
-                    "acceleration": 3.38,
-                    "handling": 5.63,
-                    "boostRegen": 5.63,
-                    "boostPower": 4.5
+                    "carRating": 440,
+                    "topSpeed": 5.28,
+                    "acceleration": 2.64,
+                    "handling": 3.96,
+                    "boostRegen": 3.96,
+                    "boostPower": 6.16
                 },
                 "2": {
                     "xpToNext": 1200,
                     "upgradeTimerSeconds": 2700,
                     "priceCoins": 38200,
-                    "carRating": 310,
-                    "topSpeed": 3.6,
-                    "acceleration": 3.6,
-                    "handling": 5.85,
-                    "boostRegen": 5.85,
-                    "boostPower": 4.72
+                    "carRating": 459,
+                    "topSpeed": 5.51,
+                    "acceleration": 2.75,
+                    "handling": 4.13,
+                    "boostRegen": 4.13,
+                    "boostPower": 6.42
                 },
                 "3": {
                     "xpToNext": 1400,
                     "upgradeTimerSeconds": 3600,
                     "priceCoins": 51800,
-                    "carRating": 320,
-                    "topSpeed": 3.82,
-                    "acceleration": 3.82,
-                    "handling": 6.07,
-                    "boostRegen": 6.07,
-                    "boostPower": 4.94
+                    "carRating": 478,
+                    "topSpeed": 5.73,
+                    "acceleration": 2.87,
+                    "handling": 4.3,
+                    "boostRegen": 4.3,
+                    "boostPower": 6.69
                 },
                 "4": {
                     "xpToNext": 1700,
                     "upgradeTimerSeconds": 7200,
                     "priceCoins": 77200,
-                    "carRating": 330,
-                    "topSpeed": 4.04,
-                    "acceleration": 4.04,
-                    "handling": 6.29,
-                    "boostRegen": 6.29,
-                    "boostPower": 5.17
+                    "carRating": 497,
+                    "topSpeed": 5.96,
+                    "acceleration": 2.98,
+                    "handling": 4.47,
+                    "boostRegen": 4.47,
+                    "boostPower": 6.95
                 },
                 "5": {
                     "xpToNext": 1900,
                     "upgradeTimerSeconds": 10800,
                     "priceCoins": 102800,
-                    "carRating": 340,
-                    "topSpeed": 4.26,
-                    "acceleration": 4.26,
-                    "handling": 6.51,
-                    "boostRegen": 6.51,
-                    "boostPower": 5.39
+                    "carRating": 516,
+                    "topSpeed": 6.19,
+                    "acceleration": 3.09,
+                    "handling": 4.64,
+                    "boostRegen": 4.64,
+                    "boostPower": 7.22
                 },
                 "6": {
                     "xpToNext": 2400,
                     "upgradeTimerSeconds": 14400,
                     "priceCoins": 128200,
-                    "carRating": 350,
-                    "topSpeed": 4.49,
-                    "acceleration": 4.49,
-                    "handling": 6.74,
-                    "boostRegen": 6.74,
-                    "boostPower": 5.61
+                    "carRating": 534,
+                    "topSpeed": 6.41,
+                    "acceleration": 3.21,
+                    "handling": 4.81,
+                    "boostRegen": 4.81,
+                    "boostPower": 7.48
                 },
                 "7": {
                     "xpToNext": 2800,
                     "upgradeTimerSeconds": 21600,
                     "priceCoins": 154500,
-                    "carRating": 360,
-                    "topSpeed": 4.71,
-                    "acceleration": 4.71,
-                    "handling": 6.96,
-                    "boostRegen": 6.96,
-                    "boostPower": 5.83
+                    "carRating": 553,
+                    "topSpeed": 6.64,
+                    "acceleration": 3.32,
+                    "handling": 4.98,
+                    "boostRegen": 4.98,
+                    "boostPower": 7.75
                 },
                 "8": {
                     "xpToNext": 3300,
                     "upgradeTimerSeconds": 28800,
                     "priceCoins": 205500,
-                    "carRating": 370,
-                    "topSpeed": 4.93,
-                    "acceleration": 4.93,
-                    "handling": 7.18,
-                    "boostRegen": 7.18,
-                    "boostPower": 6.06
+                    "carRating": 572,
+                    "topSpeed": 6.87,
+                    "acceleration": 3.43,
+                    "handling": 5.15,
+                    "boostRegen": 5.15,
+                    "boostPower": 8.01
                 },
                 "9": {
                     "xpToNext": 3800,
                     "upgradeTimerSeconds": 43200,
                     "priceCoins": 256500,
-                    "carRating": 380,
-                    "topSpeed": 5.15,
-                    "acceleration": 5.15,
-                    "handling": 7.4,
-                    "boostRegen": 7.4,
-                    "boostPower": 6.28
+                    "carRating": 591,
+                    "topSpeed": 7.09,
+                    "acceleration": 3.55,
+                    "handling": 5.32,
+                    "boostRegen": 5.32,
+                    "boostPower": 8.28
                 },
                 "10": {
                     "xpToNext": 0,
                     "upgradeTimerSeconds": 0,
                     "priceCoins": 0,
-                    "carRating": 390,
-                    "topSpeed": 5.38,
-                    "acceleration": 5.38,
-                    "handling": 7.63,
-                    "boostRegen": 7.63,
-                    "boostPower": 6.5
+                    "carRating": 610,
+                    "topSpeed": 7.32,
+                    "acceleration": 3.66,
+                    "handling": 5.49,
+                    "boostRegen": 5.49,
+                    "boostPower": 8.54
                 }
             },
             "i18n": {
@@ -934,11 +934,11 @@
                 "cooldown": 20
             },
             "tier": 3,
-            "archetype": "tank"
+            "archetype": "guardian"
         },
         "car_0yhea29t": {
             "displayName": "Ferano SPF90",
-            "class": "speedster",
+            "class": "phantom",
             "basePrice": 367000,
             "unlock": {
                 "type": "shop",
@@ -949,111 +949,111 @@
                     "xpToNext": 950,
                     "upgradeTimerSeconds": 1800,
                     "priceCoins": 25500,
-                    "carRating": 300,
-                    "topSpeed": 6.75,
-                    "acceleration": 5.63,
-                    "handling": 3.38,
-                    "boostRegen": 2.25,
-                    "boostPower": 4.5
+                    "carRating": 440,
+                    "topSpeed": 4.84,
+                    "acceleration": 6.16,
+                    "handling": 3.96,
+                    "boostRegen": 4.4,
+                    "boostPower": 2.64
                 },
                 "2": {
                     "xpToNext": 1200,
                     "upgradeTimerSeconds": 2700,
                     "priceCoins": 38200,
-                    "carRating": 310,
-                    "topSpeed": 6.97,
-                    "acceleration": 5.85,
-                    "handling": 3.6,
-                    "boostRegen": 2.47,
-                    "boostPower": 4.72
+                    "carRating": 459,
+                    "topSpeed": 5.05,
+                    "acceleration": 6.42,
+                    "handling": 4.13,
+                    "boostRegen": 4.59,
+                    "boostPower": 2.75
                 },
                 "3": {
                     "xpToNext": 1400,
                     "upgradeTimerSeconds": 3600,
                     "priceCoins": 51800,
-                    "carRating": 320,
-                    "topSpeed": 7.19,
-                    "acceleration": 6.07,
-                    "handling": 3.82,
-                    "boostRegen": 2.69,
-                    "boostPower": 4.94
+                    "carRating": 478,
+                    "topSpeed": 5.26,
+                    "acceleration": 6.69,
+                    "handling": 4.3,
+                    "boostRegen": 4.78,
+                    "boostPower": 2.87
                 },
                 "4": {
                     "xpToNext": 1700,
                     "upgradeTimerSeconds": 7200,
                     "priceCoins": 77200,
-                    "carRating": 330,
-                    "topSpeed": 7.42,
-                    "acceleration": 6.29,
-                    "handling": 4.04,
-                    "boostRegen": 2.92,
-                    "boostPower": 5.17
+                    "carRating": 497,
+                    "topSpeed": 5.46,
+                    "acceleration": 6.95,
+                    "handling": 4.47,
+                    "boostRegen": 4.97,
+                    "boostPower": 2.98
                 },
                 "5": {
                     "xpToNext": 1900,
                     "upgradeTimerSeconds": 10800,
                     "priceCoins": 102800,
-                    "carRating": 340,
-                    "topSpeed": 7.64,
-                    "acceleration": 6.51,
-                    "handling": 4.26,
-                    "boostRegen": 3.14,
-                    "boostPower": 5.39
+                    "carRating": 516,
+                    "topSpeed": 5.67,
+                    "acceleration": 7.22,
+                    "handling": 4.64,
+                    "boostRegen": 5.16,
+                    "boostPower": 3.09
                 },
                 "6": {
                     "xpToNext": 2400,
                     "upgradeTimerSeconds": 14400,
                     "priceCoins": 128200,
-                    "carRating": 350,
-                    "topSpeed": 7.86,
-                    "acceleration": 6.74,
-                    "handling": 4.49,
-                    "boostRegen": 3.36,
-                    "boostPower": 5.61
+                    "carRating": 534,
+                    "topSpeed": 5.88,
+                    "acceleration": 7.48,
+                    "handling": 4.81,
+                    "boostRegen": 5.34,
+                    "boostPower": 3.21
                 },
                 "7": {
                     "xpToNext": 2800,
                     "upgradeTimerSeconds": 21600,
                     "priceCoins": 154500,
-                    "carRating": 360,
-                    "topSpeed": 8.08,
-                    "acceleration": 6.96,
-                    "handling": 4.71,
-                    "boostRegen": 3.58,
-                    "boostPower": 5.83
+                    "carRating": 553,
+                    "topSpeed": 6.09,
+                    "acceleration": 7.75,
+                    "handling": 4.98,
+                    "boostRegen": 5.53,
+                    "boostPower": 3.32
                 },
                 "8": {
                     "xpToNext": 3300,
                     "upgradeTimerSeconds": 28800,
                     "priceCoins": 205500,
-                    "carRating": 370,
-                    "topSpeed": 8.31,
-                    "acceleration": 7.18,
-                    "handling": 4.93,
-                    "boostRegen": 3.81,
-                    "boostPower": 6.06
+                    "carRating": 572,
+                    "topSpeed": 6.29,
+                    "acceleration": 8.01,
+                    "handling": 5.15,
+                    "boostRegen": 5.72,
+                    "boostPower": 3.43
                 },
                 "9": {
                     "xpToNext": 3800,
                     "upgradeTimerSeconds": 43200,
                     "priceCoins": 256500,
-                    "carRating": 380,
-                    "topSpeed": 8.53,
-                    "acceleration": 7.4,
-                    "handling": 5.15,
-                    "boostRegen": 4.03,
-                    "boostPower": 6.28
+                    "carRating": 591,
+                    "topSpeed": 6.5,
+                    "acceleration": 8.28,
+                    "handling": 5.32,
+                    "boostRegen": 5.91,
+                    "boostPower": 3.55
                 },
                 "10": {
                     "xpToNext": 0,
                     "upgradeTimerSeconds": 0,
                     "priceCoins": 0,
-                    "carRating": 390,
-                    "topSpeed": 8.75,
-                    "acceleration": 7.63,
-                    "handling": 5.38,
-                    "boostRegen": 4.25,
-                    "boostPower": 6.5
+                    "carRating": 610,
+                    "topSpeed": 6.71,
+                    "acceleration": 8.54,
+                    "handling": 5.49,
+                    "boostRegen": 6.1,
+                    "boostPower": 3.66
                 }
             },
             "i18n": {
@@ -1068,11 +1068,11 @@
                 "cooldown": 15
             },
             "tier": 3,
-            "archetype": "speedster"
+            "archetype": "phantom"
         },
         "car_p4n7mm2z": {
             "displayName": "Porza 912",
-            "class": "specialist",
+            "class": "arcanist",
             "basePrice": 661000,
             "unlock": {
                 "type": "shop",
@@ -1083,111 +1083,111 @@
                     "xpToNext": 950,
                     "upgradeTimerSeconds": 1800,
                     "priceCoins": 25500,
-                    "carRating": 450,
-                    "topSpeed": 4.5,
-                    "acceleration": 4.5,
-                    "handling": 4.5,
-                    "boostRegen": 4.5,
-                    "boostPower": 4.5
+                    "carRating": 440,
+                    "topSpeed": 3.08,
+                    "acceleration": 4.4,
+                    "handling": 6.16,
+                    "boostRegen": 4.84,
+                    "boostPower": 3.52
                 },
                 "2": {
                     "xpToNext": 1200,
                     "upgradeTimerSeconds": 2700,
                     "priceCoins": 38200,
-                    "carRating": 460,
-                    "topSpeed": 4.72,
-                    "acceleration": 4.72,
-                    "handling": 4.72,
-                    "boostRegen": 4.72,
-                    "boostPower": 4.72
+                    "carRating": 459,
+                    "topSpeed": 3.21,
+                    "acceleration": 4.59,
+                    "handling": 6.42,
+                    "boostRegen": 5.05,
+                    "boostPower": 3.67
                 },
                 "3": {
                     "xpToNext": 1400,
                     "upgradeTimerSeconds": 3600,
                     "priceCoins": 51800,
-                    "carRating": 470,
-                    "topSpeed": 4.94,
-                    "acceleration": 4.94,
-                    "handling": 4.94,
-                    "boostRegen": 4.94,
-                    "boostPower": 4.94
+                    "carRating": 478,
+                    "topSpeed": 3.34,
+                    "acceleration": 4.78,
+                    "handling": 6.69,
+                    "boostRegen": 5.26,
+                    "boostPower": 3.82
                 },
                 "4": {
                     "xpToNext": 1700,
                     "upgradeTimerSeconds": 7200,
                     "priceCoins": 77200,
-                    "carRating": 480,
-                    "topSpeed": 5.17,
-                    "acceleration": 5.17,
-                    "handling": 5.17,
-                    "boostRegen": 5.17,
-                    "boostPower": 5.17
+                    "carRating": 497,
+                    "topSpeed": 3.48,
+                    "acceleration": 4.97,
+                    "handling": 6.95,
+                    "boostRegen": 5.46,
+                    "boostPower": 3.97
                 },
                 "5": {
                     "xpToNext": 1900,
                     "upgradeTimerSeconds": 10800,
                     "priceCoins": 102800,
-                    "carRating": 490,
-                    "topSpeed": 5.39,
-                    "acceleration": 5.39,
-                    "handling": 5.39,
-                    "boostRegen": 5.39,
-                    "boostPower": 5.39
+                    "carRating": 516,
+                    "topSpeed": 3.61,
+                    "acceleration": 5.16,
+                    "handling": 7.22,
+                    "boostRegen": 5.67,
+                    "boostPower": 4.12
                 },
                 "6": {
                     "xpToNext": 2400,
                     "upgradeTimerSeconds": 14400,
                     "priceCoins": 128200,
-                    "carRating": 500,
-                    "topSpeed": 5.61,
-                    "acceleration": 5.61,
-                    "handling": 5.61,
-                    "boostRegen": 5.61,
-                    "boostPower": 5.61
+                    "carRating": 534,
+                    "topSpeed": 3.74,
+                    "acceleration": 5.34,
+                    "handling": 7.48,
+                    "boostRegen": 5.88,
+                    "boostPower": 4.28
                 },
                 "7": {
                     "xpToNext": 2800,
                     "upgradeTimerSeconds": 21600,
                     "priceCoins": 154500,
-                    "carRating": 510,
-                    "topSpeed": 5.83,
-                    "acceleration": 5.83,
-                    "handling": 5.83,
-                    "boostRegen": 5.83,
-                    "boostPower": 5.83
+                    "carRating": 553,
+                    "topSpeed": 3.87,
+                    "acceleration": 5.53,
+                    "handling": 7.75,
+                    "boostRegen": 6.09,
+                    "boostPower": 4.43
                 },
                 "8": {
                     "xpToNext": 3300,
                     "upgradeTimerSeconds": 28800,
                     "priceCoins": 205500,
-                    "carRating": 520,
-                    "topSpeed": 6.06,
-                    "acceleration": 6.06,
-                    "handling": 6.06,
-                    "boostRegen": 6.06,
-                    "boostPower": 6.06
+                    "carRating": 572,
+                    "topSpeed": 4.01,
+                    "acceleration": 5.72,
+                    "handling": 8.01,
+                    "boostRegen": 6.29,
+                    "boostPower": 4.58
                 },
                 "9": {
                     "xpToNext": 3800,
                     "upgradeTimerSeconds": 43200,
                     "priceCoins": 256500,
-                    "carRating": 530,
-                    "topSpeed": 6.28,
-                    "acceleration": 6.28,
-                    "handling": 6.28,
-                    "boostRegen": 6.28,
-                    "boostPower": 6.28
+                    "carRating": 591,
+                    "topSpeed": 4.14,
+                    "acceleration": 5.91,
+                    "handling": 8.28,
+                    "boostRegen": 6.5,
+                    "boostPower": 4.73
                 },
                 "10": {
                     "xpToNext": 0,
                     "upgradeTimerSeconds": 0,
                     "priceCoins": 0,
-                    "carRating": 540,
-                    "topSpeed": 6.5,
-                    "acceleration": 6.5,
-                    "handling": 6.5,
-                    "boostRegen": 6.5,
-                    "boostPower": 6.5
+                    "carRating": 610,
+                    "topSpeed": 4.27,
+                    "acceleration": 6.1,
+                    "handling": 8.54,
+                    "boostRegen": 6.71,
+                    "boostPower": 4.88
                 }
             },
             "i18n": {
@@ -1202,11 +1202,11 @@
                 "cooldown": 5
             },
             "tier": 3,
-            "archetype": "specialist"
+            "archetype": "arcanist"
         },
         "car_8m8qttmy": {
             "displayName": "Nissaro Skyround",
-            "class": "tank",
+            "class": "guardian",
             "basePrice": 1190000,
             "unlock": {
                 "type": "shop",
@@ -1217,111 +1217,111 @@
                     "xpToNext": 1900,
                     "upgradeTimerSeconds": 3600,
                     "priceCoins": 118000,
-                    "carRating": 450,
-                    "topSpeed": 4.69,
-                    "acceleration": 4.69,
-                    "handling": 7.81,
-                    "boostRegen": 7.81,
-                    "boostPower": 6.25
+                    "carRating": 610,
+                    "topSpeed": 7.32,
+                    "acceleration": 3.66,
+                    "handling": 5.49,
+                    "boostRegen": 5.49,
+                    "boostPower": 8.54
                 },
                 "2": {
                     "xpToNext": 2400,
                     "upgradeTimerSeconds": 7200,
                     "priceCoins": 178000,
-                    "carRating": 460,
-                    "topSpeed": 4.91,
-                    "acceleration": 4.91,
-                    "handling": 8.03,
-                    "boostRegen": 8.03,
-                    "boostPower": 6.47
+                    "carRating": 629,
+                    "topSpeed": 7.55,
+                    "acceleration": 3.77,
+                    "handling": 5.66,
+                    "boostRegen": 5.66,
+                    "boostPower": 8.8
                 },
                 "3": {
                     "xpToNext": 2900,
                     "upgradeTimerSeconds": 10800,
                     "priceCoins": 236000,
-                    "carRating": 470,
-                    "topSpeed": 5.13,
-                    "acceleration": 5.13,
-                    "handling": 8.26,
-                    "boostRegen": 8.26,
-                    "boostPower": 6.69
+                    "carRating": 648,
+                    "topSpeed": 7.77,
+                    "acceleration": 3.89,
+                    "handling": 5.83,
+                    "boostRegen": 5.83,
+                    "boostPower": 9.07
                 },
                 "4": {
                     "xpToNext": 3400,
                     "upgradeTimerSeconds": 14400,
                     "priceCoins": 356000,
-                    "carRating": 480,
-                    "topSpeed": 5.35,
-                    "acceleration": 5.35,
-                    "handling": 8.48,
-                    "boostRegen": 8.48,
-                    "boostPower": 6.92
+                    "carRating": 667,
+                    "topSpeed": 8,
+                    "acceleration": 4,
+                    "handling": 6,
+                    "boostRegen": 6,
+                    "boostPower": 9.33
                 },
                 "5": {
                     "xpToNext": 3900,
                     "upgradeTimerSeconds": 21600,
                     "priceCoins": 474000,
-                    "carRating": 490,
-                    "topSpeed": 5.58,
-                    "acceleration": 5.58,
-                    "handling": 8.7,
-                    "boostRegen": 8.7,
-                    "boostPower": 7.14
+                    "carRating": 686,
+                    "topSpeed": 8.23,
+                    "acceleration": 4.11,
+                    "handling": 6.17,
+                    "boostRegen": 6.17,
+                    "boostPower": 9.6
                 },
                 "6": {
                     "xpToNext": 4800,
                     "upgradeTimerSeconds": 28800,
                     "priceCoins": 592000,
-                    "carRating": 500,
-                    "topSpeed": 5.8,
-                    "acceleration": 5.8,
-                    "handling": 8.92,
-                    "boostRegen": 8.92,
-                    "boostPower": 7.36
+                    "carRating": 704,
+                    "topSpeed": 8.45,
+                    "acceleration": 4.23,
+                    "handling": 6.34,
+                    "boostRegen": 6.34,
+                    "boostPower": 9.86
                 },
                 "7": {
                     "xpToNext": 5800,
                     "upgradeTimerSeconds": 43200,
                     "priceCoins": 710000,
-                    "carRating": 510,
-                    "topSpeed": 6.02,
-                    "acceleration": 6.02,
-                    "handling": 9.15,
-                    "boostRegen": 9.15,
-                    "boostPower": 7.58
+                    "carRating": 723,
+                    "topSpeed": 8.68,
+                    "acceleration": 4.34,
+                    "handling": 6.51,
+                    "boostRegen": 6.51,
+                    "boostPower": 10.13
                 },
                 "8": {
                     "xpToNext": 6700,
                     "upgradeTimerSeconds": 57600,
                     "priceCoins": 948000,
-                    "carRating": 520,
-                    "topSpeed": 6.24,
-                    "acceleration": 6.24,
-                    "handling": 9.37,
-                    "boostRegen": 9.37,
-                    "boostPower": 7.81
+                    "carRating": 742,
+                    "topSpeed": 8.91,
+                    "acceleration": 4.45,
+                    "handling": 6.68,
+                    "boostRegen": 6.68,
+                    "boostPower": 10.39
                 },
                 "9": {
                     "xpToNext": 7700,
                     "upgradeTimerSeconds": 86400,
                     "priceCoins": 1184000,
-                    "carRating": 530,
-                    "topSpeed": 6.47,
-                    "acceleration": 6.47,
-                    "handling": 9.59,
-                    "boostRegen": 9.59,
-                    "boostPower": 8.03
+                    "carRating": 761,
+                    "topSpeed": 9.13,
+                    "acceleration": 4.57,
+                    "handling": 6.85,
+                    "boostRegen": 6.85,
+                    "boostPower": 10.66
                 },
                 "10": {
                     "xpToNext": 0,
                     "upgradeTimerSeconds": 0,
                     "priceCoins": 0,
-                    "carRating": 540,
-                    "topSpeed": 6.69,
-                    "acceleration": 6.69,
-                    "handling": 9.81,
-                    "boostRegen": 9.81,
-                    "boostPower": 8.25
+                    "carRating": 780,
+                    "topSpeed": 9.36,
+                    "acceleration": 4.68,
+                    "handling": 7.02,
+                    "boostRegen": 7.02,
+                    "boostPower": 10.92
                 }
             },
             "i18n": {
@@ -1335,11 +1335,11 @@
                 "cooldown": 20
             },
             "tier": 4,
-            "archetype": "tank"
+            "archetype": "guardian"
         },
         "car_rqjrt91b": {
             "displayName": "Mclovin Cena",
-            "class": "speedster",
+            "class": "phantom",
             "basePrice": 2140000,
             "unlock": {
                 "type": "shop",
@@ -1350,111 +1350,111 @@
                     "xpToNext": 1900,
                     "upgradeTimerSeconds": 3600,
                     "priceCoins": 118000,
-                    "carRating": 450,
-                    "topSpeed": 9.38,
-                    "acceleration": 7.81,
-                    "handling": 4.69,
-                    "boostRegen": 3.13,
-                    "boostPower": 6.25
+                    "carRating": 610,
+                    "topSpeed": 6.71,
+                    "acceleration": 8.54,
+                    "handling": 5.49,
+                    "boostRegen": 6.1,
+                    "boostPower": 3.66
                 },
                 "2": {
                     "xpToNext": 2400,
                     "upgradeTimerSeconds": 7200,
                     "priceCoins": 178000,
-                    "carRating": 460,
-                    "topSpeed": 9.6,
-                    "acceleration": 8.03,
-                    "handling": 4.91,
-                    "boostRegen": 3.35,
-                    "boostPower": 6.47
+                    "carRating": 629,
+                    "topSpeed": 6.92,
+                    "acceleration": 8.8,
+                    "handling": 5.66,
+                    "boostRegen": 6.29,
+                    "boostPower": 3.77
                 },
                 "3": {
                     "xpToNext": 2900,
                     "upgradeTimerSeconds": 10800,
                     "priceCoins": 236000,
-                    "carRating": 470,
-                    "topSpeed": 9.82,
-                    "acceleration": 8.26,
-                    "handling": 5.13,
-                    "boostRegen": 3.57,
-                    "boostPower": 6.69
+                    "carRating": 648,
+                    "topSpeed": 7.13,
+                    "acceleration": 9.07,
+                    "handling": 5.83,
+                    "boostRegen": 6.48,
+                    "boostPower": 3.89
                 },
                 "4": {
                     "xpToNext": 3400,
                     "upgradeTimerSeconds": 14400,
                     "priceCoins": 356000,
-                    "carRating": 480,
-                    "topSpeed": 10.04,
-                    "acceleration": 8.48,
-                    "handling": 5.35,
-                    "boostRegen": 3.79,
-                    "boostPower": 6.92
+                    "carRating": 667,
+                    "topSpeed": 7.33,
+                    "acceleration": 9.33,
+                    "handling": 6,
+                    "boostRegen": 6.67,
+                    "boostPower": 4
                 },
                 "5": {
                     "xpToNext": 3900,
                     "upgradeTimerSeconds": 21600,
                     "priceCoins": 474000,
-                    "carRating": 490,
-                    "topSpeed": 10.26,
-                    "acceleration": 8.7,
-                    "handling": 5.58,
-                    "boostRegen": 4.01,
-                    "boostPower": 7.14
+                    "carRating": 686,
+                    "topSpeed": 7.54,
+                    "acceleration": 9.6,
+                    "handling": 6.17,
+                    "boostRegen": 6.86,
+                    "boostPower": 4.11
                 },
                 "6": {
                     "xpToNext": 4800,
                     "upgradeTimerSeconds": 28800,
                     "priceCoins": 592000,
-                    "carRating": 500,
-                    "topSpeed": 10.49,
-                    "acceleration": 8.92,
-                    "handling": 5.8,
-                    "boostRegen": 4.24,
-                    "boostPower": 7.36
+                    "carRating": 704,
+                    "topSpeed": 7.75,
+                    "acceleration": 9.86,
+                    "handling": 6.34,
+                    "boostRegen": 7.04,
+                    "boostPower": 4.23
                 },
                 "7": {
                     "xpToNext": 5800,
                     "upgradeTimerSeconds": 43200,
                     "priceCoins": 710000,
-                    "carRating": 510,
-                    "topSpeed": 10.71,
-                    "acceleration": 9.15,
-                    "handling": 6.02,
-                    "boostRegen": 4.46,
-                    "boostPower": 7.58
+                    "carRating": 723,
+                    "topSpeed": 7.96,
+                    "acceleration": 10.13,
+                    "handling": 6.51,
+                    "boostRegen": 7.23,
+                    "boostPower": 4.34
                 },
                 "8": {
                     "xpToNext": 6700,
                     "upgradeTimerSeconds": 57600,
                     "priceCoins": 948000,
-                    "carRating": 520,
-                    "topSpeed": 10.93,
-                    "acceleration": 9.37,
-                    "handling": 6.24,
-                    "boostRegen": 4.68,
-                    "boostPower": 7.81
+                    "carRating": 742,
+                    "topSpeed": 8.16,
+                    "acceleration": 10.39,
+                    "handling": 6.68,
+                    "boostRegen": 7.42,
+                    "boostPower": 4.45
                 },
                 "9": {
                     "xpToNext": 7700,
                     "upgradeTimerSeconds": 86400,
                     "priceCoins": 1184000,
-                    "carRating": 530,
-                    "topSpeed": 11.15,
-                    "acceleration": 9.59,
-                    "handling": 6.47,
-                    "boostRegen": 4.9,
-                    "boostPower": 8.03
+                    "carRating": 761,
+                    "topSpeed": 8.37,
+                    "acceleration": 10.66,
+                    "handling": 6.85,
+                    "boostRegen": 7.61,
+                    "boostPower": 4.57
                 },
                 "10": {
                     "xpToNext": 0,
                     "upgradeTimerSeconds": 0,
                     "priceCoins": 0,
-                    "carRating": 540,
-                    "topSpeed": 11.38,
-                    "acceleration": 9.81,
-                    "handling": 6.69,
-                    "boostRegen": 5.13,
-                    "boostPower": 8.25
+                    "carRating": 780,
+                    "topSpeed": 8.58,
+                    "acceleration": 10.92,
+                    "handling": 7.02,
+                    "boostRegen": 7.8,
+                    "boostPower": 4.68
                 }
             },
             "i18n": {
@@ -1469,11 +1469,11 @@
                 "cooldown": 15
             },
             "tier": 4,
-            "archetype": "speedster"
+            "archetype": "phantom"
         },
         "car_kztq00ve": {
             "displayName": "Lambros Avenger",
-            "class": "specialist",
+            "class": "arcanist",
             "basePrice": 3860000,
             "unlock": {
                 "type": "shop",
@@ -1484,111 +1484,111 @@
                     "xpToNext": 1900,
                     "upgradeTimerSeconds": 3600,
                     "priceCoins": 118000,
-                    "carRating": 450,
-                    "topSpeed": 6.25,
-                    "acceleration": 6.25,
-                    "handling": 6.25,
-                    "boostRegen": 6.25,
-                    "boostPower": 6.25
+                    "carRating": 610,
+                    "topSpeed": 4.27,
+                    "acceleration": 6.1,
+                    "handling": 8.54,
+                    "boostRegen": 6.71,
+                    "boostPower": 4.88
                 },
                 "2": {
                     "xpToNext": 2400,
                     "upgradeTimerSeconds": 7200,
                     "priceCoins": 178000,
-                    "carRating": 460,
-                    "topSpeed": 6.47,
-                    "acceleration": 6.47,
-                    "handling": 6.47,
-                    "boostRegen": 6.47,
-                    "boostPower": 6.47
+                    "carRating": 629,
+                    "topSpeed": 4.4,
+                    "acceleration": 6.29,
+                    "handling": 8.8,
+                    "boostRegen": 6.92,
+                    "boostPower": 5.03
                 },
                 "3": {
                     "xpToNext": 2900,
                     "upgradeTimerSeconds": 10800,
                     "priceCoins": 236000,
-                    "carRating": 470,
-                    "topSpeed": 6.69,
-                    "acceleration": 6.69,
-                    "handling": 6.69,
-                    "boostRegen": 6.69,
-                    "boostPower": 6.69
+                    "carRating": 648,
+                    "topSpeed": 4.53,
+                    "acceleration": 6.48,
+                    "handling": 9.07,
+                    "boostRegen": 7.13,
+                    "boostPower": 5.18
                 },
                 "4": {
                     "xpToNext": 3400,
                     "upgradeTimerSeconds": 14400,
                     "priceCoins": 356000,
-                    "carRating": 480,
-                    "topSpeed": 6.92,
-                    "acceleration": 6.92,
-                    "handling": 6.92,
-                    "boostRegen": 6.92,
-                    "boostPower": 6.92
+                    "carRating": 667,
+                    "topSpeed": 4.67,
+                    "acceleration": 6.67,
+                    "handling": 9.33,
+                    "boostRegen": 7.33,
+                    "boostPower": 5.33
                 },
                 "5": {
                     "xpToNext": 3900,
                     "upgradeTimerSeconds": 21600,
                     "priceCoins": 474000,
-                    "carRating": 490,
-                    "topSpeed": 7.14,
-                    "acceleration": 7.14,
-                    "handling": 7.14,
-                    "boostRegen": 7.14,
-                    "boostPower": 7.14
+                    "carRating": 686,
+                    "topSpeed": 4.8,
+                    "acceleration": 6.86,
+                    "handling": 9.6,
+                    "boostRegen": 7.54,
+                    "boostPower": 5.48
                 },
                 "6": {
                     "xpToNext": 4800,
                     "upgradeTimerSeconds": 28800,
                     "priceCoins": 592000,
-                    "carRating": 500,
-                    "topSpeed": 7.36,
-                    "acceleration": 7.36,
-                    "handling": 7.36,
-                    "boostRegen": 7.36,
-                    "boostPower": 7.36
+                    "carRating": 704,
+                    "topSpeed": 4.93,
+                    "acceleration": 7.04,
+                    "handling": 9.86,
+                    "boostRegen": 7.75,
+                    "boostPower": 5.64
                 },
                 "7": {
                     "xpToNext": 5800,
                     "upgradeTimerSeconds": 43200,
                     "priceCoins": 710000,
-                    "carRating": 510,
-                    "topSpeed": 7.58,
-                    "acceleration": 7.58,
-                    "handling": 7.58,
-                    "boostRegen": 7.58,
-                    "boostPower": 7.58
+                    "carRating": 723,
+                    "topSpeed": 5.06,
+                    "acceleration": 7.23,
+                    "handling": 10.13,
+                    "boostRegen": 7.96,
+                    "boostPower": 5.79
                 },
                 "8": {
                     "xpToNext": 6700,
                     "upgradeTimerSeconds": 57600,
                     "priceCoins": 948000,
-                    "carRating": 520,
-                    "topSpeed": 7.81,
-                    "acceleration": 7.81,
-                    "handling": 7.81,
-                    "boostRegen": 7.81,
-                    "boostPower": 7.81
+                    "carRating": 742,
+                    "topSpeed": 5.2,
+                    "acceleration": 7.42,
+                    "handling": 10.39,
+                    "boostRegen": 8.16,
+                    "boostPower": 5.94
                 },
                 "9": {
                     "xpToNext": 7700,
                     "upgradeTimerSeconds": 86400,
                     "priceCoins": 1184000,
-                    "carRating": 530,
-                    "topSpeed": 8.03,
-                    "acceleration": 8.03,
-                    "handling": 8.03,
-                    "boostRegen": 8.03,
-                    "boostPower": 8.03
+                    "carRating": 761,
+                    "topSpeed": 5.33,
+                    "acceleration": 7.61,
+                    "handling": 10.66,
+                    "boostRegen": 8.37,
+                    "boostPower": 6.09
                 },
                 "10": {
                     "xpToNext": 0,
                     "upgradeTimerSeconds": 0,
                     "priceCoins": 0,
-                    "carRating": 540,
-                    "topSpeed": 8.25,
-                    "acceleration": 8.25,
-                    "handling": 8.25,
-                    "boostRegen": 8.25,
-                    "boostPower": 8.25
+                    "carRating": 780,
+                    "topSpeed": 5.46,
+                    "acceleration": 7.8,
+                    "handling": 10.92,
+                    "boostRegen": 8.58,
+                    "boostPower": 6.24
                 }
             },
             "i18n": {
@@ -1603,11 +1603,11 @@
                 "cooldown": 5
             },
             "tier": 4,
-            "archetype": "specialist"
+            "archetype": "arcanist"
         },
         "car_d2ap3yms": {
             "displayName": "Porza 3G",
-            "class": "tank",
+            "class": "guardian",
             "basePrice": 6940000,
             "unlock": {
                 "type": "shop",
@@ -1618,111 +1618,111 @@
                     "xpToNext": 3500,
                     "upgradeTimerSeconds": 7200,
                     "priceCoins": 472500,
-                    "carRating": 450,
-                    "topSpeed": 6,
-                    "acceleration": 6,
-                    "handling": 10,
-                    "boostRegen": 10,
-                    "boostPower": 8
+                    "carRating": 780,
+                    "topSpeed": 9.36,
+                    "acceleration": 4.68,
+                    "handling": 7.02,
+                    "boostRegen": 7.02,
+                    "boostPower": 10.92
                 },
                 "2": {
                     "xpToNext": 4400,
                     "upgradeTimerSeconds": 14400,
                     "priceCoins": 710000,
-                    "carRating": 460,
-                    "topSpeed": 6.22,
-                    "acceleration": 6.22,
-                    "handling": 10.22,
-                    "boostRegen": 10.22,
-                    "boostPower": 8.22
+                    "carRating": 799,
+                    "topSpeed": 9.59,
+                    "acceleration": 4.79,
+                    "handling": 7.19,
+                    "boostRegen": 7.19,
+                    "boostPower": 11.18
                 },
                 "3": {
                     "xpToNext": 5300,
                     "upgradeTimerSeconds": 21600,
                     "priceCoins": 945000,
-                    "carRating": 470,
-                    "topSpeed": 6.44,
-                    "acceleration": 6.44,
-                    "handling": 10.44,
-                    "boostRegen": 10.44,
-                    "boostPower": 8.44
+                    "carRating": 818,
+                    "topSpeed": 9.81,
+                    "acceleration": 4.91,
+                    "handling": 7.36,
+                    "boostRegen": 7.36,
+                    "boostPower": 11.45
                 },
                 "4": {
                     "xpToNext": 6200,
                     "upgradeTimerSeconds": 28800,
                     "priceCoins": 1417500,
-                    "carRating": 480,
-                    "topSpeed": 6.67,
-                    "acceleration": 6.67,
-                    "handling": 10.67,
-                    "boostRegen": 10.67,
-                    "boostPower": 8.67
+                    "carRating": 837,
+                    "topSpeed": 10.04,
+                    "acceleration": 5.02,
+                    "handling": 7.53,
+                    "boostRegen": 7.53,
+                    "boostPower": 11.71
                 },
                 "5": {
                     "xpToNext": 7100,
                     "upgradeTimerSeconds": 43200,
                     "priceCoins": 1890000,
-                    "carRating": 490,
-                    "topSpeed": 6.89,
-                    "acceleration": 6.89,
-                    "handling": 10.89,
-                    "boostRegen": 10.89,
-                    "boostPower": 8.89
+                    "carRating": 856,
+                    "topSpeed": 10.27,
+                    "acceleration": 5.13,
+                    "handling": 7.7,
+                    "boostRegen": 7.7,
+                    "boostPower": 11.98
                 },
                 "6": {
                     "xpToNext": 8800,
                     "upgradeTimerSeconds": 57600,
                     "priceCoins": 2362500,
-                    "carRating": 500,
-                    "topSpeed": 7.11,
-                    "acceleration": 7.11,
-                    "handling": 11.11,
-                    "boostRegen": 11.11,
-                    "boostPower": 9.11
+                    "carRating": 874,
+                    "topSpeed": 10.49,
+                    "acceleration": 5.25,
+                    "handling": 7.87,
+                    "boostRegen": 7.87,
+                    "boostPower": 12.24
                 },
                 "7": {
                     "xpToNext": 10500,
                     "upgradeTimerSeconds": 86400,
                     "priceCoins": 2837500,
-                    "carRating": 510,
-                    "topSpeed": 7.33,
-                    "acceleration": 7.33,
-                    "handling": 11.33,
-                    "boostRegen": 11.33,
-                    "boostPower": 9.33
+                    "carRating": 893,
+                    "topSpeed": 10.72,
+                    "acceleration": 5.36,
+                    "handling": 8.04,
+                    "boostRegen": 8.04,
+                    "boostPower": 12.51
                 },
                 "8": {
                     "xpToNext": 12500,
                     "upgradeTimerSeconds": 115200,
                     "priceCoins": 3775000,
-                    "carRating": 520,
-                    "topSpeed": 7.56,
-                    "acceleration": 7.56,
-                    "handling": 11.56,
-                    "boostRegen": 11.56,
-                    "boostPower": 9.56
+                    "carRating": 912,
+                    "topSpeed": 10.95,
+                    "acceleration": 5.47,
+                    "handling": 8.21,
+                    "boostRegen": 8.21,
+                    "boostPower": 12.77
                 },
                 "9": {
                     "xpToNext": 14000,
                     "upgradeTimerSeconds": 172800,
                     "priceCoins": 4725000,
-                    "carRating": 530,
-                    "topSpeed": 7.78,
-                    "acceleration": 7.78,
-                    "handling": 11.78,
-                    "boostRegen": 11.78,
-                    "boostPower": 9.78
+                    "carRating": 931,
+                    "topSpeed": 11.17,
+                    "acceleration": 5.59,
+                    "handling": 8.38,
+                    "boostRegen": 8.38,
+                    "boostPower": 13.04
                 },
                 "10": {
                     "xpToNext": 0,
                     "upgradeTimerSeconds": 0,
                     "priceCoins": 0,
-                    "carRating": 540,
-                    "topSpeed": 8,
-                    "acceleration": 8,
-                    "handling": 12,
-                    "boostRegen": 12,
-                    "boostPower": 10
+                    "carRating": 950,
+                    "topSpeed": 11.4,
+                    "acceleration": 5.7,
+                    "handling": 8.55,
+                    "boostRegen": 8.55,
+                    "boostPower": 13.3
                 }
             },
             "i18n": {
@@ -1736,11 +1736,11 @@
                 "cooldown": 20
             },
             "tier": 5,
-            "archetype": "tank"
+            "archetype": "guardian"
         },
         "car_enmdcw5t": {
             "displayName": "Aster Valkry",
-            "class": "speedster",
+            "class": "phantom",
             "basePrice": 12490000,
             "unlock": {
                 "type": "shop",
@@ -1751,111 +1751,111 @@
                     "xpToNext": 3500,
                     "upgradeTimerSeconds": 7200,
                     "priceCoins": 472500,
-                    "carRating": 450,
-                    "topSpeed": 12,
-                    "acceleration": 10,
-                    "handling": 6,
-                    "boostRegen": 4,
-                    "boostPower": 8
+                    "carRating": 780,
+                    "topSpeed": 8.58,
+                    "acceleration": 10.92,
+                    "handling": 7.02,
+                    "boostRegen": 7.8,
+                    "boostPower": 4.68
                 },
                 "2": {
                     "xpToNext": 4400,
                     "upgradeTimerSeconds": 14400,
                     "priceCoins": 710000,
-                    "carRating": 460,
-                    "topSpeed": 12.22,
-                    "acceleration": 10.22,
-                    "handling": 6.22,
-                    "boostRegen": 4.22,
-                    "boostPower": 8.22
+                    "carRating": 799,
+                    "topSpeed": 8.79,
+                    "acceleration": 11.18,
+                    "handling": 7.19,
+                    "boostRegen": 7.99,
+                    "boostPower": 4.79
                 },
                 "3": {
                     "xpToNext": 5300,
                     "upgradeTimerSeconds": 21600,
                     "priceCoins": 945000,
-                    "carRating": 470,
-                    "topSpeed": 12.44,
-                    "acceleration": 10.44,
-                    "handling": 6.44,
-                    "boostRegen": 4.44,
-                    "boostPower": 8.44
+                    "carRating": 818,
+                    "topSpeed": 9,
+                    "acceleration": 11.45,
+                    "handling": 7.36,
+                    "boostRegen": 8.18,
+                    "boostPower": 4.91
                 },
                 "4": {
                     "xpToNext": 6200,
                     "upgradeTimerSeconds": 28800,
                     "priceCoins": 1417500,
-                    "carRating": 480,
-                    "topSpeed": 12.67,
-                    "acceleration": 10.67,
-                    "handling": 6.67,
-                    "boostRegen": 4.67,
-                    "boostPower": 8.67
+                    "carRating": 837,
+                    "topSpeed": 9.2,
+                    "acceleration": 11.71,
+                    "handling": 7.53,
+                    "boostRegen": 8.37,
+                    "boostPower": 5.02
                 },
                 "5": {
                     "xpToNext": 7100,
                     "upgradeTimerSeconds": 43200,
                     "priceCoins": 1890000,
-                    "carRating": 490,
-                    "topSpeed": 12.89,
-                    "acceleration": 10.89,
-                    "handling": 6.89,
-                    "boostRegen": 4.89,
-                    "boostPower": 8.89
+                    "carRating": 856,
+                    "topSpeed": 9.41,
+                    "acceleration": 11.98,
+                    "handling": 7.7,
+                    "boostRegen": 8.56,
+                    "boostPower": 5.13
                 },
                 "6": {
                     "xpToNext": 8800,
                     "upgradeTimerSeconds": 57600,
                     "priceCoins": 2362500,
-                    "carRating": 500,
-                    "topSpeed": 13.11,
-                    "acceleration": 11.11,
-                    "handling": 7.11,
-                    "boostRegen": 5.11,
-                    "boostPower": 9.11
+                    "carRating": 874,
+                    "topSpeed": 9.62,
+                    "acceleration": 12.24,
+                    "handling": 7.87,
+                    "boostRegen": 8.74,
+                    "boostPower": 5.25
                 },
                 "7": {
                     "xpToNext": 10500,
                     "upgradeTimerSeconds": 86400,
                     "priceCoins": 2837500,
-                    "carRating": 510,
-                    "topSpeed": 13.33,
-                    "acceleration": 11.33,
-                    "handling": 7.33,
-                    "boostRegen": 5.33,
-                    "boostPower": 9.33
+                    "carRating": 893,
+                    "topSpeed": 9.83,
+                    "acceleration": 12.51,
+                    "handling": 8.04,
+                    "boostRegen": 8.93,
+                    "boostPower": 5.36
                 },
                 "8": {
                     "xpToNext": 12500,
                     "upgradeTimerSeconds": 115200,
                     "priceCoins": 3775000,
-                    "carRating": 520,
-                    "topSpeed": 13.56,
-                    "acceleration": 11.56,
-                    "handling": 7.56,
-                    "boostRegen": 5.56,
-                    "boostPower": 9.56
+                    "carRating": 912,
+                    "topSpeed": 10.03,
+                    "acceleration": 12.77,
+                    "handling": 8.21,
+                    "boostRegen": 9.12,
+                    "boostPower": 5.47
                 },
                 "9": {
                     "xpToNext": 14000,
                     "upgradeTimerSeconds": 172800,
                     "priceCoins": 4725000,
-                    "carRating": 530,
-                    "topSpeed": 13.78,
-                    "acceleration": 11.78,
-                    "handling": 7.78,
-                    "boostRegen": 5.78,
-                    "boostPower": 9.78
+                    "carRating": 931,
+                    "topSpeed": 10.24,
+                    "acceleration": 13.04,
+                    "handling": 8.38,
+                    "boostRegen": 9.31,
+                    "boostPower": 5.59
                 },
                 "10": {
                     "xpToNext": 0,
                     "upgradeTimerSeconds": 0,
                     "priceCoins": 0,
-                    "carRating": 540,
-                    "topSpeed": 14,
-                    "acceleration": 12,
-                    "handling": 8,
-                    "boostRegen": 6,
-                    "boostPower": 10
+                    "carRating": 950,
+                    "topSpeed": 10.45,
+                    "acceleration": 13.3,
+                    "handling": 8.55,
+                    "boostRegen": 9.5,
+                    "boostPower": 5.7
                 }
             },
             "i18n": {
@@ -1870,11 +1870,11 @@
                 "cooldown": 15
             },
             "tier": 5,
-            "archetype": "speedster"
+            "archetype": "phantom"
         },
         "car_2n5hnes4": {
             "displayName": "Bugarri Century",
-            "class": "specialist",
+            "class": "arcanist",
             "basePrice": 22490000,
             "unlock": {
                 "type": "shop",
@@ -1885,111 +1885,111 @@
                     "xpToNext": 3500,
                     "upgradeTimerSeconds": 7200,
                     "priceCoins": 472500,
-                    "carRating": 450,
-                    "topSpeed": 8,
-                    "acceleration": 8,
-                    "handling": 8,
-                    "boostRegen": 8,
-                    "boostPower": 8
+                    "carRating": 780,
+                    "topSpeed": 5.46,
+                    "acceleration": 7.8,
+                    "handling": 10.92,
+                    "boostRegen": 8.58,
+                    "boostPower": 6.24
                 },
                 "2": {
                     "xpToNext": 4400,
                     "upgradeTimerSeconds": 14400,
                     "priceCoins": 710000,
-                    "carRating": 460,
-                    "topSpeed": 8.22,
-                    "acceleration": 8.22,
-                    "handling": 8.22,
-                    "boostRegen": 8.22,
-                    "boostPower": 8.22
+                    "carRating": 799,
+                    "topSpeed": 5.59,
+                    "acceleration": 7.99,
+                    "handling": 11.18,
+                    "boostRegen": 8.79,
+                    "boostPower": 6.39
                 },
                 "3": {
                     "xpToNext": 5300,
                     "upgradeTimerSeconds": 21600,
                     "priceCoins": 945000,
-                    "carRating": 470,
-                    "topSpeed": 8.44,
-                    "acceleration": 8.44,
-                    "handling": 8.44,
-                    "boostRegen": 8.44,
-                    "boostPower": 8.44
+                    "carRating": 818,
+                    "topSpeed": 5.72,
+                    "acceleration": 8.18,
+                    "handling": 11.45,
+                    "boostRegen": 9,
+                    "boostPower": 6.54
                 },
                 "4": {
                     "xpToNext": 6200,
                     "upgradeTimerSeconds": 28800,
                     "priceCoins": 1417500,
-                    "carRating": 480,
-                    "topSpeed": 8.67,
-                    "acceleration": 8.67,
-                    "handling": 8.67,
-                    "boostRegen": 8.67,
-                    "boostPower": 8.67
+                    "carRating": 837,
+                    "topSpeed": 5.86,
+                    "acceleration": 8.37,
+                    "handling": 11.71,
+                    "boostRegen": 9.2,
+                    "boostPower": 6.69
                 },
                 "5": {
                     "xpToNext": 7100,
                     "upgradeTimerSeconds": 43200,
                     "priceCoins": 1890000,
-                    "carRating": 490,
-                    "topSpeed": 8.89,
-                    "acceleration": 8.89,
-                    "handling": 8.89,
-                    "boostRegen": 8.89,
-                    "boostPower": 8.89
+                    "carRating": 856,
+                    "topSpeed": 5.99,
+                    "acceleration": 8.56,
+                    "handling": 11.98,
+                    "boostRegen": 9.41,
+                    "boostPower": 6.84
                 },
                 "6": {
                     "xpToNext": 8800,
                     "upgradeTimerSeconds": 57600,
                     "priceCoins": 2362500,
-                    "carRating": 500,
-                    "topSpeed": 9.11,
-                    "acceleration": 9.11,
-                    "handling": 9.11,
-                    "boostRegen": 9.11,
-                    "boostPower": 9.11
+                    "carRating": 874,
+                    "topSpeed": 6.12,
+                    "acceleration": 8.74,
+                    "handling": 12.24,
+                    "boostRegen": 9.62,
+                    "boostPower": 7
                 },
                 "7": {
                     "xpToNext": 10500,
                     "upgradeTimerSeconds": 86400,
                     "priceCoins": 2837500,
-                    "carRating": 510,
-                    "topSpeed": 9.33,
-                    "acceleration": 9.33,
-                    "handling": 9.33,
-                    "boostRegen": 9.33,
-                    "boostPower": 9.33
+                    "carRating": 893,
+                    "topSpeed": 6.25,
+                    "acceleration": 8.93,
+                    "handling": 12.51,
+                    "boostRegen": 9.83,
+                    "boostPower": 7.15
                 },
                 "8": {
                     "xpToNext": 12500,
                     "upgradeTimerSeconds": 115200,
                     "priceCoins": 3775000,
-                    "carRating": 520,
-                    "topSpeed": 9.56,
-                    "acceleration": 9.56,
-                    "handling": 9.56,
-                    "boostRegen": 9.56,
-                    "boostPower": 9.56
+                    "carRating": 912,
+                    "topSpeed": 6.39,
+                    "acceleration": 9.12,
+                    "handling": 12.77,
+                    "boostRegen": 10.03,
+                    "boostPower": 7.3
                 },
                 "9": {
                     "xpToNext": 14000,
                     "upgradeTimerSeconds": 172800,
                     "priceCoins": 4725000,
-                    "carRating": 530,
-                    "topSpeed": 9.78,
-                    "acceleration": 9.78,
-                    "handling": 9.78,
-                    "boostRegen": 9.78,
-                    "boostPower": 9.78
+                    "carRating": 931,
+                    "topSpeed": 6.52,
+                    "acceleration": 9.31,
+                    "handling": 13.04,
+                    "boostRegen": 10.24,
+                    "boostPower": 7.45
                 },
                 "10": {
                     "xpToNext": 0,
                     "upgradeTimerSeconds": 0,
                     "priceCoins": 0,
-                    "carRating": 540,
-                    "topSpeed": 10,
-                    "acceleration": 10,
-                    "handling": 10,
-                    "boostRegen": 10,
-                    "boostPower": 10
+                    "carRating": 950,
+                    "topSpeed": 6.65,
+                    "acceleration": 9.5,
+                    "handling": 13.3,
+                    "boostRegen": 10.45,
+                    "boostPower": 7.6
                 }
             },
             "i18n": {
@@ -2004,7 +2004,7 @@
                 "cooldown": 5
             },
             "tier": 5,
-            "archetype": "specialist"
+            "archetype": "arcanist"
         }
     }
 }

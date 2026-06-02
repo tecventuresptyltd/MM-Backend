@@ -16,7 +16,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as readline from 'readline';
 
-const serviceAccountPath = path.join(__dirname, '..', 'mystic-motors-prod-8c9cbf7066fa.json');
+const serviceAccountPath = path.join(__dirname, '..', 'backend-production-mystic-motors-prod.json');
 
 if (!fs.existsSync(serviceAccountPath)) {
     console.error('❌ ERROR: Production service account key not found!');

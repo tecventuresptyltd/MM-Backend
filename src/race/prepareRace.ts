@@ -105,14 +105,17 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
   const uid = request.auth?.uid;
   if (!uid) throw new HttpsError("unauthenticated", "User must be authenticated.");
 
-  const { opId, laps = 3, botCount = 7, seed, trophyHint, trackId, gamemode: rawGamemode } = request.data ?? {};
+  const { opId, laps = 3, botCount: rawBotCount, seed, trophyHint, trackId, gamemode: rawGamemode } = request.data ?? {};
   const gamemode: GameMode = resolveGameMode(rawGamemode);
+  const botCount = gamemode === "POLICE" ? (rawBotCount ?? 0) : (rawBotCount ?? 7);
   const trophyFields = getTrophyFields(gamemode);
   const trophyConfig = getTrophyConfigForGameMode(gamemode);
 
   if (typeof opId !== "string" || !opId) throw new HttpsError("invalid-argument", "opId is required.");
   if (typeof laps !== "number" || laps < 1) throw new HttpsError("invalid-argument", "laps must be >= 1");
-  if (typeof botCount !== "number" || botCount < 0 || botCount > 15) throw new HttpsError("invalid-argument", "botCount out of range");
+  if (gamemode !== "POLICE" && (typeof botCount !== "number" || botCount < 0 || botCount > 15)) {
+    throw new HttpsError("invalid-argument", "botCount out of range");
+  }
 
   const existing = await checkIdempotency(uid, opId);
   if (existing) return existing;
@@ -216,7 +219,12 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
     const carId: string = loadout.carId || Object.keys(carsCatalog)[0];
     const playerCar = carsCatalog[carId];
     if (!playerCar) throw new HttpsError("failed-precondition", "Active car not found in catalog");
-    const level = Number((garage.cars ?? {})[carId]?.upgradeLevel ?? 0);
+    const level = Number(
+      (garage.cars ?? {})[carId]?.carLevel ??
+      (garage.cars ?? {})[carId]?.starLevel ??
+      (garage.cars ?? {})[carId]?.upgradeLevel ??
+      1
+    );
     const playerCarLevelData = resolveCarLevel(playerCar, level);
     const playerStats = resolveCarStats(playerCarLevelData, tuning, false);
 
@@ -390,8 +398,8 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
       return source.length > 0 ? rng.choice(source) ?? null : null;
     };
 
-    // Build bots
-    const bots = Array.from({ length: botCount }).map(() => {
+    // Build bots (skipped for POLICE mode since chaser vehicles are dynamically managed client-side)
+    const bots = gamemode === "POLICE" ? [] : Array.from({ length: botCount }).map(() => {
       const botDisplayName = nextBotName();
 
       // Fixed trophy distribution: ensure equal distribution even at low trophy counts
@@ -517,12 +525,14 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
     });
 
     // Final validation: log summary of bot AI difficulty values
-    console.log('[prepareRace] Bot generation complete - AI Difficulty Summary:');
-    console.log(`  Performance variance: ${performanceVariance.enabled ? `enabled (σ=${performanceVariance.standardDeviation})` : 'disabled'}`);
-    console.log(`  Total bots: ${bots.length}`);
-    const aiLevels = bots.map(b => (b.carStats.real as any).aiLevel);
-    console.log(`  aiLevel range: [${Math.min(...aiLevels).toFixed(2)}, ${Math.max(...aiLevels).toFixed(2)}]`);
-    console.log(`  Sample aiLevels: [${bots.slice(0, 3).map(b => (b.carStats.real as any).aiLevel).join(', ')}]`);
+    if (gamemode !== "POLICE") {
+      console.log('[prepareRace] Bot generation complete - AI Difficulty Summary:');
+      console.log(`  Performance variance: ${performanceVariance.enabled ? `enabled (σ=${performanceVariance.standardDeviation})` : 'disabled'}`);
+      console.log(`  Total bots: ${bots.length}`);
+      const aiLevels = bots.map(b => (b.carStats.real as any).aiLevel);
+      console.log(`  aiLevel range: [${Math.min(...aiLevels).toFixed(2)}, ${Math.max(...aiLevels).toFixed(2)}]`);
+      console.log(`  Sample aiLevels: [${bots.slice(0, 3).map(b => (b.carStats.real as any).aiLevel).join(', ')}]`);
+    }
 
     const lobbyRatings: number[] = [playerTrophies, ...bots.map((bot) => bot.trophies)];
     const rawPreDeduct = calculateLastPlaceDelta(0, lobbyRatings, trophyConfig, gamemode);

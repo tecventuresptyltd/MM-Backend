@@ -50,6 +50,7 @@ export const createLobby = onCall(callableOptions({ cpu: 1, concurrency: 80 }), 
   const lobbyData = {
     lobbyId: lobbyId,
     hostUid: uid,
+    creatorUid: uid,
     status: "waiting",
     createdAt: admin.database.ServerValue.TIMESTAMP,
     sharedRandomSeed: "seed_" + Math.random().toString(36).substring(2, 15),
@@ -245,39 +246,7 @@ export const kickPlayer = onCall(callableOptions({ cpu: 1, concurrency: 80 }), a
   return { success: true };
 });
 
-/**
- * Submits the Unity Relay Join Code (Host Authoritative).
- */
-export const submitRelayJoinCode = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
-  const auth = request.auth;
-  if (!auth) {
-    throw new HttpsError("unauthenticated", "User must be logged in.");
-  }
 
-  const lobbyId = request.data?.lobbyId;
-  const relayJoinCode = request.data?.relayJoinCode;
-
-  if (typeof lobbyId !== "string" || typeof relayJoinCode !== "string") {
-    throw new HttpsError("invalid-argument", "Missing lobbyId or relayJoinCode parameter.");
-  }
-
-  const rtdb = admin.database();
-  const lobbyRef = rtdb.ref(`lobbies/${lobbyId}`);
-
-  const snapshot = await lobbyRef.get();
-  if (!snapshot.exists()) {
-    throw new HttpsError("not-found", "Lobby not found.");
-  }
-
-  const lobby = snapshot.val();
-  if (lobby.hostUid !== auth.uid) {
-    throw new HttpsError("permission-denied", "Only the host can register the Unity Relay Join Code.");
-  }
-
-  await lobbyRef.child("relayJoinCode").set(relayJoinCode);
-  logger.info(`[LobbyService] Host registered Relay Code: ${relayJoinCode} for lobby ${lobbyId}`);
-  return { success: true };
-});
 
 /**
  * Toggles or sets the ready state of a member in the lobby.

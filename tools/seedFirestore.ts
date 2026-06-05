@@ -66,6 +66,15 @@ async function seedCatalogs() {
     }
   }
 
+  // Add PoliceConfig
+  const policeConfigFile = path.join(seedsRoot, 'PoliceConfig.json');
+  if (fs.existsSync(policeConfigFile)) {
+    const policeConfigDoc = JSON.parse(fs.readFileSync(policeConfigFile, 'utf-8'));
+    if (policeConfigDoc && typeof policeConfigDoc === 'object') {
+      seedData.push(policeConfigDoc);
+    }
+  }
+
   console.log(`📦 Found ${seedData.length} catalogs to seed\n`);
 
   for (const catalog of seedData) {

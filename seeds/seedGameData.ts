@@ -56,7 +56,8 @@ export async function seedGameDataCatalogs(): Promise<void> {
     "CarEvolutionV2Catalog",
     "SpellEvolutionV2Catalog",
     "TiersCatalog",
-    "XpCurve"
+    "XpCurve",
+    "PoliceConfig"
   ];
 
   for (const catalogName of catalogFiles) {

@@ -102,10 +102,17 @@ export const requestDedicatedServer = onCall(
     switch (serverMode) {
       case "local":
         // Server is already running on the developer's machine
-        serverIp = "127.0.0.1";
-        serverPort = 7777;
+        if (process.env.MM_SERVER_ADDRESS) {
+          const parts = process.env.MM_SERVER_ADDRESS.split(":");
+          serverIp = parts[0];
+          serverPort = parts.length > 1 ? parseInt(parts[1], 10) : 7777;
+          logger.info(`[DedicatedServer] LOCAL mode (Tunnelling) — using ${serverIp}:${serverPort}`);
+        } else {
+          serverIp = "127.0.0.1";
+          serverPort = 7777;
+          logger.info("[DedicatedServer] LOCAL mode — assuming server at 127.0.0.1:7777");
+        }
         connectionKey = "MysticMotors_v1";
-        logger.info("[DedicatedServer] LOCAL mode — assuming server at 127.0.0.1:7777");
         break;
 
       case "lan":

@@ -44,6 +44,7 @@ export { upgradeSpell, setLoadout, equipCosmetics, setSpellDeck, selectActiveSpe
 export { startRace, generateBotLoadout, recordRaceResult, claimDoubleReward, getRaceResult } from "./race";
 export { prepareRace } from "./race/prepareRace";
 export { createLobby, joinLobby, leaveLobby, kickPlayer, submitRelayJoinCode, toggleReadyState, promoteToHost, sendLobbyChatMessage } from "./race/lobbyService";
+export { requestDedicatedServer, serverHeartbeat, serverRecordRaceResult, serverUpdateRaceState, serverSelfRegister } from "./race/dedicatedServer";
 export { submitFeedback } from "./feedback";
 export * from "./clan";
 export { getMaintenanceStatus, claimMaintenanceReward } from "./game-systems/maintenance";

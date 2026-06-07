@@ -1,0 +1,20 @@
+{
+  "path": "/GameData/v1/catalogs/PoliceConfig",
+  "data": {
+    "version": "1.0.0",
+    "createdAt": 1780475200000,
+    "updatedAt": 1780475300000,
+    "values": {
+      "difficultyMult": 1.5,
+      "steeringNoiseScale": 0.15,
+      "tacticalTurnSpeed": 200.0,
+      "baseTurnSpeed": 125.0,
+      "roadblockDetectRange": 150.0,
+      "maxFrontBlockDist": 30.0,
+      "ramProbabilityScale": 0.8,
+      "overtakeProbabilityScale": 0.9,
+      "missileSpeed": 50.0,
+      "missileDodgeAngle": 35.0
+    }
+  }
+}

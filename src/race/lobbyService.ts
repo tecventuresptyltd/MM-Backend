@@ -50,6 +50,7 @@ export const createLobby = onCall(callableOptions({ cpu: 1, concurrency: 80 }), 
   const lobbyData = {
     lobbyId: lobbyId,
     hostUid: uid,
+    creatorUid: uid,
     status: "waiting",
     createdAt: admin.database.ServerValue.TIMESTAMP,
     sharedRandomSeed: "seed_" + Math.random().toString(36).substring(2, 15),
@@ -59,7 +60,8 @@ export const createLobby = onCall(callableOptions({ cpu: 1, concurrency: 80 }), 
         elo: profile.elo,
         spells: profile.spells,
         carSkin: profile.carSkin,
-        joinedAt: admin.database.ServerValue.TIMESTAMP
+        joinedAt: admin.database.ServerValue.TIMESTAMP,
+        status: "menu"
       }
     }
   };
@@ -125,7 +127,8 @@ export const joinLobby = onCall(callableOptions({ cpu: 1, concurrency: 80 }), as
     elo: profile.elo,
     spells: profile.spells,
     carSkin: profile.carSkin,
-    joinedAt: admin.database.ServerValue.TIMESTAMP
+    joinedAt: admin.database.ServerValue.TIMESTAMP,
+    status: "menu"
   });
 
   // Update size in the matchmaking index
@@ -161,14 +164,23 @@ export const leaveLobby = onCall(callableOptions({ cpu: 1, concurrency: 80 }), a
   }
 
   const lobby = snapshot.val();
+  const creatorUid = lobby.creatorUid || lobby.hostUid;
   const roster = lobby.members || {};
+  const hostProfile = await getPlayerProfile(lobby.hostUid);
+  const hostBucket = Math.floor(hostProfile.elo / 200);
+
+  // If the leaving player is the original creator, disband the lobby!
+  if (uid === creatorUid) {
+    await lobbyRef.remove();
+    await rtdb.ref(`matchmaking/bucket_${hostBucket}/${lobbyId}`).remove();
+    logger.info(`[LobbyService] Lobby ${lobbyId} disbanded by creator/host ${uid}.`);
+    return { success: true, disbanded: true };
+  }
 
   // Remove player
   await lobbyRef.child(`members/${uid}`).remove();
 
   const remainingKeys = Object.keys(roster).filter(key => key !== uid);
-  const hostProfile = await getPlayerProfile(lobby.hostUid);
-  const hostBucket = Math.floor(hostProfile.elo / 200);
 
   if (remainingKeys.length === 0) {
     // Delete the lobby completely

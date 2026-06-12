@@ -533,6 +533,48 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
   }
   const botDisplayNames = normaliseBotNames(botNames);
 
+  // ── Settlement-race safety net (multiplayer only) ────────────────────────────
+  // For a canonical multiplayer race the dedicated server writes the authoritative
+  // serverFinishOrder onto /Races/{raceId} BEFORE it broadcasts RaceComplete to
+  // clients (Server/.../Program.cs: ServerRecordRaceResultAsync is awaited, then
+  // SendRaceResults). The ordering therefore guarantees serverFinishOrder is
+  // present by the time clients call recordRaceResult. As a defence against
+  // network/race-condition skew (two clients settling from different orders, or a
+  // client that called recordRaceResult before the server's write landed), we do a
+  // SHORT bounded re-read here for multiplayer races: if the race is flagged
+  // multiplayer but serverFinishOrder is not yet present, wait briefly and retry a
+  // few times. If it never arrives we proceed (soft fallback to the client order)
+  // rather than blocking settlement indefinitely. Single-player races skip this
+  // entirely (no serverFinishOrder is ever expected), keeping their path unchanged.
+  {
+    const preReadRef = db.doc(`/Races/${raceId}`);
+    const preReadSnap = await preReadRef.get();
+    const preReadData = preReadSnap.exists ? preReadSnap.data() ?? {} : {};
+    const expectsServerOrder = preReadData.isMultiplayer === true;
+    const alreadySettledForCaller = !!(
+      preReadData.serverFinishOrder !== undefined && preReadData.serverFinishOrder !== null
+    );
+    if (expectsServerOrder && !alreadySettledForCaller) {
+      const MAX_ATTEMPTS = 5;
+      const DELAY_MS = 400;
+      for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
+        await new Promise((resolve) => setTimeout(resolve, DELAY_MS));
+        const retrySnap = await preReadRef.get();
+        const sfo = retrySnap.exists ? retrySnap.data()?.serverFinishOrder : undefined;
+        if (sfo !== undefined && sfo !== null) {
+          break;
+        }
+        if (attempt === MAX_ATTEMPTS - 1) {
+          logger.warn("[recordRaceResult] Multiplayer race has no serverFinishOrder after bounded wait; falling back to client order", {
+            uid,
+            raceId,
+            waitedMs: MAX_ATTEMPTS * DELAY_MS,
+          });
+        }
+      }
+    }
+  }
+
   const result = await db.runTransaction(async (transaction) => {
     const raceRef = db.doc(`/Races/${raceId}`);
     const raceDoc = await transaction.get(raceRef);

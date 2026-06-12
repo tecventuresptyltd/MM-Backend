@@ -95,45 +95,89 @@ export const joinLobby = onCall(callableOptions({ cpu: 1, concurrency: 80 }), as
   }
 
   const uid = auth.uid;
+  // Fetch the joiner's profile up-front: RTDB transaction handlers run
+  // synchronously (and may re-run), so they cannot await Firestore reads.
   const profile = await getPlayerProfile(uid);
 
   const rtdb = admin.database();
   const lobbyRef = rtdb.ref(`lobbies/${lobbyId}`);
 
-  // Fetch active lobby transactionally
-  const snapshot = await lobbyRef.get();
-  if (!snapshot.exists()) {
-    throw new HttpsError("not-found", "The specified lobby does not exist.");
-  }
+  // Sentinels so we can surface the same HttpsErrors as before AFTER the
+  // transaction resolves (throwing inside the handler would be swallowed).
+  let notFound = false;
+  let wasKicked = false;
+  let wasFull = false;
+  let hostUid: string | null = null;
+  let newRosterSize = 0;
 
-  const lobby = snapshot.val();
+  // Add the member + enforce the 8-player cap atomically so concurrent joins
+  // cannot race past the cap. Operating on the whole lobby node guarantees the
+  // members map we inspect is the same one we mutate.
+  const result = await lobbyRef.transaction((lobby) => {
+    if (lobby === null) {
+      // Lobby does not exist (or was concurrently disbanded). Abort.
+      notFound = true;
+      return undefined; // abort transaction without writing
+    }
 
-  // Check if player was kicked
-  if (lobby.kickedPlayers && lobby.kickedPlayers[uid]) {
-    throw new HttpsError("permission-denied", "You have been kicked from this lobby and cannot rejoin.");
-  }
+    // Reset per-attempt flags (the handler can run multiple times).
+    notFound = false;
+    wasKicked = false;
+    wasFull = false;
 
-  const roster = lobby.members || {};
-  const currentSize = Object.keys(roster).length;
+    if (lobby.kickedPlayers && lobby.kickedPlayers[uid]) {
+      wasKicked = true;
+      return undefined; // abort
+    }
 
-  if (currentSize >= 8) {
-    throw new HttpsError("resource-exhausted", "This lobby is already full.");
-  }
+    const roster = lobby.members || {};
+    // Idempotent re-join: if already a member, treat as success without
+    // double-counting the roster.
+    const alreadyMember = Object.prototype.hasOwnProperty.call(roster, uid);
+    const currentSize = Object.keys(roster).length;
 
-  // Add user to members list
-  await lobbyRef.child(`members/${uid}`).set({
-    username: profile.username,
-    elo: profile.elo,
-    spells: profile.spells,
-    carSkin: profile.carSkin,
-    joinedAt: admin.database.ServerValue.TIMESTAMP,
-    status: "menu"
+    if (!alreadyMember && currentSize >= 8) {
+      wasFull = true;
+      return undefined; // abort
+    }
+
+    roster[uid] = {
+      username: profile.username,
+      elo: profile.elo,
+      spells: profile.spells,
+      carSkin: profile.carSkin,
+      joinedAt: admin.database.ServerValue.TIMESTAMP,
+      status: "menu"
+    };
+    lobby.members = roster;
+
+    hostUid = lobby.hostUid ?? null;
+    newRosterSize = Object.keys(roster).length;
+    return lobby;
   });
 
-  // Update size in the matchmaking index
-  const hostProfile = await getPlayerProfile(lobby.hostUid);
-  const hostBucket = Math.floor(hostProfile.elo / 200);
-  await rtdb.ref(`matchmaking/bucket_${hostBucket}/${lobbyId}/rosterSize`).set(currentSize + 1);
+  if (notFound) {
+    throw new HttpsError("not-found", "The specified lobby does not exist.");
+  }
+  if (wasKicked) {
+    throw new HttpsError("permission-denied", "You have been kicked from this lobby and cannot rejoin.");
+  }
+  if (wasFull) {
+    throw new HttpsError("resource-exhausted", "This lobby is already full.");
+  }
+  if (!result.committed) {
+    // Transaction aborted for a reason not captured above (e.g. excessive
+    // contention). Surface a retryable error rather than silently succeeding.
+    throw new HttpsError("aborted", "Could not join the lobby due to contention; please retry.");
+  }
+
+  // Update size in the matchmaking index (separate subtree → outside the
+  // lobby transaction). Uses the committed roster size and the host's bucket.
+  if (hostUid) {
+    const hostProfile = await getPlayerProfile(hostUid);
+    const hostBucket = Math.floor(hostProfile.elo / 200);
+    await rtdb.ref(`matchmaking/bucket_${hostBucket}/${lobbyId}/rosterSize`).set(newRosterSize);
+  }
 
   logger.info(`[LobbyService] User ${uid} joined lobby ${lobbyId}`);
   return { success: true };
@@ -157,57 +201,108 @@ export const leaveLobby = onCall(callableOptions({ cpu: 1, concurrency: 80 }), a
   const rtdb = admin.database();
   const lobbyRef = rtdb.ref(`lobbies/${lobbyId}`);
 
-  const snapshot = await lobbyRef.get();
-  if (!snapshot.exists()) {
+  // Snapshot the original host so we can locate the OLD matchmaking bucket
+  // after the transaction commits. We only need the host's bucket; the actual
+  // member-remove / host-migration / disband decision is made atomically inside
+  // the transaction below (RTDB handlers run synchronously and may re-run, so
+  // they cannot await the Firestore profile reads).
+  const preSnap = await lobbyRef.get();
+  if (!preSnap.exists()) {
     return { success: true, message: "Lobby already deleted." };
   }
+  const originalHostUid: string | undefined =
+    preSnap.val().hostUid ?? preSnap.val().creatorUid;
+  const oldHostProfile = await getPlayerProfile(
+    typeof originalHostUid === "string" ? originalHostUid : uid
+  );
+  const oldHostBucket = Math.floor(oldHostProfile.elo / 200);
 
-  const lobby = snapshot.val();
-  const creatorUid = lobby.creatorUid || lobby.hostUid;
-  const roster = lobby.members || {};
-  const hostProfile = await getPlayerProfile(lobby.hostUid);
-  const hostBucket = Math.floor(hostProfile.elo / 200);
+  // Outcome captured from the (possibly re-run) transaction handler.
+  let disbanded = false;
+  let migratedToHost: string | null = null;
+  let remainingSize = 0;
+  let lobbyCreatedAt: unknown = null;
+  let alreadyGone = false;
 
-  // If the leaving player is the original creator, disband the lobby!
-  if (uid === creatorUid) {
-    await lobbyRef.remove();
-    await rtdb.ref(`matchmaking/bucket_${hostBucket}/${lobbyId}`).remove();
-    logger.info(`[LobbyService] Lobby ${lobbyId} disbanded by creator/host ${uid}.`);
+  // Remove the member + migrate host / disband atomically so concurrent leaves
+  // cannot leave a ghost lobby or double-pick a new host.
+  const result = await lobbyRef.transaction((lobby) => {
+    if (lobby === null) {
+      // Lobby was concurrently removed — nothing to do.
+      alreadyGone = true;
+      return undefined; // abort without writing
+    }
+
+    // Reset per-attempt flags (handler may run multiple times).
+    disbanded = false;
+    migratedToHost = null;
+    alreadyGone = false;
+
+    const creatorUid = lobby.creatorUid || lobby.hostUid;
+    const roster = lobby.members || {};
+    lobbyCreatedAt = lobby.createdAt ?? null;
+
+    // The original creator leaving disbands the whole lobby.
+    if (uid === creatorUid) {
+      disbanded = true;
+      return null; // delete the lobby node
+    }
+
+    // Remove the leaving player.
+    if (Object.prototype.hasOwnProperty.call(roster, uid)) {
+      delete roster[uid];
+    }
+    lobby.members = roster;
+
+    const remainingKeys = Object.keys(roster);
+    remainingSize = remainingKeys.length;
+
+    if (remainingKeys.length === 0) {
+      // No one left — purge the lobby entirely (no ghost lobby).
+      disbanded = true;
+      return null; // delete the lobby node
+    }
+
+    // If the leaving player was the host, migrate host to the next member.
+    if (lobby.hostUid === uid) {
+      const newHostUid = remainingKeys[0];
+      lobby.hostUid = newHostUid;
+      migratedToHost = newHostUid;
+    }
+
+    return lobby;
+  });
+
+  if (alreadyGone) {
+    return { success: true, message: "Lobby already deleted." };
+  }
+  if (!result.committed) {
+    throw new HttpsError("aborted", "Could not leave the lobby due to contention; please retry.");
+  }
+
+  // ── Reconcile the matchmaking index (separate subtree) post-commit ──
+  if (disbanded) {
+    await rtdb.ref(`matchmaking/bucket_${oldHostBucket}/${lobbyId}`).remove();
+    logger.info(`[LobbyService] Lobby ${lobbyId} disbanded/purged after ${uid} left.`);
     return { success: true, disbanded: true };
   }
 
-  // Remove player
-  await lobbyRef.child(`members/${uid}`).remove();
+  if (migratedToHost) {
+    // Move the matchmaking entry to the new host's rank bucket.
+    const newHostProfile = await getPlayerProfile(migratedToHost);
+    const newHostBucket = Math.floor(newHostProfile.elo / 200);
 
-  const remainingKeys = Object.keys(roster).filter(key => key !== uid);
+    await rtdb.ref(`matchmaking/bucket_${oldHostBucket}/${lobbyId}`).remove();
+    await rtdb.ref(`matchmaking/bucket_${newHostBucket}/${lobbyId}`).set({
+      hostUid: migratedToHost,
+      rosterSize: remainingSize,
+      createdAt: lobbyCreatedAt
+    });
 
-  if (remainingKeys.length === 0) {
-    // Delete the lobby completely
-    await lobbyRef.remove();
-    await rtdb.ref(`matchmaking/bucket_${hostBucket}/${lobbyId}`).remove();
-    logger.info(`[LobbyService] Empty lobby ${lobbyId} purged.`);
+    logger.info(`[LobbyService] Host migrated from ${uid} to ${migratedToHost} in lobby ${lobbyId}`);
   } else {
-    // Update matchmaking size
-    await rtdb.ref(`matchmaking/bucket_${hostBucket}/${lobbyId}/rosterSize`).set(remainingKeys.length);
-
-    // If the leaving player was the Host, perform Host Migration
-    if (lobby.hostUid === uid) {
-      const newHostUid = remainingKeys[0];
-      await lobbyRef.child("hostUid").set(newHostUid);
-      
-      // Move matchmaking entry to new host's rank bucket
-      const newHostProfile = await getPlayerProfile(newHostUid);
-      const newHostBucket = Math.floor(newHostProfile.elo / 200);
-
-      await rtdb.ref(`matchmaking/bucket_${hostBucket}/${lobbyId}`).remove();
-      await rtdb.ref(`matchmaking/bucket_${newHostBucket}/${lobbyId}`).set({
-        hostUid: newHostUid,
-        rosterSize: remainingKeys.length,
-        createdAt: lobby.createdAt
-      });
-
-      logger.info(`[LobbyService] Host migrated from ${uid} to ${newHostUid} in lobby ${lobbyId}`);
-    }
+    // No migration — just update the roster size in the existing bucket entry.
+    await rtdb.ref(`matchmaking/bucket_${oldHostBucket}/${lobbyId}/rosterSize`).set(remainingSize);
   }
 
   return { success: true };

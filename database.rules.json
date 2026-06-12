@@ -2,17 +2,25 @@
   "rules": {
     "lobbies": {
       "$lobbyId": {
-        ".read": "auth != null",
+        ".read": "auth != null && (root.child('lobbies').child($lobbyId).child('members').child(auth.uid).exists() || auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val())",
+
         "members": {
           "$uid": {
-            "cosmeticsInfo": {
+            "status": {
               ".write": "auth != null && auth.uid === $uid"
             },
             "isReady": {
+              ".write": "auth != null && (auth.uid === $uid || auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val())"
+            },
+            "elo": {
+              ".write": "auth != null && auth.uid === $uid"
+            },
+            "cosmeticsInfo": {
               ".write": "auth != null && auth.uid === $uid"
             }
           }
         },
+
         "mapVoting": {
           "votes": {
             "$uid": {
@@ -26,10 +34,20 @@
             ".write": "auth != null && auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val()"
           }
         },
+
+        "gameMode": {
+          ".write": "auth != null && auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val()"
+        },
+
+        "matchmakingStatus": {
+          ".write": "auth != null && auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val()"
+        },
+
         "launchSceneName": {
           ".write": "auth != null && auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val()"
         },
-        "matchmakingStatus": {
+
+        "serverInfo": {
           ".write": "auth != null && auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val()"
         }
       }

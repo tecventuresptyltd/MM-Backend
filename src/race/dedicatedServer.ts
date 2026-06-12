@@ -1,5 +1,6 @@
 import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
+import { randomBytes, randomUUID, timingSafeEqual } from "crypto";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { callableOptions } from "../shared/callableOptions.js";
 import { getSpellsCatalog } from "../core/config.js";
@@ -69,7 +70,21 @@ const assertServerSecret = (data: unknown): void => {
     data && typeof data === "object"
       ? (data as Record<string, unknown>).serverSecret
       : undefined;
-  if (typeof provided !== "string" || provided !== expected) {
+  if (typeof provided !== "string") {
+    throw new HttpsError(
+      "permission-denied",
+      "Invalid or missing server secret.",
+    );
+  }
+  // Constant-time comparison to avoid leaking the secret via timing.
+  // timingSafeEqual requires equal-length buffers, so a length mismatch is
+  // treated as a (constant-time) failure rather than passed to the comparator.
+  const expectedBuf = Buffer.from(expected, "utf8");
+  const providedBuf = Buffer.from(provided, "utf8");
+  if (
+    expectedBuf.length !== providedBuf.length ||
+    !timingSafeEqual(expectedBuf, providedBuf)
+  ) {
     throw new HttpsError(
       "permission-denied",
       "Invalid or missing server secret.",
@@ -85,6 +100,24 @@ const assertServerSecret = (data: unknown): void => {
 // ═══════════════════════════════════════════════════════════════
 // requestDedicatedServer — Called by Unity lobby host
 // ═══════════════════════════════════════════════════════════════
+//
+// ⚠️ DEPLOYMENT DEPENDENCY — DYNAMIC CONNECTION KEY ⚠️
+// As of this change, the LiteNetLib connection key is generated fresh per
+// provision (no longer the static "MysticMotors_v1"). The .NET dedicated
+// server reads its key from the MM_CONNECTION_KEY environment variable
+// (Server/MysticMotors.Server/Config/ServerConfig.cs → ConnectionKey) and
+// rejects any peer whose key does not match (GameServer.cs → AcceptIfKey).
+//
+// Therefore the per-provision `connectionKey` written to serverInfo below MUST
+// be passed to the server process as MM_CONNECTION_KEY at launch, or guests
+// will be refused at the handshake. Wiring that into the actual process launch
+// is OUT OF SCOPE here (the GCP/Cloud Run launch path is a TODO below, and the
+// local/lan server is started manually). Until that wiring exists:
+//   • GCP mode: pass connectionKey into the job's MM_CONNECTION_KEY env.
+//   • local/lan mode: the manually-started server must be launched with the
+//     SAME MM_CONNECTION_KEY this function generated, OR (interim) override
+//     MM_CONNECTION_KEY on the server to a fixed value AND change this function
+//     to emit that fixed key. Reported to the orchestrator as a hard dependency.
 
 export const requestDedicatedServer = onCall(
   callableOptions({ cpu: 1, concurrency: 80 }),
@@ -141,7 +174,27 @@ export const requestDedicatedServer = onCall(
     const serverMode = process.env.MM_SERVER_MODE ?? "local";
     let serverIp: string;
     let serverPort: number;
-    let connectionKey: string;
+
+    // Connection key handed to clients for the LiteNetLib handshake.
+    // - gcp mode: cryptographically random per provision (the provisioning step
+    //   launches the server process and must pass it via MM_CONNECTION_KEY —
+    //   see the dependency note at the bottom of this file).
+    // - local/lan modes: the server process is started MANUALLY before this
+    //   function runs, so a random key here would never match what the server
+    //   was launched with and every client would be refused at the handshake.
+    //   Use MM_SHARED_CONNECTION_KEY (set the same value on the server process)
+    //   or fall back to the server's built-in default.
+    const connectionKey =
+      serverMode === "gcp"
+        ? `MM_${randomBytes(24).toString("hex")}`
+        : (process.env.MM_SHARED_CONNECTION_KEY || "MysticMotors_v1");
+
+    // A fresh session token on EVERY provision call guarantees the serverInfo
+    // node's value changes even when ip/port (and connectionKey, in fixed-host
+    // local/lan modes) are reused for back-to-back races. The Unity client's
+    // serverInfo ValueChanged listener (OnServerInfoReceived) therefore re-fires
+    // and reconnects for the second race instead of seeing an unchanged node.
+    const sessionToken = randomUUID();
 
     switch (serverMode) {
       case "local":
@@ -156,14 +209,12 @@ export const requestDedicatedServer = onCall(
           serverPort = 7777;
           logger.info("[DedicatedServer] LOCAL mode — assuming server at 127.0.0.1:7777");
         }
-        connectionKey = "MysticMotors_v1";
         break;
 
       case "lan":
         // For LAN testing across devices
         serverIp = process.env.MM_LAN_SERVER_IP ?? "192.168.1.100";
         serverPort = parseInt(process.env.MM_LAN_SERVER_PORT ?? "7777", 10);
-        connectionKey = "MysticMotors_v1";
         logger.info(`[DedicatedServer] LAN mode — ${serverIp}:${serverPort}`);
         break;
 
@@ -190,7 +241,6 @@ export const requestDedicatedServer = onCall(
         // For now, write a placeholder — the server overwrites on boot.
         serverIp = "PENDING_GCP_ALLOCATION";
         serverPort = 7777;
-        connectionKey = `MM_${lobbyId.substring(0, 8)}`;
         logger.info("[DedicatedServer] GCP mode — server will self-register IP");
         break;
       }
@@ -209,6 +259,7 @@ export const requestDedicatedServer = onCall(
       ip: serverIp,
       port: serverPort,
       connectionKey,
+      sessionToken,
       sceneName: trackId,
       gameMode,
       playerCount,
@@ -229,6 +280,7 @@ export const requestDedicatedServer = onCall(
       serverIp,
       serverPort,
       connectionKey,
+      sessionToken,
     };
   }
 );

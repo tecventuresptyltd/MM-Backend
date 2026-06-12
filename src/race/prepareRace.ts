@@ -106,6 +106,28 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
   if (!uid) throw new HttpsError("unauthenticated", "User must be authenticated.");
 
   const { opId, laps = 3, botCount: rawBotCount, seed, trophyHint, trackId, gamemode: rawGamemode } = request.data ?? {};
+  // ── Multiplayer (dedicated-server) detection ──────────────────────────────────
+  // For dedicated-server multiplayer races, the Unity client passes the RTDB
+  // lobbyId it belongs to, plus a host-advanced round token (raceRound). When
+  // BOTH are present we build/join a single CANONICAL race shared by every lobby
+  // member so the dedicated server's authoritative finish order can settle all
+  // participants consistently. When absent, behaviour is the original
+  // single-player/offline path (byte-for-byte unchanged).
+  //
+  // NOTE: as of this change the client MUST send { lobbyId, raceRound } for
+  // multiplayer. raceRound is a string/number the host advances per race round
+  // (e.g. an incrementing counter or the provision sessionToken). If the client
+  // sends lobbyId without a raceRound we fall back to round "0" so the canonical
+  // id is still stable within a single lobby session.
+  const rawLobbyId = (request.data ?? {}).lobbyId;
+  const rawRaceRound = (request.data ?? {}).raceRound;
+  const lobbyId =
+    typeof rawLobbyId === "string" && rawLobbyId.trim().length > 0 ? rawLobbyId.trim() : null;
+  const raceRound =
+    rawRaceRound === undefined || rawRaceRound === null
+      ? "0"
+      : String(rawRaceRound).trim() || "0";
+  const isMultiplayer = lobbyId !== null;
   const gamemode: GameMode = resolveGameMode(rawGamemode);
   const botCount = gamemode === "POLICE" ? (rawBotCount ?? 0) : (rawBotCount ?? 7);
   const trophyFields = getTrophyFields(gamemode);
@@ -337,8 +359,133 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
       return { spellId, level, attrs: resolveSpellAttrs(spellDef, level) };
     });
 
-    // Seeded RNG
-    const resolvedSeed = seed || `race:${uid}:${Date.now()}`;
+    // ─────────────────────────────────────────────────────────────────────────────
+    // CANONICAL MULTIPLAYER RACE RESOLUTION
+    // ─────────────────────────────────────────────────────────────────────────────
+    // For multiplayer (lobbyId present) we must produce a SINGLE canonical race
+    // shared by every lobby member: one raceId, one deterministic bot set, and a
+    // stable member ordering so each player gets their correct playerIndex. The
+    // dedicated server receives this canonical raceId from each client (via the
+    // ReadyForRace handshake -> PreparePayload.RaceId) and writes serverFinishOrder
+    // onto /Races/{canonicalRaceId}; every client's recordRaceResult then reads
+    // that same doc, so the server's authoritative order settles everyone.
+    //
+    // POLICE mode is never multiplayer (chasers are client-side) — it keeps the
+    // single-player path even if a lobbyId were ever supplied.
+    const useCanonical = isMultiplayer && gamemode !== "POLICE";
+
+    // Canonical race id is deterministic from (lobbyId, round) so all members and
+    // the dedicated server agree without coordination. Sanitised to a Firestore
+    // doc-id-safe token.
+    const sanitizeIdToken = (s: string): string => s.replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 200);
+    const canonicalRaceId = useCanonical
+      ? `mp_${sanitizeIdToken(lobbyId as string)}_${sanitizeIdToken(raceRound)}`
+      : null;
+
+    // Members + ordering + this player's index for the canonical race. Defaults to
+    // the single-player shape (this player only, index 0) when not multiplayer.
+    let canonicalMemberOrder: string[] = [uid];
+    let resolvedPlayerIndex = 0;
+    // Shared bot-generation basis. For multiplayer every member must generate the
+    // SAME bots, so the bot seed + trophy basis must be lobby-shared (NOT per-uid).
+    let botSeedKey = "";
+    let botTrophyBasis = playerTrophies;
+    // Canonical human-member ratings, aligned 1:1 with canonicalMemberOrder.
+    // Only populated/used in the multiplayer path.
+    let canonicalMemberRatings: number[] = [playerTrophies];
+
+    if (useCanonical) {
+      // Read the RTDB lobby roster (the source of truth for who is in this race).
+      // We order members deterministically by uid so every client computes the
+      // same canonicalMemberOrder and therefore the same per-player playerIndex.
+      let memberUids: string[] = [];
+      try {
+        const membersSnap = await admin
+          .database()
+          .ref(`lobbies/${lobbyId}/members`)
+          .get();
+        const membersVal = (membersSnap.exists() ? membersSnap.val() : {}) as Record<string, unknown>;
+        memberUids = Object.keys(membersVal).filter((k) => typeof k === "string" && k.length > 0);
+      } catch (lobbyErr) {
+        console.warn(`[prepareRace] Failed to read lobby members for ${lobbyId}:`, lobbyErr);
+        memberUids = [];
+      }
+      // Always include the caller (covers eventual-consistency gaps where the
+      // roster has not yet propagated to this caller).
+      if (!memberUids.includes(uid)) {
+        memberUids.push(uid);
+      }
+      canonicalMemberOrder = Array.from(new Set(memberUids)).sort();
+      resolvedPlayerIndex = canonicalMemberOrder.indexOf(uid);
+      if (resolvedPlayerIndex < 0) {
+        // Defensive: should never happen since we force-include uid above.
+        canonicalMemberOrder.push(uid);
+        resolvedPlayerIndex = canonicalMemberOrder.length - 1;
+      }
+      // Read every canonical member's authoritative trophies so the canonical
+      // lobbySnapshot rating vector is identical regardless of which member
+      // creates it, and so this player's pre-deduction is computed against the
+      // real lobby (not a bots-only vector). Bounded (lobby cap is 8) and mirrors
+      // the existing startRace pattern. The caller's own value falls back to the
+      // already-computed playerTrophies.
+      const memberTrophyField =
+        gamemode === "UNRANKED" ? "trophies" : trophyFields.current;
+      try {
+        const memberProfileRefs = canonicalMemberOrder.map((mUid) =>
+          db.doc(`/Players/${mUid}/Profile/Profile`),
+        );
+        const memberProfileSnaps = await db.getAll(...memberProfileRefs);
+        canonicalMemberRatings = canonicalMemberOrder.map((mUid, idx) => {
+          if (mUid === uid) {
+            return playerTrophies;
+          }
+          const snap = memberProfileSnaps[idx];
+          const v = snap && snap.exists ? Number(snap.data()?.[memberTrophyField]) : NaN;
+          return Number.isFinite(v) ? Math.max(0, Math.floor(v)) : playerTrophies;
+        });
+      } catch (memberErr) {
+        console.warn(`[prepareRace] Failed reading member profiles for ${lobbyId}:`, memberErr);
+        // Best-effort fallback: use the caller's own trophies for every slot.
+        canonicalMemberRatings = canonicalMemberOrder.map(() => playerTrophies);
+      }
+
+      // Shared seed: deterministic per (lobby, round) — NOT per uid — so every
+      // member independently produces an identical bot set.
+      botSeedKey = `mp:${lobbyId}:${raceRound}`;
+
+      // Establish the SHARED bot trophy basis once. The first prepareRace call for
+      // this (lobby, round) writes a metadata doc recording the basis (the
+      // creator's authoritative trophies for this gamemode); subsequent members
+      // read it back. This guarantees every member's bot trophy vector is built
+      // from the same basis (identical ELO) without each member having to read
+      // every other member's profile. The metadata doc is keyed under the
+      // canonical race so it is cleaned up with it.
+      try {
+        const metaRef = db.doc(`/Races/${canonicalRaceId}/Meta/Canonical`);
+        botTrophyBasis = await db.runTransaction(async (txn) => {
+          const metaSnap = await txn.get(metaRef);
+          if (metaSnap.exists) {
+            const stored = Number(metaSnap.data()?.botTrophyBasis);
+            return Number.isFinite(stored) ? stored : playerTrophies;
+          }
+          txn.set(metaRef, {
+            botTrophyBasis: playerTrophies,
+            createdBy: uid,
+            lobbyId,
+            raceRound,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+          return playerTrophies;
+        });
+      } catch (metaErr) {
+        console.warn(`[prepareRace] Canonical basis transaction failed for ${canonicalRaceId}:`, metaErr);
+        botTrophyBasis = playerTrophies;
+      }
+    }
+
+    // Seeded RNG. Single-player keeps its original per-uid/random seed; multiplayer
+    // uses the shared lobby+round seed so bots are identical across members.
+    const resolvedSeed = useCanonical ? botSeedKey : (seed || `race:${uid}:${Date.now()}`);
     const rng = new SeededRNG(resolvedSeed);
     const botNamePool = (Array.isArray(botNames) ? botNames : [])
       .map((name) => (typeof name === "string" ? name.trim() : ""))
@@ -402,10 +549,13 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
     const bots = gamemode === "POLICE" ? [] : Array.from({ length: botCount }).map(() => {
       const botDisplayName = nextBotName();
 
-      // Fixed trophy distribution: ensure equal distribution even at low trophy counts
+      // Fixed trophy distribution: ensure equal distribution even at low trophy counts.
+      // botTrophyBasis === playerTrophies for single-player (unchanged); for
+      // multiplayer it is the lobby-shared basis so every member produces the
+      // SAME bot trophy vector (identical ELO math across clients).
       const trophyRange = 100;
-      const minTrophies = Math.max(0, playerTrophies - trophyRange);
-      const maxTrophies = playerTrophies + trophyRange;
+      const minTrophies = Math.max(0, botTrophyBasis - trophyRange);
+      const maxTrophies = botTrophyBasis + trophyRange;
       const botTrophies = rng.int(minTrophies, maxTrophies);
       const normalizedTrophies = Math.max(0, Math.min(7000, botTrophies));
 
@@ -534,15 +684,24 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
       console.log(`  Sample aiLevels: [${bots.slice(0, 3).map(b => (b.carStats.real as any).aiLevel).join(', ')}]`);
     }
 
-    const lobbyRatings: number[] = [playerTrophies, ...bots.map((bot) => bot.trophies)];
-    const rawPreDeduct = calculateLastPlaceDelta(0, lobbyRatings, trophyConfig, gamemode);
+    // Build the rating vector used for the pre-deduction ELO calc.
+    // Single-player: [thisPlayer, ...bots] with the player at index 0 (unchanged).
+    // Multiplayer: the canonical vector [all human members..., ...bots] with this
+    // player at resolvedPlayerIndex, so the pre-deduction reflects the real lobby.
+    const lobbyRatings: number[] = useCanonical
+      ? [...canonicalMemberRatings, ...bots.map((bot) => bot.trophies)]
+      : [playerTrophies, ...bots.map((bot) => bot.trophies)];
+    const preDeductPlayerIndex = useCanonical ? resolvedPlayerIndex : 0;
+    const rawPreDeduct = calculateLastPlaceDelta(preDeductPlayerIndex, lobbyRatings, trophyConfig, gamemode);
     const normalizedPlayerTrophies = Math.max(
       0,
       Math.floor(Number.isFinite(playerTrophies) ? playerTrophies : 0),
     );
     const preDeductedTrophies = rawPreDeduct < 0 ? Math.max(rawPreDeduct, -normalizedPlayerTrophies) : rawPreDeduct;
 
-    const raceId = `race_${Math.random().toString(36).slice(2, 10)}`;
+    // Single-player keeps a fresh random race id; multiplayer uses the shared
+    // canonical id so server + every client agree on one /Races/{id} doc.
+    const raceId = useCanonical ? (canonicalRaceId as string) : `race_${Math.random().toString(36).slice(2, 10)}`;
     const issuedAt = Date.now();
     const payload = {
       raceId,
@@ -584,11 +743,19 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
       const freshProfileRef = db.doc(`/Players/${uid}/Profile/Profile`);
       const clanStateRef = playerClanStateRef(uid);
 
+      // For multiplayer we must read the canonical race doc BEFORE any write so
+      // we only CREATE it on the first member's call and JOIN (no clobber) on
+      // subsequent calls. Single-player passes a fresh id so this read always
+      // misses (harmless).
+      const raceRef = db.doc(`/Races/${raceId}`);
+
       // Parallelize initial reads
-      const [freshProfileSnap, clanStateSnap] = await Promise.all([
+      const [freshProfileSnap, clanStateSnap, raceSnap] = await Promise.all([
         transaction.get(freshProfileRef),
-        transaction.get(clanStateRef)
+        transaction.get(clanStateRef),
+        transaction.get(raceRef),
       ]);
+      const raceAlreadyExists = raceSnap.exists;
 
       const currentTrophies = freshProfileSnap.exists
         ? sanitizeTrophyCount(freshProfileSnap.data()?.[trophyFields.current])
@@ -643,27 +810,66 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
         }
       }
 
-      // Create Race Document
-      const raceRef = db.doc(`/Races/${raceId}`);
-      transaction.set(raceRef, {
-        status: "pending",
-        gamemode,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        lobbySnapshot: [
-          { rating: playerTrophies, participantId: uid },
-          ...bots.map(b => ({ rating: b.trophies, participantId: null }))
-        ],
-        laps,
-        trackId: trackId || "track_01"
-      });
+      // Create Race Document.
+      // ── Single-player ──────────────────────────────────────────────────────────
+      // Snapshot = [thisPlayer, ...thisPlayer's bots]; playerIndex 0 (UNCHANGED).
+      // ── Multiplayer (canonical) ──────────────────────────────────────────────────
+      // The FIRST member to reach here creates the canonical race whose snapshot
+      // lists EVERY human lobby member (canonical order, participantId = each
+      // member's uid) followed by the ONE shared bot set. Subsequent members JOIN:
+      // they do NOT recreate the race (raceAlreadyExists) so the canonical snapshot
+      // is never clobbered, and they only add their own Participant doc with their
+      // correct playerIndex. This is what lets the dedicated server's single
+      // serverFinishOrder map onto one shared snapshot for everyone.
+      if (useCanonical) {
+        if (!raceAlreadyExists) {
+          const canonicalLobbySnapshot = [
+            ...canonicalMemberOrder.map((mUid, idx) => ({
+              rating: Math.max(0, Math.floor(canonicalMemberRatings[idx] ?? 0)),
+              participantId: mUid,
+            })),
+            ...bots.map((b) => ({ rating: b.trophies, participantId: null as string | null })),
+          ];
+          transaction.set(raceRef, {
+            status: "pending",
+            gamemode,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            lobbySnapshot: canonicalLobbySnapshot,
+            laps,
+            trackId: trackId || "track_01",
+            // Discoverability/diagnostics — the canonical id is also the doc id.
+            lobbyId,
+            raceRound,
+            isMultiplayer: true,
+            memberOrder: canonicalMemberOrder,
+          });
+        }
+        // else: JOIN — leave the existing canonical race + snapshot untouched.
+      } else {
+        // Single-player: original behaviour, byte-for-byte.
+        transaction.set(raceRef, {
+          status: "pending",
+          gamemode,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          lobbySnapshot: [
+            { rating: playerTrophies, participantId: uid },
+            ...bots.map(b => ({ rating: b.trophies, participantId: null }))
+          ],
+          laps,
+          trackId: trackId || "track_01"
+        });
+      }
 
-      // Create Participant Document
+      // Create Participant Document.
+      // Single-player: playerIndex 0 (unchanged). Multiplayer: this player's real
+      // position in the canonical member order so recordRaceResult can place them.
       const participantRef = db.doc(`/Races/${raceId}/Participants/${uid}`);
       transaction.set(participantRef, {
         gamemode,
         preDeductedTrophies: appliedPreDeduction,
-        playerIndex: 0,
+        playerIndex: useCanonical ? resolvedPlayerIndex : 0,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         carId,
         deckIndex,

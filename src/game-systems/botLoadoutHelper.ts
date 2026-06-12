@@ -125,6 +125,30 @@ const buildSpellDeck = async (trophyCount: number): Promise<GeneratedBotLoadout[
   return deck;
 };
 
+/**
+ * Shared core for the generateBotLoadout callables. Validates the trophy
+ * count and returns the response payload. Used by both the App-Check-enforced
+ * client callable (generateBotLoadout) and the App-Check-exempt server callable
+ * (serverGenerateBotLoadout) so the loadout logic lives in exactly one place.
+ *
+ * Throws a plain Error("invalid trophyCount") if the input is invalid; each
+ * callable maps that to its own HttpsError("invalid-argument").
+ */
+export const generateBotLoadoutResponse = async (
+  trophies: unknown,
+): Promise<GeneratedBotLoadout> => {
+  if (typeof trophies !== "number" || !Number.isFinite(trophies) || trophies < 0) {
+    throw new Error("invalid trophyCount");
+  }
+  const loadout = await buildBotLoadout(trophies);
+  return {
+    carId: loadout.carId,
+    cosmetics: loadout.cosmetics,
+    spellDeck: loadout.spellDeck,
+    difficulty: loadout.difficulty,
+  };
+};
+
 export const buildBotLoadout = async (trophyCount: number): Promise<GeneratedBotLoadout> => {
   await ensureCatalogCaches();
 

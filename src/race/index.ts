@@ -9,7 +9,7 @@ import { grantInventoryRewards } from "../shared/inventoryAwards.js";
 import { maybeTriggerFlashSales } from "../triggers/flashSales.js";
 import { maybeGenerateStarterOffer } from "../shop/offers.js";
 import { STARTER_RACE_THRESHOLD } from "../shop/offerState.js";
-import { buildBotLoadout } from "../game-systems/botLoadoutHelper.js";
+import { generateBotLoadoutResponse } from "../game-systems/botLoadoutHelper.js";
 import { applyClanTrophyDelta, playerClanStateRef, clanMembersCollection, clanRef, updateClanMemberSnapshot } from "../clan/helpers.js";
 import { getSpellEvolutionV2Catalog, getCrateSlotsConfig, getUnlockDurationForRarity, getMasteryConfig, getMasteryRank, getMasteryProgress, getXpCapForCar } from "../core/configV2.js";
 import { CrateSlotEntry, UserCrateSlotsDoc } from "../shared/typesV2.js";
@@ -277,6 +277,123 @@ const buildFinishOrderIndexes = (
   return resolved;
 };
 
+type ServerFinishOrderEntry = {
+  slot?: number;
+  uid?: string;
+  botName?: string;
+  isBot?: boolean;
+  position?: number;
+  timeSeconds?: number;
+};
+
+/**
+ * Derives authoritative finish-order indexes (into the race's lobbySnapshot)
+ * from the dedicated server's serverFinishOrder array.
+ *
+ * lobbySnapshot identity (see prepareRace.ts lines 653-656 and startRace
+ * lobbySnapshot construction): each entry is { rating, participantId } where a
+ * real player's participantId === their uid and a bot's participantId === null.
+ * Bots carry NO name in the snapshot, so the mapping rule is:
+ *   - player entries (isBot=false): map by uid → that uid's snapshot index.
+ *   - bot entries: if the snapshot happens to expose bot names/participantIds
+ *     that match botName, map by name; otherwise assign bot entries in finish
+ *     order to the remaining non-player snapshot indexes (the null-participantId
+ *     slots), in their natural snapshot order.
+ *
+ * Returns snapshot indexes ordered by finishing position (1st → last), or null
+ * if the server order cannot be mapped onto the snapshot (caller falls back to
+ * the client-derived ordering).
+ */
+const buildServerFinishOrderIndexes = (
+  serverFinishOrderRaw: unknown,
+  snapshot: LobbySnapshotEntry[],
+  uid: string,
+  playerIndex: number,
+): number[] | null => {
+  if (!Array.isArray(serverFinishOrderRaw) || serverFinishOrderRaw.length === 0) {
+    return null;
+  }
+  const total = snapshot.length;
+
+  // Index snapshot players by uid, and collect the non-player (bot) slots in
+  // their natural order. The caller has already forced snapshot[playerIndex]
+  // to participantId === uid.
+  const snapshotIndexByUid = new Map<string, number>();
+  const snapshotIndexByName = new Map<string, number>();
+  const botSlotIndexes: number[] = [];
+  snapshot.forEach((entry, idx) => {
+    if (entry.participantId) {
+      snapshotIndexByUid.set(entry.participantId, idx);
+    } else {
+      botSlotIndexes.push(idx);
+    }
+  });
+  snapshotIndexByUid.set(uid, playerIndex);
+
+  // Optionally support bot-by-name if the snapshot ever carries names.
+  (snapshot as Array<LobbySnapshotEntry & { botName?: unknown; name?: unknown }>).forEach((entry, idx) => {
+    const nm =
+      typeof entry.botName === "string"
+        ? entry.botName
+        : typeof entry.name === "string"
+          ? entry.name
+          : null;
+    if (nm && nm.trim().length > 0) {
+      snapshotIndexByName.set(nm, idx);
+    }
+  });
+
+  // Build the ordered list of entries by finishing position.
+  const entries = (serverFinishOrderRaw as ServerFinishOrderEntry[]).slice();
+  entries.sort((a, b) => Number(a?.position ?? 0) - Number(b?.position ?? 0));
+
+  const resolved: number[] = [];
+  const seen = new Set<number>();
+  let botCursor = 0;
+
+  for (const entry of entries) {
+    if (!entry || typeof entry !== "object") {
+      return null;
+    }
+    const isBot = entry.isBot === true;
+    let idx: number | undefined;
+
+    if (!isBot) {
+      const entryUid = typeof entry.uid === "string" ? entry.uid : "";
+      if (entryUid.length === 0) {
+        return null;
+      }
+      idx = snapshotIndexByUid.get(entryUid);
+    } else {
+      const botName = typeof entry.botName === "string" ? entry.botName : "";
+      if (botName.length > 0 && snapshotIndexByName.has(botName)) {
+        idx = snapshotIndexByName.get(botName);
+      } else {
+        // Assign bots in finish order to the remaining snapshot bot slots.
+        while (botCursor < botSlotIndexes.length && seen.has(botSlotIndexes[botCursor])) {
+          botCursor += 1;
+        }
+        idx = botCursor < botSlotIndexes.length ? botSlotIndexes[botCursor] : undefined;
+        botCursor += 1;
+      }
+    }
+
+    if (typeof idx !== "number" || idx < 0 || idx >= total || seen.has(idx)) {
+      return null;
+    }
+    resolved.push(idx);
+    seen.add(idx);
+  }
+
+  // The server order must cover every snapshot slot exactly once and include
+  // the calling player; otherwise it is unusable and we fall back.
+  if (resolved.length !== total || !seen.has(playerIndex)) {
+    return null;
+  }
+
+  return resolved;
+};
+
 export const startRace = onCall(callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true), async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
@@ -394,17 +511,14 @@ export const startRace = onCall(callableOptions({ minInstances: getMinInstances(
 
 export const generateBotLoadout = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   const { trophyCount } = request.data ?? {};
-  if (typeof trophyCount !== "number" || trophyCount < 0) {
-    throw new HttpsError("invalid-argument", "trophyCount must be a non-negative number.");
+  try {
+    return await generateBotLoadoutResponse(trophyCount);
+  } catch (e) {
+    if (e instanceof Error && e.message === "invalid trophyCount") {
+      throw new HttpsError("invalid-argument", "trophyCount must be a non-negative number.");
+    }
+    throw e;
   }
-
-  const loadout = await buildBotLoadout(trophyCount);
-  return {
-    carId: loadout.carId,
-    cosmetics: loadout.cosmetics,
-    spellDeck: loadout.spellDeck,
-    difficulty: loadout.difficulty,
-  };
 });
 
 export const recordRaceResult = onCall(callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true), async (request) => {
@@ -535,7 +649,34 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
       if (!Array.isArray(finishOrder)) {
         throw new HttpsError("invalid-argument", "finishOrder is required for standard competitive races.");
       }
-      finishOrderIndexes = buildFinishOrderIndexes(finishOrder, lobbySnapshot, uid, playerIndex);
+      // Always validate the client payload's shape (throws on malformed input).
+      const clientFinishOrderIndexes = buildFinishOrderIndexes(finishOrder, lobbySnapshot, uid, playerIndex);
+
+      // If the dedicated server submitted an authoritative finish order
+      // (serverRecordRaceResult), settle using the server's ordering instead of
+      // trusting the client. When absent, behaviour is unchanged.
+      const serverFinishOrderIndexes = buildServerFinishOrderIndexes(
+        raceData.serverFinishOrder,
+        lobbySnapshot,
+        uid,
+        playerIndex,
+      );
+      if (serverFinishOrderIndexes) {
+        const disagrees =
+          serverFinishOrderIndexes.length !== clientFinishOrderIndexes.length ||
+          serverFinishOrderIndexes.some((v, i) => v !== clientFinishOrderIndexes[i]);
+        if (disagrees) {
+          logger.warn("[recordRaceResult] Client finishOrder disagrees with server-authoritative order; using server order", {
+            uid,
+            raceId,
+            clientOrder: clientFinishOrderIndexes,
+            serverOrder: serverFinishOrderIndexes,
+          });
+        }
+        finishOrderIndexes = serverFinishOrderIndexes;
+      } else {
+        finishOrderIndexes = clientFinishOrderIndexes;
+      }
       const placeIndex = finishOrderIndexes.indexOf(playerIndex);
       resolvedPlaceIndex = placeIndex >= 0 ? placeIndex : finishOrderIndexes.length - 1;
       place = resolvedPlaceIndex + 1;

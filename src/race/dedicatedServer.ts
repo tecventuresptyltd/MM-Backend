@@ -2,6 +2,8 @@ import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { callableOptions } from "../shared/callableOptions.js";
+import { getSpellsCatalog } from "../core/config.js";
+import { generateBotLoadoutResponse } from "../game-systems/botLoadoutHelper.js";
 
 /**
  * ═══════════════════════════════════════════════════════════════
@@ -37,6 +39,48 @@ import { callableOptions } from "../shared/callableOptions.js";
  */
 
 const rtdb = () => admin.database();
+
+// ═══════════════════════════════════════════════════════════════
+// Shared-secret authentication for server-to-server callables
+// ═══════════════════════════════════════════════════════════════
+//
+// The App-Check-EXEMPT server* functions are invoked by the dedicated
+// game-server process (a trusted backend), not by Unity clients. Without
+// App Check enforcement, any signed-in user could otherwise spoof them.
+// We gate every exempt function behind a shared secret carried in the
+// payload as `serverSecret`. The secret is provisioned to the dedicated
+// server via the MM_SERVER_SECRET environment variable (same value on
+// both sides).
+
+/**
+ * Throws failed-precondition if the server secret is not configured in the
+ * environment, or permission-denied if the caller did not supply the
+ * matching secret. Callers must invoke this before trusting any payload.
+ */
+const assertServerSecret = (data: unknown): void => {
+  const expected = process.env.MM_SERVER_SECRET;
+  if (typeof expected !== "string" || expected.length === 0) {
+    throw new HttpsError(
+      "failed-precondition",
+      "Server secret is not configured (MM_SERVER_SECRET unset).",
+    );
+  }
+  const provided =
+    data && typeof data === "object"
+      ? (data as Record<string, unknown>).serverSecret
+      : undefined;
+  if (typeof provided !== "string" || provided !== expected) {
+    throw new HttpsError(
+      "permission-denied",
+      "Invalid or missing server secret.",
+    );
+  }
+};
+
+// NOTE: None of the server* functions below log the raw request payload —
+// they only log explicitly-named, non-secret fields (lobbyId, raceId, etc.).
+// `serverSecret` is therefore never written to logs. If a future change logs
+// the whole payload, strip `serverSecret` first.
 
 // ═══════════════════════════════════════════════════════════════
 // requestDedicatedServer — Called by Unity lobby host
@@ -196,8 +240,8 @@ export const requestDedicatedServer = onCall(
 export const serverHeartbeat = onCall(
   callableOptions({ cpu: 1, concurrency: 80, enforceAppCheck: false }),
   async (request) => {
-    // The server authenticates with a service account, so auth.uid is the SA email
-    // In production, validate a shared secret or the SA identity
+    // App Check is exempt for server-to-server calls; authenticate via shared secret.
+    assertServerSecret(request.data);
     const { lobbyId, connectedPlayers, raceState } = request.data ?? {};
 
     if (typeof lobbyId !== "string" || lobbyId.trim().length === 0) {
@@ -228,25 +272,125 @@ export const serverHeartbeat = onCall(
 // ═══════════════════════════════════════════════════════════════
 
 /**
- * The dedicated server calls this with the authoritative race result
- * for a specific player. This is a server-to-server call using a
- * service account — no App Check is enforced.
+ * The dedicated server calls this with the authoritative finish order for
+ * the entire race. This is a server-to-server call (App Check exempt,
+ * authenticated via the shared MM_SERVER_SECRET).
  *
- * The function wraps the existing recordRaceResult logic by calling it
- * internally via the admin SDK, ensuring the same trophy/coin/xp
- * settlement path is used.
+ * This function does NOT settle rewards itself — settlement (trophies, coins,
+ * XP, drops) is owned by recordRaceResult, which runs once per player inside
+ * a Firestore transaction. This function simply persists the authoritative
+ * finish order onto the Race document so that, when each player's client
+ * calls recordRaceResult, the settlement uses the server's ordering instead
+ * of trusting the client-submitted order. (See recordRaceResult in
+ * ../race/index.ts: when raceData.serverFinishOrder is present it derives the
+ * authoritative placement indices from it.)
  *
- * Input:
- *   lobbyId:       string — the lobby this race belongs to
- *   playerUid:     string — the player to record results for
- *   raceId:        string — from startRace/prepareRace
- *   finishOrder:   number[] — authoritative finish order from server
- *   botNames:      string[] — bot display names
- *   place:         number — 1-indexed finish position for this player
+ * Input (payload):
+ *   serverSecret: string — shared secret (stripped before logging)
+ *   lobbyId:      string — the lobby this race belongs to
+ *   raceId:       string — from startRace/prepareRace
+ *   finishOrder:  Array<{
+ *                   slot: number,        // server-side slot id
+ *                   uid: string,         // player uid ("" for bots)
+ *                   botName: string,     // bot display name ("" for players)
+ *                   isBot: boolean,
+ *                   position: number,    // 1-indexed final placement
+ *                   timeSeconds: number, // finish time
+ *                 }>
  *
- * Output:
- *   The same result payload as recordRaceResult
+ * Writes to /Races/{raceId}:
+ *   serverFinishOrder: the validated finishOrder array (sorted by position)
+ *   source: "dedicated_server"
+ *   serverSubmittedAt: server timestamp
+ *
+ * Idempotency: if /Races/{raceId} already has a serverFinishOrder whose
+ * content differs from this submission, the call is rejected (logged) rather
+ * than overwriting authoritative data. Re-submitting identical content is a
+ * no-op success.
  */
+
+type ServerFinishOrderEntry = {
+  slot: number;
+  uid: string;
+  botName: string;
+  isBot: boolean;
+  position: number;
+  timeSeconds: number;
+};
+
+const validateServerFinishOrder = (raw: unknown): ServerFinishOrderEntry[] => {
+  if (!Array.isArray(raw) || raw.length === 0) {
+    throw new HttpsError(
+      "invalid-argument",
+      "finishOrder must be a non-empty array.",
+    );
+  }
+  const normalized: ServerFinishOrderEntry[] = raw.map((entry, idx) => {
+    if (!entry || typeof entry !== "object") {
+      throw new HttpsError(
+        "invalid-argument",
+        `finishOrder[${idx}] must be an object.`,
+      );
+    }
+    const e = entry as Record<string, unknown>;
+    const slot = Number(e.slot);
+    const isBot = e.isBot === true;
+    const uid = typeof e.uid === "string" ? e.uid : "";
+    const botName = typeof e.botName === "string" ? e.botName : "";
+    const position = Number(e.position);
+    const timeSeconds = Number(e.timeSeconds);
+
+    if (!Number.isFinite(slot)) {
+      throw new HttpsError("invalid-argument", `finishOrder[${idx}].slot must be a number.`);
+    }
+    if (!Number.isInteger(position) || position < 1) {
+      throw new HttpsError("invalid-argument", `finishOrder[${idx}].position must be a positive integer.`);
+    }
+    if (!isBot && uid.trim().length === 0) {
+      throw new HttpsError("invalid-argument", `finishOrder[${idx}] is a player but has no uid.`);
+    }
+    if (isBot && botName.trim().length === 0) {
+      throw new HttpsError("invalid-argument", `finishOrder[${idx}] is a bot but has no botName.`);
+    }
+
+    return {
+      slot,
+      uid,
+      botName,
+      isBot,
+      position,
+      timeSeconds: Number.isFinite(timeSeconds) ? timeSeconds : 0,
+    };
+  });
+
+  // Persist in placement order so downstream consumers can rely on it.
+  normalized.sort((a, b) => a.position - b.position);
+  return normalized;
+};
+
+/** Order-insensitive structural equality for an existing serverFinishOrder. */
+const serverFinishOrdersMatch = (
+  a: unknown,
+  b: ServerFinishOrderEntry[],
+): boolean => {
+  if (!Array.isArray(a) || a.length !== b.length) {
+    return false;
+  }
+  const key = (e: Partial<ServerFinishOrderEntry>): string =>
+    `${e.slot}|${e.uid ?? ""}|${e.botName ?? ""}|${e.isBot === true}|${e.position}`;
+  const existing = (a as Array<Record<string, unknown>>)
+    .map((e) => key({
+      slot: Number(e.slot),
+      uid: typeof e.uid === "string" ? e.uid : "",
+      botName: typeof e.botName === "string" ? e.botName : "",
+      isBot: e.isBot === true,
+      position: Number(e.position),
+    }))
+    .sort();
+  const incoming = b.map((e) => key(e)).sort();
+  return existing.every((val, i) => val === incoming[i]);
+};
+
 export const serverRecordRaceResult = onCall(
   callableOptions({
     cpu: 1,
@@ -255,103 +399,76 @@ export const serverRecordRaceResult = onCall(
     enforceAppCheck: false,
   }),
   async (request) => {
-    const {
-      lobbyId,
-      playerUid,
-      raceId,
-      finishOrder,
-      botNames,
-      survivalSeconds,
-    } = request.data ?? {};
+    assertServerSecret(request.data);
+    const { lobbyId, raceId, finishOrder } = request.data ?? {};
 
     // Validate required fields
     if (typeof lobbyId !== "string" || lobbyId.trim().length === 0) {
       throw new HttpsError("invalid-argument", "lobbyId is required.");
     }
-    if (typeof playerUid !== "string" || playerUid.trim().length === 0) {
-      throw new HttpsError("invalid-argument", "playerUid is required.");
-    }
     if (typeof raceId !== "string" || raceId.trim().length === 0) {
       throw new HttpsError("invalid-argument", "raceId is required.");
     }
+    const validatedFinishOrder = validateServerFinishOrder(finishOrder);
 
-    logger.info("[serverRecordRaceResult] Processing authoritative result", {
+    logger.info("[serverRecordRaceResult] Recording authoritative finish order", {
       lobbyId,
-      playerUid,
       raceId,
-      finishOrderLength: Array.isArray(finishOrder) ? finishOrder.length : 0,
+      finishOrderLength: validatedFinishOrder.length,
     });
-
-    // The dedicated server has already validated checkpoints and finish order.
-    // We call the existing recordRaceResult Cloud Function programmatically
-    // by directly invoking it via the Firebase Admin SDK's HTTPS callable.
-    //
-    // However, since recordRaceResult requires auth.uid, and we're calling
-    // from a service account, we use custom token impersonation.
-    //
-    // Alternative (and recommended) approach: refactor recordRaceResult's
-    // core logic into a shared helper, and call it here directly.
-    // For now, we use the Cloud Tasks approach or direct Firestore transaction.
-
-    // Direct approach: call the same Firestore transaction logic directly
-    // by reading the Race document and applying rewards.
-    // This avoids HTTP round-trips and authentication complexity.
 
     const db = admin.firestore();
-
-    // Verify the race exists and is pending
     const raceRef = db.doc(`/Races/${raceId}`);
-    const raceDoc = await raceRef.get();
 
-    if (!raceDoc.exists) {
-      throw new HttpsError("not-found", `Race ${raceId} not found.`);
-    }
-
-    const raceData = raceDoc.data() ?? {};
-    if (raceData.status === "settled" || raceData.status === "pending") {
-      // Idempotent: return cached result if it exists for this participant
-      const participantRef = db.doc(
-        `/Races/${raceId}/Participants/${playerUid}`
-      );
-      const participantDoc = await participantRef.get();
-      const cached = participantDoc.data()?.cachedResult;
-      if (cached) {
-        logger.info(
-          "[serverRecordRaceResult] Race already recorded — returning cached result",
-          { playerUid, raceId }
-        );
-        return cached;
+    // Persist the authoritative finish order with an idempotency guard inside
+    // a transaction so concurrent submissions cannot clobber each other.
+    await db.runTransaction(async (transaction) => {
+      const raceDoc = await transaction.get(raceRef);
+      if (!raceDoc.exists) {
+        throw new HttpsError("not-found", `Race ${raceId} not found.`);
       }
-      // If the race is settled but this player has no cached result yet,
-      // we proceed to allow marking the race as server-authoritative for them.
-    } else {
-      throw new HttpsError("failed-precondition", `Race is in status ${raceData.status}.`);
-    }
 
-    // Mark that this result came from the dedicated server
-    await raceRef.update({
-      source: "dedicated_server",
-      serverLobbyId: lobbyId,
+      const raceData = raceDoc.data() ?? {};
+      const existing = raceData.serverFinishOrder;
+      if (existing !== undefined && existing !== null) {
+        if (serverFinishOrdersMatch(existing, validatedFinishOrder)) {
+          // Identical re-submission — idempotent no-op.
+          logger.info(
+            "[serverRecordRaceResult] Identical finish order already recorded — no-op",
+            { raceId, lobbyId },
+          );
+          return;
+        }
+        // Different content — reject rather than overwrite authoritative data.
+        logger.error(
+          "[serverRecordRaceResult] Rejected attempt to overwrite existing serverFinishOrder",
+          { raceId, lobbyId, existingLength: Array.isArray(existing) ? existing.length : null, incomingLength: validatedFinishOrder.length },
+        );
+        throw new HttpsError(
+          "already-exists",
+          "Race already has a different server finish order; refusing to overwrite.",
+        );
+      }
+
+      transaction.update(raceRef, {
+        serverFinishOrder: validatedFinishOrder,
+        source: "dedicated_server",
+        serverLobbyId: lobbyId,
+        serverSubmittedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
     });
 
-    // Return a reference for the Unity client to call recordRaceResult normally
-    // This approach lets the existing battle-tested recordRaceResult handle
-    // all the complex trophy/coin/XP settlement without duplication.
-    //
-    // The server sends the RaceComplete message to each client with:
-    // { raceId, finishOrder, botNames } and each client calls recordRaceResult
-    // individually (same as current flow, but with server-authoritative data).
-
-    logger.info("[serverRecordRaceResult] Race marked as server-authoritative", {
+    logger.info("[serverRecordRaceResult] Authoritative finish order persisted", {
       raceId,
       lobbyId,
     });
 
+    // Settlement of trophies/coins/XP still happens in recordRaceResult, which
+    // each player's client calls and which now honours serverFinishOrder.
     return {
       success: true,
       raceId,
-      message:
-        "Race marked as server-authoritative. Clients should call recordRaceResult.",
+      finishOrderLength: validatedFinishOrder.length,
     };
   }
 );
@@ -363,6 +480,7 @@ export const serverRecordRaceResult = onCall(
 export const serverUpdateRaceState = onCall(
   callableOptions({ cpu: 1, concurrency: 80, enforceAppCheck: false }),
   async (request) => {
+    assertServerSecret(request.data);
     const { lobbyId, state } = request.data ?? {};
 
     if (typeof lobbyId !== "string" || lobbyId.trim().length === 0) {
@@ -418,6 +536,7 @@ export const serverUpdateRaceState = onCall(
 export const serverSelfRegister = onCall(
   callableOptions({ cpu: 1, concurrency: 80, enforceAppCheck: false }),
   async (request) => {
+    assertServerSecret(request.data);
     const { lobbyId, ip, port, connectionKey } = request.data ?? {};
 
     if (typeof lobbyId !== "string" || lobbyId.trim().length === 0) {
@@ -449,5 +568,62 @@ export const serverSelfRegister = onCall(
       .set("server_ready");
 
     return { success: true };
+  }
+);
+
+// ═══════════════════════════════════════════════════════════════
+// serverGetSpellCatalog — Dedicated server reads the spell catalog
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Called by the dedicated server (App Check exempt, shared-secret
+ * authenticated) to fetch the spell catalog so it can authoritatively
+ * resolve spell definitions during a race. Mirrors the SpellsCatalog doc
+ * content at /GameData/v1/catalogs/SpellsCatalog. Returns { spells: <map> }.
+ *
+ * Reuses getSpellsCatalog() (the same cached/normalised loader the client
+ * race flow uses) rather than reading raw Firestore, so the server sees the
+ * identical spell data clients do.
+ */
+export const serverGetSpellCatalog = onCall(
+  callableOptions({ cpu: 1, concurrency: 80, memory: "512MiB", enforceAppCheck: false }),
+  async (request) => {
+    assertServerSecret(request.data);
+
+    const spells = await getSpellsCatalog();
+
+    logger.info("[serverGetSpellCatalog] Served spell catalog", {
+      spellCount: Object.keys(spells ?? {}).length,
+    });
+
+    return { spells };
+  }
+);
+
+// ═══════════════════════════════════════════════════════════════
+// serverGenerateBotLoadout — Dedicated server generates a bot loadout
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Called by the dedicated server (App Check exempt, shared-secret
+ * authenticated) to generate a bot loadout. Delegates to the same shared
+ * core (generateBotLoadoutResponse) used by the App-Check-enforced client
+ * callable generateBotLoadout, so the logic lives in one place.
+ *
+ * Payload: { trophies: number, serverSecret: string }
+ */
+export const serverGenerateBotLoadout = onCall(
+  callableOptions({ cpu: 1, concurrency: 80, enforceAppCheck: false }),
+  async (request) => {
+    assertServerSecret(request.data);
+    const { trophies } = request.data ?? {};
+    try {
+      return await generateBotLoadoutResponse(trophies);
+    } catch (e) {
+      if (e instanceof Error && e.message === "invalid trophyCount") {
+        throw new HttpsError("invalid-argument", "trophies must be a non-negative number.");
+      }
+      throw e;
+    }
   }
 );

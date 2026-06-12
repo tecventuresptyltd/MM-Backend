@@ -308,8 +308,8 @@ export const serverRecordRaceResult = onCall(
     }
 
     const raceData = raceDoc.data() ?? {};
-    if (raceData.status === "settled") {
-      // Idempotent: return cached result
+    if (raceData.status === "settled" || raceData.status === "pending") {
+      // Idempotent: return cached result if it exists for this participant
       const participantRef = db.doc(
         `/Races/${raceId}/Participants/${playerUid}`
       );
@@ -317,12 +317,15 @@ export const serverRecordRaceResult = onCall(
       const cached = participantDoc.data()?.cachedResult;
       if (cached) {
         logger.info(
-          "[serverRecordRaceResult] Race already settled — returning cached",
+          "[serverRecordRaceResult] Race already recorded — returning cached result",
           { playerUid, raceId }
         );
         return cached;
       }
-      throw new HttpsError("already-exists", "Race already recorded.");
+      // If the race is settled but this player has no cached result yet,
+      // we proceed to allow marking the race as server-authoritative for them.
+    } else {
+      throw new HttpsError("failed-precondition", `Race is in status ${raceData.status}.`);
     }
 
     // Mark that this result came from the dedicated server

@@ -86,8 +86,42 @@ service cloud.firestore {
         allow write: if false;
       }
       
-      // Other subcollections are readable by the user but not writable.
-      match /{path=**} {
+      // Explicit matches for subcollections to avoid issues with recursive wildcards
+      match /Garage/{docId=**} {
+        allow read: if isSelf(uid);
+        allow write: if false;
+      }
+      match /Spells/{docId=**} {
+        allow read: if isSelf(uid);
+        allow write: if false;
+      }
+      match /Queues/{docId=**} {
+        allow read: if isSelf(uid);
+        allow write: if false;
+      }
+      match /Licenses/{docId=**} {
+        allow read: if isSelf(uid);
+        allow write: if false;
+      }
+      match /Offers/{docId=**} {
+        allow read: if isSelf(uid);
+        allow write: if false;
+      }
+      match /Social/{docId=**} {
+        allow read: if isSelf(uid);
+        allow write: if false;
+      }
+      match /Crates/{docId=**} {
+        allow read: if isSelf(uid);
+        allow write: if false;
+      }
+      match /Progress/{docId=**} {
+        allow read: if isSelf(uid);
+        allow write: if false;
+      }
+
+      // Other subcollections fallback (e.g. any new ones)
+      match /{allPaths=**} {
         allow read: if isSelf(uid);
         allow write: if false;
       }

@@ -1,5 +1,19 @@
 {
   "rules": {
+    "lobbies": {
+      "$lobbyId": {
+        ".read": "auth != null",
+        ".write": "auth != null"
+      }
+    },
+    "users": {
+      "$uid": {
+        "invitations": {
+          ".read": "auth != null && auth.uid === $uid",
+          ".write": "auth != null"
+        }
+      }
+    },
     "chat_messages": {
       "clans": {
         "$clanId": {

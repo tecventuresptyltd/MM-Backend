@@ -429,27 +429,6 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
 
     const raceStatus = raceDoc.data()?.status;
 
-    // ── Idempotency guard ──────────────────────────────────────────────────────
-    // If this race was already settled (e.g. the client sent the request, the
-    // server processed it, but the client was backgrounded and missed the
-    // response), return the cached result stored on the Participants doc so the
-    // client GUI can populate normally without any duplicate writes.
-    if (raceStatus === "settled") {
-      const participantRef = db.doc(`/Races/${raceId}/Participants/${uid}`);
-      const participantDoc = await transaction.get(participantRef);
-      const cached = participantDoc.data()?.cachedResult;
-      if (cached) {
-        logger.info("[recordRaceResult] Race already settled — returning cached result", { uid, raceId });
-        return cached;
-      }
-      // Cached result missing (older race pre-caching) — surface a clear error
-      throw new HttpsError("already-exists", "Race already recorded.");
-    }
-
-    if (raceStatus !== "pending") {
-      throw new HttpsError("failed-precondition", "Race is not pending or does not exist.");
-    }
-
     const economyRef = db.doc(`/Players/${uid}/Economy/Stats`);
     const profileRef = db.doc(`/Players/${uid}/Profile/Profile`);
     const participantRef = db.doc(`/Races/${raceId}/Participants/${uid}`);
@@ -471,6 +450,19 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
 
     const profileData = profileDoc.data()!;
     const participantData = participantDoc.data() ?? {};
+
+    // ── Idempotency guard ──────────────────────────────────────────────────────
+    // If this player already has a cached result, return it directly to avoid duplicate processing.
+    const cached = participantData.cachedResult;
+    if (cached) {
+      logger.info("[recordRaceResult] Race already recorded for this player — returning cached result", { uid, raceId });
+      return cached;
+    }
+
+    // Check race status. The race can be "pending" or "settled" (if another human player finished first).
+    if (raceStatus !== "pending" && raceStatus !== "settled") {
+      throw new HttpsError("failed-precondition", `Race is not pending or settled (status: ${raceStatus}).`);
+    }
 
     // Get gamemode from participant doc (defaults to RANKED for backward compatibility)
     const gamemode: GameMode = resolveGameMode(participantData.gamemode);

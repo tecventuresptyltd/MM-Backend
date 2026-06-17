@@ -2,8 +2,51 @@
   "rules": {
     "lobbies": {
       "$lobbyId": {
-        ".read": "auth != null",
-        ".write": "auth != null"
+        ".read": "auth != null && (root.child('lobbies').child($lobbyId).child('members').child(auth.uid).exists() || auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val())",
+        "members": {
+          "$uid": {
+            "status": {
+              ".write": "auth != null && auth.uid === $uid"
+            },
+            "isReady": {
+              ".write": "auth != null && (auth.uid === $uid || auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val())"
+            },
+            "elo": {
+              ".write": "auth != null && auth.uid === $uid"
+            },
+            "cosmeticsInfo": {
+              ".write": "auth != null && auth.uid === $uid"
+            }
+          }
+        },
+        "mapVoting": {
+          "votes": {
+            "$uid": {
+              ".write": "auth != null && auth.uid === $uid"
+            }
+          },
+          "activeMapIndices": {
+            ".write": "auth != null && auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val()"
+          },
+          "winnerIndex": {
+            ".write": "auth != null && auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val()"
+          },
+          "counts": {
+            ".write": "auth != null && auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val()"
+          }
+        },
+        "gameMode": {
+          ".write": "auth != null && auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val()"
+        },
+        "matchmakingStatus": {
+          ".write": "auth != null && auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val()"
+        },
+        "launchSceneName": {
+          ".write": "auth != null && auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val()"
+        },
+        "serverInfo": {
+          ".write": "auth != null && auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val()"
+        }
       }
     },
     "users": {

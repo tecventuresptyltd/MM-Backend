@@ -117,7 +117,7 @@ export const joinLobby = onCall(callableOptions({ cpu: 1, concurrency: 80 }), as
   const roster = lobby.members || {};
   const currentSize = Object.keys(roster).length;
 
-  if (currentSize >= 8) {
+  if (currentSize >= 3) {
     throw new HttpsError("resource-exhausted", "This lobby is already full.");
   }
 

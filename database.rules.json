@@ -5,6 +5,7 @@
         ".read": "auth != null && (root.child('lobbies').child($lobbyId).child('members').child(auth.uid).exists() || auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val())",
         "members": {
           "$uid": {
+            ".write": "auth != null && !newData.exists() && (auth.uid === $uid || auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val())",
             "status": {
               ".write": "auth != null && auth.uid === $uid"
             },
@@ -15,6 +16,9 @@
               ".write": "auth != null && auth.uid === $uid"
             },
             "cosmeticsInfo": {
+              ".write": "auth != null && auth.uid === $uid"
+            },
+            "heartbeat": {
               ".write": "auth != null && auth.uid === $uid"
             }
           }

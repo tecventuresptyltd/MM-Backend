@@ -45,6 +45,10 @@ const GLOBAL_ROOM_WARMUP_TARGET = 20;
 const GLOBAL_ROOM_SOFT_CAP = 80;
 const GLOBAL_ROOM_HARD_CAP = 100;
 const GLOBAL_ROOM_QUERY_LIMIT = 100;
+// How stale a room's lastActivityAt may get before a message send refreshes it. Throttled
+// so a busy room is not hot-written on every message (Firestore single-doc write contention),
+// while still keeping the timestamp recent enough to drive "join the active room" selection.
+const ROOM_ACTIVITY_REFRESH_MS = 60_000;
 
 const sanitizeRoomRegion = (value?: unknown): string | null => {
   if (typeof value !== "string") {
@@ -62,6 +66,22 @@ const generateRoomId = (region: string) => {
   return `${region}_${suffix}`;
 };
 
+// Safely converts a Firestore Timestamp (or epoch-millis number) to milliseconds.
+// Used to rank rooms by how recently they saw activity (messages/joins).
+const timestampToMillis = (value: unknown): number => {
+  if (value && typeof (value as { toMillis?: () => number }).toMillis === "function") {
+    try {
+      return (value as FirebaseFirestore.Timestamp).toMillis();
+    } catch {
+      return 0;
+    }
+  }
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+  return 0;
+};
+
 interface RoomCandidate {
   id: string;
   ref: FirebaseFirestore.DocumentReference;
@@ -71,6 +91,7 @@ interface RoomCandidate {
   hardCap: number;
   isArchived: boolean;
   type: string;
+  lastMessageMs: number;
 }
 
 const toRoomCandidate = (
@@ -87,6 +108,11 @@ const toRoomCandidate = (
     hardCap: Number.isFinite(data.hardCap) ? Number(data.hardCap) : GLOBAL_ROOM_HARD_CAP,
     isArchived: Boolean(data.isArchived),
     type: typeof data.type === "string" ? data.type : "global",
+    // MESSAGE recency only — NOT lastActivityAt/createdAt. A freshly-minted empty room has a
+    // brand-new lastActivityAt/createdAt and would otherwise out-rank an older room that
+    // actually has chat history, sending the player into an empty shard. Rooms with no
+    // messages get 0 here and fall to the connectedCount tie-break.
+    lastMessageMs: timestampToMillis(data.lastMessageAt),
   };
 };
 
@@ -104,19 +130,41 @@ const pickDescending = (rooms: RoomCandidate[]): RoomCandidate | null => {
   return [...rooms].sort((a, b) => b.connectedCount - a.connectedCount)[0];
 };
 
-const chooseRoomCandidate = (rooms: RoomCandidate[]): RoomCandidate | null => {
-  const available = rooms.filter(
-    (room) => !room.isArchived && room.type === "global" && room.connectedCount < room.hardCap,
-  );
-  if (available.length === 0) {
+const pickRoomWithRecentMessages = (rooms: RoomCandidate[]): RoomCandidate | null => {
+  if (rooms.length === 0) {
     return null;
   }
-  const underSoftCap = available.filter((room) => room.connectedCount < room.softCap);
-  const soft = pickDescending(underSoftCap);
-  if (soft) {
-    return soft;
+  // Most recent MESSAGE first so the player lands where people are actually chatting.
+  // Tie-break toward the fuller room (highest connectedCount) so that when no room has a
+  // message timestamp yet, the established/most-joined room wins over a fresh empty shard,
+  // and players cluster together instead of scattering.
+  return [...rooms].sort((a, b) => {
+    if (b.lastMessageMs !== a.lastMessageMs) {
+      return b.lastMessageMs - a.lastMessageMs;
+    }
+    return b.connectedCount - a.connectedCount;
+  })[0];
+};
+
+const chooseRoomCandidate = (rooms: RoomCandidate[]): RoomCandidate | null => {
+  const usable = rooms.filter((room) => !room.isArchived && room.type === "global");
+  if (usable.length === 0) {
+    return null;
   }
-  return pickDescending(available);
+
+  // IMPORTANT: connectedCount is a monotonic counter that is only ever incremented on
+  // assign and is NEVER decremented (there is no reliable on-leave/disconnect hook). So
+  // over time every room inflates past hardCap, the old "connectedCount < hardCap" gate
+  // rejected them all, and a brand-new EMPTY room was minted on every assign — that is the
+  // bug where players landed in an empty shard with no messages.
+  //
+  // Always reuse an existing room and join the most recently active one (where the recent
+  // messages are). Prefer rooms still under hardCap, but when none qualify (inflated
+  // counts) fall back to ALL usable rooms rather than creating a random empty room. A new
+  // room is therefore created ONLY when no global room exists at all.
+  const withCapacity = usable.filter((room) => room.connectedCount < room.hardCap);
+  const pool = withCapacity.length > 0 ? withCapacity : usable;
+  return pickRoomWithRecentMessages(pool);
 };
 
 const roomsQueryForRegion = (region: string) =>
@@ -1069,6 +1117,15 @@ export const sendGlobalChatMessage = onCall(callableOptions({ cpu: 1, concurrenc
         },
         { merge: true },
       );
+
+      // Stamp lastMessageAt so assignGlobalChatRoom routes new players to rooms with RECENT
+      // MESSAGES (this is the field room selection ranks on). Throttled (see
+      // ROOM_ACTIVITY_REFRESH_MS) so a busy room is not hot-written on every message, which
+      // would cause Firestore single-document write contention.
+      const roomLastMessageMs = timestampToMillis(roomData.lastMessageAt);
+      if (nowMs - roomLastMessageMs > ROOM_ACTIVITY_REFRESH_MS) {
+        transaction.update(roomRef, { lastMessageAt: now, lastActivityAt: now, updatedAt: now });
+      }
 
       return { messageId: "", roomId };
     },

@@ -23,18 +23,22 @@ const fetchTopClanEntries = async (): Promise<ClanLeaderboardEntry[]> => {
     .limit(CLAN_LEADERBOARD_LIMIT)
     .get();
 
-  return snapshot.docs.map((doc) => {
-    const data = doc.data() ?? {};
-    const stats = data.stats ?? {};
-    return {
-      clanId: data.clanId ?? doc.id,
-      name: data.name ?? "Clan",
-      badge: typeof data.badge === "string" ? data.badge : null,
-      type: data.type ?? "anyone can join",
-      members: Number(stats.members ?? 0),
-      totalTrophies: Number(stats.trophies ?? 0),
-    };
-  });
+  return snapshot.docs
+    .map((doc) => {
+      const data = doc.data() ?? {};
+      const stats = data.stats ?? {};
+      return {
+        clanId: data.clanId ?? doc.id,
+        name: data.name ?? "Clan",
+        badge: typeof data.badge === "string" ? data.badge : null,
+        type: data.type ?? "anyone can join",
+        members: Math.max(0, Number(stats.members ?? 0)),
+        // Clamp at 0 — never publish a negative clan total to the leaderboard snapshot.
+        totalTrophies: Math.max(0, Number(stats.trophies ?? 0)),
+      };
+    })
+    // Skip empty clans (0 members) — abandoned/orphaned clans shouldn't be listed.
+    .filter((entry) => entry.members > 0);
 };
 
 const persistClanLeaderboard = async (

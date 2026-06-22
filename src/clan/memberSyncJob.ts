@@ -156,11 +156,13 @@ const syncClanMembers = async (clanId: string): Promise<{
         if (trophiesUpdated) {
             let totalTrophies = 0;
             profileMap.forEach((profile) => {
-                totalTrophies += profile.trophies;
+                const t = Number(profile.trophies ?? 0);
+                if (Number.isFinite(t) && t > 0) totalTrophies += t;
             });
 
             await db.doc(`/Clans/${clanId}`).update({
-                "stats.trophies": totalTrophies,
+                // Clamp at 0 — the clan total must never be stored as negative.
+                "stats.trophies": Math.max(0, totalTrophies),
                 updatedAt: admin.firestore.FieldValue.serverTimestamp(),
             });
 

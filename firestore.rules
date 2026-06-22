@@ -149,6 +149,20 @@ service cloud.firestore {
       }
     }
 
+    // Leaderboards - public read, server-only write. The client reads these directly
+    // via realtime listeners (FirebaseMasterClanLeaderboard reads ClanLeaderboard/snapshot;
+    // FirebaseMasterGlobalLeaderboard reads GlobalLeaderboard/{metric}). Without these rules
+    // the unmatched paths default-deny, so the listeners never deliver a snapshot on a
+    // fresh client (it "worked" in-editor only from Firestore's offline cache).
+    match /ClanLeaderboard/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /GlobalLeaderboard/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     // Rooms (global chat)
     match /Rooms/{roomId}/Messages/{messageId} {
       allow read: if true;

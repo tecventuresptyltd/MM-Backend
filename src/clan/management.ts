@@ -531,7 +531,7 @@ const loadClanDetails = async (clanId: string, uid: string): Promise<ClanDetails
       uid: doc.id,
       role: data.role ?? "member",
       rolePriority: Number(data.rolePriority ?? 0),
-      trophies: Number(data.trophies ?? 0),
+      trophies: Math.max(0, Number(data.trophies ?? 0)),
       displayName: data.displayName ?? "Racer",
       avatarId: typeof data.avatarId === "number" ? data.avatarId : Number(data.avatarId) || null,
       level: typeof data.level === "number" ? data.level : Number(data.level) || null,

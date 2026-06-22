@@ -42,8 +42,9 @@ const buildEntryFromClanDoc = (
     name: typeof data.name === "string" ? data.name : "Clan",
     badge: typeof data.badge === "string" ? data.badge : null,
     type: typeof data.type === "string" ? data.type : "anyone can join",
-    members: Number(stats.members ?? 0),
-    totalTrophies: Number(stats.trophies ?? 0),
+    members: Math.max(0, Number(stats.members ?? 0)),
+    // Clamp at 0 — never publish a negative clan total to the leaderboard snapshot.
+    totalTrophies: Math.max(0, Number(stats.trophies ?? 0)),
     location: data.location,
   };
 };
@@ -58,7 +59,10 @@ export const updateClanLeaderboardEntry = async (clanId: string): Promise<void> 
       .limit(CLAN_LEADERBOARD_LIMIT)
       .get();
 
-    const top = snapshot.docs.map((doc) => buildEntryFromClanDoc(doc.id, doc.data() ?? {}));
+    const top = snapshot.docs
+      .map((doc) => buildEntryFromClanDoc(doc.id, doc.data() ?? {}))
+      // Skip empty clans (0 members) — abandoned/orphaned clans shouldn't be listed.
+      .filter((entry) => entry.members > 0);
     await db
       .collection("ClanLeaderboard")
       .doc("snapshot")

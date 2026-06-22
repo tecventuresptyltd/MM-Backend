@@ -75,37 +75,39 @@ export const onPlayerProfileUpdate = onDocumentUpdated(
             // Update clan member document
             const memberRef = clanMembersCollection(clanId).doc(userId);
 
-            // If trophies changed, we need to recalculate clan totals atomically
+            // If trophies changed, RECOMPUTE the clan total authoritatively as the sum of
+            // every member's trophies. The old code incremented by a delta, but because the
+            // post-race flow SETs the member doc first, the delta was often 0 (so the total
+            // never tracked gains) and leave/kick decrements then drove it NEGATIVE. Summing
+            // every time keeps stats.trophies exactly equal to the players' total and >= 0.
             if (changedFields.trophies !== undefined) {
                 await db.runTransaction(async (transaction) => {
-                    const memberSnap = await transaction.get(memberRef);
-
-                    if (!memberSnap.exists) {
+                    // Read all members in one consistent snapshot (reads before writes).
+                    const membersSnap = await transaction.get(clanMembersCollection(clanId));
+                    const memberExists = membersSnap.docs.some((d) => d.id === userId);
+                    if (!memberExists) {
                         logger.warn(`[onPlayerProfileUpdate] Member doc not found for ${userId} in clan ${clanId}`);
                         return;
                     }
 
-                    const oldMemberTrophies = typeof memberSnap.data()?.trophies === "number"
-                        ? memberSnap.data()!.trophies
-                        : 0;
-                    const newMemberTrophies = changedFields.trophies!;
-                    const trophyDelta = newMemberTrophies - oldMemberTrophies;
+                    const newMemberTrophies = Math.max(0, changedFields.trophies!);
+                    let total = 0;
+                    membersSnap.forEach((doc) => {
+                        const t = doc.id === userId ? newMemberTrophies : Number(doc.data()?.trophies ?? 0);
+                        if (Number.isFinite(t) && t > 0) total += t;
+                    });
 
-                    // Update member doc
                     transaction.update(memberRef, {
                         ...changedFields,
+                        trophies: newMemberTrophies, // store clamped (never negative)
+                        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                    });
+                    transaction.update(clanRef(clanId), {
+                        "stats.trophies": Math.max(0, total),
                         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
                     });
 
-                    // Update clan total trophies
-                    if (trophyDelta !== 0) {
-                        transaction.update(clanRef(clanId), {
-                            "stats.trophies": admin.firestore.FieldValue.increment(trophyDelta),
-                            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-                        });
-                    }
-
-                    logger.info(`[onPlayerProfileUpdate] Synced ${userId} to clan ${clanId}, trophy delta: ${trophyDelta}`);
+                    logger.info(`[onPlayerProfileUpdate] Recomputed clan ${clanId} total trophies: ${total}`);
                 });
             } else {
                 // No trophy change, just update member doc

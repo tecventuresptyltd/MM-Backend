@@ -91,6 +91,11 @@
           ".read": "auth != null"
         }
       }
+    },
+    "gameConfig": {
+      "multiplayerHardnessLevel": {
+        ".read": true
+      }
     }
   }
 }

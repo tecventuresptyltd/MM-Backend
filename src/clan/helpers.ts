@@ -297,17 +297,26 @@ export const buildSearchFields = (name: string, location: string, language: stri
   language,
 });
 
-export const clanSummaryProjection = (data: FirebaseFirestore.DocumentData) => ({
-  clanId: data.clanId,
-  name: data.name,
-  description: data.description ?? "",
-  type: data.type,
-  location: data.location,
-  language: data.language,
-  badge: typeof data.badge === "string" ? data.badge : DEFAULT_CLAN_BADGE,
-  minimumTrophies: data.minimumTrophies,
-  stats: data.stats ?? { members: 0, trophies: 0 },
-});
+export const clanSummaryProjection = (data: FirebaseFirestore.DocumentData) => {
+  const rawStats = data.stats ?? {};
+  return {
+    clanId: data.clanId,
+    name: data.name,
+    description: data.description ?? "",
+    type: data.type,
+    location: data.location,
+    language: data.language,
+    badge: typeof data.badge === "string" ? data.badge : DEFAULT_CLAN_BADGE,
+    minimumTrophies: data.minimumTrophies,
+    // Clamp at 0 — clan aggregates can drift below zero from increment updates,
+    // but they must never be surfaced to clients as negative.
+    stats: {
+      members: Math.max(0, Number(rawStats.members ?? 0)),
+      trophies: Math.max(0, Number(rawStats.trophies ?? 0)),
+      totalWins: Math.max(0, Number(rawStats.totalWins ?? 0)),
+    },
+  };
+};
 
 export const nowTimestamp = () => admin.firestore.Timestamp.now();
 

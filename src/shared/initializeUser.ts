@@ -265,7 +265,11 @@ export async function waitForUserBootstrap(uid: string): Promise<Set<string>> {
     maintenanceRef,
     licensesRef,
     inventoryCtx.summaryRef,
-    db.doc(`Players/${uid}/Inventory/${starterRewards.crateSkuId}`),
+    // NOTE: the starter crate is intentionally placed into a crate SLOT (Players/{uid}/Crates/Slots),
+    // NOT Inventory — see commit 343fd99 "fixed crate getting awarded in inventory". Verifying
+    // Inventory/{crateSkuId} here is therefore wrong: that doc is never created, which caused a
+    // false "Guest bootstrap incomplete. Missing documents: .../Inventory/{crateSkuId}" failure.
+    // The crate placement is also conditional (skipped when slots are full), so it is not asserted.
     starterRewards.keySkuId
       ? db.doc(`Players/${uid}/Inventory/${starterRewards.keySkuId}`)
       : undefined,

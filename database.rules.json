@@ -1,101 +1,101 @@
 {
-  "rules": {
-    "lobbies": {
-      "$lobbyId": {
-        ".read": "auth != null && (root.child('lobbies').child($lobbyId).child('members').child(auth.uid).exists() || auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val())",
-        "members": {
-          "$uid": {
-            ".write": "auth != null && !newData.exists() && (auth.uid === $uid || auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val())",
-            "status": {
-              ".write": "auth != null && auth.uid === $uid"
+   "rules":{
+      "lobbies":{
+         "$lobbyId":{
+            ".read":"auth != null && (root.child('lobbies').child($lobbyId).child('members').child(auth.uid).exists() || auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val())",
+            "members":{
+               "$uid":{
+                  "status":{
+                     ".write":"auth != null && auth.uid === $uid"
+                  },
+                  "isReady":{
+                     ".write":"auth != null && (auth.uid === $uid || auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val())"
+                  },
+                  "elo":{
+                     ".write":"auth != null && auth.uid === $uid"
+                  },
+                  "cosmeticsInfo":{
+                     ".write":"auth != null && auth.uid === $uid"
+                  },
+                  ".write":"auth != null && !newData.exists() && (auth.uid === $uid || auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val())",
+                  "heartbeat":{
+                     ".write":"auth != null && auth.uid === $uid"
+                  }
+               }
             },
-            "isReady": {
-              ".write": "auth != null && (auth.uid === $uid || auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val())"
+            "mapVoting":{
+               "votes":{
+                  "$uid":{
+                     ".write":"auth != null && auth.uid === $uid"
+                  }
+               },
+               "activeMapIndices":{
+                  ".write":"auth != null && auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val()"
+               },
+               "winnerIndex":{
+                  ".write":"auth != null && auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val()"
+               },
+               "counts":{
+                  ".write":"auth != null && auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val()"
+               }
             },
-            "elo": {
-              ".write": "auth != null && auth.uid === $uid"
+            "gameMode":{
+               ".write":"auth != null && auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val()"
             },
-            "cosmeticsInfo": {
-              ".write": "auth != null && auth.uid === $uid"
+            "matchmakingStatus":{
+               ".write":"auth != null && auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val()"
             },
-            "heartbeat": {
-              ".write": "auth != null && auth.uid === $uid"
+            "launchSceneName":{
+               ".write":"auth != null && auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val()"
+            },
+            "serverInfo":{
+               ".write":"auth != null && auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val()"
             }
-          }
-        },
-        "mapVoting": {
-          "votes": {
-            "$uid": {
-              ".write": "auth != null && auth.uid === $uid"
-            }
-          },
-          "activeMapIndices": {
-            ".write": "auth != null && auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val()"
-          },
-          "winnerIndex": {
-            ".write": "auth != null && auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val()"
-          },
-          "counts": {
-            ".write": "auth != null && auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val()"
-          }
-        },
-        "gameMode": {
-          ".write": "auth != null && auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val()"
-        },
-        "matchmakingStatus": {
-          ".write": "auth != null && auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val()"
-        },
-        "launchSceneName": {
-          ".write": "auth != null && auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val()"
-        },
-        "serverInfo": {
-          ".write": "auth != null && auth.uid === root.child('lobbies').child($lobbyId).child('hostUid').val()"
-        }
-      }
-    },
-    "users": {
-      "$uid": {
-        "invitations": {
-          ".read": "auth != null && auth.uid === $uid",
-          ".write": "auth != null"
-        }
-      }
-    },
-    "chat_messages": {
-      "clans": {
-        "$clanId": {
-          ".indexOn": [
-            "ts"
-          ],
-          ".read": "auth != null",
-          ".write": false,
-          "$messageId": {
-            ".read": "auth != null"
-          }
-        }
+         }
       },
-      "global": {
-        "$roomId": {
-          ".indexOn": [
-            "ts"
-          ],
-          ".read": "auth != null && root.child('presence/online').child(auth.uid).child('roomId').val() === $roomId",
-          ".write": false
-        }
+      "users":{
+         "$uid":{
+            "invitations":{
+               ".read":"auth != null && auth.uid === $uid",
+               ".write":"auth != null"
+            }
+         }
+      },
+      "chat_messages":{
+         "clans":{
+            "$clanId":{
+               ".indexOn":[
+                  "ts"
+               ],
+               ".read":"auth != null",
+               ".write":false,
+               "$messageId":{
+                  ".read":"auth != null"
+               }
+            }
+         },
+         "global":{
+            "$roomId":{
+               ".indexOn":[
+                  "ts"
+               ],
+               ".read":"auth != null && root.child('presence/online').child(auth.uid).child('roomId').val() === $roomId",
+               ".write":false
+            }
+         }
+      },
+      "presence":{
+         "online":{
+            "$uid":{
+               ".write":"auth != null && auth.uid === $uid",
+               ".read":"auth != null"
+            }
+         }
+      },
+      "gameConfig":{
+         "multiplayerHardnessLevel":{
+            ".read":true
+         }
       }
-    },
-    "presence": {
-      "online": {
-        "$uid": {
-          ".write": "auth != null && auth.uid === $uid",
-          ".read": "auth != null"
-        }
-      }
-    },
-    "gameConfig": {
-      "multiplayerHardnessLevel": {
-        ".read": true
-      }
-    }
-  }
+   }
 }

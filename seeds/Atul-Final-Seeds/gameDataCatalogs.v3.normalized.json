@@ -14792,7 +14792,7 @@
           "displayName": "Crimson Crush",
           "type": "AreaEffect",
           "description": "Channels powerful red telekinesis to lift all nearby enemy cars into the air. For 3 seconds, they float helplessly around the caster, before being slammed to the ground in a devastating magical explosion (a demolition)",
-          "requiredLevel": -1,
+          "requiredLevel": 50,
           "displayOrder": 14,
           "isUnlocked": false,
           "attributes": [
@@ -15033,13 +15033,13 @@
         "spell_zdgrp9zk": {
           "displayName": "Sky Reaper",
           "type": "TargetLock",
-          "description": "Lazer beam blasts player one, stunning them for a period of time",
-          "requiredLevel": -1,
+          "description": "A lightning beam descends from the sky onto the player in 1st place, slowing them for a period of time",
+          "requiredLevel": 55,
           "displayOrder": 13,
           "isUnlocked": false,
           "attributes": [
             {
-              "name": "Impact",
+              "name": "Duration",
               "unit": "seconds",
               "values": [
                 1,
@@ -15117,6 +15117,50 @@
             }
           ],
           "spellId": "spell_pbvvrhw7"
+        },
+        "spell_9vqf3mrl": {
+          "displayName": "Wraith Grip",
+          "type": "TargetLock",
+          "description": "A ghostly wraith hand shoots out and seizes the target car, pinning it to the ground and holding it in place for a period of time.",
+          "requiredLevel": 60,
+          "displayOrder": 17,
+          "isUnlocked": false,
+          "attributes": [
+            {
+              "name": "Targets",
+              "unit": "",
+              "values": [
+                1,
+                1,
+                2,
+                2,
+                3
+              ]
+            },
+            {
+              "name": "Duration",
+              "unit": "seconds",
+              "values": [
+                1,
+                1.5,
+                2,
+                2.5,
+                3
+              ]
+            },
+            {
+              "name": "Range",
+              "unit": "m",
+              "values": [
+                40,
+                45,
+                50,
+                55,
+                60
+              ]
+            }
+          ],
+          "spellId": "spell_9vqf3mrl"
         }
       },
       "createdAt": 1761228851445,

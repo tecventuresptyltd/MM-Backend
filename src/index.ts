@@ -51,7 +51,7 @@ export { getMaintenanceStatus, claimMaintenanceReward } from "./game-systems/mai
 export { acknowledgeMaintenanceRewards } from "./game-systems/acknowledgeMaintenance";
 export { setMaintenanceMode } from "./game-systems/adminMaintenance";
 export { setMinimumVersion, getMinimumVersion } from "./game-systems/adminVersion";
-export { searchGameUsers, setGameAdminStatus, getGameAdmins } from "./game-systems/adminGameUsers";
+export { searchGameUsers, setGameAdminStatus, getGameAdmins, adminPinPlayerLevel } from "./game-systems/adminGameUsers";
 export { healthcheck } from "./health/healthcheck";
 export * from "./profile";
 export {

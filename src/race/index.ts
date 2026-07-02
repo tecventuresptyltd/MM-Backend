@@ -936,7 +936,23 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
     const masteryProgress = getMasteryProgress(newMasteryXp, masteryConfig);
 
     // Write mastery + level fields to profile (mastery IS the player level now)
-    if (masteryXpGained > 0 || masteryRankGained !== 0) {
+    // pinnedMasteryRank: admin-set override that bypasses XP recalculation permanently.
+    const pinnedMasteryRank = typeof profileData.pinnedMasteryRank === "number"
+      ? profileData.pinnedMasteryRank
+      : undefined;
+
+    if (pinnedMasteryRank !== undefined) {
+      // Player is pinned — preserve the rank regardless of XP earned this race.
+      if (profileData.masteryRank !== pinnedMasteryRank || profileData.level !== pinnedMasteryRank) {
+        transaction.update(profileRef, {
+          masteryRank: pinnedMasteryRank,
+          level: pinnedMasteryRank,
+          expProgress: 0,
+          expToNextLevel: 0,
+          expProgressDisplay: "Max Rank",
+        });
+      }
+    } else if (masteryXpGained > 0 || masteryRankGained !== 0) {
       transaction.update(profileRef, {
         masteryXp: newMasteryXp,
         masteryRank: newMasteryRank,

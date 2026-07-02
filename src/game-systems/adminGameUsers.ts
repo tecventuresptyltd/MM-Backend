@@ -165,6 +165,68 @@ export const setGameAdminStatus = onCall({ region: REGION, enforceAppCheck: fals
     } as SetGameAdminResponse;
 });
 
+interface AdminPinPlayerLevelRequest {
+    targetUid: string;
+    level?: number;
+}
+
+/**
+ * Pin a player's mastery rank to a specific level permanently.
+ * After each race, the level is preserved regardless of XP earned.
+ * Pass level=0 to remove the pin and restore normal XP-based progression.
+ * Only accessible by Firebase admins.
+ */
+export const adminPinPlayerLevel = onCall({ region: REGION, enforceAppCheck: false }, async (request) => {
+    const { auth } = request;
+
+    if (!auth) {
+        throw new HttpsError('unauthenticated', 'User must be authenticated.');
+    }
+
+    await assertIsAdmin(auth.uid);
+
+    const { targetUid, level = 100 } = request.data as AdminPinPlayerLevelRequest;
+
+    if (!targetUid || typeof targetUid !== 'string') {
+        throw new HttpsError('invalid-argument', 'targetUid is required.');
+    }
+
+    if (typeof level !== 'number' || level < 0) {
+        throw new HttpsError('invalid-argument', 'level must be a non-negative number.');
+    }
+
+    const db = admin.firestore();
+    const profileRef = db.doc(`/Players/${targetUid}/Profile/Profile`);
+    const profileDoc = await profileRef.get();
+
+    if (!profileDoc.exists) {
+        throw new HttpsError('not-found', `Player profile not found for uid: ${targetUid}`);
+    }
+
+    if (level === 0) {
+        // Remove the pin — player returns to normal XP-based progression
+        await profileRef.update({
+            pinnedMasteryRank: admin.firestore.FieldValue.delete(),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        console.log(`Admin ${auth.uid} removed mastery rank pin for player ${targetUid}`);
+        return { success: true, uid: targetUid, pinnedMasteryRank: null };
+    }
+
+    await profileRef.update({
+        pinnedMasteryRank: level,
+        masteryRank: level,
+        level: level,
+        expProgress: 0,
+        expToNextLevel: 0,
+        expProgressDisplay: 'Max Rank',
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    console.log(`Admin ${auth.uid} pinned player ${targetUid} to mastery rank ${level}`);
+    return { success: true, uid: targetUid, pinnedMasteryRank: level };
+});
+
 /**
  * Get list of all current game admins
  * Only accessible by Firebase admins

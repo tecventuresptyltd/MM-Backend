@@ -14869,7 +14869,7 @@
           "displayName": "God Hammer",
           "type": "Directional",
           "description": "Summons a magical war hammer that autonomously flies around the track at high speed, seeking out enemy cars and zapping them with lightning as it passes.",
-          "requiredLevel": -1,
+          "requiredLevel": 55,
           "displayOrder": 16,
           "isUnlocked": false,
           "attributes": [

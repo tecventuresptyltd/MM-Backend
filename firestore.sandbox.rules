@@ -1,0 +1,174 @@
+rules_version = '2';
+// =============================================================================
+//  SANDBOX / DEV ONLY  —  everything is READABLE so the Unity Editor works.
+//  DO NOT deploy to prod. Prod uses the secure isSelf rules in firestore.prod.rules.
+//
+//  Why: the Unity Editor's desktop Firebase SDK does not attach request.auth to
+//  Firestore, so isSelf(uid) reads always fail in-editor (they work on device).
+//  Opening reads lets development run against the real sandbox database.
+//  WRITES stay server-authoritative (Cloud Functions / Admin SDK), same as prod.
+//
+//  Deploy to sandbox only:
+//    firebase deploy --only firestore:rules --config firebase.sandbox.json --project sandbox
+// =============================================================================
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Public master data
+    match /GameData/{version}/catalogs/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /GameData/{version}/config/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /GameConfig/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /GameConfig/{docId}/{subCollection}/{subDocId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Accounts (internal) — readable in dev only
+    match /Accounts/{document=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /AdminUsers/{uid} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Players and all sub-collections — readable, writes stay server-side
+    match /Players/{uid} {
+      allow read: if true;
+      allow write: if false;
+
+      match /Profile/{docId} {
+        allow read: if true;
+        allow write: if false;
+      }
+      match /Profile/Profile {
+        allow read: if true;
+        allow update: if false;
+        allow create, delete: if false;
+      }
+      match /Economy/{docId=**} {
+        allow read: if true;
+        allow write: if false;
+      }
+      match /SpellDecks/{docId=**} {
+        allow read: if true;
+        allow write: if false;
+      }
+      match /Loadouts/{docId=**} {
+        allow read: if true;
+        allow write: if false;
+      }
+      match /Inventory/{docId=**} {
+        allow read: if true;
+        allow write: if false;
+      }
+      match /Referrals/{docId=**} {
+        allow read: if true;
+        allow write: if false;
+      }
+      match /Garage/{docId=**} {
+        allow read: if true;
+        allow write: if false;
+      }
+      match /Spells/{docId=**} {
+        allow read: if true;
+        allow write: if false;
+      }
+      match /Queues/{docId=**} {
+        allow read: if true;
+        allow write: if false;
+      }
+      match /Licenses/{docId=**} {
+        allow read: if true;
+        allow write: if false;
+      }
+      match /Offers/{docId=**} {
+        allow read: if true;
+        allow write: if false;
+      }
+      match /Social/{docId=**} {
+        allow read: if true;
+        allow write: if false;
+      }
+      match /Crates/{docId=**} {
+        allow read: if true;
+        allow write: if false;
+      }
+      match /Progress/{docId=**} {
+        allow read: if true;
+        allow write: if false;
+      }
+
+      // Fallback for any other subcollections
+      match /{allPaths=**} {
+        allow read: if true;
+        allow write: if false;
+      }
+    }
+
+    match /ReferralCodes/{referralCode} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /Usernames/{usernameLower} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /Clans/{clanId} {
+      allow read: if true;
+      allow write: if false;
+      match /{sub=**} {
+        allow read: if true;
+        allow write: if false;
+      }
+    }
+
+    match /ClanLeaderboard/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /GlobalLeaderboard/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Chat — readable, and creating messages works in editor too
+    match /Rooms/{roomId}/Messages/{messageId} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if false;
+    }
+
+    match /Races/{raceId}/{document=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /MaintenanceHistory/{historyId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /Audit/{day}/Entries/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /AdminOps/{opId} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}

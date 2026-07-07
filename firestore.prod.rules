@@ -1,4 +1,12 @@
 rules_version = '2';
+// =============================================================================
+//  SECURE rules — the canonical ruleset for PROD (and any device testing).
+//  `isSelf(uid)` reads require request.auth, which real devices provide.
+//  NOTE: the Unity Editor cannot attach request.auth to Firestore, so these
+//  rules deny owned reads IN-EDITOR ONLY. For editor development against the
+//  sandbox DB, deploy firestore.sandbox.rules to sandbox instead (see that
+//  file's header). Never deploy the permissive sandbox rules to prod.
+// =============================================================================
 service cloud.firestore {
   match /databases/{database}/documents {
 

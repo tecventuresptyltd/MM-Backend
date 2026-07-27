@@ -327,6 +327,21 @@ export type BotConfig = {
     standardDeviation: number;
     description?: string;
   };
+  /**
+   * Car-relative opponent model. When enabled, each bot's speed/acceleration come from
+   * its own catalog car at its own upgrade level, and trophies drive AI skill instead of
+   * raw speed. Disable to fall back to the legacy flat aiSpeed range.
+   */
+  opponentModel?: {
+    enabled: boolean;
+    speedBandPct: number;
+    accelBandPct: number;
+    boostPowerMin: number;
+    boostPowerMax: number;
+    carLevelVariance: number;
+    orderCarsByPerformance?: boolean;
+    description?: string;
+  };
   carUnlockThresholds: Array<{ carId: string; trophies: number }>;
   cosmeticRarityWeights: Record<string, Record<string, number>>;
   spellLevelBands: Array<{ minTrophies: number; maxTrophies: number; minLevel: number; maxLevel: number }>;

@@ -51,6 +51,12 @@ const FALLBACK_EXCLUDED_SPELL_IDS = [
   "spell_0tk74qn8", // Power Out
 ] as const;
 
+/** Trophy count at which the ladder is considered maxed for difficulty purposes. */
+const TROPHY_CEILING = 7000;
+
+/** Highest upgrade level present in the car catalog. */
+const BOT_CAR_MAX_LEVEL = 10;
+
 const resolveCarLevel = (
   car: { levels?: Record<string, CarLevel> } | null | undefined,
   targetLevel: number,
@@ -215,6 +221,26 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
       standardDeviation: botConfig.performanceVariance?.standardDeviation ?? 0.03,
     };
 
+    // Car-relative opponent model: bots race their own catalog car at their own upgrade
+    // level, so opponent speed can never exceed what a real car in the game can do.
+    // Trophies drive AI skill (handled client-side from aiLevel) rather than raw speed.
+    const opponentModel = {
+      enabled: botConfig.opponentModel?.enabled ?? true,
+      speedBandPct: botConfig.opponentModel?.speedBandPct ?? 0.015,
+      accelBandPct: botConfig.opponentModel?.accelBandPct ?? 0.03,
+      boostPowerMin: botConfig.opponentModel?.boostPowerMin ?? 0.30,
+      boostPowerMax: botConfig.opponentModel?.boostPowerMax ?? 0.48,
+      carLevelVariance: botConfig.opponentModel?.carLevelVariance ?? 1,
+      orderCarsByPerformance: botConfig.opponentModel?.orderCarsByPerformance ?? true,
+    };
+
+    if (!botConfig.opponentModel) {
+      console.warn('[prepareRace] BotConfig missing opponentModel, using car-relative defaults');
+    }
+    if (!tuning.bot) {
+      console.warn('[prepareRace] CarTuningConfig missing bot band, bots will use player band');
+    }
+
     // Resolve player car and stats
     const carId: string = loadout.carId || Object.keys(carsCatalog)[0];
     const playerCar = carsCatalog[carId];
@@ -373,14 +399,40 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
       return fallback;
     };
 
+    const configuredCarLadder = [...botConfig.carUnlockThresholds].sort(
+      (a, b) => a.trophies - b.trophies,
+    );
+
+    // The configured ladder is not ordered by performance. Archetypes weight top speed
+    // very differently (guardian 0.24, phantom 0.22, arcanist 0.14 of the same budget)
+    // and the config lists guardian -> phantom -> arcanist within each tier, so the
+    // 7000-trophy car is actually slower than the 6000-trophy one. Left alone that makes
+    // opponents get *easier* near the top of the ladder. Reorder the same cars into the
+    // same trophy slots, slowest first, so difficulty rises monotonically.
+    const sortedCarThresholds = (() => {
+      if (!opponentModel.orderCarsByPerformance) return configuredCarLadder;
+
+      const ranked = configuredCarLadder
+        .map((entry) => {
+          const car = carsCatalog[entry.carId];
+          const topLevel = resolveCarLevel(car, BOT_CAR_MAX_LEVEL);
+          const resolved = resolveCarStats(topLevel, tuning, true).real.topSpeed;
+          return { carId: entry.carId, topSpeed: Number.isFinite(resolved) ? resolved : 0 };
+        })
+        .sort((a, b) => a.topSpeed - b.topSpeed);
+
+      return configuredCarLadder.map((entry, i) => ({
+        carId: ranked[i]?.carId ?? entry.carId,
+        trophies: entry.trophies,
+      }));
+    })();
+
     // Helper: pick bot car by thresholds
     function pickBotCarId(tr: number): string {
-      const thresholds = [...botConfig.carUnlockThresholds].sort((a, b) => a.trophies - b.trophies);
-
       // Find the highest unlocked car (last threshold where trophies <= tr)
       let idx = 0;
-      for (let i = thresholds.length - 1; i >= 0; i--) {
-        if (thresholds[i].trophies <= tr) {
+      for (let i = sortedCarThresholds.length - 1; i >= 0; i--) {
+        if (sortedCarThresholds[i].trophies <= tr) {
           idx = i;
           break;
         }
@@ -388,8 +440,35 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
 
       // ±1 variance for variety
       const variance = rng.int(-1, 1);
-      idx = Math.max(0, Math.min(thresholds.length - 1, idx + variance));
-      return thresholds[idx].carId;
+      idx = Math.max(0, Math.min(sortedCarThresholds.length - 1, idx + variance));
+      return sortedCarThresholds[idx].carId;
+    }
+
+    // Helper: how upgraded is a bot's car?
+    // A bot sitting at the top of a car's trophy bracket drives that car fully upgraded;
+    // one that jumped a tier early (via the ±1 pick variance) arrives at level 1, and one
+    // still running an older car has it maxed. This gives a smooth performance ramp across
+    // the ladder instead of the step function you get from always using level 1.
+    function pickBotCarLevel(carId: string, tr: number): number {
+      const idx = sortedCarThresholds.findIndex((t) => t.carId === carId);
+      if (idx < 0) return 1;
+
+      const bracketStart = sortedCarThresholds[idx].trophies;
+      const bracketEnd =
+        idx + 1 < sortedCarThresholds.length
+          ? sortedCarThresholds[idx + 1].trophies
+          : TROPHY_CEILING;
+
+      // The final bracket is degenerate (its threshold sits on the trophy cap), so a bot
+      // that has reached it is an end-game driver and runs the car fully developed.
+      const span = bracketEnd - bracketStart;
+      const progress = span <= 0 ? 1 : Math.max(0, Math.min(1, (tr - bracketStart) / span));
+
+      const base = 1 + Math.round(progress * (BOT_CAR_MAX_LEVEL - 1));
+      const spread = Math.max(0, Math.floor(opponentModel.carLevelVariance));
+      const varied = spread > 0 ? base + rng.int(-spread, spread) : base;
+
+      return Math.max(1, Math.min(BOT_CAR_MAX_LEVEL, varied));
     }
 
     const pickSkuForRarity = (pool: ItemSku[], rarity: string): ItemSku | null => {
@@ -412,54 +491,105 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
       const botCarId = pickBotCarId(normalizedTrophies);
       const botCar = carsCatalog[botCarId] || playerCar;
 
-      // Get car level data (using level 0 for display values only)
-      const botCarLevelData = resolveCarLevel(botCar, 0);
+      // Bots race a real car at a real upgrade level, resolved through the same
+      // catalog -> km/h pipeline as the player (bot band). Under the legacy model the
+      // level was pinned to 1 and the real stats were discarded entirely.
+      const botCarLevel = opponentModel.enabled
+        ? pickBotCarLevel(botCarId, normalizedTrophies)
+        : 1;
+      const botCarLevelData = resolveCarLevel(botCar, botCarLevel);
 
-      // Calculate bot stats from trophy percentage using BotConfig.statRanges
-      const botStats = calculateBotStatsFromTrophies(
-        normalizedTrophies,
-        {
-          aiSpeed: { min: aiDifficultyConfig.minSpeed, max: aiDifficultyConfig.maxSpeed },
-          aiBoostPower: { min: aiDifficultyConfig.boostPowerMin, max: aiDifficultyConfig.boostPowerMax },
-          aiAcceleration: { min: aiDifficultyConfig.minAcceleration, max: aiDifficultyConfig.maxAcceleration },
-          endGameDifficulty: aiDifficultyConfig.endGameDifficulty
-        },
-        botCarLevelData,
-      );
+      const botStats = opponentModel.enabled
+        ? resolveCarStats(botCarLevelData, tuning, true)
+        : calculateBotStatsFromTrophies(
+            normalizedTrophies,
+            {
+              aiSpeed: { min: aiDifficultyConfig.minSpeed, max: aiDifficultyConfig.maxSpeed },
+              aiBoostPower: { min: aiDifficultyConfig.boostPowerMin, max: aiDifficultyConfig.boostPowerMax },
+              aiAcceleration: { min: aiDifficultyConfig.minAcceleration, max: aiDifficultyConfig.maxAcceleration },
+              endGameDifficulty: aiDifficultyConfig.endGameDifficulty
+            },
+            botCarLevelData,
+          );
 
       // ==========================================
       // AI DIFFICULTY SYSTEM
       // ==========================================
-      // Calculate base aiLevel from trophy progression (0-100%)
-      const baseTrophyPercentage = normalizedTrophies / 7000;
+      // Calculate base aiLevel from trophy progression (0-100%).
+      // Under the car-relative model this is a DRIVER SKILL rating, not a speed dial:
+      // the client reads it for braking precision, overtaking commitment, reaction delay
+      // and spell aggression. Speed comes from the bot's car (see performanceRanges below).
+      const baseTrophyPercentage = normalizedTrophies / TROPHY_CEILING;
       const baseAiLevel = baseTrophyPercentage * 100;
 
-      // Apply performance variance using positive-only uniform distribution
+      // Symmetric variance so a field contains both stronger and weaker drivers.
+      // The previous positive-only spread biased every bot upward, which compounded
+      // difficulty at exactly the trophy counts that already felt hardest.
       let finalAiLevel = baseAiLevel;
       if (performanceVariance.enabled) {
-        // Positive-only variance: adds 0 to (σ×100) points to base aiLevel
-        // This ensures consistent variance at ALL trophy levels (no clipping at 0 or 100)
-        // With σ=0.04: adds 0-4 points uniformly
-        // With σ=0.10: adds 0-10 points uniformly
-        const positiveVariance = rng.float(0, performanceVariance.standardDeviation * 100);
-
-        finalAiLevel = baseAiLevel + positiveVariance;
-
-        // Note: aiLevel can exceed 100 at high trophy counts - Unity interpolates accordingly
+        const spread = performanceVariance.standardDeviation * 100;
+        finalAiLevel = baseAiLevel + rng.float(-spread, spread);
       }
+
+      // Clamp to the interpolation domain. Above 100 the client extrapolates without
+      // an upper bound, which is how bots previously outran every car in the game.
+      finalAiLevel = Math.max(0, Math.min(100, finalAiLevel));
 
       (botStats.real as any).aiLevel = Math.round(finalAiLevel * 100) / 100;
 
-      // Add performanceRanges from BotConfig for Unity's AI controller
-      (botStats.real as any).performanceRanges = {
-        minSpeed: aiDifficultyConfig.minSpeed,
-        maxSpeed: aiDifficultyConfig.maxSpeed,
-        boostPowerMin: aiDifficultyConfig.boostPowerMin,
-        boostPowerMax: aiDifficultyConfig.boostPowerMax,
-        endGameDifficulty: aiDifficultyConfig.endGameDifficulty,
-        minAcceleration: aiDifficultyConfig.minAcceleration,
-        maxAcceleration: aiDifficultyConfig.maxAcceleration
-      };
+      // Performance ranges consumed by the Unity AI controller. Under the car-relative
+      // model these are a tight band around this bot's OWN resolved car stats, so the
+      // client's aiLevel interpolation lands on that car's real performance no matter
+      // what the skill rating is. Falls back to the flat legacy range when disabled.
+      const realTopSpeed = Number((botStats.real as any).topSpeed) || 0;
+      const realAcceleration = Number((botStats.real as any).acceleration) || 0;
+      const realBoostPower = Number((botStats.real as any).boostPower) || 0;
+      const useCarRelative =
+        opponentModel.enabled && realTopSpeed > 0 && realAcceleration > 0;
+
+      if (!useCarRelative && opponentModel.enabled) {
+        console.warn(
+          `[prepareRace] Bot ${botDisplayName} has no resolved car stats ` +
+          `(car=${botCarId}, level=${botCarLevel}); falling back to flat aiSpeed range`,
+        );
+      }
+
+      const round2 = (value: number): number => Math.round(value * 100) / 100;
+      const round3 = (value: number): number => Math.round(value * 1000) / 1000;
+
+      // Nitro strength comes from the bot's own car too, matching how the client resolves
+      // the player's boost (topSpeed * (1 + boostPower)). Using a flat band here would let
+      // opponents out-accelerate a player whose car has a weaker boost stat.
+      const boostBand =
+        realBoostPower > 0
+          ? {
+              boostPowerMin: round3(realBoostPower * (1 - opponentModel.accelBandPct)),
+              boostPowerMax: round3(realBoostPower * (1 + opponentModel.accelBandPct)),
+            }
+          : {
+              boostPowerMin: opponentModel.boostPowerMin,
+              boostPowerMax: opponentModel.boostPowerMax,
+            };
+
+      (botStats.real as any).performanceRanges = useCarRelative
+        ? {
+            minSpeed: round2(realTopSpeed * (1 - opponentModel.speedBandPct)),
+            maxSpeed: round2(realTopSpeed * (1 + opponentModel.speedBandPct)),
+            boostPowerMin: boostBand.boostPowerMin,
+            boostPowerMax: boostBand.boostPowerMax,
+            endGameDifficulty: aiDifficultyConfig.endGameDifficulty,
+            minAcceleration: round2(realAcceleration * (1 - opponentModel.accelBandPct)),
+            maxAcceleration: round2(realAcceleration * (1 + opponentModel.accelBandPct)),
+          }
+        : {
+            minSpeed: aiDifficultyConfig.minSpeed,
+            maxSpeed: aiDifficultyConfig.maxSpeed,
+            boostPowerMin: aiDifficultyConfig.boostPowerMin,
+            boostPowerMax: aiDifficultyConfig.boostPowerMax,
+            endGameDifficulty: aiDifficultyConfig.endGameDifficulty,
+            minAcceleration: aiDifficultyConfig.minAcceleration,
+            maxAcceleration: aiDifficultyConfig.maxAcceleration,
+          };
 
       // Validation: ensure aiLevel is valid
       if (typeof (botStats.real as any).aiLevel !== 'number' || !Number.isFinite((botStats.real as any).aiLevel)) {

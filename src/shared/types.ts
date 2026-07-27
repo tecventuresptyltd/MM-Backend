@@ -55,6 +55,18 @@ export interface CarTuningConfig {
     boostRegen: StatRange;
     boostPower: StatRange;
   };
+  /**
+   * Opponent conversion band. Bots resolve their catalog stats through this instead
+   * of the player band so a fully upgraded player car keeps a small measured edge.
+   * Falls back to `player` when absent.
+   */
+  bot?: {
+    topSpeed: StatRange;
+    acceleration: StatRange;
+    handling: StatRange;
+    boostRegen: StatRange;
+    boostPower: StatRange;
+  };
   notes?: string;
   updatedAt: number;
 }

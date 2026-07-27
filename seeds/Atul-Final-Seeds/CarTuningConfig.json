@@ -28,6 +28,29 @@
         "max": 450
       }
     },
+    "bot": {
+      "acceleration": {
+        "min": 3.9,
+        "max": 7.8
+      },
+      "boostPower": {
+        "min": 0.14,
+        "max": 0.39
+      },
+      "boostRegen": {
+        "min": 10.2,
+        "max": 4.2
+      },
+      "handling": {
+        "min": 34,
+        "max": 73
+      },
+      "topSpeed": {
+        "min": 148,
+        "max": 425
+      }
+    },
+    "notes": "Opponents convert their catalog stats through the bot band, held ~2-3% under the player band so an equally upgraded player car keeps a measurable edge. Bots therefore can never exceed the performance envelope of a real car in the game.",
     "updatedAt": 1742900000000
   }
 }

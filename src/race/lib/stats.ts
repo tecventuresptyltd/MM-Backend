@@ -76,7 +76,7 @@ export const calculateBotStatsFromTrophies = (
 export const resolveCarStats = (
   carLevelData: Partial<CarLevel> | null | undefined,
   tuningConfig: CarTuningConfig,
-  isBot: boolean = false, // Deprecated: only used for backward compatibility, always use false for players
+  isBot: boolean = false,
 ): ResolvedStats => {
   const levelData = carLevelData ?? {};
   const scale = tuningConfig?.valueScale ?? DEFAULT_SCALE;
@@ -84,8 +84,9 @@ export const resolveCarStats = (
   const scaleMax = Number.isFinite(scale.max) ? scale.max : DEFAULT_SCALE.max;
   const denominator = scaleMax - scaleMin || 1;
 
-  // Always use player ranges (bot stats are calculated via calculateBotStatsFromTrophies)
-  const ranges = tuningConfig?.player;
+  // Bots convert through their own (slightly narrower) band so an upgraded player car
+  // keeps a measured edge. Falls back to the player band if no bot band is configured.
+  const ranges = isBot ? (tuningConfig?.bot ?? tuningConfig?.player) : tuningConfig?.player;
 
   const display: Record<StatKey, number> = {
     topSpeed: coerceNumber(levelData.topSpeed ?? levelData.topSpeed_value, scaleMin),

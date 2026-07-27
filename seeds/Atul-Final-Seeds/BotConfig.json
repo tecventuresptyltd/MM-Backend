@@ -3,23 +3,33 @@
   "data": {
     "statRanges": {
       "aiSpeed": {
-        "min": 115,
-        "max": 500
+        "min": 150,
+        "max": 345
       },
       "aiBoostPower": {
-        "min": 0.1,
-        "max": 0.3
+        "min": 0.15,
+        "max": 0.36
       },
       "aiAcceleration": {
-        "min": 2,
-        "max": 15
+        "min": 4,
+        "max": 8
       },
       "endGameDifficulty": 100
     },
+    "opponentModel": {
+      "enabled": true,
+      "speedBandPct": 0.015,
+      "accelBandPct": 0.03,
+      "boostPowerMin": 0.15,
+      "boostPowerMax": 0.36,
+      "carLevelVariance": 1,
+      "orderCarsByPerformance": true,
+      "description": "Car-relative opponent model. Each bot races its own catalog car at an upgrade level derived from its trophy position inside that car's unlock bracket, and performanceRanges is a tight band around that car's real stats. Trophies therefore buy DRIVER SKILL (braking, overtaking, reaction time, spell aggression) rather than raw speed, which is how Asphalt-style ladders stay fair. Set enabled=false to fall back to the legacy flat statRanges.aiSpeed behaviour."
+    },
     "performanceVariance": {
       "enabled": true,
-      "standardDeviation": 0.07,
-      "description": "Positive-only variance added to bot aiLevel. 0.07 = adds 0-7 points uniformly. Ensures consistent variance at all trophy levels."
+      "standardDeviation": 0.05,
+      "description": "Symmetric variance on bot aiLevel. 0.05 = +/-5 points uniformly, so a field contains both stronger and weaker drivers. Was previously positive-only, which biased every bot upward and compounded difficulty at high trophies."
     },
     "carUnlockThresholds": [
       {

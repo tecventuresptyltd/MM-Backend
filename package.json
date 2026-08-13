@@ -16,6 +16,7 @@
     "tools:normalize-v3": "TS_NODE_PROJECT=../tsconfig.tools.json node -r ts-node/register ../tools/normalize_v3_catalogs.ts",
     "tools:seed-firestore": "tsx tools/seedFirestore.ts",
     "tools:seed-sandbox": "tsx tools/seedFirestore.sandbox.ts",
+    "tools:validate-daily-rewards": "tsx tools/validateDailyRewardsSeed.ts",
     "tools:seed-production": "tsx tools/seedFirestore.production.ts",
     "tools:validate-v3": "TS_NODE_PROJECT=../tsconfig.tools.json node -r ts-node/register ../tools/validate_v3_catalogs.ts && TS_NODE_PROJECT=../tsconfig.tools.json node -r ts-node/register ../tools/validate_v3_skus.ts",
     "sync-clan-members": "tsx tools/syncAllClanMembersOnce.ts",

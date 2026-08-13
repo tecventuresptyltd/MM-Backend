@@ -1,114 +1,126 @@
 /**
  * Daily Rewards Cloud Functions
  *
- * Two functions:
- *   getDailyRewardStatus  — returns current day, claimable status, timers
- *   claimDailyReward      — claims the reward for the current day (transactional + idempotent)
+ * Two callables:
+ *   getDailyRewardStatus  — read-only. Returns the ladder, what is claimable, and timers.
+ *   claimDailyReward      — claims the current slot (transactional + idempotent).
  *
- * Data model:
+ * ── How a "day" is decided ───────────────────────────────────────────────────
+ * A game day is an absolute integer index derived from the *server* clock only
+ * (see lib/dayIndex.ts). The player's device clock and timezone are never read,
+ * so moving the device clock, changing timezone, or crossing DST has no effect.
+ * A claim is permitted only when today's index is strictly greater than the
+ * index we persisted on the last claim.
+ *
+ * ── Data model ───────────────────────────────────────────────────────────────
  *   /Players/{uid}/DailyRewards/Status
- *     currentDay      : number (1-30)
- *     lastClaimedAt   : Timestamp
- *     nextAvailableAt : Timestamp  (lastClaimedAt + 24h)
- *     expiresAt       : Timestamp  (nextAvailableAt + 24h — miss this and streak resets)
+ *     streakDay           : number  — slot (1..cycleLength) to claim NEXT
+ *     lastClaimedDayIndex : number  — absolute game-day index of the last claim
+ *     lastClaimedAt       : Timestamp
+ *     totalClaims         : number
+ *     cycleCount          : number  — completed loops of the ladder
+ *     configVersion       : string
  *
- * Rules:
- *   - After claiming Day N, Day N+1 becomes available 24h later
- *   - Day N+1 must be claimed within 24h of becoming available (before expiresAt)
- *   - If expiresAt passes without claiming → reset to Day 1 (ready to claim)
- *   - After Day 30 is claimed → cycle back to Day 1
- *   - No scheduled job needed — expiry is evaluated at read/claim time
+ *   /Players/{uid}/DailyRewards/Status/Log/{dayIndex}
+ *     One immutable doc per claimed day. Doubles as an audit trail for player
+ *     support and as a second, independent guard against double claims: the
+ *     transaction creates it with `create` semantics, so a duplicate day fails
+ *     even if the Status doc were ever corrupted or hand-edited.
+ *
+ * ── Missed days ──────────────────────────────────────────────────────────────
+ * `graceDays` (config) missed days are forgiven. Beyond that the ladder resets
+ * to slot 1. Nothing is scheduled — lapsing is evaluated lazily at read/claim
+ * time, so there is no cron job and no per-player timer to drift.
  */
 
 import * as admin from "firebase-admin";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 
-import { getDailyRewardsConfig, DailyRewardDay } from "../core/configV2.js";
+import { DailyRewardsConfig, getDailyRewardsConfig } from "../core/configV2.js";
 import { checkIdempotency, createInProgressReceipt } from "../core/idempotency.js";
 import { runReadThenWriteWithReceipt } from "../core/transactions.js";
 import { db } from "../shared/firestore.js";
-import { callableOptions, getMinInstances } from "../shared/callableOptions.js";
-import { grantInventoryRewards, InventoryGrant } from "../shared/inventoryAwards.js";
-
-// =============================================================================
-// CONSTANTS
-// =============================================================================
-
-const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
-const MAX_DAY = 30;
+import { callableOptions } from "../shared/callableOptions.js";
+import {
+    applyRewardBundle,
+    describeRewardLines,
+    prepareRewardBundle,
+} from "../shared/rewardBundle.js";
+import {
+    DailyRewardStatusState,
+    DayBoundaryConfig,
+    dayIndexStartMs,
+    nextSlotAfter,
+    resolveClaimState,
+} from "./lib/dayIndex.js";
 
 // =============================================================================
 // HELPERS
 // =============================================================================
 
-interface DailyRewardStatusDoc {
-    currentDay: number;
+interface DailyRewardStatusDoc extends DailyRewardStatusState {
     lastClaimedAt: FirebaseFirestore.Timestamp | null;
-    nextAvailableAt: FirebaseFirestore.Timestamp | null;
-    expiresAt: FirebaseFirestore.Timestamp | null;
+    totalClaims: number;
+    cycleCount: number;
+    configVersion: string;
 }
 
-function getStatusRef(uid: string): FirebaseFirestore.DocumentReference {
-    return db.doc(`Players/${uid}/DailyRewards/Status`);
-}
+const getStatusRef = (uid: string): FirebaseFirestore.DocumentReference =>
+    db.doc(`Players/${uid}/DailyRewards/Status`);
+
+const getLogRef = (uid: string, dayIndex: number): FirebaseFirestore.DocumentReference =>
+    getStatusRef(uid).collection("Log").doc(String(dayIndex));
+
+const boundaryConfig = (config: DailyRewardsConfig): DayBoundaryConfig => ({
+    cycleLength: config.cycleLength,
+    resetOffsetMinutes: config.resetOffsetMinutes,
+    graceDays: config.graceDays,
+    loopCycle: config.loopCycle,
+});
+
+const readStatus = (
+    snap: FirebaseFirestore.DocumentSnapshot,
+): DailyRewardStatusDoc | null => {
+    if (!snap.exists) {
+        return null;
+    }
+    const data = snap.data() as Partial<DailyRewardStatusDoc>;
+    const lastClaimedDayIndex = Number(data.lastClaimedDayIndex);
+    return {
+        streakDay: Number(data.streakDay ?? 1),
+        lastClaimedDayIndex: Number.isFinite(lastClaimedDayIndex) ? lastClaimedDayIndex : null,
+        lastClaimedAt: data.lastClaimedAt ?? null,
+        totalClaims: Number(data.totalClaims ?? 0),
+        cycleCount: Number(data.cycleCount ?? 0),
+        configVersion: String(data.configVersion ?? ""),
+    };
+};
 
 /**
- * Resolve the effective daily reward state from Firestore data.
- * If the player missed the window (expiresAt < now), resets to Day 1.
+ * Server clock, with an emulator-only override so tests can walk through days
+ * without waiting. Gated on FUNCTIONS_EMULATOR so it can never be reached from
+ * a deployed function, no matter what a client sends.
  */
-function resolveEffectiveState(
-    data: DailyRewardStatusDoc | undefined,
-    now: Date,
-): { currentDay: number; isClaimable: boolean; nextAvailableAt: Date | null; expiresAt: Date | null; isNewPlayer: boolean } {
-    // Brand-new player — never claimed anything
-    if (!data || !data.lastClaimedAt) {
-        return {
-            currentDay: 1,
-            isClaimable: true,
-            nextAvailableAt: null,
-            expiresAt: null,
-            isNewPlayer: true,
-        };
+const resolveNowMs = (data: unknown): number => {
+    if (process.env.FUNCTIONS_EMULATOR === "true") {
+        const override = Number((data as { __testNowMs?: unknown })?.__testNowMs);
+        if (Number.isFinite(override) && override > 0) {
+            return override;
+        }
     }
+    return Date.now();
+};
 
-    const nowMs = now.getTime();
-    const expiresAt = data.expiresAt?.toDate() ?? null;
-    const nextAvailableAt = data.nextAvailableAt?.toDate() ?? null;
-
-    // Missed the claim window → reset to Day 1
-    if (expiresAt && nowMs > expiresAt.getTime()) {
-        return {
-            currentDay: 1,
-            isClaimable: true,
-            nextAvailableAt: null,
-            expiresAt: null,
-            isNewPlayer: false,
-        };
+const getSlotOrThrow = (config: DailyRewardsConfig, slot: number) => {
+    const entry = config.slots[String(slot)];
+    if (!entry) {
+        throw new HttpsError("internal", `DailyRewardsConfig is missing slot ${slot}.`);
     }
-
-    // Currently in the claim window
-    if (nextAvailableAt && nowMs >= nextAvailableAt.getTime()) {
-        return {
-            currentDay: data.currentDay,
-            isClaimable: true,
-            nextAvailableAt,
-            expiresAt,
-            isNewPlayer: false,
-        };
-    }
-
-    // Waiting for the next window to open
-    return {
-        currentDay: data.currentDay,
-        isClaimable: false,
-        nextAvailableAt,
-        expiresAt,
-        isNewPlayer: false,
-    };
-}
+    return entry;
+};
 
 // =============================================================================
-// getDailyRewardStatus  (read-only, no transaction needed)
+// getDailyRewardStatus  (read-only — never mutates, so polling is harmless)
 // =============================================================================
 
 export const getDailyRewardStatus = onCall(
@@ -124,30 +136,54 @@ export const getDailyRewardStatus = onCall(
             getDailyRewardsConfig(),
         ]);
 
-        const data = statusSnap.exists ? (statusSnap.data() as DailyRewardStatusDoc) : undefined;
-        const now = new Date();
-        const state = resolveEffectiveState(data, now);
+        const nowMs = resolveNowMs(request.data);
+        const status = readStatus(statusSnap);
+        const state = resolveClaimState(status, boundaryConfig(config), nowMs);
 
-        // Look up what they'll get
-        const dayKey = `day_${state.currentDay}`;
-        const dayConfig = config.rewards[dayKey];
+        // Per-slot display state for the calendar UI. "claimed" means "already
+        // banked in the current run of the ladder", which is every slot before
+        // the one now pending — unless the streak just lapsed, in which case the
+        // run restarts and nothing is claimed yet.
+        const claimedThrough = state.streakBroken ? 0 : state.slot - 1;
+
+        const ladder = Object.values(config.slots)
+            .sort((a, b) => a.day - b.day)
+            .map((slot) => {
+                let slotState: "claimed" | "claimable" | "locked";
+                if (slot.day === state.slot && state.isClaimable) {
+                    slotState = "claimable";
+                } else if (slot.day <= claimedThrough) {
+                    slotState = "claimed";
+                } else {
+                    slotState = "locked";
+                }
+                return {
+                    day: slot.day,
+                    isMilestone: slot.isMilestone,
+                    state: slotState,
+                    rewards: describeRewardLines(slot.rewards),
+                };
+            });
 
         return {
-            currentDay: state.currentDay,
-            maxDay: MAX_DAY,
+            // Returned so the client can run its countdown off the server clock
+            // instead of the device clock.
+            serverNowMs: nowMs,
+            streakDay: state.slot,
+            cycleLength: config.cycleLength,
             isClaimable: state.isClaimable,
-            isMilestone: dayConfig?.isMilestone ?? false,
-            nextAvailableAt: state.nextAvailableAt?.toISOString() ?? null,
-            expiresAt: state.expiresAt?.toISOString() ?? null,
-            preview: dayConfig ? {
-                gems: dayConfig.gems,
-                items: dayConfig.items.map((item) => ({
-                    type: item.type,
-                    id: item.id,
-                    quantity: item.quantity,
-                    label: item.label ?? item.id,
-                })),
-            } : null,
+            nextClaimAtMs: state.nextClaimAtMs,
+            msUntilNextClaim: Math.max(0, state.nextClaimAtMs - nowMs),
+            streakExpiresAtMs: state.streakExpiresAtMs,
+            // True when the ladder has fallen back to slot 1 because the player
+            // lapsed. Lets the popup say "your streak reset" instead of silently
+            // showing day 1 again.
+            streakBroken: state.streakBroken,
+            totalClaims: status?.totalClaims ?? 0,
+            cycleCount: status?.cycleCount ?? 0,
+            graceDays: config.graceDays,
+            configVersion: config.version,
+            ladder,
         };
     },
 );
@@ -155,10 +191,6 @@ export const getDailyRewardStatus = onCall(
 // =============================================================================
 // claimDailyReward  (transactional + idempotent)
 // =============================================================================
-
-interface ClaimDailyRewardRequest {
-    opId: unknown;
-}
 
 export const claimDailyReward = onCall(
     callableOptions({ memory: "512MiB", cpu: 1, concurrency: 80 }, true),
@@ -168,15 +200,18 @@ export const claimDailyReward = onCall(
             throw new HttpsError("unauthenticated", "User must be authenticated.");
         }
 
-        const { opId } = request.data as ClaimDailyRewardRequest;
+        const { opId } = (request.data ?? {}) as { opId?: unknown };
         if (typeof opId !== "string" || !opId.trim()) {
             throw new HttpsError("invalid-argument", "opId must be a non-empty string.");
         }
 
         const reason = "dailyReward.claim";
 
-        // Idempotency check
-        const cachedResult = await checkIdempotency(uid, opId);
+        // Retry of a call that already went through → replay the stored result
+        // instead of granting twice.
+        const cachedResult = await checkIdempotency(uid, opId).catch(() => {
+            throw new HttpsError("aborted", "This claim is already being processed.");
+        });
         if (cachedResult) {
             return cachedResult;
         }
@@ -184,126 +219,118 @@ export const claimDailyReward = onCall(
         await createInProgressReceipt(uid, opId, reason);
 
         const config = await getDailyRewardsConfig();
+        const bounds = boundaryConfig(config);
+        const nowMs = resolveNowMs(request.data);
 
         try {
             return await runReadThenWriteWithReceipt(
                 uid,
                 opId,
                 reason,
-                // ── READ PHASE ──
+                // ── READ PHASE ── every read the write phase depends on happens here.
                 async (transaction) => {
                     const statusRef = getStatusRef(uid);
                     const statusSnap = await transaction.get(statusRef);
-                    const economyRef = db.doc(`Players/${uid}/Economy/Stats`);
-                    const economySnap = await transaction.get(economyRef);
-
-                    const data = statusSnap.exists
-                        ? (statusSnap.data() as DailyRewardStatusDoc)
-                        : undefined;
-
-                    const now = new Date();
-                    const state = resolveEffectiveState(data, now);
+                    const status = readStatus(statusSnap);
+                    const state = resolveClaimState(status, bounds, nowMs);
 
                     if (!state.isClaimable) {
                         throw new HttpsError(
                             "failed-precondition",
-                            `Day ${state.currentDay} is not claimable yet. Available at ${state.nextAvailableAt?.toISOString()}.`,
+                            `Daily reward already claimed. Next claim at ${new Date(
+                                state.nextClaimAtMs,
+                            ).toISOString()}.`,
                         );
                     }
 
-                    const dayKey = `day_${state.currentDay}`;
-                    const dayConfig: DailyRewardDay | undefined = config.rewards[dayKey];
-                    if (!dayConfig) {
+                    const slot = getSlotOrThrow(config, state.slot);
+
+                    // Independent double-claim guard. If this day already has a log
+                    // entry, the Status doc and the log disagree — refuse rather
+                    // than pay out twice.
+                    const logRef = getLogRef(uid, state.todayIndex);
+                    const logSnap = await transaction.get(logRef);
+                    if (logSnap.exists) {
                         throw new HttpsError(
-                            "internal",
-                            `DailyRewardsConfig missing entry for ${dayKey}.`,
+                            "failed-precondition",
+                            "Daily reward already claimed for today.",
                         );
                     }
 
-                    const economyStats = economySnap.exists ? economySnap.data() ?? {} : {};
+                    const bundle = await prepareRewardBundle(transaction, uid, slot.rewards);
 
-                    return {
-                        statusRef,
-                        economyRef,
-                        economyStats,
-                        state,
-                        dayConfig,
-                        now,
-                    };
+                    return { statusRef, logRef, status, state, slot, bundle };
                 },
-                // ── WRITE PHASE ──
+                // ── WRITE PHASE ── no reads beyond this point.
                 async (transaction, reads) => {
-                    const { statusRef, economyRef, economyStats, state, dayConfig, now } = reads;
+                    const { statusRef, logRef, status, state, slot, bundle } = reads;
 
-                    const tsNow = admin.firestore.Timestamp.fromDate(now);
-                    const nextAvailableAt = admin.firestore.Timestamp.fromDate(
-                        new Date(now.getTime() + TWENTY_FOUR_HOURS_MS),
-                    );
-                    const expiresAt = admin.firestore.Timestamp.fromDate(
-                        new Date(now.getTime() + 2 * TWENTY_FOUR_HOURS_MS),
-                    );
-
-                    // Calculate next day (cycle back after Day 30)
-                    const nextDay = state.currentDay >= MAX_DAY ? 1 : state.currentDay + 1;
-
-                    // 1. Update streak status doc
-                    transaction.set(statusRef, {
-                        currentDay: nextDay,
-                        lastClaimedAt: tsNow,
-                        nextAvailableAt,
-                        expiresAt,
+                    const timestamp = admin.firestore.Timestamp.fromMillis(nowMs);
+                    const granted = await applyRewardBundle(transaction, uid, bundle, {
+                        timestamp: admin.firestore.FieldValue.serverTimestamp(),
                     });
 
-                    // 2. Award gems via Economy/Stats
-                    if (dayConfig.gems > 0) {
-                        transaction.update(economyRef, {
-                            gems: admin.firestore.FieldValue.increment(dayConfig.gems),
-                            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-                        });
-                    }
+                    const nextSlot = nextSlotAfter(state.slot, bounds);
+                    const cycleCompleted = state.slot >= config.cycleLength;
+                    const nextClaimAtMs = dayIndexStartMs(
+                        state.todayIndex + 1,
+                        config.resetOffsetMinutes,
+                    );
+                    const streakExpiresAtMs = dayIndexStartMs(
+                        state.todayIndex + 2 + config.graceDays,
+                        config.resetOffsetMinutes,
+                    );
 
-                    // 3. Award inventory items (boosters + speed-ups)
-                    const inventoryGrants: InventoryGrant[] = dayConfig.items
-                        .filter((item) => item.type === "booster" || item.type === "speedUp")
-                        .map((item) => ({
-                            skuId: item.id,
-                            quantity: item.quantity,
-                        }));
+                    transaction.set(statusRef, {
+                        streakDay: nextSlot,
+                        lastClaimedDayIndex: state.todayIndex,
+                        lastClaimedAt: timestamp,
+                        totalClaims: (status?.totalClaims ?? 0) + 1,
+                        cycleCount: (status?.cycleCount ?? 0) + (cycleCompleted ? 1 : 0),
+                        configVersion: config.version,
+                        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                    });
 
-                    let grantResults: { skuId: string; quantity: number }[] = [];
-                    if (inventoryGrants.length > 0) {
-                        grantResults = await grantInventoryRewards(
-                            transaction,
-                            uid,
-                            inventoryGrants,
-                            { timestamp: admin.firestore.FieldValue.serverTimestamp() },
-                        );
-                    }
-
-                    const gemsBefore = Number(economyStats.gems ?? 0);
+                    transaction.create(logRef, {
+                        dayIndex: state.todayIndex,
+                        slot: state.slot,
+                        opId,
+                        rewards: granted.rewards,
+                        streakBroken: state.streakBroken,
+                        configVersion: config.version,
+                        claimedAt: timestamp,
+                    });
 
                     return {
                         success: true,
-                        claimedDay: state.currentDay,
-                        nextDay,
-                        isMilestone: dayConfig.isMilestone ?? false,
-                        rewards: {
-                            gems: dayConfig.gems,
-                            items: grantResults.map((r) => ({
-                                skuId: r.skuId,
-                                quantity: r.quantity,
-                            })),
-                        },
-                        gemsBefore,
-                        gemsAfter: gemsBefore + dayConfig.gems,
-                        nextAvailableAt: nextAvailableAt.toDate().toISOString(),
-                        expiresAt: expiresAt.toDate().toISOString(),
+                        claimedDay: state.slot,
+                        isMilestone: slot.isMilestone,
+                        streakBroken: state.streakBroken,
+                        nextStreakDay: nextSlot,
+                        cycleCompleted,
+                        cycleCount: (status?.cycleCount ?? 0) + (cycleCompleted ? 1 : 0),
+                        totalClaims: (status?.totalClaims ?? 0) + 1,
+                        rewards: granted.rewards,
+                        coins: granted.coins,
+                        gems: granted.gems,
+                        serverNowMs: nowMs,
+                        nextClaimAtMs,
+                        streakExpiresAtMs,
                     };
                 },
             );
         } catch (error) {
             if (error instanceof HttpsError) {
                 throw error;
+            }
+            // Two devices racing on different opIds: one transaction wins, the
+            // other loses the contended Status doc or the Log create.
+            const message = (error as Error)?.message ?? "";
+            if (message.includes("ALREADY_EXISTS") || message.includes("already exists")) {
+                throw new HttpsError(
+                    "failed-precondition",
+                    "Daily reward already claimed for today.",
+                );
             }
             console.error("[claimDailyReward] Failed:", error);
             throw new HttpsError("internal", "Failed to claim daily reward.");

@@ -45,6 +45,8 @@ export { startRace, generateBotLoadout, recordRaceResult, claimDoubleReward, get
 export { prepareRace } from "./race/prepareRace";
 export { createLobby, joinLobby, leaveLobby, kickPlayer, submitRelayJoinCode, toggleReadyState, promoteToHost, sendLobbyChatMessage } from "./race/lobbyService";
 export { requestDedicatedServer, serverHeartbeat, serverRecordRaceResult, serverUpdateRaceState, serverSelfRegister } from "./race/dedicatedServer";
+export { getCarStats } from "./race/carStats";
+export { joinOpenWorldLobby, leaveOpenWorldLobby, freeRoamServerRegister, freeRoamServerHeartbeat, openWorldLobbyReaper } from "./race/openWorldLobby";
 export { submitFeedback } from "./feedback";
 export * from "./clan";
 export { getMaintenanceStatus, claimMaintenanceReward } from "./game-systems/maintenance";

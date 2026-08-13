@@ -6,10 +6,14 @@
  * - /GameData/v1/catalogs/{catalogName}
  * - /GameData/v1/config/{configName}
  *
- * Run with: node seedV2Catalogs.mjs <env>
+ * Run with: node seedV2Catalogs.mjs <env> [--only=Doc1,Doc2]
  * Examples:
  *   node seedV2Catalogs.mjs sandbox
  *   node seedV2Catalogs.mjs prod
+ *   node seedV2Catalogs.mjs sandbox --only=DailyRewardsConfig
+ *
+ * --only restricts the upload to the named docs, so a single config can be
+ * published without rewriting every other catalog in the environment.
  */
 
 import admin from "firebase-admin";
@@ -20,7 +24,19 @@ import { fileURLToPath } from "url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const seedsDir = join(__dirname, "..", "seeds", "Atul-Final-Seeds");
 
-const env = process.argv[2] || "sandbox";
+const args = process.argv.slice(2);
+const env = args.find((a) => !a.startsWith("--")) || "sandbox";
+
+const onlyArg = args.find((a) => a.startsWith("--only="));
+const onlyDocs = onlyArg
+    ? new Set(
+        onlyArg
+            .slice("--only=".length)
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean),
+    )
+    : null;
 
 const credFile =
     env === "prod"
@@ -42,14 +58,14 @@ admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 const db = admin.firestore();
 
 // V2 Catalogs to upload (go to /GameData/v1/catalogs)
-const catalogs = [
+const allCatalogs = [
     { file: "TiersCatalog.json", docName: "TiersCatalog" },
     { file: "CarEvolutionV2Catalog.json", docName: "CarEvolutionV2Catalog" },
     { file: "SpellEvolutionV2Catalog.json", docName: "SpellEvolutionV2Catalog" },
 ];
 
 // V2 Configs to upload (go to /GameData/v1/config)
-const configs = [
+const allConfigs = [
     { file: "FuelConfig.json", docName: "FuelConfig" },
     { file: "CrateSlotsConfig.json", docName: "CrateSlotsConfig" },
     { file: "PlayerSlotsConfig.json", docName: "PlayerSlotsConfig" },
@@ -61,6 +77,20 @@ const configs = [
     { file: "OffersCatalog.json", docName: "OffersCatalog" },
     { file: "DailyRewardsConfig.json", docName: "DailyRewardsConfig" },
 ];
+
+const keep = (entry) => !onlyDocs || onlyDocs.has(entry.docName);
+const catalogs = allCatalogs.filter(keep);
+const configs = allConfigs.filter(keep);
+
+if (onlyDocs) {
+    const matched = new Set([...catalogs, ...configs].map((e) => e.docName));
+    const unknown = [...onlyDocs].filter((d) => !matched.has(d));
+    if (unknown.length > 0) {
+        console.error(`❌ Unknown doc name(s) in --only: ${unknown.join(", ")}`);
+        process.exit(1);
+    }
+    console.log(`🎯 Restricted to: ${[...matched].join(", ")}\n`);
+}
 
 async function seedV2Catalogs() {
     console.log("📂 Uploading V2 Catalogs to /GameData/v1/catalogs/...\n");

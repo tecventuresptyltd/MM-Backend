@@ -24,6 +24,7 @@ import {
     ArchetypeStatProfile,
     MasteryConfig,
 } from "../shared/typesV2.js";
+import { RewardLine, normaliseRewardLines } from "../shared/rewardLines.js";
 
 const db = admin.firestore();
 
@@ -784,26 +785,65 @@ export function getMasteryProgress(
 // DAILY REWARDS CONFIG
 // =============================================================================
 
-export interface DailyRewardItem {
-    type: "gems" | "booster" | "speedUp";
-    id: string;
-    quantity: number;
-    label?: string;
-}
-
-export interface DailyRewardDay {
+/** One slot of the daily reward ladder, as authored in DailyRewardsConfig.json. */
+export interface DailyRewardSlot {
     day: number;
-    gems: number;
-    items: DailyRewardItem[];
-    isMilestone?: boolean;
+    isMilestone: boolean;
+    rewards: RewardLine[];
 }
 
 export interface DailyRewardsConfig {
     version: string;
-    rewards: Record<string, DailyRewardDay>;
+    /** Number of slots in the ladder (e.g. 7 for a weekly cycle). */
+    cycleLength: number;
+    /** When true, the ladder wraps from the final slot back to slot 1. */
+    loopCycle: boolean;
+    /** Global daily-rollover offset from 00:00 UTC, in minutes. Never per-player. */
+    resetOffsetMinutes: number;
+    /** How many missed days are forgiven before the streak resets to slot 1. */
+    graceDays: number;
+    slots: Record<string, DailyRewardSlot>;
 }
 
 let dailyRewardsConfigCache: CacheEntry<DailyRewardsConfig> | null = null;
+
+const parseDailyRewardsConfig = (raw: Record<string, unknown>): DailyRewardsConfig => {
+    const cycleLength = Math.floor(Number(raw.cycleLength ?? 0));
+    if (!Number.isFinite(cycleLength) || cycleLength < 1) {
+        throw new Error("DailyRewardsConfig: cycleLength must be a positive integer.");
+    }
+
+    const rawSlots = raw.slots;
+    if (!rawSlots || typeof rawSlots !== "object") {
+        throw new Error("DailyRewardsConfig: slots must be an object keyed by day number.");
+    }
+
+    const slots: Record<string, DailyRewardSlot> = {};
+    for (let day = 1; day <= cycleLength; day += 1) {
+        const entry = (rawSlots as Record<string, unknown>)[String(day)];
+        if (!entry || typeof entry !== "object") {
+            throw new Error(`DailyRewardsConfig: missing slot "${day}".`);
+        }
+        const slot = entry as Record<string, unknown>;
+        slots[String(day)] = {
+            day,
+            isMilestone: slot.isMilestone === true,
+            rewards: normaliseRewardLines(slot.rewards, `DailyRewardsConfig.slots.${day}`),
+        };
+    }
+
+    const graceDays = Math.floor(Number(raw.graceDays ?? 0));
+    const resetOffsetMinutes = Math.floor(Number(raw.resetOffsetMinutes ?? 0));
+
+    return {
+        version: typeof raw.version === "string" ? raw.version : "unknown",
+        cycleLength,
+        loopCycle: raw.loopCycle !== false,
+        resetOffsetMinutes: Number.isFinite(resetOffsetMinutes) ? resetOffsetMinutes : 0,
+        graceDays: Number.isFinite(graceDays) && graceDays >= 0 ? graceDays : 0,
+        slots,
+    };
+};
 
 export async function getDailyRewardsConfig(): Promise<DailyRewardsConfig> {
     if (dailyRewardsConfigCache && Date.now() - dailyRewardsConfigCache.lastFetched < 300_000) {
@@ -814,7 +854,7 @@ export async function getDailyRewardsConfig(): Promise<DailyRewardsConfig> {
     if (!snap.exists) {
         throw new Error("DailyRewardsConfig not found in Firestore.");
     }
-    const config = snap.data() as DailyRewardsConfig;
+    const config = parseDailyRewardsConfig(snap.data() as Record<string, unknown>);
     dailyRewardsConfigCache = { data: config, lastFetched: Date.now() };
     return config;
 }

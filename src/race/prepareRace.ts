@@ -13,9 +13,9 @@ import {
   getItemSkusCatalog,
 } from "../core/config.js";
 import { playerClanStateRef, clanMembersCollection, clanRef } from "../clan/helpers.js";
-import { ItemSku, CarLevel } from "../shared/types.js";
+import { ItemSku } from "../shared/types.js";
 import { SeededRNG } from "./lib/random.js";
-import { resolveCarStats, calculateBotStatsFromTrophies } from "./lib/stats.js";
+import { resolveCarStats, calculateBotStatsFromTrophies, resolveCarLevel } from "./lib/stats.js";
 import { calculateLastPlaceDelta, DEFAULT_TROPHY_CONFIG, getTrophyConfigForGameMode } from "./economy.js";
 import { GameMode, resolveGameMode, getTrophyFields, shouldSyncClanTrophies, shouldModifyTrophies } from "../shared/gamemode.js";
 import * as crypto from "crypto";
@@ -56,32 +56,6 @@ const TROPHY_CEILING = 7000;
 
 /** Highest upgrade level present in the car catalog. */
 const BOT_CAR_MAX_LEVEL = 10;
-
-const resolveCarLevel = (
-  car: { levels?: Record<string, CarLevel> } | null | undefined,
-  targetLevel: number,
-): Partial<CarLevel> | null => {
-  if (!car || typeof car !== "object") {
-    return null;
-  }
-  const levels = (car as { levels?: Record<string, CarLevel> }).levels;
-  if (!levels || typeof levels !== "object") {
-    return null;
-  }
-  const normalizedLevel = Math.max(0, Math.floor(Number.isFinite(targetLevel) ? targetLevel : 0));
-  const direct = levels[String(normalizedLevel)];
-  if (direct) {
-    return direct;
-  }
-  if (normalizedLevel > 0) {
-    const fallback = levels[String(normalizedLevel - 1)];
-    if (fallback) {
-      return fallback;
-    }
-  }
-  const firstAvailable = levels["0"] ?? Object.values(levels)[0];
-  return firstAvailable ?? null;
-};
 
 function hmacSign(payload: any): string {
   const secret = process.env.RACE_HMAC_SECRET || "sandbox-secret";

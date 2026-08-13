@@ -6,6 +6,8 @@ import {
   createTxSkuDocState,
   txIncSkuQty,
   txUpdateInventorySummary,
+  TxInventorySummaryState,
+  TxSkuDocState,
 } from "../inventory/index.js";
 
 export interface InventoryGrant {
@@ -18,6 +20,17 @@ export interface InventoryGrantResult {
   quantity: number;
   previous: number;
   next: number;
+}
+
+/**
+ * Everything `applyInventoryGrants` needs, captured during the read phase so the
+ * write phase issues zero reads. Firestore requires all reads in a transaction to
+ * happen before any write, and `runReadThenWrite` enforces that in dev.
+ */
+export interface InventoryGrantPlan {
+  grants: InventoryGrant[];
+  summaryState: TxInventorySummaryState;
+  skuStates: TxSkuDocState[];
 }
 
 const normaliseGrant = (grant: InventoryGrant): InventoryGrant | null => {
@@ -36,28 +49,31 @@ const normaliseGrant = (grant: InventoryGrant): InventoryGrant | null => {
 };
 
 /**
- * Grants one or more SKU quantities inside the current transaction.
- * Also keeps the player's inventory summary in sync.
+ * READ PHASE. Loads the inventory summary and every target SKU doc up front.
+ * Safe to call alongside other reads; performs no writes.
  */
-export const grantInventoryRewards = async (
+export const prepareInventoryGrants = async (
   transaction: FirebaseFirestore.Transaction,
   uid: string,
   grants: InventoryGrant[],
-  options?: { timestamp?: FirebaseFirestore.FieldValue },
-): Promise<InventoryGrantResult[]> => {
+): Promise<InventoryGrantPlan> => {
   const normalised = grants
     .map((grant) => normaliseGrant(grant))
     .filter((grant): grant is InventoryGrant => Boolean(grant));
 
+  const inventoryCtx = resolveInventoryContext(uid);
+
   if (normalised.length === 0) {
-    return [];
+    return {
+      grants: [],
+      summaryState: createTxInventorySummaryState(inventoryCtx.summaryRef),
+      skuStates: [],
+    };
   }
 
-  const inventoryCtx = resolveInventoryContext(uid);
   const summarySnap = await transaction.get(inventoryCtx.summaryRef);
   const summaryState = createTxInventorySummaryState(inventoryCtx.summaryRef, summarySnap);
 
-  // Preload all SKU docs before performing any writes to satisfy transaction ordering.
   const skuRefs = normalised.map((grant) =>
     inventoryCtx.inventoryCollection.doc(grant.skuId)
   );
@@ -66,13 +82,29 @@ export const grantInventoryRewards = async (
     createTxSkuDocState(db, uid, normalised[idx].skuId, snap)
   );
 
+  return { grants: normalised, summaryState, skuStates };
+};
+
+/**
+ * WRITE PHASE. Applies a plan produced by `prepareInventoryGrants`. Issues no reads.
+ */
+export const applyInventoryGrants = async (
+  transaction: FirebaseFirestore.Transaction,
+  uid: string,
+  plan: InventoryGrantPlan,
+  options?: { timestamp?: FirebaseFirestore.FieldValue },
+): Promise<InventoryGrantResult[]> => {
+  if (plan.grants.length === 0) {
+    return [];
+  }
+
   const summaryDelta: Record<string, number> = {};
   const timestamp = options?.timestamp ?? admin.firestore.FieldValue.serverTimestamp();
   const results: InventoryGrantResult[] = [];
 
-  for (let i = 0; i < normalised.length; i += 1) {
-    const grant = normalised[i];
-    const skuState = skuStates[i];
+  for (let i = 0; i < plan.grants.length; i += 1) {
+    const grant = plan.grants[i];
+    const skuState = plan.skuStates[i];
     const adjustment = await txIncSkuQty(transaction, db, uid, grant.skuId, grant.quantity, {
       state: skuState,
       timestamp,
@@ -88,10 +120,29 @@ export const grantInventoryRewards = async (
 
   if (Object.keys(summaryDelta).length > 0) {
     await txUpdateInventorySummary(transaction, db, uid, summaryDelta, {
-      state: summaryState,
+      state: plan.summaryState,
       timestamp,
     });
   }
 
   return results;
+};
+
+/**
+ * Grants one or more SKU quantities inside the current transaction.
+ * Also keeps the player's inventory summary in sync.
+ *
+ * NOTE: this reads *and* writes, so it must be called before any other write in
+ * the transaction. Callers that already have a read/write split (see
+ * `runReadThenWrite`) should use `prepareInventoryGrants` + `applyInventoryGrants`
+ * instead.
+ */
+export const grantInventoryRewards = async (
+  transaction: FirebaseFirestore.Transaction,
+  uid: string,
+  grants: InventoryGrant[],
+  options?: { timestamp?: FirebaseFirestore.FieldValue },
+): Promise<InventoryGrantResult[]> => {
+  const plan = await prepareInventoryGrants(transaction, uid, grants);
+  return applyInventoryGrants(transaction, uid, plan, options);
 };

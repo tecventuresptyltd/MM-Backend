@@ -1,448 +1,102 @@
 {
-    "version": "v1-daily-rewards",
-    "notes": "30-day daily login rewards. Each day: gems + 1-2 utility items (boosters or speed-ups). No crates. Cycles back to Day 1 after Day 30. Milestones at days 7/14/21/30 get slightly better items.",
-    "rewards": {
-        "day_1": {
+    "version": "v2-daily-rewards-7d-r2",
+    "notes": "7-day weekly daily-login ladder. Player-anchored (each player runs their own 7 slots from their first claim) and loops back to slot 1 after slot 7. Day boundary is a fixed UTC rollover computed server-side, so device clock/timezone changes have no effect. graceDays=1 forgives a single missed day; two or more consecutive missed days reset the ladder to slot 1. Currency rewards (coins/gems) carry no skuId - they credit Economy/Stats directly. Item/crate rewards must reference a real skuId from ItemSkusCatalog. BALANCE (r2): weighted toward utility items (speed-ups/boosters) that drive the V2 timer loops, light on raw gems which cannibalise the shop. Perfect week pays ~451 gems of hard value plus 4,000 coins. Day 7 is ~50% of the week's value so the milestone is worth chasing. Do not use Shards SKUs here - they are category 'currency' with metadata.currency 'spellShards' and would land as inert inventory docs rather than crediting the shard balance.",
+    "cycleLength": 7,
+    "loopCycle": true,
+    "resetOffsetMinutes": 0,
+    "graceDays": 1,
+    "slots": {
+        "1": {
             "day": 1,
-            "gems": 20,
-            "items": [
+            "isMilestone": false,
+            "rewards": [
                 {
-                    "type": "speedUp",
-                    "id": "sku_spd5m_r4x7",
-                    "quantity": 2,
-                    "label": "5m Skip ×2"
+                    "kind": "coins",
+                    "quantity": 1000,
+                    "displayName": "Sack of Coins"
                 }
             ]
         },
-        "day_2": {
+        "2": {
             "day": 2,
-            "gems": 25,
-            "items": [
+            "isMilestone": false,
+            "rewards": [
                 {
-                    "type": "speedUp",
-                    "id": "sku_spd15m_j8k2",
-                    "quantity": 1,
-                    "label": "15m Skip"
+                    "kind": "item",
+                    "skuId": "sku_spd15m_j8k2",
+                    "quantity": 2,
+                    "displayName": "15m Speed Up"
                 }
             ]
         },
-        "day_3": {
+        "3": {
             "day": 3,
-            "gems": 25,
-            "items": [
+            "isMilestone": false,
+            "rewards": [
                 {
-                    "type": "booster",
-                    "id": "sku_60fdgqkm",
-                    "quantity": 1,
-                    "label": "XP Booster 6h"
+                    "kind": "gems",
+                    "quantity": 30,
+                    "displayName": "Gems"
                 }
             ]
         },
-        "day_4": {
+        "4": {
             "day": 4,
-            "gems": 30,
-            "items": [
+            "isMilestone": false,
+            "rewards": [
                 {
-                    "type": "speedUp",
-                    "id": "sku_spd15m_j8k2",
-                    "quantity": 2,
-                    "label": "15m Skip ×2"
+                    "kind": "item",
+                    "skuId": "sku_60fdgqkm",
+                    "quantity": 1,
+                    "displayName": "6H XP Booster"
                 }
             ]
         },
-        "day_5": {
+        "5": {
             "day": 5,
-            "gems": 30,
-            "items": [
+            "isMilestone": false,
+            "rewards": [
                 {
-                    "type": "booster",
-                    "id": "sku_eqzbetwm",
-                    "quantity": 1,
-                    "label": "Coin Booster 6h"
+                    "kind": "coins",
+                    "quantity": 3000,
+                    "displayName": "Chest of Coins"
+                },
+                {
+                    "kind": "item",
+                    "skuId": "sku_spd1h_m5t6",
+                    "quantity": 2,
+                    "displayName": "1H Speed Up"
                 }
             ]
         },
-        "day_6": {
+        "6": {
             "day": 6,
-            "gems": 35,
-            "items": [
+            "isMilestone": false,
+            "rewards": [
                 {
-                    "type": "speedUp",
-                    "id": "sku_spd1h_m5t6",
+                    "kind": "item",
+                    "skuId": "sku_eqzbetwm",
                     "quantity": 1,
-                    "label": "1h Skip"
-                },
-                {
-                    "type": "booster",
-                    "id": "sku_shrd6h_k7w2",
-                    "quantity": 1,
-                    "label": "Shard Booster 6h"
+                    "displayName": "6H Coin Booster"
                 }
             ]
         },
-        "day_7": {
+        "7": {
             "day": 7,
-            "gems": 50,
-            "items": [
+            "isMilestone": true,
+            "rewards": [
                 {
-                    "type": "booster",
-                    "id": "sku_eqzbetwm",
+                    "kind": "crate",
+                    "skuId": "sku_72wnqwtfmx",
                     "quantity": 1,
-                    "label": "Coin Booster 6h"
+                    "displayName": "Rare Crate"
                 },
                 {
-                    "type": "speedUp",
-                    "id": "sku_spd1h_m5t6",
-                    "quantity": 2,
-                    "label": "1h Skip ×2"
-                }
-            ],
-            "isMilestone": true
-        },
-        "day_8": {
-            "day": 8,
-            "gems": 35,
-            "items": [
-                {
-                    "type": "speedUp",
-                    "id": "sku_spd1h_m5t6",
-                    "quantity": 1,
-                    "label": "1h Skip"
+                    "kind": "gems",
+                    "quantity": 75,
+                    "displayName": "Gems"
                 }
             ]
-        },
-        "day_9": {
-            "day": 9,
-            "gems": 35,
-            "items": [
-                {
-                    "type": "booster",
-                    "id": "sku_shrd6h_k7w2",
-                    "quantity": 1,
-                    "label": "Shard Booster 6h"
-                }
-            ]
-        },
-        "day_10": {
-            "day": 10,
-            "gems": 40,
-            "items": [
-                {
-                    "type": "speedUp",
-                    "id": "sku_spd3h_q2v8",
-                    "quantity": 1,
-                    "label": "3h Skip"
-                }
-            ]
-        },
-        "day_11": {
-            "day": 11,
-            "gems": 40,
-            "items": [
-                {
-                    "type": "booster",
-                    "id": "sku_60fdgqkm",
-                    "quantity": 1,
-                    "label": "XP Booster 6h"
-                },
-                {
-                    "type": "speedUp",
-                    "id": "sku_spd15m_j8k2",
-                    "quantity": 2,
-                    "label": "15m Skip ×2"
-                }
-            ]
-        },
-        "day_12": {
-            "day": 12,
-            "gems": 40,
-            "items": [
-                {
-                    "type": "booster",
-                    "id": "sku_eqzbetwm",
-                    "quantity": 1,
-                    "label": "Coin Booster 6h"
-                }
-            ]
-        },
-        "day_13": {
-            "day": 13,
-            "gems": 45,
-            "items": [
-                {
-                    "type": "speedUp",
-                    "id": "sku_spd1h_m5t6",
-                    "quantity": 2,
-                    "label": "1h Skip ×2"
-                },
-                {
-                    "type": "booster",
-                    "id": "sku_shrd6h_k7w2",
-                    "quantity": 1,
-                    "label": "Shard Booster 6h"
-                }
-            ]
-        },
-        "day_14": {
-            "day": 14,
-            "gems": 75,
-            "items": [
-                {
-                    "type": "booster",
-                    "id": "sku_wkm0amtg",
-                    "quantity": 1,
-                    "label": "Coin Booster 12h"
-                },
-                {
-                    "type": "speedUp",
-                    "id": "sku_spd3h_q2v8",
-                    "quantity": 1,
-                    "label": "3h Skip"
-                }
-            ],
-            "isMilestone": true
-        },
-        "day_15": {
-            "day": 15,
-            "gems": 45,
-            "items": [
-                {
-                    "type": "speedUp",
-                    "id": "sku_spd3h_q2v8",
-                    "quantity": 1,
-                    "label": "3h Skip"
-                }
-            ]
-        },
-        "day_16": {
-            "day": 16,
-            "gems": 50,
-            "items": [
-                {
-                    "type": "booster",
-                    "id": "sku_nhh7jtda",
-                    "quantity": 1,
-                    "label": "XP Booster 12h"
-                }
-            ]
-        },
-        "day_17": {
-            "day": 17,
-            "gems": 50,
-            "items": [
-                {
-                    "type": "speedUp",
-                    "id": "sku_spd1h_m5t6",
-                    "quantity": 2,
-                    "label": "1h Skip ×2"
-                },
-                {
-                    "type": "booster",
-                    "id": "sku_shrd6h_k7w2",
-                    "quantity": 1,
-                    "label": "Shard Booster 6h"
-                }
-            ]
-        },
-        "day_18": {
-            "day": 18,
-            "gems": 50,
-            "items": [
-                {
-                    "type": "booster",
-                    "id": "sku_wkm0amtg",
-                    "quantity": 1,
-                    "label": "Coin Booster 12h"
-                }
-            ]
-        },
-        "day_19": {
-            "day": 19,
-            "gems": 55,
-            "items": [
-                {
-                    "type": "speedUp",
-                    "id": "sku_spd3h_q2v8",
-                    "quantity": 1,
-                    "label": "3h Skip"
-                },
-                {
-                    "type": "booster",
-                    "id": "sku_60fdgqkm",
-                    "quantity": 1,
-                    "label": "XP Booster 6h"
-                }
-            ]
-        },
-        "day_20": {
-            "day": 20,
-            "gems": 55,
-            "items": [
-                {
-                    "type": "speedUp",
-                    "id": "sku_spd3h_q2v8",
-                    "quantity": 2,
-                    "label": "3h Skip ×2"
-                }
-            ]
-        },
-        "day_21": {
-            "day": 21,
-            "gems": 100,
-            "items": [
-                {
-                    "type": "booster",
-                    "id": "sku_tpt3379j8p",
-                    "quantity": 1,
-                    "label": "Coin Booster 24h"
-                },
-                {
-                    "type": "speedUp",
-                    "id": "sku_spd3h_q2v8",
-                    "quantity": 1,
-                    "label": "3h Skip"
-                }
-            ],
-            "isMilestone": true
-        },
-        "day_22": {
-            "day": 22,
-            "gems": 55,
-            "items": [
-                {
-                    "type": "booster",
-                    "id": "sku_shrd12h_m4v6",
-                    "quantity": 1,
-                    "label": "Shard Booster 12h"
-                }
-            ]
-        },
-        "day_23": {
-            "day": 23,
-            "gems": 60,
-            "items": [
-                {
-                    "type": "speedUp",
-                    "id": "sku_spd8h_y7p4",
-                    "quantity": 1,
-                    "label": "8h Skip"
-                }
-            ]
-        },
-        "day_24": {
-            "day": 24,
-            "gems": 60,
-            "items": [
-                {
-                    "type": "booster",
-                    "id": "sku_nhh7jtda",
-                    "quantity": 1,
-                    "label": "XP Booster 12h"
-                },
-                {
-                    "type": "speedUp",
-                    "id": "sku_spd1h_m5t6",
-                    "quantity": 2,
-                    "label": "1h Skip ×2"
-                }
-            ]
-        },
-        "day_25": {
-            "day": 25,
-            "gems": 65,
-            "items": [
-                {
-                    "type": "booster",
-                    "id": "sku_wkm0amtg",
-                    "quantity": 1,
-                    "label": "Coin Booster 12h"
-                },
-                {
-                    "type": "speedUp",
-                    "id": "sku_spd3h_q2v8",
-                    "quantity": 1,
-                    "label": "3h Skip"
-                }
-            ]
-        },
-        "day_26": {
-            "day": 26,
-            "gems": 65,
-            "items": [
-                {
-                    "type": "booster",
-                    "id": "sku_shrd12h_m4v6",
-                    "quantity": 1,
-                    "label": "Shard Booster 12h"
-                },
-                {
-                    "type": "speedUp",
-                    "id": "sku_spd1h_m5t6",
-                    "quantity": 2,
-                    "label": "1h Skip ×2"
-                }
-            ]
-        },
-        "day_27": {
-            "day": 27,
-            "gems": 70,
-            "items": [
-                {
-                    "type": "speedUp",
-                    "id": "sku_spd8h_y7p4",
-                    "quantity": 1,
-                    "label": "8h Skip"
-                }
-            ]
-        },
-        "day_28": {
-            "day": 28,
-            "gems": 75,
-            "items": [
-                {
-                    "type": "booster",
-                    "id": "sku_tpt3379j8p",
-                    "quantity": 1,
-                    "label": "Coin Booster 24h"
-                }
-            ]
-        },
-        "day_29": {
-            "day": 29,
-            "gems": 80,
-            "items": [
-                {
-                    "type": "booster",
-                    "id": "sku_9pnmmjpscv",
-                    "quantity": 1,
-                    "label": "XP Booster 24h"
-                },
-                {
-                    "type": "speedUp",
-                    "id": "sku_spd3h_q2v8",
-                    "quantity": 1,
-                    "label": "3h Skip"
-                }
-            ]
-        },
-        "day_30": {
-            "day": 30,
-            "gems": 150,
-            "items": [
-                {
-                    "type": "booster",
-                    "id": "sku_tpt3379j8p",
-                    "quantity": 1,
-                    "label": "Coin Booster 24h"
-                },
-                {
-                    "type": "booster",
-                    "id": "sku_shrd24h_n8t5",
-                    "quantity": 1,
-                    "label": "Shard Booster 24h"
-                }
-            ],
-            "isMilestone": true
         }
     }
 }

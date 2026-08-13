@@ -38,6 +38,40 @@ interface ResolvedStats {
 }
 
 /**
+ * Picks the catalog level block for a car at a given upgrade level, falling back to
+ * the level below, then level 0, then whatever exists.
+ *
+ * Shared by prepareRace and getCarStats so the open-world lobby resolves a car to the
+ * exact same level block a race would. Do not inline a copy of this — if the two drift,
+ * cars handle differently in the lobby than in races.
+ */
+export const resolveCarLevel = (
+  car: { levels?: Record<string, CarLevel> } | null | undefined,
+  targetLevel: number,
+): Partial<CarLevel> | null => {
+  if (!car || typeof car !== "object") {
+    return null;
+  }
+  const levels = (car as { levels?: Record<string, CarLevel> }).levels;
+  if (!levels || typeof levels !== "object") {
+    return null;
+  }
+  const normalizedLevel = Math.max(0, Math.floor(Number.isFinite(targetLevel) ? targetLevel : 0));
+  const direct = levels[String(normalizedLevel)];
+  if (direct) {
+    return direct;
+  }
+  if (normalizedLevel > 0) {
+    const fallback = levels[String(normalizedLevel - 1)];
+    if (fallback) {
+      return fallback;
+    }
+  }
+  const firstAvailable = levels["0"] ?? Object.values(levels)[0];
+  return firstAvailable ?? null;
+};
+
+/**
  * Calculate bot stats for new AI difficulty system.
  * Returns empty stat objects - Unity only uses aiLevel and performanceRanges (added by prepareRace).
  */

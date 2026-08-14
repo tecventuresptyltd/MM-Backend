@@ -60,6 +60,14 @@ const main = async () => {
   let fixed = 0;
   for (const clanDoc of clansSnap.docs) {
     const data = clanDoc.data() ?? {};
+
+    // Never mark a nameless doc as an active clan. Those are orphaned shells, and
+    // stamping status:"active" on them makes them show up in clan search queries.
+    if (typeof data.name !== "string" || data.name.trim().length === 0) {
+      console.log(`  – skipped ${clanDoc.id}: no name field (orphaned doc, not a clan)`);
+      continue;
+    }
+
     const membersSnap = await clanDoc.ref.collection("Members").get();
 
     let memberCount = 0;

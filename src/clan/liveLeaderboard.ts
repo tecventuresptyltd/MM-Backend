@@ -74,15 +74,19 @@ export const updateClanLeaderboardEntry = async (clanId: string): Promise<void> 
         },
         { merge: true },
       );
-    await clansCollection()
-      .doc(clanId)
-      .set(
-        {
-          isInTop100: top.some((entry) => entry.clanId === clanId),
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        },
-        { merge: true },
-      );
+    // Never resurrect a deleted clan. This also runs after deleteClan/leaveClan removes
+    // the doc, and a merge-set on a missing document silently CREATES it — that is what
+    // produced the nameless "ghost" clan docs that broke clan search.
+    const clanDocRef = clansCollection().doc(clanId);
+    const clanSnap = await clanDocRef.get();
+    if (clanSnap.exists) {
+      await clanDocRef.update({
+        isInTop100: top.some((entry) => entry.clanId === clanId),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    } else {
+      logger.info("[clan.liveLeaderboard] skipped flag write for deleted clan", { clanId });
+    }
     logger.info("[clan.liveLeaderboard] upserted clan leaderboard entry", {
       clanId,
       topCount: top.length,

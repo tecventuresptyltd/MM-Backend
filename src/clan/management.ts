@@ -680,9 +680,15 @@ export const searchClans = onCall(callableOptions({ cpu: 1, concurrency: 80 }), 
   const results = snapshot.docs
     .map((doc: FirebaseFirestore.QueryDocumentSnapshot) => clanSummaryProjection(doc.data() ?? {}))
     .filter((clan: ReturnType<typeof clanSummaryProjection>) => {
+      // Guard against malformed clan docs. A doc with no name is not a real clan
+      // (orphaned shells left behind by old deletes), and reading .toLowerCase() on an
+      // undefined name would throw and fail the ENTIRE search, not just that row.
+      const name = typeof clan.name === "string" ? clan.name : "";
+      if (name.length === 0) return false;
+
       const members = Number(clan.stats?.members ?? 0);
       const trophies = Number(clan.stats?.trophies ?? 0);
-      if (lowerQuery.length > 0 && !clan.name.toLowerCase().includes(lowerQuery)) return false;
+      if (lowerQuery.length > 0 && !name.toLowerCase().includes(lowerQuery)) return false;
       if (minMembers !== undefined && members < minMembers) return false;
       if (maxMembers !== undefined && members > maxMembers) return false;
       if (minTrophies !== undefined && trophies < minTrophies) return false;

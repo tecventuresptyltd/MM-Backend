@@ -628,6 +628,9 @@ interface SearchClansResponse {
   clans: ReturnType<typeof clanSummaryProjection>[];
 }
 
+// Matches the "x/50" capacity shown in the client clan UI.
+const CLAN_MEMBER_CAPACITY = 50;
+
 const clampLimit = (value?: unknown, fallback = 25, max = 50): number => {
   if (value === undefined || value === null) {
     return fallback;
@@ -652,17 +655,21 @@ export const searchClans = onCall(callableOptions({ cpu: 1, concurrency: 80 }), 
   const minMembers = payload.minMembers !== undefined ? Number(payload.minMembers) : undefined;
   const maxMembers = payload.maxMembers !== undefined ? Number(payload.maxMembers) : undefined;
   const minTrophies = payload.minTrophies !== undefined ? Number(payload.minTrophies) : undefined;
+  const requireOpenSpots = payload.requireOpenSpots === true;
   const queryText = typeof payload.query === "string" ? payload.query.trim() : "";
 
   // --- Firestore query: equality filters only ---
   let query: FirebaseFirestore.Query = clansCollection().where("status", "==", "active");
   if (payload.location) {
+    // search.* fields are stored lower-cased (see buildSearchFields) so that an equality
+    // match is case-insensitive. Firestore "==" is case-sensitive, and clans were created
+    // with inconsistent casing ("AUSTRALIA" vs "Australia"), which silently hid results.
     const location = sanitizeWith(() => resolveLocation(payload.location));
-    query = query.where("search.location", "==", location);
+    query = query.where("search.location", "==", location.toLowerCase());
   }
   if (payload.language) {
     const language = sanitizeWith(() => resolveLanguage(payload.language));
-    query = query.where("search.language", "==", language);
+    query = query.where("search.language", "==", language.toLowerCase());
   }
   if (payload.type && payload.type !== "any") {
     query = query.where("type", "==", resolveClanType(payload.type));
@@ -687,11 +694,14 @@ export const searchClans = onCall(callableOptions({ cpu: 1, concurrency: 80 }), 
       if (name.length === 0) return false;
 
       const members = Number(clan.stats?.members ?? 0);
-      const trophies = Number(clan.stats?.trophies ?? 0);
+      // "Trophies Requirement" in the search UI refers to the clan's JOIN requirement
+      // (minimumTrophies), not its accumulated stats.trophies total.
+      const trophyRequirement = Number(clan.minimumTrophies ?? 0);
       if (lowerQuery.length > 0 && !name.toLowerCase().includes(lowerQuery)) return false;
       if (minMembers !== undefined && members < minMembers) return false;
       if (maxMembers !== undefined && members > maxMembers) return false;
-      if (minTrophies !== undefined && trophies < minTrophies) return false;
+      if (minTrophies !== undefined && trophyRequirement < minTrophies) return false;
+      if (requireOpenSpots && members >= CLAN_MEMBER_CAPACITY) return false;
       return true;
     })
     .slice(0, limit);

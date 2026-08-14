@@ -291,10 +291,13 @@ export const getClanMemberDoc = async (
   return transaction ? transaction.get(ref) : ref.get();
 };
 
+// These are the case-insensitive *search index* fields, kept separate from the
+// display-cased `name`/`location`/`language` on the clan doc. They must all be stored
+// lower-cased: clan search matches them with a case-sensitive Firestore "==".
 export const buildSearchFields = (name: string, location: string, language: string) => ({
   nameLower: name.toLowerCase(),
-  location,
-  language,
+  location: location.toLowerCase(),
+  language: language.toLowerCase(),
 });
 
 export const clanSummaryProjection = (data: FirebaseFirestore.DocumentData) => {

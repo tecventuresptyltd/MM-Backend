@@ -247,7 +247,7 @@
       "displayName": "God Hammer",
       "type": "Directional",
       "description": "Summons a magical war hammer that autonomously flies around the track at high speed, seeking out enemy cars and zapping them with lightning as it passes.",
-      "requiredLevel": 55,
+      "requiredLevel": 60,
       "displayOrder": 16,
       "isUnlocked": false,
       "attributes": [
@@ -500,7 +500,7 @@
       "displayName": "Wraith Grip",
       "type": "TargetLock",
       "description": "A ghostly wraith hand shoots out and seizes the target car, pinning it to the ground and holding it in place for a period of time.",
-      "requiredLevel": 60,
+      "requiredLevel": 65,
       "displayOrder": 17,
       "isUnlocked": false,
       "attributes": [

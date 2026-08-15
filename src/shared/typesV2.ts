@@ -365,6 +365,12 @@ export interface MasteryConfig {
     spellWeight: number;  // Multiplier for spell XP contribution (1.0 — earn rates pre-scaled)
     maxRank: number;
     rankThresholds: Record<string, number>; // rank -> cumulative MP required
+    /**
+     * At this rank and above, mastery counts the XP a race generated rather than the
+     * amount that fit under the car/spell per-level caps. Lets rank keep rising once all
+     * content is maxed. Cars and spells still respect their own caps. Omit to disable.
+     */
+    uncappedFromRank?: number;
 }
 
 // =============================================================================

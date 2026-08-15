@@ -828,6 +828,9 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
 
     // --- Grant Spell XP to all equipped spells ---
     const spellXpResults: Array<{ spellId: string; xpAwarded: number; newTotalXp: number; isXpCapped: boolean; level: number; displayXp: string; isMaxLevel: boolean }> = [];
+    // Spell XP this race ignoring per-level caps — used for mastery once the player is
+    // past MasteryConfig.uncappedFromRank. Spells themselves still respect their caps.
+    let uncappedSpellXp = 0;
     const raceDeckIndex = participantData.deckIndex as number | undefined;
     if (spellDecksDoc.exists && raceDeckIndex !== undefined) {
       const decksData = spellDecksDoc.data();
@@ -850,6 +853,7 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
         const spellsNestedData: Record<string, { xp: number; isXpCapped: boolean; level: number }> = {};
         for (const spellId of deckSpells) {
           if (!spellId || typeof spellId !== "string") continue;
+          uncappedSpellXp += spellXpAmount;
           // Read from nested structure first, fallback to legacy
           const spellData = spellsMap[spellId] ?? {};
           const currentLevel = spellData.level ?? legacyLevelsMap[spellId] ?? 1;
@@ -920,15 +924,25 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
 
     // --- Mastery XP Calculation ---
     const masteryConfig = await getMasteryConfig();
-    const carXpForMastery = carXpResult?.xpAwarded ?? 0;
-    const totalSpellXpForMastery = spellXpResults.reduce((sum, s) => sum + s.xpAwarded, 0);
+    const currentMasteryXp = Number(profileData.masteryXp ?? 0);
+    const oldMasteryRank = getMasteryRank(currentMasteryXp, masteryConfig);
+
+    // Car and spell XP are clamped to per-level caps, so a player with everything maxed
+    // earns 0 mastery and their rank freezes. From uncappedFromRank up, mastery instead
+    // counts the XP the race generated. Cars/spells still bank only what fits.
+    const uncappedFromRank = masteryConfig.uncappedFromRank;
+    const masteryUncapped =
+      typeof uncappedFromRank === "number" && oldMasteryRank >= uncappedFromRank;
+
+    const carXpForMastery = masteryUncapped ? xpGained : (carXpResult?.xpAwarded ?? 0);
+    const totalSpellXpForMastery = masteryUncapped
+      ? uncappedSpellXp
+      : spellXpResults.reduce((sum, s) => sum + s.xpAwarded, 0);
     const masteryXpGained = Math.round(
       (carXpForMastery * masteryConfig.carWeight) + (totalSpellXpForMastery * masteryConfig.spellWeight)
     );
 
-    const currentMasteryXp = Number(profileData.masteryXp ?? 0);
     const newMasteryXp = currentMasteryXp + masteryXpGained;
-    const oldMasteryRank = getMasteryRank(currentMasteryXp, masteryConfig);
     const newMasteryRank = getMasteryRank(newMasteryXp, masteryConfig);
     const masteryRankGained = newMasteryRank - oldMasteryRank;
 

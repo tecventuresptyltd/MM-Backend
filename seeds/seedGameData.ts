@@ -1,6 +1,7 @@
 import * as admin from "firebase-admin";
 import * as fs from "fs";
 import * as path from "path";
+import { assertBotNamesAreValidUsernames } from "./validateBotNames.js";
 
 /**
  * Seeds all game data catalogs and system configurations into Firestore.
@@ -40,6 +41,12 @@ export async function seedGameDataCatalogs(): Promise<void> {
     const file = path.join(seedsRoot, `${configName}.json`);
     if (fs.existsSync(file)) {
       const data = JSON.parse(fs.readFileSync(file, "utf-8"));
+      if (configName === "BotNamesConfig") {
+        // Bot names are shown next to player names in-race, so they must satisfy the
+        // same rules a player's username does. Fail the seed rather than ship a name
+        // no player could ever create.
+        assertBotNamesAreValidUsernames(data?.data?.names ?? data?.names);
+      }
       if (Array.isArray(data)) {
         seedData.push(...data);
       } else if (data && data.path && data.data) {

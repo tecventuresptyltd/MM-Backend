@@ -310,7 +310,14 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
     // Resolve player spells
     const deckIndex = Number(loadout.activeSpellDeck ?? 1);
     const deckSpells: string[] = decksDoc.exists ? (decksDoc.data()?.decks?.[String(deckIndex)]?.spells ?? []) : [];
-    const levelMap = (spellsDoc.data()?.levels ?? {}) as Record<string, number>;
+    // Upgrade levels live in the `spells` map as { spellId: { level, xp } }.
+    // Older documents used a flat `levels` map of bare numbers, so both shapes are accepted.
+    const levelMap = (spellsDoc.data()?.spells ?? spellsDoc.data()?.levels ?? {}) as Record<string, number | { level?: number }>;
+    const resolveSpellLevel = (entry: number | { level?: number } | undefined): number => {
+      const raw = typeof entry === "object" && entry !== null ? entry.level : entry;
+      const parsed = Number(raw);
+      return Number.isFinite(parsed) && parsed >= 1 ? Math.floor(parsed) : 1;
+    };
     const resolveSpellAttrs = (spellDef: any, level: number) => {
       if (!spellDef) return {};
       if (spellDef.baseStats && Object.keys(spellDef.baseStats).length > 0) {
@@ -332,7 +339,7 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
     };
 
     const playerSpells = deckSpells.filter((id) => typeof id === "string" && id.length > 0).map((spellId) => {
-      const level = Number(levelMap[spellId] ?? 1);
+      const level = resolveSpellLevel(levelMap[spellId]);
       const spellDef = (spellsCatalog as any)[spellId] || {};
       return { spellId, level, attrs: resolveSpellAttrs(spellDef, level) };
     });

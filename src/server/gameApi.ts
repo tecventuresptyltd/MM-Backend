@@ -30,11 +30,11 @@ const getApp = (): express.Express => {
 };
 
 /**
- * Two warm instances in every environment, sandbox included, so sandbox is a
- * true rehearsal of production rather than a cheaper approximation. Two rather
- * than one means a single container restart never leaves every endpoint cold.
+ * One warm instance in every environment. Cloud Run starts more automatically
+ * when requests exceed what one container holds, and drops back to one when they
+ * stop. Raise to 2 if a restart briefly leaving endpoints cold matters in prod.
  */
-const WARM_INSTANCES = 2;
+const WARM_INSTANCES = 1;
 
 export const gameApi = onRequest(
   {

@@ -157,3 +157,7 @@ export {
   getDailyRewardStatus,
   claimDailyReward,
 } from "./dailyRewards";
+
+// Consolidated callable router (see src/server/). Additive: every function above
+// still deploys exactly as before.
+export { gameApi } from "./server/gameApi.js";

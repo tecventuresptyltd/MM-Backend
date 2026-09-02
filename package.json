@@ -21,18 +21,21 @@
     "tools:validate-v3": "TS_NODE_PROJECT=../tsconfig.tools.json node -r ts-node/register ../tools/validate_v3_catalogs.ts && TS_NODE_PROJECT=../tsconfig.tools.json node -r ts-node/register ../tools/validate_v3_skus.ts",
     "sync-clan-members": "tsx tools/syncAllClanMembersOnce.ts",
     "deploy:sandbox": "./tools/deploy-sandbox.sh",
-    "deploy:production": "./tools/deploy-production.sh"
+    "deploy:production": "./tools/deploy-production.sh",
+    "postbuild": "node tools/copyBuildAssets.mjs"
   },
   "dependencies": {
     "@google-analytics/data": "^5.2.1",
     "@google-cloud/pubsub": "^4.5.0",
     "crockford-base32": "^2.0.0",
+    "express": "^4.21.2",
     "firebase-admin": "^12.7.0",
     "firebase-functions": "^7.2.5",
     "google-auth-library": "^9.6.3",
     "picomatch": "^4.0.3"
   },
   "devDependencies": {
+    "@types/express": "^4.17.25",
     "@types/jest": "^29.5.12",
     "@types/node": "^18.19.50",
     "@types/node-fetch": "^2.6.4",

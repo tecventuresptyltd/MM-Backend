@@ -12,6 +12,7 @@
 import { onTaskDispatched } from "firebase-functions/v2/tasks";
 import * as logger from "firebase-functions/logger";
 import { REGION } from "../shared/region.js";
+import { getMinInstances } from "../shared/callableOptions.js";
 import { UpgradeCompletionEntry } from "../shared/typesV2.js";
 import { processUpgradeCompletionEntry, buildQueueDocId } from "./upgradeScheduler.js";
 import { db } from "../shared/firestore.js";
@@ -61,7 +62,9 @@ export const completeUpgradeTask = onTaskDispatched(
             maxDispatchesPerSecond: 50,
         },
         memory: "256MiB",
-        minInstances: 1, // Keep 1 instance warm to eliminate the 15-20 second cold start delay
+        // Warm in production only, to eliminate the 15-20 second cold start delay there.
+        // Sandbox has no live players waiting on upgrade timers, so it stays cold.
+        minInstances: getMinInstances(true),
     },
     async (request) => {
         const payload = request.data as UpgradeTaskPayload;

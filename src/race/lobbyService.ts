@@ -1,7 +1,7 @@
 import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
-import { callableOptions } from "../shared/callableOptions.js";
+import { callableOptions, getMinInstances } from "../shared/callableOptions.js";
 
 const db = admin.firestore();
 
@@ -33,7 +33,7 @@ async function getPlayerProfile(uid: string) {
 /**
  * Creates a new matchmaking lobby in Realtime Database.
  */
-export const createLobby = onCall(callableOptions({ cpu: 1, concurrency: 80, minInstances: 1 }), async (request) => {
+export const createLobby = onCall(callableOptions({ cpu: 1, concurrency: 80, minInstances: getMinInstances(true) }), async (request) => {
   const auth = request.auth;
   if (!auth) {
     throw new HttpsError("unauthenticated", "User must be logged in to create a lobby.");
@@ -84,7 +84,7 @@ export const createLobby = onCall(callableOptions({ cpu: 1, concurrency: 80, min
 /**
  * Joins an existing lobby.
  */
-export const joinLobby = onCall(callableOptions({ cpu: 1, concurrency: 80, minInstances: 1 }), async (request) => {
+export const joinLobby = onCall(callableOptions({ cpu: 1, concurrency: 80, minInstances: getMinInstances(true) }), async (request) => {
   const auth = request.auth;
   if (!auth) {
     throw new HttpsError("unauthenticated", "User must be logged in to join a lobby.");

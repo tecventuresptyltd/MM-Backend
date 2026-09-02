@@ -72,7 +72,7 @@ const main = async () => {
   const args = parseArgs(process.argv.slice(2));
   const SUPPORTED = ["xp-backfill", "underglow-backfill"];
   if (!args.job || !SUPPORTED.includes(args.job)) {
-    console.error('Usage: npx tsx "Force Updated/run.ts" <xp-backfill|underglow-backfill> [options]');
+    console.error('Usage: npx tsx "tools/force-updated/run.ts" <xp-backfill|underglow-backfill> [options]');
     process.exit(1);
   }
 

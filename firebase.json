@@ -1,7 +1,7 @@
 {
   "firestore": {
-    "rules": "firestore.prod.rules",
-    "indexes": "firestore.indexes.json"
+    "rules": "config/firestore.prod.rules",
+    "indexes": "config/firestore.indexes.json"
   },
   "functions": [
     {
@@ -29,11 +29,11 @@
   "database": [
     {
       "instance": "mystic-motors-sandbox-default-rtdb",
-      "rules": "database.rules.json"
+      "rules": "config/database.rules.json"
     },
     {
       "instance": "mystic-motors-prod-default-rtdb",
-      "rules": "database.rules.json"
+      "rules": "config/database.rules.json"
     }
   ],
   "emulators": {

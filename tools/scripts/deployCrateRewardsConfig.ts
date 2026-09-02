@@ -5,7 +5,7 @@
  * /GameData/v1/config/CrateRewardsConfig in Firestore.
  * 
  * Usage:
- *   npx ts-node scripts/deployCrateRewardsConfig.ts
+ *   npx ts-node tools/scripts/deployCrateRewardsConfig.ts
  * 
  * This deploys to whichever Firebase project is currently active.
  * Make sure you're pointing at SANDBOX before running!
@@ -21,7 +21,7 @@ const db = admin.firestore();
 
 async function deploy() {
     // Read seed file
-    const seedPath = path.resolve(__dirname, "..", "seeds", "CrateRewardsConfig.json");
+    const seedPath = path.resolve(__dirname, "..", "..", "seeds", "Atul-Final-Seeds", "CrateRewardsConfig.json");
 
     if (!fs.existsSync(seedPath)) {
         console.error(`❌ Seed file not found: ${seedPath}`);

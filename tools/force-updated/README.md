@@ -7,12 +7,12 @@ Recalculate `expProgress`, `expToNextLevel`, and `expProgressDisplay` from store
 
 Example dry run (no writes):
 ```
-npx tsx "Force Updated/run.ts" xp-backfill --project your-project-id --sa /abs/path/service-account.json --dry-run
+npx tsx "tools/force-updated/run.ts" xp-backfill --project your-project-id --sa /abs/path/service-account.json --dry-run
 ```
 
 Apply updates (writes enabled):
 ```
-npx tsx "Force Updated/run.ts" xp-backfill --project your-project-id --sa /abs/path/service-account.json --batch 200 --limit 0
+npx tsx "tools/force-updated/run.ts" xp-backfill --project your-project-id --sa /abs/path/service-account.json --batch 200 --limit 0
 ```
 
 Flags:
@@ -24,4 +24,4 @@ Flags:
 - `--fix-levels`: Also rewrite `level` from XP (off by default).
 - `--verbose`: Log every processed doc.
 
-Add new jobs by creating a file under `Force Updated/jobs/` and importing it in `run.ts`.***
+Add new jobs by creating a file under `tools/force-updated/jobs/` and importing it in `run.ts`.***

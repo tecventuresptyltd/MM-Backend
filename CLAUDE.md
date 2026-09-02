@@ -2,6 +2,14 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Response rules (highest priority — overrides everything below)
+
+- Answer ONLY what was asked. Nothing else.
+- Maximum 2-3 lines. No tables, no bullet lists, no headings, no summaries of work done.
+- Do NOT volunteer findings, risks, caveats, side notes, suggestions, next steps, or offers.
+- If asked a yes/no question, answer yes or no plus one line of reason.
+- Only report something unasked if it makes the answer factually wrong to omit.
+
 ## What this is
 
 Firebase Cloud Functions (2nd gen, TypeScript, Node 20) backend for the Mystic Motors Unity mobile game. Everything is server-authoritative: the client never writes currency, trophies, levels, or inventory directly. `admin-website/` is a separate Next.js admin dashboard that calls these functions.
@@ -32,8 +40,31 @@ On Windows the deploy/seed helpers are `.sh` — use the Bash tool, not PowerShe
 
 - **Always ask which environment (SANDBOX or PRODUCTION) and get explicit confirmation before proposing any deploy.**
 - Never propose raw `firebase deploy` / `gcloud config set project`. Only `npm run deploy:sandbox` or `npm run deploy:production`.
-- Production deploy is hard-gated to `tecventurescorp@gmail.com` and requires typing `PRODUCTION`. Production service-account keys and prod seeding are owner-only (`SERVICE_ACCOUNTS.md`).
+- Production deploy is hard-gated to `tecventurescorp@gmail.com` and requires typing `PRODUCTION`. Production service-account keys and prod seeding are owner-only (`docs/SERVICE_ACCOUNTS.md`).
 - A `409 Conflict` from `firebase deploy` is usually transient. Wait 2–3 minutes and verify with `gcloud functions list` before treating it as a failure.
+
+## Repo layout
+
+The root holds only files whose tooling requires them there — `package.json`/`package-lock.json`, `tsconfig*`, `jest.config.cjs`, `eslint.config.js`, `.npmrc`/`.nvmrc`, `.firebaserc`, the three `firebase*.json` configs, `.env.mystic-motors-*` (Firebase auto-loads `.env.<projectId>` from the functions source dir, which is `.`), the two service-account JSONs (`tools/` scripts `require()` them by bare filename) — plus `README.md` / `CLAUDE.md`. Everything else is in a folder:
+
+Do not move a `firebase*.json` into a subfolder: firebase-tools sets the project root to the *directory of the config file* (`detectProjectRoot`), so `--config config/firebase.test.json` would reroot the whole project. Paths *inside* those configs resolve from the project root, which is why the rules/indexes files can live in `config/`.
+
+```
+src/            deployed function source (see src/index.ts, the deploy manifest)
+config/         firestore.prod.rules, firestore.sandbox.rules, firestore.indexes.json,
+                database.rules.json - referenced by path from the firebase*.json at root
+test/           jest suites (emulator-backed); test/v2/ is the v2 suite
+seeds/          catalog seed JSON (seeds/Atul-Final-Seeds/) + seed runners
+tools/          ops scripts run by hand (tsx tools/<script>.ts) and the deploy .sh helpers
+tools/scripts/  admin/one-off Firestore scripts (set-game-admin, prod admin setup, ...)
+tools/force-updated/  manual backfill jobs: npx tsx "tools/force-updated/run.ts" <job>
+tools/data/     input data for tools (bot username list, IAP CSVs)
+docs/           documentation; docs/INDEX.md is the entry point, docs/economy/ the balance reports
+admin-website/  Next.js admin dashboard (separate app)
+archive/        dead one-off artifacts, nothing here is built or deployed (archive/README.md)
+```
+
+`.vscode/settings.json` (local, gitignored) collapses the remaining root files under `package.json` / `firebase.json` / `tsconfig.json` / `README.md` via explorer file nesting, and hides `lib/` and `node_modules/`.
 
 ## Architecture
 
@@ -81,7 +112,7 @@ Changing a catalog means editing the seed JSON **and** re-seeding the target pro
 /GlobalLeaderboard/{metric}, /ClanLeaderboard/snapshot
 ```
 
-Realtime Database carries the latency-sensitive/ephemeral state: `/lobbies/{lobbyId}`, `/openWorldLobbies/{shardId}`, `/chat_messages/{streamId}`, `/presence/online/{uid}`. Rules in `database.rules.json`; Firestore rules are split into `firestore.prod.rules` / `firestore.sandbox.rules`.
+Realtime Database carries the latency-sensitive/ephemeral state: `/lobbies/{lobbyId}`, `/openWorldLobbies/{shardId}`, `/chat_messages/{streamId}`, `/presence/online/{uid}`. Rules in `config/database.rules.json`; Firestore rules are split into `config/firestore.prod.rules` / `config/firestore.sandbox.rules`.
 
 ### V1 / V2 parallel systems
 
@@ -113,7 +144,7 @@ Every auth entry point (`ensureGuestSession`, `signup*`, `bind*`, `initUser`) fu
 
 ## Known rough edges
 
-- `firebase.test.json` points at `firestore.rules`, which does not exist in the repo (only `firestore.prod.rules` / `firestore.sandbox.rules`). If `npm test` fails to boot the emulator, that's why.
+- The emulators (and therefore `npm test`) need a JDK on PATH. A `Could not spawn java -version` error means Java is missing, not that the config is wrong.
 - `tools:normalize-v3` and `tools:validate-v3` in package.json reference `../tools/*.ts` and `../tsconfig.tools.json` — stale paths from when this code lived under a `functions/` subdirectory. Those scripts and files no longer exist.
 - Service-account JSON keys are committed at the repo root and several `tools/` scripts `require()` them by filename; those scripts only work from the repo root.
 - `docs/` is large and partly historical (`ARCHITECTURE_SUMMARY.md`, `MIGRATION_PLAN.md` describe a migration that has already happened). `docs/FIRESTORE_SCHEMA.md`, `docs/FUNCTION_CONTRACTS.md`, and `docs/RELEASE_NOTES.md` are the ones kept current; `docs/INDEX.md` is the changelog-style entry point.

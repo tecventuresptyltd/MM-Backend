@@ -1,6 +1,6 @@
 /**
  * Script to update AdminUsers with canViewAnalytics permission
- * Run with: npx ts-node scripts/update-admin-analytics-permission.ts
+ * Run with: npx ts-node tools/scripts/update-admin-analytics-permission.ts
  */
 
 const admin = require('firebase-admin');

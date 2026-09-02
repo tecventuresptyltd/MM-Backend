@@ -531,6 +531,7 @@ export interface ReceiveCrateV2Response {
 export interface StartCrateUnlockRequest {
     slotIndex: number;
     opId: string;
+    crateId?: string;
 }
 
 export interface StartCrateUnlockResponse {
@@ -543,6 +544,7 @@ export interface StartCrateUnlockResponse {
 export interface ClaimCrateRewardV2Request {
     slotIndex: number;
     opId: string;
+    crateId?: string;
 }
 
 /** A single reward item that can be awarded from a crate */
@@ -655,7 +657,7 @@ export interface SpeedUpsCatalog {
     speedups: Record<string, SpeedUpEntry>;
 }
 
-export type SpeedupQueueType = "pitCrew" | "library" | "crateSlot";
+export type SpeedupQueueType = "pitCrew" | "library";
 
 export interface UseSpeedupRequest {
     queueType: SpeedupQueueType;

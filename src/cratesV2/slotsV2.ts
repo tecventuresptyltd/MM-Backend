@@ -231,7 +231,7 @@ export const receiveCrateV2 = onCall(
 export const startCrateUnlockV2 = onCall(
     callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
     async (request) => {
-        const { slotIndex, opId } = request.data as StartCrateUnlockRequest;
+        const { slotIndex, opId, crateId } = request.data as StartCrateUnlockRequest;
         const uid = request.auth?.uid;
 
         if (!uid) {
@@ -280,6 +280,8 @@ export const startCrateUnlockV2 = onCall(
                 if (!slot) {
                     throw new HttpsError("not-found", `No crate in slot ${slotIndex}.`);
                 }
+
+                assertSlotMatchesCrateId(slot, crateId, slotIndex);
 
                 // Check if already unlocking
                 if (slot.isUnlocking) {
@@ -346,7 +348,7 @@ export const startCrateUnlockV2 = onCall(
 export const claimCrateRewardV2 = onCall(
     callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
     async (request) => {
-        const { slotIndex, opId } = request.data as ClaimCrateRewardV2Request;
+        const { slotIndex, opId, crateId } = request.data as ClaimCrateRewardV2Request;
         const uid = request.auth?.uid;
 
         if (!uid) {
@@ -398,6 +400,8 @@ export const claimCrateRewardV2 = onCall(
                 if (!slot) {
                     throw new HttpsError("not-found", `No crate in slot ${slotIndex}.`);
                 }
+
+                assertSlotMatchesCrateId(slot, crateId, slotIndex);
 
                 // Check if unlocking and complete
                 if (!slot.isUnlocking) {
@@ -632,6 +636,23 @@ function rollRarityFromDistribution(
     return entries[entries.length - 1][0];
 }
 
+function assertSlotMatchesCrateId(
+    slot: { crateId?: string | null },
+    crateId: string | undefined,
+    slotIndex: number,
+): void {
+    if (!crateId) {
+        return;
+    }
+
+    if (slot.crateId !== crateId) {
+        throw new HttpsError(
+            "failed-precondition",
+            `Crate slot ${slotIndex} no longer holds crate ${crateId}. Refresh and try again.`,
+        );
+    }
+}
+
 // =============================================================================
 // skipCrateUnlockV2
 // =============================================================================
@@ -639,6 +660,7 @@ function rollRarityFromDistribution(
 interface SkipCrateUnlockRequest {
     slotIndex: number;
     opId: string;
+    crateId?: string;
 }
 
 interface SkipCrateUnlockResponse {
@@ -654,7 +676,7 @@ interface SkipCrateUnlockResponse {
 export const skipCrateUnlockV2 = onCall(
     callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
     async (request) => {
-        const { slotIndex, opId } = request.data as SkipCrateUnlockRequest;
+        const { slotIndex, opId, crateId } = request.data as SkipCrateUnlockRequest;
         const uid = request.auth?.uid;
 
         if (!uid) {
@@ -715,6 +737,8 @@ export const skipCrateUnlockV2 = onCall(
                 if (!slot) {
                     throw new HttpsError("not-found", `No crate in slot ${slotIndex}.`);
                 }
+
+                assertSlotMatchesCrateId(slot, crateId, slotIndex);
 
                 // Check if unlocking
                 if (!slot.isUnlocking) {

@@ -1130,6 +1130,9 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
         if (flags?.eliminationTrophies === true) {
           updates.push({ metric: "eliminationTrophies", value: Number(profileData.eliminationTrophies ?? 0) });
         }
+        if (flags?.policeTrophies === true) {
+          updates.push({ metric: "policeTrophies", value: Number(profileData.policeTrophies ?? 0) });
+        }
         if (flags?.careerCoins === true) {
           updates.push({ metric: "careerCoins", value: Number(profileData.careerCoins ?? 0) });
         }

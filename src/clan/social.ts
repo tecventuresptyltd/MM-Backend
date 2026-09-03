@@ -33,6 +33,11 @@ import {
   CLAN_CHAT_HISTORY_FETCH,
 } from "./chat.js";
 import { roomsCollection } from "../chat/rooms.js";
+import {
+  getPinnedGlobalRoomId,
+  PINNED_ROOM_HARD_CAP,
+  PINNED_ROOM_SOFT_CAP,
+} from "../chat/singleRoom.js";
 import { maskProfanity } from "../shared/profanity.js";
 import { refreshFriendSnapshots } from "../Socials/updateSnapshots.js";
 import * as logger from "firebase-functions/logger";
@@ -946,6 +951,51 @@ export const assignGlobalChatRoom = onCall(callableOptions({ cpu: 1, concurrency
     if (!profileSnap.exists) {
       throw new HttpsError("failed-precondition", "Player profile not initialised.");
     }
+
+    // Single-room mode: every player shares one room, caps ignored.
+    const pinnedRoomId = getPinnedGlobalRoomId();
+    if (pinnedRoomId) {
+      const pinnedRef = roomsCollection().doc(pinnedRoomId);
+      const pinnedSnap = await transaction.get(pinnedRef);
+      const pinnedData = pinnedSnap.data() ?? {};
+      const pinnedRegion =
+        typeof pinnedData.region === "string" && pinnedData.region.length > 0
+          ? pinnedData.region
+          : DEFAULT_GLOBAL_ROOM_REGION;
+      const pinnedCount = Number(pinnedData.connectedCount ?? 0) + 1;
+      if (pinnedSnap.exists) {
+        transaction.update(pinnedRef, {
+          connectedCount: pinnedCount,
+          isArchived: false,
+          softCap: PINNED_ROOM_SOFT_CAP,
+          hardCap: PINNED_ROOM_HARD_CAP,
+          updatedAt: FieldValue.serverTimestamp(),
+          lastActivityAt: FieldValue.serverTimestamp(),
+        });
+      } else {
+        transaction.set(pinnedRef, {
+          roomId: pinnedRoomId,
+          region: pinnedRegion,
+          type: "global",
+          connectedCount: pinnedCount,
+          softCap: PINNED_ROOM_SOFT_CAP,
+          hardCap: PINNED_ROOM_HARD_CAP,
+          slowModeSeconds: 3,
+          maxMessages: 200,
+          isArchived: false,
+          createdAt: FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp(),
+          lastActivityAt: FieldValue.serverTimestamp(),
+        });
+      }
+      return {
+        roomId: pinnedRoomId,
+        region: pinnedRegion,
+        connectedCount: pinnedCount,
+        softCap: PINNED_ROOM_SOFT_CAP,
+        hardCap: PINNED_ROOM_HARD_CAP,
+      };
+    }
     // Use currentRoomId from client for in-session stickiness (not persisted across sessions)
     const currentRoomId =
       typeof payload.currentRoomId === "string" && payload.currentRoomId.trim().length > 0
@@ -1073,7 +1123,8 @@ export const sendGlobalChatMessage = onCall(callableOptions({ cpu: 1, concurrenc
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as SendGlobalChatMessageRequest;
   const opId = requireOpId(payload.opId);
-  const roomId = requireRoomId(payload.roomId);
+  // Single-room mode overrides any stale roomId a client still holds.
+  const roomId = getPinnedGlobalRoomId() ?? requireRoomId(payload.roomId);
   const text = sanitizeChatText(payload.text);
 
   const cached = await checkIdempotency(uid, opId);
@@ -1273,7 +1324,8 @@ interface GetGlobalChatMessagesRequest {
 export const getGlobalChatMessages = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as GetGlobalChatMessagesRequest;
-  const roomId = requireRoomId(payload.roomId);
+  // Single-room mode overrides any stale roomId a client still holds.
+  const roomId = getPinnedGlobalRoomId() ?? requireRoomId(payload.roomId);
   const limit = Math.min(clampFetchLimit(payload.limit), GLOBAL_CHAT_HISTORY_FETCH);
   const sinceTimestamp = typeof payload.sinceTimestamp === "number" ? payload.sinceTimestamp : null;
 

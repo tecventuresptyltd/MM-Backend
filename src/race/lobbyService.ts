@@ -17,7 +17,10 @@ async function getPlayerProfile(uid: string) {
       username: "Player_" + uid.substring(0, 5),
       elo: 1000,
       spells: ["fireball", "icelock", "shield", "boost"],
-      carSkin: "default"
+      carSkin: "default",
+      clanName: "",
+      clanBadge: "",
+      avatarId: 0
     };
   }
 
@@ -26,7 +29,28 @@ async function getPlayerProfile(uid: string) {
     username: data.displayName || data.username || "Speedster_" + uid.substring(0, 5),
     elo: typeof data.trophies === "number" ? data.trophies : (typeof data.elo === "number" ? data.elo : 1000),
     spells: Array.isArray(data.activeSpellDeck) ? data.activeSpellDeck : ["fireball", "icelock", "shield", "boost"],
-    carSkin: data.equippedCarSkin || data.carSkin || "default"
+    carSkin: data.equippedCarSkin || data.carSkin || "default",
+    clanName: typeof data.clanName === "string" ? data.clanName : "",
+    clanBadge: typeof data.clanBadge === "string" ? data.clanBadge : "",
+    avatarId: typeof data.avatarId === "number" ? data.avatarId : 0
+  };
+}
+
+type LobbyProfile = Awaited<ReturnType<typeof getPlayerProfile>>;
+
+const MAX_LOBBY_MEMBERS = 3;
+
+function buildMemberEntry(profile: LobbyProfile, joinedAt: unknown) {
+  return {
+    username: profile.username,
+    elo: profile.elo,
+    spells: profile.spells,
+    carSkin: profile.carSkin,
+    clanName: profile.clanName,
+    clanBadge: profile.clanBadge,
+    avatarId: profile.avatarId,
+    joinedAt,
+    status: "menu"
   };
 }
 
@@ -55,14 +79,7 @@ export const createLobby = onCall(callableOptions({ cpu: 1, concurrency: 80, min
     createdAt: admin.database.ServerValue.TIMESTAMP,
     sharedRandomSeed: "seed_" + Math.random().toString(36).substring(2, 15),
     members: {
-      [uid]: {
-        username: profile.username,
-        elo: profile.elo,
-        spells: profile.spells,
-        carSkin: profile.carSkin,
-        joinedAt: admin.database.ServerValue.TIMESTAMP,
-        status: "menu"
-      }
+      [uid]: buildMemberEntry(profile, admin.database.ServerValue.TIMESTAMP)
     }
   };
 
@@ -114,27 +131,29 @@ export const joinLobby = onCall(callableOptions({ cpu: 1, concurrency: 80, minIn
     throw new HttpsError("permission-denied", "You have been kicked from this lobby and cannot rejoin.");
   }
 
-  const roster = lobby.members || {};
-  const currentSize = Object.keys(roster).length;
+  const joinedAt = Date.now();
+  const txn = await lobbyRef.child("members").transaction((members) => {
+    const roster = (members && typeof members === "object") ? { ...members } : {};
+    const existing = roster[uid];
+    const othersCount = Object.keys(roster).filter((key) => key !== uid).length;
+    if (!existing && othersCount >= MAX_LOBBY_MEMBERS) {
+      return;
+    }
+    const preservedJoinedAt = existing && typeof existing.joinedAt === "number" ? existing.joinedAt : joinedAt;
+    roster[uid] = buildMemberEntry(profile, preservedJoinedAt);
+    return roster;
+  });
 
-  if (currentSize >= 3) {
+  if (!txn.committed) {
     throw new HttpsError("resource-exhausted", "This lobby is already full.");
   }
 
-  // Add user to members list
-  await lobbyRef.child(`members/${uid}`).set({
-    username: profile.username,
-    elo: profile.elo,
-    spells: profile.spells,
-    carSkin: profile.carSkin,
-    joinedAt: admin.database.ServerValue.TIMESTAMP,
-    status: "menu"
-  });
+  const rosterSize = Object.keys(txn.snapshot.val() || {}).length;
 
   // Update size in the matchmaking index
   const hostProfile = await getPlayerProfile(lobby.hostUid);
   const hostBucket = Math.floor(hostProfile.elo / 200);
-  await rtdb.ref(`matchmaking/bucket_${hostBucket}/${lobbyId}/rosterSize`).set(currentSize + 1);
+  await rtdb.ref(`matchmaking/bucket_${hostBucket}/${lobbyId}/rosterSize`).set(rosterSize);
 
   logger.info(`[LobbyService] User ${uid} joined lobby ${lobbyId}`);
   return { success: true };

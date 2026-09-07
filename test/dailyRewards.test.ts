@@ -113,6 +113,7 @@ describe("dailyRewards", () => {
     const doc = await readStatusDoc();
     expect(doc?.streakDay).toBe(2);
     expect(doc?.lastClaimedDayIndex).toBe(gameDayIndex(BASE_MS, 0));
+    expect(doc?.lastClaimedAtMs).toBe(BASE_MS);
     expect(doc?.totalClaims).toBe(1);
   });
 
@@ -136,18 +137,19 @@ describe("dailyRewards", () => {
     expect(await readInventoryQty("sku_spd15m_j8k2")).toBe(2);
   });
 
-  it("treats one minute past the boundary as a new day", async () => {
-    // Claim at 23:59, then again two minutes later — a different game day.
+  it("does not open at the UTC boundary, only a full 24h after the claim", async () => {
     const lateNight = BASE_MS + 23 * HOUR + 59 * 60_000;
     await claimAt(lateNight, "op_late");
-    const result = await claimAt(lateNight + 2 * 60_000, "op_justafter");
+    await expect(claimAt(lateNight + 2 * 60_000, "op_justafter")).rejects.toMatchObject({
+      code: "failed-precondition",
+    });
+    const result = await claimAt(lateNight + DAY_MS, "op_fullday");
     expect(result.claimedDay).toBe(2);
   });
 
   it("forgives a single missed day (graceDays = 1)", async () => {
     await claimAt(BASE_MS, "op_d1");
-    // Skip one whole day, claim on the day after.
-    const result = await claimAt(BASE_MS + 2 * DAY_MS, "op_d2_late");
+    const result = await claimAt(BASE_MS + 2 * DAY_MS - HOUR, "op_d2_late");
 
     expect(result.claimedDay).toBe(2);
     expect(result.streakBroken).toBe(false);
@@ -264,9 +266,9 @@ describe("dailyRewards", () => {
     expect(res.streakDay).toBe(2);
     expect(res.ladder[0].state).toBe("claimed");
     expect(res.ladder[1].state).toBe("locked");
-    // Next boundary is midnight UTC, 17h after the 07:00 read.
-    expect(res.msUntilNextClaim).toBe(17 * HOUR);
-    expect(res.nextClaimAtMs).toBe(BASE_MS + DAY_MS);
+    expect(res.msUntilNextClaim).toBe(23 * HOUR);
+    expect(res.nextClaimAtMs).toBe(BASE_MS + 30 * HOUR);
+    expect(res.streakExpiresAtMs).toBe(BASE_MS + 54 * HOUR);
   });
 
   it("does not mutate any state when status is polled", async () => {

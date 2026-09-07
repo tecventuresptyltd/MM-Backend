@@ -49,7 +49,7 @@ import {
 import {
     DailyRewardStatusState,
     DayBoundaryConfig,
-    dayIndexStartMs,
+    claimTimersAfter,
     nextSlotAfter,
     resolveClaimState,
 } from "./lib/dayIndex.js";
@@ -59,6 +59,7 @@ import {
 // =============================================================================
 
 interface DailyRewardStatusDoc extends DailyRewardStatusState {
+    lastClaimedAtMs: number | null;
     lastClaimedAt: FirebaseFirestore.Timestamp | null;
     totalClaims: number;
     cycleCount: number;
@@ -86,9 +87,14 @@ const readStatus = (
     }
     const data = snap.data() as Partial<DailyRewardStatusDoc>;
     const lastClaimedDayIndex = Number(data.lastClaimedDayIndex);
+    const storedLastClaimedAtMs = Number(data.lastClaimedAtMs);
+    const lastClaimedAtMs = Number.isFinite(storedLastClaimedAtMs) && storedLastClaimedAtMs > 0
+        ? storedLastClaimedAtMs
+        : data.lastClaimedAt?.toMillis() ?? null;
     return {
         streakDay: Number(data.streakDay ?? 1),
         lastClaimedDayIndex: Number.isFinite(lastClaimedDayIndex) ? lastClaimedDayIndex : null,
+        lastClaimedAtMs,
         lastClaimedAt: data.lastClaimedAt ?? null,
         totalClaims: Number(data.totalClaims ?? 0),
         cycleCount: Number(data.cycleCount ?? 0),
@@ -272,18 +278,12 @@ export const claimDailyReward = onCall(
 
                     const nextSlot = nextSlotAfter(state.slot, bounds);
                     const cycleCompleted = state.slot >= config.cycleLength;
-                    const nextClaimAtMs = dayIndexStartMs(
-                        state.todayIndex + 1,
-                        config.resetOffsetMinutes,
-                    );
-                    const streakExpiresAtMs = dayIndexStartMs(
-                        state.todayIndex + 2 + config.graceDays,
-                        config.resetOffsetMinutes,
-                    );
+                    const { nextClaimAtMs, streakExpiresAtMs } = claimTimersAfter(nowMs, bounds);
 
                     transaction.set(statusRef, {
                         streakDay: nextSlot,
                         lastClaimedDayIndex: state.todayIndex,
+                        lastClaimedAtMs: nowMs,
                         lastClaimedAt: timestamp,
                         totalClaims: (status?.totalClaims ?? 0) + 1,
                         cycleCount: (status?.cycleCount ?? 0) + (cycleCompleted ? 1 : 0),

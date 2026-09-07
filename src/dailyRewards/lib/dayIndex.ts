@@ -1,19 +1,21 @@
 /**
- * Daily reward day-boundary math.
+ * Daily reward timing math.
  *
  * Everything here is pure: no `Date`, no `Date.now()`, no Firestore. The caller
  * passes server epoch milliseconds in. That makes the whole state machine unit
  * testable at arbitrary points in time, and — more importantly — means the
  * player's device clock and timezone are never an input.
  *
- * A "game day" is an absolute integer index counted from the Unix epoch, shifted
- * by a globally configured offset. Because the index only ever increases with
- * real time, "have they already claimed today?" reduces to an integer compare
- * against a value we persisted inside a transaction. There is no clock a client
- * can move to make a stale index look fresh.
+ * Timing is anchored on the player's own last claim instead of a global day
+ * boundary: the next reward opens exactly one claim interval after the previous
+ * claim, and the player then has a grace window to take it before the ladder
+ * falls back to slot 1. The absolute game-day index is kept only as the key of
+ * the per-claim audit log.
  */
 
 export const DAY_MS = 86_400_000;
+
+export const CLAIM_INTERVAL_MS = DAY_MS;
 
 /**
  * The absolute game-day index containing `nowMs`.
@@ -36,6 +38,8 @@ export interface DailyRewardStatusState {
   streakDay: number;
   /** Absolute game-day index of the last successful claim; null if never claimed. */
   lastClaimedDayIndex: number | null;
+  /** Epoch ms of the last successful claim; null if never claimed. */
+  lastClaimedAtMs?: number | null;
 }
 
 export interface DayBoundaryConfig {
@@ -63,6 +67,36 @@ export interface ResolvedClaimState {
   streakBroken: boolean;
 }
 
+export interface ClaimTimers {
+  nextClaimAtMs: number;
+  streakExpiresAtMs: number;
+}
+
+/** Timers that a claim made at `claimedAtMs` produces. */
+export function claimTimersAfter(claimedAtMs: number, config: DayBoundaryConfig): ClaimTimers {
+  const nextClaimAtMs = claimedAtMs + CLAIM_INTERVAL_MS;
+  return {
+    nextClaimAtMs,
+    streakExpiresAtMs: nextClaimAtMs + Math.max(0, config.graceDays) * DAY_MS,
+  };
+}
+
+/** Epoch ms of the last claim, migrating pre-timer status docs off their day index. */
+export function resolveLastClaimedAtMs(
+  status: DailyRewardStatusState | null | undefined,
+  resetOffsetMinutes: number,
+): number | null {
+  const lastAt = status?.lastClaimedAtMs;
+  if (typeof lastAt === "number" && Number.isFinite(lastAt) && lastAt > 0) {
+    return lastAt;
+  }
+  const lastIndex = status?.lastClaimedDayIndex;
+  if (typeof lastIndex === "number" && Number.isFinite(lastIndex)) {
+    return dayIndexStartMs(lastIndex, resetOffsetMinutes);
+  }
+  return null;
+}
+
 /**
  * The whole state machine. Given persisted state, config, and the server clock,
  * decide what (if anything) the player may claim.
@@ -72,12 +106,11 @@ export function resolveClaimState(
   config: DayBoundaryConfig,
   nowMs: number,
 ): ResolvedClaimState {
-  const { resetOffsetMinutes, graceDays, cycleLength } = config;
+  const { resetOffsetMinutes, cycleLength } = config;
   const todayIndex = gameDayIndex(nowMs, resetOffsetMinutes);
-  const last = status?.lastClaimedDayIndex ?? null;
+  const lastAt = resolveLastClaimedAtMs(status, resetOffsetMinutes);
 
-  // Never claimed: slot 1 is available immediately, and there is no streak to lose.
-  if (last === null) {
+  if (lastAt === null) {
     return {
       isClaimable: true,
       slot: 1,
@@ -89,36 +122,26 @@ export function resolveClaimState(
   }
 
   const streakDay = clampSlot(status?.streakDay ?? 1, cycleLength);
-  // The last game day on which a claim still continues the streak.
-  const streakDeadlineIndex = last + 1 + graceDays;
-  const streakExpiresAtMs = dayIndexStartMs(streakDeadlineIndex + 1, resetOffsetMinutes);
+  const { nextClaimAtMs, streakExpiresAtMs } = claimTimersAfter(lastAt, config);
 
-  // Already claimed today. `todayIndex < last` can only happen if the server clock
-  // moved backwards; treating it as "already claimed" keeps the anchor monotonic
-  // and fails closed rather than handing out a second reward.
-  if (todayIndex <= last) {
+  if (nowMs < nextClaimAtMs) {
     return {
       isClaimable: false,
       slot: streakDay,
       todayIndex,
-      nextClaimAtMs: dayIndexStartMs(last + 1, resetOffsetMinutes),
+      nextClaimAtMs,
       streakExpiresAtMs,
       streakBroken: false,
     };
   }
 
-  // A new day. The gap decides whether the streak survives.
-  //   gap === 1                  -> claimed yesterday, perfect streak
-  //   gap - 1 <= graceDays       -> missed days, but within the grace allowance
-  //   otherwise                  -> streak broken, back to slot 1
-  const gap = todayIndex - last;
-  const streakBroken = gap - 1 > graceDays;
+  const streakBroken = nowMs >= streakExpiresAtMs;
 
   return {
     isClaimable: true,
     slot: streakBroken ? 1 : streakDay,
     todayIndex,
-    nextClaimAtMs: nowMs,
+    nextClaimAtMs,
     streakExpiresAtMs,
     streakBroken,
   };

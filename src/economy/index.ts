@@ -157,7 +157,8 @@ export const claimRankUpReward = onCall(
           throw new HttpsError("already-exists", "Rank reward already claimed.");
         }
 
-        if ((profileData.trophies || 0) < rankGameData.minMmr) {
+        const reachedTrophies = Math.max(Number(profileData.trophies ?? 0), Number(profileData.highestTrophies ?? 0));
+        if (reachedTrophies < rankGameData.minMmr) {
           throw new HttpsError("failed-precondition", "Player has not reached this rank yet.");
         }
 

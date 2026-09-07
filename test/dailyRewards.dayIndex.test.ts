@@ -9,6 +9,7 @@
 import {
   DAY_MS,
   DayBoundaryConfig,
+  claimTimersAfter,
   dayIndexStartMs,
   gameDayIndex,
   nextSlotAfter,
@@ -80,6 +81,12 @@ describe("gameDayIndex", () => {
 });
 
 describe("resolveClaimState", () => {
+  const claimedAt = (ms: number, streakDay = 2) => ({
+    streakDay,
+    lastClaimedDayIndex: dayOf(ms),
+    lastClaimedAtMs: ms,
+  });
+
   it("offers slot 1 immediately to a player who has never claimed", () => {
     const state = resolveClaimState(null, CFG, BASE_MS);
     expect(state).toMatchObject({
@@ -90,97 +97,79 @@ describe("resolveClaimState", () => {
     });
   });
 
-  it("blocks a second claim on the same day and points at the next boundary", () => {
-    const today = dayOf(BASE_MS);
-    const state = resolveClaimState(
-      { streakDay: 2, lastClaimedDayIndex: today },
-      CFG,
-      BASE_MS + 8 * HOUR,
-    );
+  it("blocks a second claim until 24h after the last one", () => {
+    const last = at(0, 6);
+    const state = resolveClaimState(claimedAt(last), CFG, last + 8 * HOUR);
     expect(state.isClaimable).toBe(false);
     expect(state.slot).toBe(2);
-    expect(state.nextClaimAtMs).toBe(at(1));
+    expect(state.nextClaimAtMs).toBe(last + DAY_MS);
   });
 
-  it("continues the streak the very next day", () => {
-    const state = resolveClaimState(
-      { streakDay: 3, lastClaimedDayIndex: dayOf(BASE_MS) },
-      CFG,
-      at(1),
-    );
+  it("does not open at the UTC day boundary, only after the full interval", () => {
+    const lateNight = at(0, 23);
+    const state = resolveClaimState(claimedAt(lateNight), CFG, at(1, 1));
+    expect(state.isClaimable).toBe(false);
+    expect(state.nextClaimAtMs).toBe(lateNight + DAY_MS);
+  });
+
+  it("continues the streak exactly 24h later", () => {
+    const last = at(0, 6);
+    const state = resolveClaimState(claimedAt(last, 3), CFG, last + DAY_MS);
     expect(state).toMatchObject({ isClaimable: true, slot: 3, streakBroken: false });
   });
 
-  it("forgives exactly graceDays missed days", () => {
-    const last = dayOf(BASE_MS);
-
-    // Gap of 2 = one missed day = within a grace of 1.
-    const forgiven = resolveClaimState({ streakDay: 4, lastClaimedDayIndex: last }, CFG, at(2));
+  it("gives graceDays * 24h to claim before the streak breaks", () => {
+    const last = at(0, 6);
+    const forgiven = resolveClaimState(claimedAt(last, 4), CFG, last + 2 * DAY_MS - 1);
     expect(forgiven).toMatchObject({ slot: 4, streakBroken: false });
 
-    // Gap of 3 = two missed days = beyond the grace.
-    const broken = resolveClaimState({ streakDay: 4, lastClaimedDayIndex: last }, CFG, at(3));
+    const broken = resolveClaimState(claimedAt(last, 4), CFG, last + 2 * DAY_MS);
     expect(broken).toMatchObject({ slot: 1, streakBroken: true });
   });
 
-  it("resets on the first missed day when graceDays is 0", () => {
+  it("breaks the moment the reward opens when graceDays is 0", () => {
     const strict = { ...CFG, graceDays: 0 };
-    const last = dayOf(BASE_MS);
-
-    expect(resolveClaimState({ streakDay: 5, lastClaimedDayIndex: last }, strict, at(1)))
-      .toMatchObject({ slot: 5, streakBroken: false });
-    expect(resolveClaimState({ streakDay: 5, lastClaimedDayIndex: last }, strict, at(2)))
+    const last = at(0, 6);
+    expect(resolveClaimState(claimedAt(last, 5), strict, last + DAY_MS - 1).isClaimable).toBe(false);
+    expect(resolveClaimState(claimedAt(last, 5), strict, last + DAY_MS))
       .toMatchObject({ slot: 1, streakBroken: true });
   });
 
   it("survives a long absence by restarting rather than erroring", () => {
-    const state = resolveClaimState(
-      { streakDay: 7, lastClaimedDayIndex: dayOf(BASE_MS) },
-      CFG,
-      at(400),
-    );
+    const state = resolveClaimState(claimedAt(BASE_MS, 7), CFG, at(400));
     expect(state).toMatchObject({ isClaimable: true, slot: 1, streakBroken: true });
   });
 
   it("refuses to re-open a claim if the clock moves backwards", () => {
-    const today = dayOf(BASE_MS);
     for (const rewind of [1, 5, 400]) {
-      const state = resolveClaimState(
-        { streakDay: 3, lastClaimedDayIndex: today },
-        CFG,
-        BASE_MS - rewind * DAY_MS,
-      );
+      const state = resolveClaimState(claimedAt(BASE_MS, 3), CFG, BASE_MS - rewind * DAY_MS);
       expect(state.isClaimable).toBe(false);
     }
   });
 
-  it("reports a streak deadline that accounts for the grace allowance", () => {
-    const last = dayOf(BASE_MS);
-    const state = resolveClaimState({ streakDay: 2, lastClaimedDayIndex: last }, CFG, at(0, 6));
-    // graceDays=1 → last day that still continues the streak is last+2, so the
-    // streak dies at the start of last+3.
-    expect(state.streakExpiresAtMs).toBe(dayIndexStartMs(last + 3, 0));
-    // Claiming exactly one ms before the deadline still keeps the streak.
-    const justInTime = resolveClaimState(
-      { streakDay: 2, lastClaimedDayIndex: last },
-      CFG,
-      state.streakExpiresAtMs! - 1,
-    );
-    expect(justInTime.streakBroken).toBe(false);
-    // One ms later it is gone.
-    const tooLate = resolveClaimState(
-      { streakDay: 2, lastClaimedDayIndex: last },
-      CFG,
-      state.streakExpiresAtMs!,
-    );
-    expect(tooLate.streakBroken).toBe(true);
+  it("reports timers relative to the last claim", () => {
+    const last = at(0, 6);
+    const state = resolveClaimState(claimedAt(last), CFG, at(0, 7));
+    expect(state.nextClaimAtMs).toBe(last + DAY_MS);
+    expect(state.streakExpiresAtMs).toBe(last + 2 * DAY_MS);
+    expect(claimTimersAfter(last, CFG)).toEqual({
+      nextClaimAtMs: last + DAY_MS,
+      streakExpiresAtMs: last + 2 * DAY_MS,
+    });
+  });
+
+  it("migrates a status that only has a day index by anchoring on that day's start", () => {
+    const last = dayOf(at(0, 15));
+    const state = resolveClaimState({ streakDay: 2, lastClaimedDayIndex: last }, CFG, at(0, 20));
+    expect(state.isClaimable).toBe(false);
+    expect(state.nextClaimAtMs).toBe(dayIndexStartMs(last + 1, 0));
+    expect(resolveClaimState({ streakDay: 2, lastClaimedDayIndex: last }, CFG, at(1)).isClaimable).toBe(true);
   });
 
   it("clamps a corrupted streakDay into the ladder", () => {
-    const last = dayOf(BASE_MS);
-    expect(resolveClaimState({ streakDay: 99, lastClaimedDayIndex: last }, CFG, at(1)).slot).toBe(7);
-    expect(resolveClaimState({ streakDay: 0, lastClaimedDayIndex: last }, CFG, at(1)).slot).toBe(1);
-    expect(resolveClaimState({ streakDay: NaN, lastClaimedDayIndex: last }, CFG, at(1)).slot).toBe(1);
+    expect(resolveClaimState(claimedAt(BASE_MS, 99), CFG, at(1)).slot).toBe(7);
+    expect(resolveClaimState(claimedAt(BASE_MS, 0), CFG, at(1)).slot).toBe(1);
+    expect(resolveClaimState(claimedAt(BASE_MS, NaN), CFG, at(1)).slot).toBe(1);
   });
 });
 
@@ -202,7 +191,11 @@ describe("nextSlotAfter", () => {
 
 describe("full 7-day walkthrough", () => {
   it("runs a perfect week, loops, then breaks and restarts", () => {
-    let status = { streakDay: 1, lastClaimedDayIndex: null as number | null };
+    let status = {
+      streakDay: 1,
+      lastClaimedDayIndex: null as number | null,
+      lastClaimedAtMs: null as number | null,
+    };
     const claimed: number[] = [];
 
     // Seven consecutive days.
@@ -213,6 +206,7 @@ describe("full 7-day walkthrough", () => {
       status = {
         streakDay: nextSlotAfter(state.slot, CFG),
         lastClaimedDayIndex: state.todayIndex,
+        lastClaimedAtMs: at(day),
       };
     }
     expect(claimed).toEqual([1, 2, 3, 4, 5, 6, 7]);

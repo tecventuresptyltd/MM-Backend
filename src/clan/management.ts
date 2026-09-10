@@ -20,6 +20,7 @@ import {
   clearPlayerClanState,
   getPlayerProfile,
   isLeader,
+  rolePriority,
   playerProfileRef,
   playerClanStateRef,
   resolveClanBadge,
@@ -168,7 +169,7 @@ export const createClan = onCall(callableOptions({ cpu: 1, concurrency: 80 }, tr
       transaction.set(memberRef, {
         uid,
         role: "leader",
-        rolePriority: 4,
+        rolePriority: rolePriority("leader"),
         trophies: profile.trophies ?? 0,
         joinedAt: now,
         displayName: profile.displayName,

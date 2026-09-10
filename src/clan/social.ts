@@ -13,6 +13,7 @@ import {
   playerChatRateRef,
   playerClanBookmarksRef,
   playerClanInvitesRef,
+  playerSentClanInvitesRef,
   playerClanStateRef,
   playerProfileRef,
   resolveClanBadge,
@@ -423,6 +424,25 @@ interface InviteToClanRequest {
   message?: string;
 }
 
+const clearSentClanInvite = (
+  transaction: FirebaseFirestore.Transaction,
+  inviterUid: unknown,
+  targetUid: string,
+  timestamp: FirebaseFirestore.FieldValue,
+) => {
+  if (typeof inviterUid !== "string" || inviterUid.length === 0) {
+    return;
+  }
+  transaction.set(
+    playerSentClanInvitesRef(inviterUid),
+    {
+      updatedAt: timestamp,
+      invites: { [targetUid]: FieldValue.delete() },
+    },
+    { merge: true },
+  );
+};
+
 export const inviteToClan = onCall(callableOptions({ cpu: 1, concurrency: 80 }, true), async (request) => {
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as InviteToClanRequest;
@@ -447,6 +467,7 @@ export const inviteToClan = onCall(callableOptions({ cpu: 1, concurrency: 80 }, 
   const actorMemberRef = clanMembersCollection(clanId).doc(uid);
   const targetStateRef = playerClanStateRef(targetUid);
   const inviteDocRef = playerClanInvitesRef(targetUid);
+  const sentInviteDocRef = playerSentClanInvitesRef(uid);
 
   const result = await runTransactionWithReceipt<ClanActionResponse>(
     uid,
@@ -468,8 +489,8 @@ export const inviteToClan = onCall(callableOptions({ cpu: 1, concurrency: 80 }, 
       if (!canInviteMembers(actorRole)) {
         throw new HttpsError("permission-denied", "Insufficient rank to send invites.");
       }
-      if (targetStateSnap.exists && typeof targetStateSnap.data()?.clanId === "string") {
-        throw new HttpsError("failed-precondition", "Target player already belongs to a clan.");
+      if (targetStateSnap.exists && targetStateSnap.data()?.clanId === clanId) {
+        throw new HttpsError("failed-precondition", "Target player is already in this clan.");
       }
 
       const clanData = clanSnap.data() ?? {};
@@ -498,6 +519,21 @@ export const inviteToClan = onCall(callableOptions({ cpu: 1, concurrency: 80 }, 
           updatedAt: now,
           invites: {
             [clanId]: inviteData,
+          },
+        },
+        { merge: true },
+      );
+      transaction.set(
+        sentInviteDocRef,
+        {
+          updatedAt: now,
+          invites: {
+            [targetUid]: {
+              targetUid,
+              clanId,
+              clanName: inviteData.clanName,
+              createdAt: now,
+            },
           },
         },
         { merge: true },
@@ -595,6 +631,7 @@ export const acceptClanInvite = onCall(callableOptions({ cpu: 1, concurrency: 80
         },
         { merge: true },
       );
+      clearSentClanInvite(transaction, inviteData?.fromUid, uid, now);
 
       updatePlayerClanProfile(transaction, uid, {
         clanId,
@@ -651,14 +688,19 @@ export const declineClanInvite = onCall(callableOptions({ cpu: 1, concurrency: 8
     opId,
     "declineClanInvite",
     async (transaction) => {
+      const now = FieldValue.serverTimestamp();
+      const inviteDocRef = playerClanInvitesRef(uid);
+      const inviteSnap = await transaction.get(inviteDocRef);
+      const invitedBy = inviteSnap.data()?.invites?.[clanId]?.fromUid;
       transaction.set(
-        playerClanInvitesRef(uid),
+        inviteDocRef,
         {
-          updatedAt: FieldValue.serverTimestamp(),
+          updatedAt: now,
           invites: { [clanId]: FieldValue.delete() },
         },
         { merge: true },
       );
+      clearSentClanInvite(transaction, invitedBy, uid, now);
       return { clanId };
     },
   );

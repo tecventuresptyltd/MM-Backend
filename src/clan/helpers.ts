@@ -5,7 +5,7 @@ import { db } from "../shared/firestore.js";
 import { maskProfanity } from "../shared/profanity.js";
 
 export type ClanType = "anyone can join" | "invite only" | "closed";
-export type ClanRole = "leader" | "coLeader" | "member";
+export type ClanRole = "leader" | "coLeader" | "elder" | "member";
 
 export type ClanBadge = string;
 
@@ -56,15 +56,31 @@ export const MAX_TROPHY_REQUIREMENT = 100000;
 const DEFAULT_CLAN_BADGE: ClanBadge = "badge_default";
 
 export const CLAN_ROLE_ORDER: Record<ClanRole, number> = {
-  leader: 3,
-  coLeader: 2,
+  leader: 4,
+  coLeader: 3,
+  elder: 2,
   member: 1,
 };
 
-export const canInviteMembers = (role: ClanRole): boolean =>
-  role === "leader" || role === "coLeader" || role === "member";
+export const isClanRole = (value: unknown): value is ClanRole =>
+  typeof value === "string" && Object.prototype.hasOwnProperty.call(CLAN_ROLE_ORDER, value);
+
+export const resolveClanRole = (value: unknown): ClanRole | undefined => {
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+  if (!isClanRole(value)) {
+    throw new HttpsError("invalid-argument", "Unknown clan role.");
+  }
+  return value;
+};
+
+export const canInviteMembers = (role: ClanRole): boolean => isClanRole(role);
 
 export const canManageMembers = (role: ClanRole): boolean => role === "leader" || role === "coLeader";
+
+export const canKickMembers = (role: ClanRole): boolean =>
+  role === "leader" || role === "coLeader" || role === "elder";
 
 export const isLeader = (role: ClanRole): boolean => role === "leader";
 
@@ -86,6 +102,7 @@ export const playerProfileRef = (uid: string) => playersCollection().doc(uid).co
 export const playerSocialCollection = (uid: string) => playersCollection().doc(uid).collection("Social");
 export const playerClanStateRef = (uid: string) => playerSocialCollection(uid).doc("Clan");
 export const playerClanInvitesRef = (uid: string) => playerSocialCollection(uid).doc("ClanInvites");
+export const playerSentClanInvitesRef = (uid: string) => playerSocialCollection(uid).doc("SentClanInvites");
 export const playerClanBookmarksRef = (uid: string) => playerSocialCollection(uid).doc("ClanBookmarks");
 export const playerChatRateRef = (uid: string) => playerSocialCollection(uid).doc("ChatRate");
 

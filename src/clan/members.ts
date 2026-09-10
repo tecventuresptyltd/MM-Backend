@@ -9,8 +9,9 @@ import { maskProfanity } from "../shared/profanity.js";
 import {
   ClanRole,
   PlayerProfileData,
-  canInviteMembers,
+  canKickMembers,
   canManageMembers,
+  resolveClanRole,
   clanMembersCollection,
   clanRef,
   clanRequestsCollection,
@@ -106,6 +107,8 @@ const formatRoleLabel = (role: ClanRole): string => {
       return "co-leader";
     case "leader":
       return "leader";
+    case "elder":
+      return "elder";
     default:
       return role;
   }
@@ -128,7 +131,7 @@ const requireTargetUid = (value?: unknown): string => {
   return value.trim();
 };
 
-const ROLE_SEQUENCE: ClanRole[] = ["member", "coLeader", "leader"];
+const ROLE_SEQUENCE: ClanRole[] = ["member", "elder", "coLeader", "leader"];
 
 const nextRole = (role: ClanRole): ClanRole | null => {
   const idx = ROLE_SEQUENCE.indexOf(role);
@@ -419,7 +422,7 @@ export const promoteClanMember = onCall(callableOptions({ cpu: 1, concurrency: 8
         throw new HttpsError("permission-denied", "Insufficient rank to promote members.");
       }
       ensureActorOutranksTarget(actorRole, targetRole);
-      const desiredRole = resolvePromotionRole(targetRole, payload.role as ClanRole | undefined);
+      const desiredRole = resolvePromotionRole(targetRole, resolveClanRole(payload.role));
       if (rolePriority(desiredRole) >= rolePriority(actorRole) && actorRole !== "leader") {
         throw new HttpsError("permission-denied", "Cannot promote to a rank equal to yours.");
       }
@@ -524,7 +527,7 @@ export const demoteClanMember = onCall(callableOptions({ cpu: 1, concurrency: 80
         throw new HttpsError("permission-denied", "Insufficient rank to demote members.");
       }
       ensureActorOutranksTarget(actorRole, targetRole);
-      const desiredRole = resolveDemotionRole(targetRole, payload.role as ClanRole | undefined);
+      const desiredRole = resolveDemotionRole(targetRole, resolveClanRole(payload.role));
 
       transaction.update(targetMemberRef, {
         role: desiredRole,
@@ -639,11 +642,34 @@ export const transferClanLeadership = onCall(callableOptions({ cpu: 1, concurren
       });
       transaction.update(clanDocRef, { leaderUid: targetUid, updatedAt: now });
 
+      const newLeaderName = targetSnap.data()?.displayName ?? "Member";
+      const previousLeaderName = leaderSnap.data()?.displayName ?? "Member";
+
       enqueueSystemMessage(
         systemMessages,
         clanId,
-        `${targetSnap.data()?.displayName ?? "Member"} is now the clan leader`,
-        { kind: "leadership_transfer", from: uid, to: targetUid },
+        `${newLeaderName} was promoted to leader by ${previousLeaderName}`,
+        {
+          kind: "member_promoted",
+          uid: targetUid,
+          role: "leader",
+          by: previousLeaderName,
+          byUid: uid,
+        },
+        { ...buildAuthorFromMemberDoc(targetUid, targetSnap.data()), role: "leader" },
+      );
+
+      enqueueSystemMessage(
+        systemMessages,
+        clanId,
+        `${previousLeaderName} was demoted to co-leader`,
+        {
+          kind: "member_demoted",
+          uid,
+          role: "coLeader",
+          byUid: uid,
+        },
+        { ...buildAuthorFromMemberDoc(uid, leaderSnap.data()), role: "coLeader" },
       );
 
       return { clanId, systemMessages };
@@ -707,7 +733,7 @@ export const kickClanMember = onCall(callableOptions({ cpu: 1, concurrency: 80 }
       if (targetRole === "leader") {
         throw new HttpsError("failed-precondition", "Use transferClanLeadership for leaders.");
       }
-      if (!canManageMembers(actorRole)) {
+      if (!canKickMembers(actorRole)) {
         throw new HttpsError("permission-denied", "Insufficient rank to remove members.");
       }
       ensureActorOutranksTarget(actorRole, targetRole);
@@ -1102,7 +1128,7 @@ export const acceptJoinRequest = onCall(callableOptions({ cpu: 1, concurrency: 8
         throw new HttpsError("permission-denied", "Not a clan member.");
       }
       const actorRole = (actorSnap.data()?.role ?? "member") as ClanRole;
-      if (!canInviteMembers(actorRole)) {
+      if (!canManageMembers(actorRole)) {
         throw new HttpsError("permission-denied", "Insufficient rank to accept requests.");
       }
       if (!requestSnap.exists) {
@@ -1235,7 +1261,7 @@ export const declineJoinRequest = onCall(callableOptions({ cpu: 1, concurrency: 
         throw new HttpsError("permission-denied", "Not a clan member.");
       }
       const actorRole = (actorSnap.data()?.role ?? "member") as ClanRole;
-      if (!canInviteMembers(actorRole)) {
+      if (!canManageMembers(actorRole)) {
         throw new HttpsError("permission-denied", "Insufficient rank to decline requests.");
       }
       if (!requestSnap.exists) {

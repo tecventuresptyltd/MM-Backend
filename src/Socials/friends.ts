@@ -10,6 +10,7 @@ import {
   readFriendsDoc,
   readSocialSnapshot,
   writeFriendsDoc,
+  deleteFriendEntries,
   writeRequestsDoc,
   updateSocialProfile,
 } from "./socialStore.js";
@@ -559,14 +560,14 @@ export const removeFriends = onCall(
           delete entry.friends[uid];
         });
 
-        writeFriendsDoc(tx, uid, nextCallerFriends);
+        deleteFriendEntries(tx, uid, targetUids);
         const callerFriendsCount = Object.keys(nextCallerFriends).length;
         updateSocialProfile(tx, uid, {
           friendsCount: callerFriendsCount,
         });
 
         targetSnapshots.forEach(({ uid: friendUid, friends }) => {
-          writeFriendsDoc(tx, friendUid, friends);
+          deleteFriendEntries(tx, friendUid, [uid]);
           updateSocialProfile(tx, friendUid, {
             friendsCount: Object.keys(friends).length,
           });

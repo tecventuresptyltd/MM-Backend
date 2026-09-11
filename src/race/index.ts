@@ -668,24 +668,15 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
       const crateRarity = CRATE_DROP_RARITY_MAP[drops.playerDrop.type] ?? "common";
 
       if (currentSlots.length >= maxSlots) {
-        // All slots full — grant fallback currency
-        if (slotsConfig.slotFullFallback.enabled) {
-          const fallbackRewards = slotsConfig.slotFullFallback.rewards;
-          const fbUpdates: Record<string, FirebaseFirestore.FieldValue> = {};
-          if (fallbackRewards.coins) {
-            fbUpdates.coins = admin.firestore.FieldValue.increment(fallbackRewards.coins);
-          }
-          if (fallbackRewards.spellShards) {
-            fbUpdates.spellShards = admin.firestore.FieldValue.increment(fallbackRewards.spellShards);
-          }
-          if (Object.keys(fbUpdates).length > 0) {
-            fbUpdates.updatedAt = admin.firestore.FieldValue.serverTimestamp();
-            transaction.update(economyRef, fbUpdates);
-          }
-          crateSlotResult = { slotIndex: null, fallbackGranted: true, fallbackRewards };
-        } else {
-          crateSlotResult = { slotIndex: null, fallbackGranted: false };
-        }
+        // All slots full — the crate is simply dropped, no compensation.
+        crateSlotResult = { slotIndex: null, fallbackGranted: false };
+        logger.info("[recordRaceResult] Crate slots full, crate not granted", {
+          uid,
+          rarity: crateRarity,
+          skuId: drops.playerDrop.skuId,
+        });
+        // The crate was discarded — report it exactly like a normal empty roll.
+        drops.playerDrop = { type: "noreward", skuId: null };
       } else {
         // Place crate into first empty slot
         const unlockDurationSeconds = await getUnlockDurationForRarity(crateRarity);

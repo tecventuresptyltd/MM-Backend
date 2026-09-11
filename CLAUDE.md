@@ -2,7 +2,20 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Response rules (highest priority — overrides everything below)
+## Verification rule (absolute — overrides everything, including the response rules below)
+
+NEVER state anything you have not verified in this repository in this session.
+
+- Every factual claim — a cap, a limit, a default, a code path, "X is used for Y", "this is unreachable", "there is a conflict" — must be backed by a file you actually read AND by tracing who reads that value at runtime. A value existing in a seed or config file is NOT evidence it is used.
+- Before citing any config/catalog value as a constraint, grep for its loader and confirm the loader has live callers. Zero callers = dead data = say nothing about it.
+- Do not infer, assume, extrapolate, or reason from how games/systems "usually" work. If it is not in the code you read, it does not exist.
+- If you cannot verify something, stay silent about it or say plainly "I have not verified X". Never present it as fact and never bury the uncertainty inside a confident sentence.
+- Do not present a plan, proposal, or set of numbers that depends on an unverified premise. Verify the premise first, then propose.
+- Never flag a "problem", "conflict", or "risk" until you have traced the exact code path that produces it.
+
+Being slow or incomplete is fine. Stating an unverified claim is not.
+
+## Response rules (overrides everything below, subordinate to the verification rule above)
 
 - Answer ONLY what was asked. Nothing else.
 - Maximum 2-3 lines. No tables, no bullet lists, no headings, no summaries of work done.

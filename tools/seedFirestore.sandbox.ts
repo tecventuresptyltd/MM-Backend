@@ -87,6 +87,13 @@ async function seedCatalogs() {
         seedData.push({ path: '/GameData/v1/catalogs/SpellEvolutionV2Catalog', data: spellEvoData });
     }
 
+    // Add TiersCatalog (car licence mastery-rank / coin gates)
+    const tiersCatalogFile = path.join(seedsRoot, 'TiersCatalog.json');
+    if (fs.existsSync(tiersCatalogFile)) {
+        const tiersCatalogData = JSON.parse(fs.readFileSync(tiersCatalogFile, 'utf-8'));
+        seedData.push({ path: '/GameData/v1/catalogs/TiersCatalog', data: tiersCatalogData });
+    }
+
     console.log(`📦 Found ${seedData.length} catalogs to seed\n`);
 
     for (const catalog of seedData) {

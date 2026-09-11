@@ -14715,7 +14715,7 @@
           "displayName": "Storm Aura",
           "type": "AreaEffect",
           "description": "The car starts zapping other cars around it, slowing them down for a few seconds",
-          "requiredLevel": 5,
+          "requiredLevel": 3,
           "displayOrder": 4,
           "isUnlocked": false,
           "attributes": [
@@ -14759,7 +14759,7 @@
           "displayName": "Void Blades",
           "type": "Melee",
           "description": "Surrounds the car with floating plasma blades which circle the player that uses the spells car for 6 seconds. Any car that enters melee range is instantly demo'd.",
-          "requiredLevel": 10,
+          "requiredLevel": 5,
           "displayOrder": 5,
           "isUnlocked": false,
           "attributes": [
@@ -14792,7 +14792,7 @@
           "displayName": "Crimson Crush",
           "type": "AreaEffect",
           "description": "Channels powerful red telekinesis to lift all nearby enemy cars into the air. For 3 seconds, they float helplessly around the caster, before being slammed to the ground in a devastating magical explosion (a demolition)",
-          "requiredLevel": 50,
+          "requiredLevel": 28,
           "displayOrder": 14,
           "isUnlocked": false,
           "attributes": [
@@ -14836,7 +14836,7 @@
           "displayName": "Fireball",
           "type": "TargetLock",
           "description": "Shoots a fireball at the target",
-          "requiredLevel": 35,
+          "requiredLevel": 18,
           "displayOrder": 10,
           "isUnlocked": false,
           "attributes": [
@@ -14869,7 +14869,7 @@
           "displayName": "God Hammer",
           "type": "Directional",
           "description": "Summons a magical war hammer that autonomously flies around the track at high speed, seeking out enemy cars and zapping them with lightning as it passes.",
-          "requiredLevel": 60,
+          "requiredLevel": 36,
           "displayOrder": 16,
           "isUnlocked": false,
           "attributes": [
@@ -14913,7 +14913,7 @@
           "displayName": "Overdrive",
           "type": "Powerup",
           "description": "The car is able to have unlimited nitros for a period of time",
-          "requiredLevel": 20,
+          "requiredLevel": 10,
           "displayOrder": 7,
           "isUnlocked": false,
           "attributes": [
@@ -14957,7 +14957,7 @@
           "displayName": "Phase Shift",
           "type": "Powerup",
           "description": "Exchanges players car position with the targeted opponoents car position (targets the player in front).",
-          "requiredLevel": 40,
+          "requiredLevel": 21,
           "displayOrder": 11,
           "isUnlocked": false,
           "attributes": [
@@ -14979,7 +14979,7 @@
           "displayName": "Power Out",
           "type": "TargetLock",
           "description": "Emits a screech that disables boosts and spells of everyone in the map for a period of time.",
-          "requiredLevel": 45,
+          "requiredLevel": 24,
           "displayOrder": 12,
           "isUnlocked": false,
           "attributes": [
@@ -15012,7 +15012,7 @@
           "displayName": "Shockwave",
           "type": "AreaEffect",
           "description": "The car produces a supersonic blast around it and demolishes other cars around it",
-          "requiredLevel": 30,
+          "requiredLevel": 15,
           "displayOrder": 9,
           "isUnlocked": false,
           "attributes": [
@@ -15034,7 +15034,7 @@
           "displayName": "Sky Reaper",
           "type": "TargetLock",
           "description": "A lightning beam descends from the sky onto the player in 1st place, slowing them for a period of time",
-          "requiredLevel": 55,
+          "requiredLevel": 32,
           "displayOrder": 13,
           "isUnlocked": false,
           "attributes": [
@@ -15056,7 +15056,7 @@
           "displayName": "Supersonic",
           "type": "Powerup",
           "description": "Turns the car into a jet for some time",
-          "requiredLevel": 15,
+          "requiredLevel": 7,
           "displayOrder": 6,
           "isUnlocked": false,
           "attributes": [
@@ -15089,7 +15089,7 @@
           "displayName": "Tiny Terror",
           "type": "Powerup",
           "description": "Shrinks down the car and the car is able to demo other cars",
-          "requiredLevel": 25,
+          "requiredLevel": 12,
           "displayOrder": 8,
           "isUnlocked": false,
           "attributes": [
@@ -15122,7 +15122,7 @@
           "displayName": "Wraith Grip",
           "type": "TargetLock",
           "description": "A ghostly wraith hand shoots out and seizes the target car, pinning it to the ground and holding it in place for a period of time.",
-          "requiredLevel": 65,
+          "requiredLevel": 40,
           "displayOrder": 17,
           "isUnlocked": false,
           "attributes": [

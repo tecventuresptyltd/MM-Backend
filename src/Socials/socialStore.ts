@@ -116,6 +116,25 @@ export const writeFriendsDoc = (
   );
 };
 
+export const deleteFriendEntries = (
+  transaction: admin.firestore.Transaction,
+  uid: string,
+  removedUids: string[],
+): void => {
+  if (removedUids.length === 0) {
+    return;
+  }
+  const friends: Record<string, unknown> = {};
+  removedUids.forEach((removedUid) => {
+    friends[removedUid] = admin.firestore.FieldValue.delete();
+  });
+  transaction.set(
+    socialFriendsRef(uid),
+    { friends, updatedAt: admin.firestore.FieldValue.serverTimestamp() },
+    { merge: true },
+  );
+};
+
 export const writeRequestsDoc = (
   transaction: admin.firestore.Transaction,
   uid: string,

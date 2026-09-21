@@ -5,6 +5,7 @@ import {
   playerLoadoutRef,
   playerSpellDecksRef,
   playerSpellLevelsRef,
+  playerGarageCarsRef,
 } from "./refs.js";
 import { fetchClanSummary } from "./summary.js";
 
@@ -95,11 +96,12 @@ export const viewPlayerProfile = onCall(
     }
 
     const targetUid = sanitizeUid(request.data?.uid ?? request.data?.targetUid ?? callerUid);
-    const [profileSnap, loadoutSnap, spellDecksSnap, spellLevelsSnap] = await Promise.all([
+    const [profileSnap, loadoutSnap, spellDecksSnap, spellLevelsSnap, garageCarsSnap] = await Promise.all([
       playerProfileRef(targetUid).get(),
       playerLoadoutRef(targetUid).get(),
       playerSpellDecksRef(targetUid).get(),
       playerSpellLevelsRef(targetUid).get(),
+      playerGarageCarsRef(targetUid).get(),
     ]);
 
     if (!profileSnap.exists) {
@@ -111,6 +113,18 @@ export const viewPlayerProfile = onCall(
     const spellDecksData = spellDecksSnap.exists ? spellDecksSnap.data() ?? {} : null;
     const spellLevelsData = spellLevelsSnap.exists ? (spellLevelsSnap.data()?.levels ?? {}) : {};
     const activeSpellDeck = resolveActiveDeck(loadoutData, spellDecksData);
+
+    const loadoutCarId = typeof loadoutData?.carId === "string" ? loadoutData.carId : null;
+    const garageCars = garageCarsSnap.exists ? (garageCarsSnap.data()?.cars ?? {}) : {};
+    const activeCarEntry = loadoutCarId ? garageCars[loadoutCarId] : null;
+    const activeCarLevel =
+      typeof activeCarEntry?.carLevel === "number" && activeCarEntry.carLevel > 0
+        ? activeCarEntry.carLevel
+        : typeof activeCarEntry?.upgradeLevel === "number"
+          ? activeCarEntry.upgradeLevel
+          : 0;
+
+    const loadoutWithLevel = loadoutData ? { ...loadoutData, level: activeCarLevel } : loadoutData;
 
     const rawClanId = typeof profileData.clanId === "string" ? profileData.clanId.trim() : "";
     const rawClanName =
@@ -156,7 +170,7 @@ export const viewPlayerProfile = onCall(
       data: {
         profile: profileWithClan,
         clan,
-        loadout: loadoutData,
+        loadout: loadoutWithLevel,
         activeSpellDeck,
         spellLevels: spellLevelsData,
       },

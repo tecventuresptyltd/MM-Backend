@@ -30,3 +30,6 @@ export const playerSpellDecksRef = (uid: string) =>
 
 export const playerSpellLevelsRef = (uid: string) =>
   db.collection("Players").doc(uid).collection("Spells").doc("Levels");
+
+export const playerGarageCarsRef = (uid: string) =>
+  db.collection("Players").doc(uid).collection("Garage").doc("Cars");

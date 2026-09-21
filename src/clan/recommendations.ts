@@ -9,7 +9,7 @@ import { clansCollection, requireAuth } from "./helpers.js";
 const RECOMMENDED_POOL_LIMIT = 10;
 const HEALTHY_MIN_MEMBERS = 1;
 const HEALTHY_MAX_MEMBERS = 45;
-const CANDIDATE_FETCH_LIMIT = RECOMMENDED_POOL_LIMIT * 2;
+const CANDIDATE_FETCH_LIMIT = RECOMMENDED_POOL_LIMIT * 10;
 
 export interface RecommendedClanPoolEntry {
   id: string;

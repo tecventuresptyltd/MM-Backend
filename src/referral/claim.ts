@@ -28,6 +28,10 @@ import { ReferralSkuReward } from "./types.js";
 const DEVICE_ANCHOR_COLLECTION = "AccountsDeviceAnchors";
 const REFEREE_GEM_REWARD = 200;
 
+const INVITER_TIER_GEM_REWARDS: Record<number, number> = {
+  5: 200,
+};
+
 const INVITER_TIER_REWARDS: Record<number, ReferralSkuReward[]> = {
   1: [
     { skuId: "sku_zz3twgp0wx", qty: 1 },
@@ -215,6 +219,7 @@ export const referralClaimReferralCode = onCall({ region: REGION }, async (rawRe
 
       const inviterProfileRef = db.doc(`Players/${inviterUid}/Profile/Profile`);
       const inviterProgressRef = db.doc(`Players/${inviterUid}/${REFERRAL_PROGRESS_DOC}`);
+      const inviterStatsRef = db.doc(`Players/${inviterUid}/Economy/Stats`);
 
       const [inviterProfileSnap, inviterProgressSnap] = await Promise.all([
         transaction.get(inviterProfileRef),
@@ -251,12 +256,14 @@ export const referralClaimReferralCode = onCall({ region: REGION }, async (rawRe
         (a, b) => a - b,
       );
 
+      const bonusGems = shouldGrantCurrent ? (INVITER_TIER_GEM_REWARDS[newSentTotal] ?? 0) : 0;
+
       const inviterRewardPrep = await buildRewardSkuStates(transaction, inviterUid, cappedReward);
       const rewardContext = shouldGrantCurrent && cappedReward.length ? inviterRewardPrep.context : null;
       const shouldGrantReward = Boolean(rewardContext);
       const unseenRewardsRef = db.doc(`Players/${inviterUid}/Referrals/UnseenRewards`);
       let currentUnseen: unknown[] = [];
-      if (shouldGrantReward) {
+      if (shouldGrantReward || bonusGems > 0) {
         const unseenSnap = await transaction.get(unseenRewardsRef);
         currentUnseen = unseenSnap.exists ? unseenSnap.data()?.unseenRewards || [] : [];
       }
@@ -300,18 +307,31 @@ export const referralClaimReferralCode = onCall({ region: REGION }, async (rawRe
       );
 
       let inviterAwardSummary: Array<{ skuId: string; qty: number }> = [];
-      if (shouldGrantReward) {
-        const awards = await awardReferralRewards(
-          transaction,
-          inviterUid,
-          cappedReward,
-          timestamp,
-          rewardContext as AwardInventoryContext,
-        );
-        inviterAwardSummary = awards.map((award) => ({
-          skuId: award.skuId,
-          qty: award.qty,
-        }));
+      if (shouldGrantReward || bonusGems > 0) {
+        if (shouldGrantReward) {
+          const awards = await awardReferralRewards(
+            transaction,
+            inviterUid,
+            cappedReward,
+            timestamp,
+            rewardContext as AwardInventoryContext,
+          );
+          inviterAwardSummary = awards.map((award) => ({
+            skuId: award.skuId,
+            qty: award.qty,
+          }));
+        }
+
+        if (bonusGems > 0) {
+          transaction.set(
+            inviterStatsRef,
+            {
+              gems: admin.firestore.FieldValue.increment(bonusGems),
+              updatedAt: timestamp,
+            },
+            { merge: true },
+          );
+        }
 
         // Track unseen reward for the inviter so they can be notified
         const newUnseenEntry = {
@@ -319,6 +339,7 @@ export const referralClaimReferralCode = onCall({ region: REGION }, async (rawRe
           inviteeUid: uid,
           tier: newSentTotal,
           rewards: inviterAwardSummary,
+          bonusGems,
           // Firestore does not allow FieldValue.serverTimestamp() inside arrays; use a concrete Timestamp instead.
           timestamp: admin.firestore.Timestamp.now(),
         };

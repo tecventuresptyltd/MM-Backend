@@ -54,6 +54,13 @@ const FALLBACK_EXCLUDED_SPELL_IDS = [
 /** Trophy count at which the ladder is considered maxed for difficulty purposes. */
 const TROPHY_CEILING = 7000;
 
+/**
+ * A spell with a negative requiredLevel is hidden/coming-soon in the catalog
+ * (see docs/spell-v2-progression-guide.md) and must never be drawable by bots.
+ */
+const isSpellHidden = (requiredLevel: unknown): boolean =>
+  typeof requiredLevel !== "number" || requiredLevel < 0;
+
 /** Highest upgrade level present in the car catalog. */
 const BOT_CAR_MAX_LEVEL = 10;
 
@@ -458,6 +465,13 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
       return source.length > 0 ? rng.choice(source) ?? null : null;
     };
 
+    // Highest requiredLevel among unlockable (non-hidden) spells, used to translate a
+    // bot's trophy count into an equivalent player level for spell eligibility.
+    const maxCatalogSpellLevel = Object.values(spellsCatalog || {}).reduce((max: number, spell: any) => {
+      const requiredLevel = spell?.requiredLevel;
+      return isSpellHidden(requiredLevel) ? max : Math.max(max, requiredLevel);
+    }, 0);
+
     // Build bots (skipped for POLICE mode since chaser vehicles are dynamically managed client-side)
     const bots = gamemode === "POLICE" ? [] : Array.from({ length: botCount }).map(() => {
       const botDisplayName = nextBotName();
@@ -591,12 +605,20 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
       const underglowCosmetic = pickBotCosmeticForSlot("underglow", rarity);
       const boostCosmetic = pickBotCosmeticForSlot("boost", rarity);
 
-      // Spells: select 5 unique spells from catalog, excluding unimplemented spells
+      // Spells: select 5 unique spells from catalog, excluding unimplemented spells and
+      // any spell a real player at this trophy count wouldn't have unlocked yet
+      // (requiredLevel > the bot's trophy-equivalent player level).
       const excludedSpells = new Set([
         ...FALLBACK_EXCLUDED_SPELL_IDS,
         ...(botConfig.excludedSpells || []),
       ]);
-      const allSpellIds = Object.keys(spellsCatalog || {}).filter(id => !excludedSpells.has(id));
+      const botUnlockedLevel = Math.round(baseTrophyPercentage * maxCatalogSpellLevel);
+      const allSpellIds = Object.keys(spellsCatalog || {}).filter((id) => {
+        if (excludedSpells.has(id)) return false;
+        const requiredLevel = (spellsCatalog as any)[id]?.requiredLevel;
+        if (isSpellHidden(requiredLevel)) return false;
+        return requiredLevel <= botUnlockedLevel;
+      });
       const band =
         botConfig.spellLevelBands.find(
           (b: any) => normalizedTrophies >= b.minTrophies && normalizedTrophies <= b.maxTrophies,

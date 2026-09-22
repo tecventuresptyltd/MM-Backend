@@ -1,88 +1,120 @@
-/**
- * Seed all catalogs to Firestore from the seed files
- */
+import * as admin from "firebase-admin";
+import * as fs from "fs";
+import * as path from "path";
+import * as readline from "readline";
+import { assertBotNamesAreValidUsernames } from "../seeds/runner/validateBotNames";
+import { loadGameDataDocuments } from "../seeds/runner/loadGameData";
 
-import * as admin from 'firebase-admin';
-import * as fs from 'fs';
-import * as path from 'path';
+type Environment = "sandbox" | "prod";
 
-const serviceAccount = require('../mystic-motors-sandbox-9b64d57718a2.json');
+const PROJECTS: Record<Environment, string> = {
+  sandbox: "mystic-motors-sandbox",
+  prod: "mystic-motors-prod",
+};
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  projectId: 'mystic-motors-sandbox'
-});
+const SERVICE_ACCOUNTS: Record<Environment, string> = {
+  sandbox: "mystic-motors-sandbox-9b64d57718a2.json",
+  prod: "mystic-motors-prod-83284e8c0f34.json",
+};
 
-const db = admin.firestore();
+const BOT_NAMES_PATH = "/GameData/v1/config/BotNames";
+const DEFAULT_DEPLOY_PASSWORD = "MysticDeploy2026";
+const CHUNK_SIZE = 400;
 
-async function seedCatalogs() {
-  console.log('🌱 Starting catalog seeding...\n');
+const readEnvironment = (): Environment => {
+  const raw = (process.argv[2] ?? "").trim().toLowerCase();
+  if (raw === "sandbox" || raw === "prod") {
+    return raw;
+  }
+  console.error("Usage: tsx tools/seedFirestore.ts <sandbox|prod> [--dry-run]");
+  process.exit(1);
+};
 
-  const seedsRoot = path.join(__dirname, '..', 'seeds', 'Atul-Final-Seeds');
-  const seedFile = path.join(seedsRoot, 'gameDataCatalogs.v3.normalized.json');
-  const botNamesSeedFile = path.join(seedsRoot, 'BotNamesConfig.json');
-  const botConfigSeedFile = path.join(seedsRoot, 'BotConfig.json');
-  const spellUpgradeCostsSeedFile = path.join(seedsRoot, 'SpellUpgradeCosts.json');
-  const carTuningConfigSeedFile = path.join(seedsRoot, 'CarTuningConfig.json');
+const ask = async (question: string): Promise<string> => {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+  const answer = await new Promise<string>((resolve) =>
+    rl.question(question, resolve),
+  );
+  rl.close();
+  return answer.trim();
+};
 
-  if (!fs.existsSync(seedFile)) {
-    console.error('❌ Seed file not found:', seedFile);
+const expectedProductionPassword = (): string => {
+  const envPath = path.join(__dirname, "..", ".env.mystic-motors-prod");
+  if (!fs.existsSync(envPath)) {
+    return DEFAULT_DEPLOY_PASSWORD;
+  }
+  const match = fs
+    .readFileSync(envPath, "utf-8")
+    .match(/^DEPLOY_PASSWORD=(.*)$/m);
+  return match?.[1]?.trim() || DEFAULT_DEPLOY_PASSWORD;
+};
+
+const confirmProduction = async (): Promise<void> => {
+  console.log("You are about to seed PRODUCTION game data.");
+  if ((await ask("Enter production password: ")) !== expectedProductionPassword()) {
+    console.error("Incorrect password. Seeding cancelled.");
     process.exit(1);
   }
+  if ((await ask("Type 'PRODUCTION' to confirm: ")) !== "PRODUCTION") {
+    console.error("Confirmation failed. Seeding cancelled.");
+    process.exit(1);
+  }
+};
 
-  const seedData = JSON.parse(fs.readFileSync(seedFile, 'utf-8'));
+const run = async (): Promise<void> => {
+  const environment = readEnvironment();
+  const dryRun = process.argv.includes("--dry-run");
+  const projectId = PROJECTS[environment];
 
-  // Add BotNamesConfig if it exists
-  if (fs.existsSync(botNamesSeedFile)) {
-    const botNamesDoc = JSON.parse(fs.readFileSync(botNamesSeedFile, 'utf-8'));
-    if (Array.isArray(botNamesDoc)) {
-      seedData.push(...botNamesDoc);
-    } else if (botNamesDoc && typeof botNamesDoc === 'object') {
-      seedData.push(botNamesDoc);
-    }
+  const documents = loadGameDataDocuments();
+
+  const botNames = documents.find((entry) => entry.path === BOT_NAMES_PATH);
+  if (botNames) {
+    assertBotNamesAreValidUsernames((botNames.data as { names?: unknown }).names);
   }
 
-  // Add BotConfig if it exists
-  if (fs.existsSync(botConfigSeedFile)) {
-    const botConfigDoc = JSON.parse(fs.readFileSync(botConfigSeedFile, 'utf-8'));
-    if (botConfigDoc && typeof botConfigDoc === 'object') {
-      seedData.push(botConfigDoc);
-    }
+  console.log(`Target: ${projectId}`);
+  console.log(`Documents in manifest: ${documents.length}`);
+  documents.forEach((entry) => console.log(`  ${entry.path}  <-  ${entry.file}`));
+
+  if (dryRun) {
+    console.log("\nDry run: nothing was written.");
+    return;
   }
 
-  // Add SpellUpgradeCosts if it exists
-  if (fs.existsSync(spellUpgradeCostsSeedFile)) {
-    const spellUpgradeCostsDoc = JSON.parse(fs.readFileSync(spellUpgradeCostsSeedFile, 'utf-8'));
-    if (spellUpgradeCostsDoc && typeof spellUpgradeCostsDoc === 'object') {
-      seedData.push(spellUpgradeCostsDoc);
-    }
+  if (environment === "prod") {
+    await confirmProduction();
   }
 
-  // Add CarTuningConfig if it exists
-  if (fs.existsSync(carTuningConfigSeedFile)) {
-    const carTuningConfigDoc = JSON.parse(fs.readFileSync(carTuningConfigSeedFile, 'utf-8'));
-    if (carTuningConfigDoc && typeof carTuningConfigDoc === 'object') {
-      seedData.push(carTuningConfigDoc);
-    }
+  const keyPath = path.join(__dirname, "..", SERVICE_ACCOUNTS[environment]);
+  if (!fs.existsSync(keyPath)) {
+    throw new Error(`Service account key not found at ${keyPath}`);
   }
 
-  console.log(`📦 Found ${seedData.length} catalogs to seed\n`);
+  admin.initializeApp({
+    credential: admin.credential.cert(
+      JSON.parse(fs.readFileSync(keyPath, "utf-8")),
+    ),
+    projectId,
+  });
 
-  for (const catalog of seedData) {
-    try {
-      console.log(`📦 Seeding ${catalog.path}...`);
-      await db.doc(catalog.path).set(catalog.data);
-      console.log(`✅ ${catalog.path} seeded successfully`);
-    } catch (error) {
-      console.error(`❌ Error seeding ${catalog.path}:`, error);
+  const db = admin.firestore();
+  for (let i = 0; i < documents.length; i += CHUNK_SIZE) {
+    const batch = db.batch();
+    for (const entry of documents.slice(i, i + CHUNK_SIZE)) {
+      batch.set(db.doc(entry.path), entry.data);
     }
+    await batch.commit();
   }
 
-  console.log('\n✅ All catalogs seeded successfully!\n');
-  process.exit(0);
-}
+  console.log(`\nSeeded ${documents.length} documents into ${projectId}.`);
+};
 
-seedCatalogs().catch((error) => {
-  console.error('❌ Seeding failed:', error);
+run().catch((error) => {
+  console.error("Seeding failed:", error);
   process.exit(1);
 });

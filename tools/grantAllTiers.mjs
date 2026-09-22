@@ -58,7 +58,7 @@ admin.initializeApp({
 const db = admin.firestore();
 
 // ──────────────────────────────────────────────────────────────────
-// Tier catalog (from seeds/Atul-Final-Seeds/TiersCatalog.json)
+// Tier catalog (from seeds/gamedata/catalogs/TiersCatalog.json)
 // ──────────────────────────────────────────────────────────────────
 
 const TIERS_CATALOG = {

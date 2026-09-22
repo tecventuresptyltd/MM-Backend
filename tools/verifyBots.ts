@@ -14,14 +14,14 @@ const repoRoot = path.join(__dirname, "..");
 const loadJson = <T>(relative: string): T =>
   JSON.parse(fs.readFileSync(path.join(repoRoot, relative), "utf8")) as T;
 
-const carsCatalog = loadJson<{ cars: CarCatalog }>("seeds/Atul-Final-Seeds/CarsCatalog.json").cars;
-const spellsCatalog = loadJson<{ spells: SpellsCatalog }>("seeds/Atul-Final-Seeds/SpellsCatalog.json").spells;
-const itemSkus = loadJson<{ skus: Record<string, ItemSku> }>("seeds/Atul-Final-Seeds/ItemSkusCatalog.json").skus;
-const botNamesConfig = loadJson<{ data: { names: string[] } }>("seeds/Atul-Final-Seeds/BotNamesConfig.json").data.names;
+const carsCatalog = loadJson<{ cars: CarCatalog }>("seeds/gamedata/catalogs/CarsCatalog.json").cars;
+const spellsCatalog = loadJson<{ spells: SpellsCatalog }>("seeds/gamedata/catalogs/SpellsCatalog.json").spells;
+const itemSkus = loadJson<{ skus: Record<string, ItemSku> }>("seeds/gamedata/catalogs/ItemSkusCatalog.json").skus;
+const botNamesConfig = loadJson<{ names: string[] }>("seeds/gamedata/config/BotNames.json").names;
 
 // Load actual seed data
-const tuningConfig = loadJson<{ data: CarTuningConfig }>("seeds/Atul-Final-Seeds/CarTuningConfig.json").data;
-const botConfig = loadJson<{ data: BotConfig }>("seeds/Atul-Final-Seeds/BotConfig.json").data;
+const tuningConfig = loadJson<CarTuningConfig>("seeds/gamedata/config/CarTuningConfig.json");
+const botConfig = loadJson<BotConfig>("seeds/gamedata/config/BotConfig.json");
 
 const resolveCarLevel = (car: { levels: Record<string, CarLevel> }, targetLevel: number): CarLevel => {
   const normalized = Math.max(0, Math.floor(Number.isFinite(targetLevel) ? targetLevel : 0));

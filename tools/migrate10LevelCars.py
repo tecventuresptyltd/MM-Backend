@@ -1,8 +1,8 @@
 import json
 import math
 
-INPUT_FILE = "seeds/Atul-Final-Seeds/CarsCatalog.json"
-OUTPUT_FILE = "seeds/Atul-Final-Seeds/CarsCatalog.json"
+INPUT_FILE = "seeds/gamedata/catalogs/CarsCatalog.json"
+OUTPUT_FILE = "seeds/gamedata/catalogs/CarsCatalog.json"
 
 # Progression configuration
 # Level 0 to 9 -> 10 levels total

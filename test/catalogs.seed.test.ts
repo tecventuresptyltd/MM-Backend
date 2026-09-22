@@ -1,26 +1,6 @@
-import { existsSync, readFileSync } from "fs";
-import path from "path";
+import { loadGameDataDocuments } from "../seeds/runner/loadGameData";
 
-const CATALOG_SEED_CANDIDATES = [
-  "../../seeds/gameDataCatalogs.v3.normalized.json",
-  "../../tools/out/gameDataCatalogs.v3.normalized.json",
-  "../../seeds/gameDataCatalogs.v3.json",
-  "../../seeds/gameDataCatalogs.fixed.json",
-] as const;
-
-const catalogsSeedPath = (() => {
-  for (const candidate of CATALOG_SEED_CANDIDATES) {
-    const resolved = path.resolve(__dirname, candidate);
-    if (existsSync(resolved)) {
-      return resolved;
-    }
-  }
-  throw new Error(
-    `Unable to locate GameData catalog seed. Tried: ${CATALOG_SEED_CANDIDATES.join(", ")}`,
-  );
-})();
-
-const catalogsSeed = JSON.parse(readFileSync(catalogsSeedPath, "utf8")) as Array<{
+const catalogsSeed = loadGameDataDocuments() as Array<{
   path: string;
   data: any;
 }>;

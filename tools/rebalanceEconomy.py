@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-Rebalance CarsCatalog.json with approved V2 economics plan.
+Rebalance catalogs/CarsCatalog.json with approved V2 economics plan.
 Updates: XP requirements, upgrade timers, and coin costs per tier.
 Preserves: displayName, class, basePrice, unlock, ability, version, i18n, carId, stats.
 """
 import json
 import math
 
-INPUT_FILE = "seeds/Atul-Final-Seeds/CarsCatalog.json"
-OUTPUT_FILE = "seeds/Atul-Final-Seeds/CarsCatalog.json"
+INPUT_FILE = "seeds/gamedata/catalogs/CarsCatalog.json"
+OUTPUT_FILE = "seeds/gamedata/catalogs/CarsCatalog.json"
 
 # ─── APPROVED XP REQUIREMENTS PER LEVEL (from implementation_plan.md) ───
 XP_BY_TIER = {

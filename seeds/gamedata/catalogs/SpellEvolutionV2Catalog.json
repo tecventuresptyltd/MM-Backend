@@ -1,0 +1,74 @@
+{
+  "version": "v6-spell-xp-rescale",
+  "updatedAt": 1747036800000,
+  "notes": "Spell XP earn rates scaled by 0.35x to match spellWeight=1.0 in MasteryConfig. 1 spell XP earned = 1 mastery XP. Per-race: 35xp base, 88xp win, 18xp cast. Caps scaled proportionally. Spell leveling pace unchanged.",
+  "unlockCost": {
+    "shards": 30,
+    "durationSeconds": 600,
+    "displayDuration": "10 minutes",
+    "description": "Initial unlock research for level-gated spells"
+  },
+  "maxSpellLevel": 5,
+  "researchCosts": {
+    "1": {
+      "targetLevel": 1,
+      "shards": 0,
+      "durationSeconds": 0,
+      "displayDuration": "Instant",
+      "description": "Spell unlocked"
+    },
+    "2": {
+      "targetLevel": 2,
+      "shards": 30,
+      "durationSeconds": 1800,
+      "displayDuration": "30 minutes"
+    },
+    "3": {
+      "targetLevel": 3,
+      "shards": 150,
+      "durationSeconds": 14400,
+      "displayDuration": "4 hours"
+    },
+    "4": {
+      "targetLevel": 4,
+      "shards": 600,
+      "durationSeconds": 43200,
+      "displayDuration": "12 hours"
+    },
+    "5": {
+      "targetLevel": 5,
+      "shards": 1500,
+      "durationSeconds": 86400,
+      "displayDuration": "24 hours"
+    }
+  },
+  "skipCost": {
+    "gemsPerHour": 20,
+    "minGems": 5,
+    "freeSkipThresholdSeconds": 600
+  },
+  "spellXpConfig": {
+    "xpPerRace": 35,
+    "xpPerWin": 88,
+    "xpPerSpellCast": 18,
+    "xpCapPerLevel": {
+      "1": 1400,
+      "2": 4200,
+      "3": 7000,
+      "4": 9450
+    }
+  },
+  "shardRewards": {
+    "baseScale": {
+      "minRank": 5,
+      "maxRank": 25
+    }
+  },
+  "masteryGates": {
+    "1": 0,
+    "2": 0,
+    "3": 5,
+    "4": 12,
+    "5": 25
+  }
+}

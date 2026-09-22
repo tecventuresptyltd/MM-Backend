@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 
-const carsCatalog = JSON.parse(fs.readFileSync('seeds/Atul-Final-Seeds/CarsCatalog.json', 'utf8'));
+const carsCatalog = JSON.parse(fs.readFileSync('seeds/gamedata/catalogs/CarsCatalog.json', 'utf8'));
 
 const EXPECTED_TIER_FLOORS: Record<number, number> = {
   1: 5.0,

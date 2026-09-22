@@ -1,6 +1,6 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
-import { REGION } from "../region.js";
+import { REGION } from "../shared/region.js";
 
 /**
  * Verify if the authenticated user is an admin.

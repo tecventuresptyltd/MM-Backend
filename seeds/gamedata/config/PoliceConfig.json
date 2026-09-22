@@ -1,0 +1,27 @@
+{
+  "version": "1.0.0",
+  "createdAt": 1780475200000,
+  "updatedAt": 1780475300000,
+  "values": {
+    "bustDamageFullSpeedKmh": 30,
+    "ramProbabilityScale": 0.8,
+    "roadblockDetectRange": 200,
+    "bustSlotRadius": 6.5,
+    "copMaxLatG": 1.3,
+    "shadowTargetGap": 15,
+    "tacticalTurnSpeed": 140,
+    "bustDrainRatePerSec": 0.1,
+    "strikeTokenCooldown": 4,
+    "baseTurnSpeed": 115,
+    "bustDamageZeroSpeedKmh": 60,
+    "difficultyMult": 1.5,
+    "missileSpeed": 50,
+    "missileDodgeAngle": 35,
+    "searchTriggerSeconds": 6,
+    "steeringNoiseScale": 0.05,
+    "contactRange": 60,
+    "heatDecaySeconds": 20,
+    "overtakeProbabilityScale": 0.9,
+    "maxFrontBlockDist": 30
+  }
+}

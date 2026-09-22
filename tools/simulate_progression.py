@@ -13,17 +13,17 @@ Key assumptions from user:
 """
 import json, math, os, random
 
-SEEDS = 'seeds/Atul-Final-Seeds'
+SEEDS = 'seeds/gamedata'
 def load(f):
     with open(os.path.join(SEEDS, f)) as fh: return json.load(fh)
 
-cars_cat = load('CarsCatalog.json')
-tiers_cat = load('TiersCatalog.json')
-evo_cat = load('CarEvolutionV2Catalog.json')
-spell_cat = load('SpellEvolutionV2Catalog.json')
-mastery_cat = load('MasteryConfig.json')
-crate_slots = load('CrateSlotsConfig.json')
-ranks_cat = load('RanksCatalog.json')
+cars_cat = load('catalogs/CarsCatalog.json')
+tiers_cat = load('catalogs/TiersCatalog.json')
+evo_cat = load('catalogs/CarEvolutionV2Catalog.json')
+spell_cat = load('catalogs/SpellEvolutionV2Catalog.json')
+mastery_cat = load('config/MasteryConfig.json')
+crate_slots = load('config/CrateSlotsConfig.json')
+ranks_cat = load('catalogs/RanksCatalog.json')
 
 FREE_SKIP = evo_cat['skipCost']['freeSkipThresholdSeconds']
 GEMS_PER_HR = evo_cat['skipCost']['gemsPerHour']

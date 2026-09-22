@@ -1,3 +1,5 @@
+import * as admin from "firebase-admin";
+
 export interface GemPack {
   iapId: string;
   displayName: string;
@@ -8,85 +10,67 @@ export interface GemPack {
   sortOrder: number;
 }
 
-type GemPackMap = Record<string, GemPack>;
+interface GemPacksCatalogDoc {
+  version?: string;
+  packs?: Record<string, GemPack>;
+}
 
-const GEM_PACKS: GemPackMap = {
-  iap_h72k9z3m: {
-    iapId: "iap_h72k9z3m",
-    displayName: "Sack of Gems",
-    gemAmount: 100,
-    priceUsd: 0.99,
-    bonusLabel: null,
-    productId: "com.tecventures.mysticmotors.gems.sack",
-    sortOrder: 1,
-  },
-  iap_q4n5w8v2: {
-    iapId: "iap_q4n5w8v2",
-    displayName: "Bag of Gems",
-    gemAmount: 550,
-    priceUsd: 4.99,
-    bonusLabel: "+10%",
-    productId: "com.tecventures.mysticmotors.gems.bag",
-    sortOrder: 2,
-  },
-  iap_b6v1x9c3: {
-    iapId: "iap_b6v1x9c3",
-    displayName: "Box of Gems",
-    gemAmount: 1200,
-    priceUsd: 9.99,
-    bonusLabel: "+20%",
-    productId: "com.tecventures.mysticmotors.gems.box",
-    sortOrder: 3,
-  },
-  iap_m2k8j4d5: {
-    iapId: "iap_m2k8j4d5",
-    displayName: "Chest of Gems",
-    gemAmount: 2600,
-    priceUsd: 19.99,
-    bonusLabel: "+30%",
-    productId: "com.tecventures.mysticmotors.gems.chest",
-    sortOrder: 4,
-  },
-  iap_z9c3v5b7: {
-    iapId: "iap_z9c3v5b7",
-    displayName: "Crate of Gems",
-    gemAmount: 7000,
-    priceUsd: 49.99,
-    bonusLabel: "+40%",
-    productId: "com.tecventures.mysticmotors.gems.crate",
-    sortOrder: 5,
-  },
-  iap_w4x6n8m2: {
-    iapId: "iap_w4x6n8m2",
-    displayName: "Vault of Gems",
-    gemAmount: 15000,
-    priceUsd: 99.99,
-    bonusLabel: "+50%",
-    productId: "com.tecventures.mysticmotors.gems.vault",
-    sortOrder: 6,
-  },
-  iap_r1t3y5u7: {
-    iapId: "iap_r1t3y5u7",
-    displayName: "Treasury of Gems",
-    gemAmount: 32000,
-    priceUsd: 199.99,
-    bonusLabel: "+60%",
-    productId: "com.tecventures.mysticmotors.gems.treasury",
-    sortOrder: 7,
-  },
+const CATALOG_PATH = "GameData/v1/catalogs/GemPacksCatalog";
+const CACHE_TTL_MS = 5 * 60 * 1000;
+
+let cache: { packs: GemPack[]; byProductId: Map<string, GemPack>; fetchedAt: number } | null = null;
+
+const isValidPack = (value: unknown): value is GemPack => {
+  const pack = value as GemPack;
+  return (
+    !!pack &&
+    typeof pack.iapId === "string" &&
+    typeof pack.productId === "string" &&
+    typeof pack.gemAmount === "number" &&
+    Number.isFinite(pack.gemAmount) &&
+    pack.gemAmount > 0
+  );
 };
 
-const gemPackByProductId = new Map<string, GemPack>();
-Object.values(GEM_PACKS).forEach((pack) => {
-  gemPackByProductId.set(pack.productId, pack);
-});
+const loadCatalog = async (): Promise<NonNullable<typeof cache>> => {
+  const now = Date.now();
+  if (cache && now - cache.fetchedAt < CACHE_TTL_MS) {
+    return cache;
+  }
 
-export const getGemPacksCatalog = (): GemPack[] => Object.values(GEM_PACKS);
+  const snapshot = await admin.firestore().doc(CATALOG_PATH).get();
+  if (!snapshot.exists) {
+    throw new Error(`GemPacksCatalog not found at /${CATALOG_PATH}`);
+  }
 
-export const findGemPackByProductId = (productId: string): GemPack | null => {
+  const doc = snapshot.data() as GemPacksCatalogDoc;
+  const packs = Object.values(doc.packs ?? {}).filter(isValidPack);
+  if (packs.length === 0) {
+    throw new Error(`GemPacksCatalog at /${CATALOG_PATH} contains no valid packs.`);
+  }
+
+  packs.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+
+  const byProductId = new Map<string, GemPack>();
+  packs.forEach((pack) => byProductId.set(pack.productId, pack));
+
+  cache = { packs, byProductId, fetchedAt: now };
+  return cache;
+};
+
+export const getGemPacksCatalog = async (): Promise<GemPack[]> =>
+  (await loadCatalog()).packs;
+
+export const findGemPackByProductId = async (
+  productId: string,
+): Promise<GemPack | null> => {
   const key = typeof productId === "string" ? productId.trim() : "";
   if (!key) {
     return null;
   }
-  return gemPackByProductId.get(key) ?? null;
+  return (await loadCatalog()).byProductId.get(key) ?? null;
+};
+
+export const __resetGemPacksCacheForTests = (): void => {
+  cache = null;
 };

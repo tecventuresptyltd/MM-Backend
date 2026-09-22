@@ -1,6 +1,6 @@
 import { admin } from "./setup";
 import { wipeFirestore } from "./helpers/cleanup";
-import { seedGameDataCatalogs } from "../seeds/seedGameData";
+import { seedGameDataCatalogs } from "../seeds/runner/seedGameData";
 
 describe("GameData catalog seeding", () => {
   beforeEach(async () => {

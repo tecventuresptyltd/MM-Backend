@@ -38,7 +38,9 @@ npm run emu:test             # jest only, against already-running emulators (127
 npm run emu:test -- test/race.prepareRace.test.ts    # single test file
 npm run emu:test -- -t "trophy delta"                # single test by name
 npm run test:v2              # v2 suite only (USE_ITEMID_V2=true, test/v2/)
-npm run tools:seed-sandbox   # seed GameData catalogs into sandbox from seeds/Atul-Final-Seeds/
+npm run tools:seed-check     # list what would be seeded, write nothing
+npm run tools:seed-sandbox   # seed GameData into sandbox from seeds/gamedata/
+npm run tools:seed-production # seed GameData into prod (password + typed confirmation)
 npm run deploy:sandbox       # safe deploy script (bash)
 npm run deploy:production    # safe deploy script (bash, owner-only)
 ```
@@ -67,7 +69,7 @@ src/            deployed function source (see src/index.ts, the deploy manifest)
 config/         firestore.prod.rules, firestore.sandbox.rules, firestore.indexes.json,
                 database.rules.json - referenced by path from the firebase*.json at root
 test/           jest suites (emulator-backed); test/v2/ is the v2 suite
-seeds/          catalog seed JSON (seeds/Atul-Final-Seeds/) + seed runners
+seeds/          seeds/gamedata/{catalogs,config}/*.json + manifest.json (path -> file) + loader/runner
 tools/          ops scripts run by hand (tsx tools/<script>.ts) and the deploy .sh helpers
 tools/scripts/  admin/one-off Firestore scripts (set-game-admin, prod admin setup, ...)
 tools/force-updated/  manual backfill jobs: npx tsx "tools/force-updated/run.ts" <job>
@@ -101,7 +103,7 @@ Receipts live at `/Players/{uid}/Receipts/{opId}`. `runReadThenWrite` ([src/core
 
 ### Config / catalog layer
 
-All game balance data lives in Firestore under `/GameData/v1/catalogs/*` and `/GameData/v1/config/*` as singleton documents, seeded from `seeds/Atul-Final-Seeds/*.json` (`gameDataCatalogs.v3.normalized.json` is the consolidated file; the individual JSONs are layered on top). Never hardcode balance values — read them through the cached loaders:
+All game balance data lives in Firestore under `/GameData/v1/catalogs/*` and `/GameData/v1/config/*` as singleton documents, seeded from `seeds/gamedata/`, where each document is one file under `catalogs/` or `config/` and `manifest.json` maps every Firestore path to its file. One file per document, no duplicates: edit the file, run the seeder. Never hardcode balance values — read them through the cached loaders:
 
 - [src/core/config.ts](src/core/config.ts) / [src/core/catalog.ts](src/core/catalog.ts) — v1/v3 catalogs (cars, spells, items, SKUs, crates, offers, ranks, XP curve, bot config), 60s in-memory TTL.
 - [src/core/configV2.ts](src/core/configV2.ts) — v2 catalogs (tiers, evolution, fuel, crate slots, mastery, stat budgets).

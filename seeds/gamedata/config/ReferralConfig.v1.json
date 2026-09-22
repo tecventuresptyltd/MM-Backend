@@ -1,0 +1,44 @@
+{
+  "codeLength": 8,
+  "alphabet": "0123456789ABCDEFGHJKMNPQRSTVWXYZ",
+  "maxClaimsPerInviter": 9999,
+  "inviteeRewards": [
+    {
+      "skuId": "sku_rjwe5tdtc4",
+      "qty": 1
+    }
+  ],
+  "blockCircularReferral": true,
+  "updatedAt": 0,
+  "inviterRewards": [
+    {
+      "rewards": [
+        {
+          "skuId": "sku_2xw1r4bah7",
+          "qty": 1
+        }
+      ],
+      "threshold": 1
+    },
+    {
+      "rewards": [
+        {
+          "skuId": "sku_6ecskp386c",
+          "qty": 1
+        }
+      ],
+      "threshold": 5
+    },
+    {
+      "threshold": 10,
+      "rewards": [
+        {
+          "skuId": "sku_k56ccnthpy",
+          "qty": 1
+        }
+      ]
+    }
+  ],
+  "maxClaimPerInvitee": 1,
+  "blockSelfReferral": true
+}

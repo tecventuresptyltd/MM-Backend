@@ -23,7 +23,7 @@ const getApp = (): express.Express => {
     // time a request arrives, index.ts has finished evaluating.
     /* eslint-disable @typescript-eslint/no-var-requires */
     const { createApp } = require("./app.js") as typeof import("./app.js");
-    const manifest = require("../index.js") as Record<string, unknown>;
+    const manifest = require("../callables.js") as Record<string, unknown>;
     cachedApp = createApp(manifest);
   }
   return cachedApp;

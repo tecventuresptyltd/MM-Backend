@@ -8,7 +8,7 @@ if (process.env.USE_ITEMID_V2 === undefined) {
 
 import fetch from "node-fetch";
 import * as admin from "firebase-admin";
-import { seedGameDataCatalogs } from "../../seeds/seedGameData";
+import { seedGameDataCatalogs } from "../../seeds/runner/seedGameData";
 import { loadStarterRewards } from "../../src/shared/starterRewards";
 import { loadStarterSpellIds } from "../../src/shared/catalogHelpers";
 import { initializeUserIfNeeded } from "../../src/shared/initializeUser";

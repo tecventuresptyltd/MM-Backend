@@ -1,8 +1,14 @@
 import * as admin from "firebase-admin";
+import * as logger from "firebase-functions/logger";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 
 import { callableOptions } from "../shared/callableOptions.js";
 import { findGemPackByProductId } from "../game-data/catalogs/GemPacksCatalog.js";
+import {
+  ReceiptRejected,
+  VerifierNotConfigured,
+  verifyReceipt,
+} from "./receiptVerification.js";
 
 type VerifyIapRequest = {
   platform: unknown;
@@ -21,24 +27,9 @@ const normalizePlatform = (value: unknown): "ios" | "android" => {
   return normalized;
 };
 
-const extractTransactionId = (receipt: unknown): string => {
-  if (typeof receipt === "string") {
-    const trimmed = receipt.trim();
-    if (!trimmed) {
-      throw new HttpsError("invalid-argument", "receipt transactionId is required.");
-    }
-    return trimmed;
-  }
-  if (receipt && typeof receipt === "object") {
-    const transactionId = (receipt as Record<string, unknown>).transactionId;
-    if (typeof transactionId === "string" && transactionId.trim().length > 0) {
-      return transactionId.trim();
-    }
-  }
-  throw new HttpsError("invalid-argument", "receipt must include transactionId.");
-};
-
-export const verifyIapPurchase = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
+export const verifyIapPurchase = onCall(
+  callableOptions({ cpu: 1, concurrency: 80 }),
+  async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "Authentication required.");
@@ -51,24 +42,55 @@ export const verifyIapPurchase = onCall(callableOptions({ cpu: 1, concurrency: 8
     throw new HttpsError("invalid-argument", "productId must be provided.");
   }
 
-  const pack = findGemPackByProductId(productId.trim());
+  const pack = await findGemPackByProductId(productId.trim());
   if (!pack) {
     throw new HttpsError("not-found", "Unknown productId.");
   }
 
-  const transactionId = extractTransactionId(receipt);
+  let verified;
+  try {
+    verified = await verifyReceipt(normalizedPlatform, receipt, pack.productId);
+  } catch (error) {
+    if (error instanceof VerifierNotConfigured) {
+      logger.error("IAP verification is not configured", {
+        platform: normalizedPlatform,
+        message: (error as Error).message,
+      });
+      throw new HttpsError(
+        "failed-precondition",
+        "Purchases cannot be verified right now. Please try again later.",
+      );
+    }
+    if (error instanceof ReceiptRejected) {
+      logger.warn("IAP receipt rejected", {
+        uid,
+        platform: normalizedPlatform,
+        productId: pack.productId,
+        message: (error as Error).message,
+      });
+      throw new HttpsError("permission-denied", "Purchase could not be verified.");
+    }
+    throw error;
+  }
+
+  const transactionId = verified.transactionId;
   const db = admin.firestore();
   const economyRef = db.doc(`Players/${uid}/Economy/Stats`);
   const receiptRef = db.doc(`Players/${uid}/Receipts/iap.${transactionId}`);
+  const ledgerRef = db.doc(`IapTransactions/${normalizedPlatform}.${transactionId}`);
 
   await db.runTransaction(async (transaction) => {
-    const [economySnap, receiptSnap] = await Promise.all([
+    const [economySnap, receiptSnap, ledgerSnap] = await Promise.all([
       transaction.get(economyRef),
       transaction.get(receiptRef),
+      transaction.get(ledgerRef),
     ]);
 
     if (receiptSnap.exists) {
       throw new HttpsError("already-exists", "Receipt already processed.");
+    }
+    if (ledgerSnap.exists) {
+      throw new HttpsError("already-exists", "Receipt already redeemed.");
     }
     if (!economySnap.exists) {
       throw new HttpsError("failed-precondition", "Player economy data missing.");
@@ -87,7 +109,16 @@ export const verifyIapPurchase = onCall(callableOptions({ cpu: 1, concurrency: 8
       iapId: pack.iapId,
       gemAmount: pack.gemAmount,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      payload: receipt ?? null,
+      verified: true,
+    });
+
+    transaction.set(ledgerRef, {
+      uid,
+      platform: normalizedPlatform,
+      productId: pack.productId,
+      transactionId,
+      gemAmount: pack.gemAmount,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
   });
 

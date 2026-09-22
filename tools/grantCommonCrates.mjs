@@ -37,7 +37,7 @@ if (!uid) {
 }
 
 // ──────────────────────────────────────────────────────────────────
-// Common Crate + slot config (from seeds/Atul-Final-Seeds)
+// Common Crate + slot config (from seeds/gamedata)
 // ──────────────────────────────────────────────────────────────────
 
 const COMMON_CRATE = {

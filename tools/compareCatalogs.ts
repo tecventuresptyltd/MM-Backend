@@ -1,9 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-const seedsDir = path.join(__dirname, '..', 'seeds', 'Atul-Final-Seeds');
-const carsCatalogPath = path.join(seedsDir, 'CarsCatalog.json');
-const tiersCatalogPath = path.join(seedsDir, 'TiersCatalog.json');
+const seedsDir = path.join(__dirname, '..', 'seeds', 'gamedata');
+const carsCatalogPath = path.join(seedsDir, 'catalogs/CarsCatalog.json');
+const tiersCatalogPath = path.join(seedsDir, 'catalogs/TiersCatalog.json');
 
 const carsCatalog = JSON.parse(fs.readFileSync(carsCatalogPath, 'utf8'));
 const tiersCatalog = JSON.parse(fs.readFileSync(tiersCatalogPath, 'utf8'));

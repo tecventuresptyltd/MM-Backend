@@ -1,6 +1,6 @@
 import { admin } from "./setup";
 import { wipeFirestore } from "./helpers/cleanup";
-import { seedGameDataCatalogs } from "../seeds/seedGameData";
+import { seedGameDataCatalogs } from "../seeds/runner/seedGameData";
 import { __resetCachedFlagsForTests } from "../src/core/flags";
 
 describe("Unified catalog seed shape", () => {

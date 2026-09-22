@@ -1,0 +1,105 @@
+{
+  "version": "gamedata.v1",
+  "documents": [
+    {
+      "path": "/GameData/v1/catalogs/CarEvolutionV2Catalog",
+      "file": "catalogs/CarEvolutionV2Catalog.json"
+    },
+    {
+      "path": "/GameData/v1/catalogs/CarsCatalog",
+      "file": "catalogs/CarsCatalog.json"
+    },
+    {
+      "path": "/GameData/v1/catalogs/CratesCatalog",
+      "file": "catalogs/CratesCatalog.json"
+    },
+    {
+      "path": "/GameData/v1/catalogs/GemPacksCatalog",
+      "file": "catalogs/GemPacksCatalog.json"
+    },
+    {
+      "path": "/GameData/v1/catalogs/ItemsCatalog",
+      "file": "catalogs/ItemsCatalog.json"
+    },
+    {
+      "path": "/GameData/v1/catalogs/ItemsIndex",
+      "file": "catalogs/ItemsIndex.json"
+    },
+    {
+      "path": "/GameData/v1/catalogs/ItemSkusCatalog",
+      "file": "catalogs/ItemSkusCatalog.json"
+    },
+    {
+      "path": "/GameData/v1/catalogs/OffersCatalog",
+      "file": "catalogs/OffersCatalog.json"
+    },
+    {
+      "path": "/GameData/v1/catalogs/RanksCatalog",
+      "file": "catalogs/RanksCatalog.json"
+    },
+    {
+      "path": "/GameData/v1/catalogs/SpellEvolutionV2Catalog",
+      "file": "catalogs/SpellEvolutionV2Catalog.json"
+    },
+    {
+      "path": "/GameData/v1/catalogs/SpellsCatalog",
+      "file": "catalogs/SpellsCatalog.json"
+    },
+    {
+      "path": "/GameData/v1/catalogs/TiersCatalog",
+      "file": "catalogs/TiersCatalog.json"
+    },
+    {
+      "path": "/GameData/v1/catalogs/XpCurve",
+      "file": "catalogs/XpCurve.json"
+    },
+    {
+      "path": "/GameData/v1/config/BotConfig",
+      "file": "config/BotConfig.json"
+    },
+    {
+      "path": "/GameData/v1/config/BotNames",
+      "file": "config/BotNames.json"
+    },
+    {
+      "path": "/GameData/v1/config/CarStatsBudgetConfig",
+      "file": "config/CarStatsBudgetConfig.json"
+    },
+    {
+      "path": "/GameData/v1/config/CarTuningConfig",
+      "file": "config/CarTuningConfig.json"
+    },
+    {
+      "path": "/GameData/v1/config/CrateRewardsConfig",
+      "file": "config/CrateRewardsConfig.json"
+    },
+    {
+      "path": "/GameData/v1/config/CrateSlotsConfig",
+      "file": "config/CrateSlotsConfig.json"
+    },
+    {
+      "path": "/GameData/v1/config/DailyRewardsConfig",
+      "file": "config/DailyRewardsConfig.json"
+    },
+    {
+      "path": "/GameData/v1/config/FuelConfig",
+      "file": "config/FuelConfig.json"
+    },
+    {
+      "path": "/GameData/v1/config/MasteryConfig",
+      "file": "config/MasteryConfig.json"
+    },
+    {
+      "path": "/GameData/v1/config/PlayerSlotsConfig",
+      "file": "config/PlayerSlotsConfig.json"
+    },
+    {
+      "path": "/GameData/v1/config/PoliceConfig",
+      "file": "config/PoliceConfig.json"
+    },
+    {
+      "path": "/GameData/v1/config/ReferralConfig.v1",
+      "file": "config/ReferralConfig.v1.json"
+    }
+  ]
+}

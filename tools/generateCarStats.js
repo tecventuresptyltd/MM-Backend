@@ -1,7 +1,7 @@
 const fs = require('fs');
 
-const carsCatalogPath = 'seeds/Atul-Final-Seeds/CarsCatalog.json';
-const budgetConfigPath = 'seeds/Atul-Final-Seeds/CarStatsBudgetConfig.json';
+const carsCatalogPath = 'seeds/gamedata/catalogs/CarsCatalog.json';
+const budgetConfigPath = 'seeds/gamedata/config/CarStatsBudgetConfig.json';
 
 const carsData = JSON.parse(fs.readFileSync(carsCatalogPath, 'utf8'));
 const budgetConfig = JSON.parse(fs.readFileSync(budgetConfigPath, 'utf8'));
@@ -81,4 +81,4 @@ for (const [id, mapping] of Object.entries(CAR_MAPPING)) {
 }
 
 fs.writeFileSync(carsCatalogPath, JSON.stringify(carsData, null, 4));
-console.log('✅ CarsCatalog.json updated dynamically from CarStatsBudgetConfig.json!');
+console.log('✅ catalogs/CarsCatalog.json updated dynamically from config/CarStatsBudgetConfig.json!');

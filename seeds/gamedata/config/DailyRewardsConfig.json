@@ -1,0 +1,107 @@
+{
+  "version": "v2-daily-rewards-7d-r2",
+  "notes": "7-day weekly daily-login ladder. Player-anchored (each player runs their own 7 slots from their first claim) and loops back to slot 1 after slot 7. Day boundary is a fixed UTC rollover computed server-side, so device clock/timezone changes have no effect. graceDays=1 forgives a single missed day; two or more consecutive missed days reset the ladder to slot 1. Currency rewards (coins/gems) carry no skuId - they credit Economy/Stats directly. Item/crate rewards must reference a real skuId from ItemSkusCatalog. BALANCE (r2): weighted toward utility items (speed-ups/boosters) that drive the V2 timer loops, light on raw gems which cannibalise the shop. Perfect week pays ~451 gems of hard value plus 4,000 coins. Day 7 is ~50% of the week's value so the milestone is worth chasing. Do not use Shards SKUs here - they are category 'currency' with metadata.currency 'spellShards' and would land as inert inventory docs rather than crediting the shard balance.",
+  "cycleLength": 7,
+  "loopCycle": true,
+  "resetOffsetMinutes": 0,
+  "graceDays": 1,
+  "slots": {
+    "1": {
+      "day": 1,
+      "isMilestone": false,
+      "rewards": [
+        {
+          "kind": "coins",
+          "quantity": 1000,
+          "displayName": "Sack of Coins"
+        }
+      ]
+    },
+    "2": {
+      "day": 2,
+      "isMilestone": false,
+      "rewards": [
+        {
+          "kind": "item",
+          "skuId": "sku_spd15m_j8k2",
+          "quantity": 2,
+          "displayName": "15m Speed Up"
+        }
+      ]
+    },
+    "3": {
+      "day": 3,
+      "isMilestone": false,
+      "rewards": [
+        {
+          "kind": "gems",
+          "quantity": 30,
+          "displayName": "Gems"
+        }
+      ]
+    },
+    "4": {
+      "day": 4,
+      "isMilestone": false,
+      "rewards": [
+        {
+          "kind": "item",
+          "skuId": "sku_60fdgqkm",
+          "quantity": 1,
+          "displayName": "6H XP Booster"
+        }
+      ]
+    },
+    "5": {
+      "day": 5,
+      "isMilestone": false,
+      "rewards": [
+        {
+          "kind": "coins",
+          "quantity": 3000,
+          "displayName": "Chest of Coins"
+        },
+        {
+          "kind": "item",
+          "skuId": "sku_spd1h_m5t6",
+          "quantity": 2,
+          "displayName": "1H Speed Up"
+        }
+      ]
+    },
+    "6": {
+      "day": 6,
+      "isMilestone": false,
+      "rewards": [
+        {
+          "kind": "item",
+          "skuId": "sku_eqzbetwm",
+          "quantity": 1,
+          "displayName": "6H Coin Booster"
+        }
+      ]
+    },
+    "7": {
+      "day": 7,
+      "isMilestone": true,
+      "rewards": [
+        {
+          "kind": "crate",
+          "skuId": "sku_72wnqwtfmx",
+          "quantity": 1,
+          "displayName": "Rare Crate"
+        },
+        {
+          "kind": "gems",
+          "quantity": 75,
+          "displayName": "Gems"
+        }
+      ]
+    }
+  },
+  "_uploadedBy": "seedV2Catalogs.mjs",
+  "_uploadedAt": {
+    "_seconds": 1786618421,
+    "_nanoseconds": 379000000
+  }
+}

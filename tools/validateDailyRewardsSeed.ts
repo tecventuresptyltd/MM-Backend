@@ -1,5 +1,5 @@
 /**
- * Validates seeds/Atul-Final-Seeds/DailyRewardsConfig.json before it is seeded.
+ * Validates seeds/gamedata/config/DailyRewardsConfig.json before it is seeded.
  *
  * Catches the failure mode that would otherwise only show up as a runtime error
  * on a player's claim: an item/crate reward pointing at a skuId that does not
@@ -15,7 +15,7 @@ import * as path from "path";
 
 import { normaliseRewardLines } from "../src/shared/rewardLines.js";
 
-const seedDir = path.join(__dirname, "..", "seeds", "Atul-Final-Seeds");
+const seedDir = path.join(__dirname, "..", "seeds", "gamedata");
 
 interface CatalogSku {
   skuId?: string;
@@ -33,8 +33,8 @@ const readJson = (file: string): any => {
   return JSON.parse(fs.readFileSync(full, "utf8"));
 };
 
-const config = readJson("DailyRewardsConfig.json");
-const catalog = readJson("ItemSkusCatalog.json");
+const config = readJson("config/DailyRewardsConfig.json");
+const catalog = readJson("catalogs/ItemSkusCatalog.json");
 
 const rawSkus = catalog.skus ?? catalog;
 const skuList: CatalogSku[] = Array.isArray(rawSkus) ? rawSkus : Object.values(rawSkus);

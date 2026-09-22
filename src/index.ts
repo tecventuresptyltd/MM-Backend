@@ -1,7 +1,5 @@
 import * as admin from "firebase-admin";
-import { callableOptions } from "./shared/callableOptions.js";
 import { setGlobalOptions } from "firebase-functions/v2";
-import { onCall } from "firebase-functions/v2/https";
 import { REGION } from "./shared/region";
 
 // Default to cold-start (minInstances = 0). Override via MIN_INSTANCES env when deploying.
@@ -14,82 +12,26 @@ setGlobalOptions({
 // Initialize Firebase Admin SDK
 admin.initializeApp();
 
-// Simple ping function for health checks
-export const ping = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async () => {
-  return { status: "ok", timestamp: new Date().toISOString() };
-});
+// Every player-facing callable is served by this one gateway. The callables
+// themselves live in src/callables.ts and are no longer deployed individually.
+export { gameApi } from "./server/gameApi.js";
 
-export const testEnqueueTask = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async () => {
-  const { getFunctions } = require("firebase-admin/functions");
-  const queue = getFunctions().taskQueue("completeUpgradeTask");
-  try {
-    await queue.enqueue({ test: true }, { scheduleTime: new Date(Date.now() + 10000) });
-    return { success: true, message: "Enqueued successfully" };
-  } catch (error: any) {
-    return { success: false, error: error.message, code: error.code, stack: error.stack };
-  }
-});
-
-export * from "./auth";
-// Export functions from other modules
-export { exchangeGemsForCoins, claimRankUpReward, getLeaderboard } from "./economy";
-export { getGemConversionPreview } from "./economy/preview.js";
-export { adjustCoins } from "./economy/coins";
-export { adjustGems } from "./economy/gems";
-export { grantXP } from "./economy/xp";
-export { purchaseShopSku, activateBooster, purchaseOffer, getDailyOffers, verifyIapPurchase, offerTransitionJob, offerSafetyNetJob, runOfferSafetyNet } from "./shop";
-export { purchaseCar, upgradeCar, equipCosmetic, purchaseCrateItem, grantItem } from "./garage";
-export { openCrate } from "./crates";
-export { upgradeSpell, setLoadout, equipCosmetics, setSpellDeck, selectActiveSpellDeck } from "./spells";
-export { startRace, generateBotLoadout, recordRaceResult, claimDoubleReward, getRaceResult } from "./race";
-export { prepareRace } from "./race/prepareRace";
-export { createLobby, joinLobby, leaveLobby, kickPlayer, submitRelayJoinCode, toggleReadyState, promoteToHost, sendLobbyChatMessage } from "./race/lobbyService";
-export { requestDedicatedServer, serverHeartbeat, serverRecordRaceResult, serverUpdateRaceState, serverSelfRegister } from "./race/dedicatedServer";
-export { getCarStats } from "./race/carStats";
-export { joinOpenWorldLobby, leaveOpenWorldLobby, freeRoamServerRegister, freeRoamServerHeartbeat, openWorldLobbyReaper } from "./race/openWorldLobby";
-export { submitFeedback } from "./feedback";
-export * from "./clan";
-export { getMaintenanceStatus, claimMaintenanceReward } from "./game-systems/maintenance";
-export { acknowledgeMaintenanceRewards } from "./game-systems/acknowledgeMaintenance";
-export { setMaintenanceMode } from "./game-systems/adminMaintenance";
-export { setMinimumVersion, getMinimumVersion } from "./game-systems/adminVersion";
-export { searchGameUsers, setGameAdminStatus, getGameAdmins, adminPinPlayerLevel } from "./game-systems/adminGameUsers";
-export { healthcheck } from "./health/healthcheck";
-export * from "./profile";
-export {
-  referralGetMyReferralCode,
-  referralClaimReferralCode,
-  referralDebugLookup,
-  acknowledgeReferralRewards,
-} from "./referral";
-
-export {
-  getGlobalLeaderboard,
-  getMyLeaderboardRank,
-  searchPlayer,
-  sendFriendRequest,
-  sendFriendRequestByUid,
-  acceptFriendRequest,
-  rejectFriendRequest,
-  getFriends,
-  getFriendRequests,
-  cancelFriendRequest,
-  viewPlayerProfile,
-  removeFriends,
-  leaderboards,
-} from "./Socials";
-export { getServerTime } from "./time/serverTime";
-export {
-  refreshGlobalLeaderboardNow,
-  refreshClanLeaderboardNow,
-} from "./tools/leaderboardTriggers.js";
+// Scheduled jobs, task queues and database triggers are invoked by Firebase
+// itself, so they cannot be routed through the gateway.
+export { offerTransitionJob, offerSafetyNetJob } from "./shop";
+export { openWorldLobbyReaper } from "./race/openWorldLobby";
 export { activateScheduledMaintenance } from "./game-systems/maintenanceActivator";
+export { recommendedClansPoolJob } from "./clan/recommendations.js";
+export { cleanupChatHistory, onPresenceUpdate } from "./clan/chat.js";
+export { onPlayerProfileUpdate } from "./clan/onPlayerProfileUpdate.js";
+export { clanLeaderboardJob } from "./clan/leaderboardJob.js";
+export { clanMemberSyncJob } from "./clan/memberSyncJob.js";
+export { leaderboards } from "./Socials";
+export { upgradeCompletionJob, completeUpgradeTask } from "./upgrades";
 
-// Analytics Dashboard Functions
+// Plain HTTP endpoints. The admin dashboard calls these directly.
+export { healthcheck } from "./health/healthcheck";
 export {
-  analyticsOverview,
-  analyticsGrowth,
-  analyticsPlatforms,
   analyticsRevenue,
   analyticsRevenueByProduct,
   analyticsRevenueByCountry,
@@ -100,64 +42,13 @@ export {
   analyticsDevices,
   analyticsSessions,
 } from "./analytics";
-export { testAnalytics } from "./analyticsTest";
+export { testAnalytics } from "./analytics/analyticsTest";
 
-// Admin Dashboard Authentication (bypasses App Check)
+// Callables the admin dashboard invokes by name rather than through the gateway.
+export { analyticsOverview, analyticsGrowth, analyticsPlatforms } from "./analytics";
 export { verifyAdminStatus } from "./admin/verifyAdminStatus";
 export { getAdminMaintenanceStatus, getMaintenanceHistory } from "./admin/adminMaintenance";
 export { getAdminVersionStatus, getVersionHistory } from "./admin/adminVersion";
-
-// =============================================================================
-// V2 FUNCTIONS - Parallel Backend for New Game Design
-// =============================================================================
-
-// V2 Garage: Tier Licenses, Car Evolution (Pit Crew), Fuel System
-export {
-  purchaseTierLicenseV2,
-  getTierCatalogV2,
-  startCarEvolutionV2,
-  skipCarEvolutionV2,
-  getPitCrewStatusV2,
-  refuelWithAdV2,
-  useFuelCellV2,
-  getCarFuelStatusV2,
-} from "./garageV2";
-
-// V2 Spells: Library (Spell Research)
-export {
-  startSpellResearchV2,
-  skipSpellResearchV2,
-  getLibraryStatusV2,
-  setSpellDeckV2,
-  selectActiveSpellDeckV2,
-} from "./spellsV2";
-
-// V2 Crates: Slot-based Unlock System
-export {
-  receiveCrateV2,
-  startCrateUnlockV2,
-  claimCrateRewardV2,
-  skipCrateUnlockV2,
-  getCrateSlotsStatusV2,
-} from "./cratesV2";
-
-// V2 Speedups: Use speedup items to reduce queue timers
-export {
-  useSpeedupV2,
-} from "./speedups";
-
-// V2 Upgrade Completion: Auto-complete timer-based upgrades
-export {
-  upgradeCompletionJob,
-  completeUpgradeTask,
-} from "./upgrades";
-
-// Daily Rewards: Streak-based daily login rewards
-export {
-  getDailyRewardStatus,
-  claimDailyReward,
-} from "./dailyRewards";
-
-// Consolidated callable router (see src/server/). Additive: every function above
-// still deploys exactly as before.
-export { gameApi } from "./server/gameApi.js";
+export { setMaintenanceMode } from "./game-systems/adminMaintenance";
+export { setMinimumVersion } from "./game-systems/adminVersion";
+export { searchGameUsers, setGameAdminStatus, getGameAdmins } from "./game-systems/adminGameUsers";

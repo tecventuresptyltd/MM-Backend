@@ -810,7 +810,9 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
 
         carXpResult = {
           carLevel: starLevel,
-          displayXp: (xpCap > 0 && xpCap !== Infinity) ? `${Math.floor(finalXpForDb)}xp / ${Math.floor(xpCap)}xp` : (xpCap <= 0 ? "Max" : `${Math.floor(finalXpForDb)}xp`),
+          displayXp: (xpCap > 0 && xpCap !== Infinity)
+            ? `${Math.floor(finalXpForDb)}xp / ${Math.floor(xpCap)}xp`
+            : `${Math.floor(finalXpForDb)}xp / ${Math.max(1, Math.floor(finalXpForDb))}xp`,
           xpAwarded: finalXpForDb - currentXp,
           isXpCapped: finalIsCapped,
         };

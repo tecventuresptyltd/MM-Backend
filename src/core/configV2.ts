@@ -113,7 +113,8 @@ export async function getStarterTier(): Promise<TierDefinition | null> {
  */
 export async function getXpCapForCar(carId: string, starLevel: number): Promise<number> {
     const catalog = await getCarsCatalog();
-    const levelData = catalog.cars?.[carId]?.levels?.[String(starLevel)];
+    const levels = catalog.cars?.[carId]?.levels;
+    const levelData = levels?.[String(starLevel)] ?? levels?.[String(getHighestDefinedLevel(levels, starLevel))];
     if (!levelData) {
         console.warn(`[V2Config] No level data for car ${carId} at star ${starLevel}, falling back to Infinity`);
         return Infinity;
@@ -121,6 +122,16 @@ export async function getXpCapForCar(carId: string, starLevel: number): Promise<
     const xpToNext = levelData.xpToNext;
     // xpToNext = 0 means max level — cap XP immediately
     return xpToNext > 0 ? xpToNext : 0;
+}
+
+function getHighestDefinedLevel(levels: Record<string, unknown> | undefined, starLevel: number): number {
+    if (!levels) return 0;
+    let highest = 0;
+    for (const key of Object.keys(levels)) {
+        const level = Number(key);
+        if (Number.isFinite(level) && level <= starLevel && level > highest) highest = level;
+    }
+    return highest;
 }
 
 /**

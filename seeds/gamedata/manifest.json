@@ -86,6 +86,10 @@
       "file": "config/FuelConfig.json"
     },
     {
+      "path": "/GameData/v1/config/IapConfig",
+      "file": "config/IapConfig.json"
+    },
+    {
       "path": "/GameData/v1/config/MasteryConfig",
       "file": "config/MasteryConfig.json"
     },

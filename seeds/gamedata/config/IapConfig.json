@@ -1,0 +1,5 @@
+{
+  "version": "v1-iap",
+  "notes": "verifyReceipts false grants gems on the transaction id alone. Set true to verify every purchase with Google Play and Apple. Requires the Play Console service-account permission and APPLE_SHARED_SECRET, and the secrets declaration re-added to iap.ts and gameApi.ts. Takes effect within 60 seconds, no deploy needed.",
+  "verifyReceipts": false
+}

@@ -7,6 +7,10 @@ import { getOffersCatalog, getRanksCatalog, resolveSkuOrThrow } from "../core/co
 import { checkIdempotency, createInProgressReceipt, completeOperation } from "../core/idempotency.js";
 import { grantInventoryRewards, InventoryGrantResult } from "../shared/inventoryAwards.js";
 import { calculateGemConversionRate } from "./rates.js";
+import { GameMode, getTrophyFields, resolveGameMode } from "../shared/gamemode.js";
+
+const rankRewardClaimKey = (mode: GameMode, rankId: string): string =>
+  mode === "RANKED" ? rankId : `${mode.toLowerCase()}_${rankId}`;
 
 export const offers = onCall(
   { region: "us-central1" },
@@ -99,13 +103,19 @@ export const claimRankUpReward = onCall(
       throw new HttpsError("unauthenticated", "User is not authenticated.");
     }
 
-    const { opId, rankId } = data as { opId: string; rankId: string };
+    const { opId, rankId, gamemode } = data as { opId: string; rankId: string; gamemode?: string };
     if (typeof opId !== "string") {
       throw new HttpsError("invalid-argument", "opId must be a string.");
     }
     if (typeof rankId !== "string") {
       throw new HttpsError("invalid-argument", "rankId must be a string.");
     }
+    const mode = resolveGameMode(gamemode);
+    if (mode === "UNRANKED") {
+      throw new HttpsError("invalid-argument", "Rank rewards are not available for unranked.");
+    }
+    const trophyFields = getTrophyFields(mode);
+    const claimKey = rankRewardClaimKey(mode, rankId);
 
     // Load catalog once and validate rank + reward SKUs before entering the transaction.
     const ranksCatalog = await getRanksCatalog();
@@ -130,7 +140,7 @@ export const claimRankUpReward = onCall(
     }
 
     // Create in-progress receipt
-    await createInProgressReceipt(uid, opId, `Claim rank up reward ${rankId}`);
+    await createInProgressReceipt(uid, opId, `Claim rank up reward ${claimKey}`);
 
     const db = admin.firestore();
 
@@ -153,11 +163,14 @@ export const claimRankUpReward = onCall(
         }
 
         const progressData = playerProgressDoc.data() || {};
-        if (progressData[rankId]) {
+        if (progressData[claimKey]) {
           throw new HttpsError("already-exists", "Rank reward already claimed.");
         }
 
-        const reachedTrophies = Math.max(Number(profileData.trophies ?? 0), Number(profileData.highestTrophies ?? 0));
+        const reachedTrophies = Math.max(
+          Number(profileData[trophyFields.current] ?? 0),
+          Number(profileData[trophyFields.highest] ?? 0),
+        );
         if (reachedTrophies < rankGameData.minMmr) {
           throw new HttpsError("failed-precondition", "Player has not reached this rank yet.");
         }
@@ -190,12 +203,12 @@ export const claimRankUpReward = onCall(
         transaction.set(
           playerProgressRef,
           {
-            [rankId]: true,
+            [claimKey]: true,
           },
           { merge: true },
         );
 
-        return { success: true, rewards: rankGameData.rewards, inventoryGrants };
+        return { success: true, gamemode: mode, rewards: rankGameData.rewards, inventoryGrants };
       });
 
       // Complete the operation with result

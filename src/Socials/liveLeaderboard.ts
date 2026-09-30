@@ -167,6 +167,7 @@ export const refreshPlayerLeaderboardSnapshots = async (uid: string): Promise<vo
       trophies: Number(profileData.trophies ?? 0),
       eliminationTrophies: Number(profileData.eliminationTrophies ?? 0),
       policeTrophies: Number(profileData.policeTrophies ?? 0),
+      infectedTrophies: Number(profileData.infectedTrophies ?? 0),
       careerCoins: Number(profileData.careerCoins ?? 0),
       totalWins: Number(profileData.totalWins ?? 0),
     };

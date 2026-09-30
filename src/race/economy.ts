@@ -114,6 +114,8 @@ export const ELIMINATION_TROPHY_CONFIG: TrophyConfig = { ...DEFAULT_TROPHY_CONFI
  */
 export const POLICE_TROPHY_CONFIG: TrophyConfig = { ...DEFAULT_TROPHY_CONFIG };
 
+export const INFECTED_TROPHY_CONFIG: TrophyConfig = { ...DEFAULT_TROPHY_CONFIG };
+
 /**
  * Trophy config for UNRANKED gamemode.
  * UNRANKED doesn't modify trophies, but still needs config for ELO calculations.
@@ -129,12 +131,14 @@ export const UNRANKED_TROPHY_CONFIG: TrophyConfig = {
 /**
  * Get the trophy config for a specific gamemode.
  */
-export const getTrophyConfigForGameMode = (mode: "RANKED" | "ELIMINATION" | "UNRANKED" | "POLICE"): TrophyConfig => {
+export const getTrophyConfigForGameMode = (mode: "RANKED" | "ELIMINATION" | "UNRANKED" | "POLICE" | "INFECTED"): TrophyConfig => {
   switch (mode) {
     case "ELIMINATION":
       return ELIMINATION_TROPHY_CONFIG;
     case "POLICE":
       return POLICE_TROPHY_CONFIG;
+    case "INFECTED":
+      return INFECTED_TROPHY_CONFIG;
     case "UNRANKED":
       return UNRANKED_TROPHY_CONFIG;
     case "RANKED":
@@ -147,7 +151,7 @@ export const getTrophyConfigForGameMode = (mode: "RANKED" | "ELIMINATION" | "UNR
  * Get the reward multiplier for a specific gamemode.
  * UNRANKED mode provides 70% of normal rewards.
  */
-export const getRewardMultiplierForGameMode = (mode: "RANKED" | "ELIMINATION" | "UNRANKED" | "POLICE"): number => {
+export const getRewardMultiplierForGameMode = (mode: "RANKED" | "ELIMINATION" | "UNRANKED" | "POLICE" | "INFECTED"): number => {
   return mode === "UNRANKED" ? 0.7 : 1.0;
 };
 
@@ -298,21 +302,27 @@ export const POLICE_COIN_CONFIG: CoinConfig = { ...ELIMINATION_COIN_CONFIG };
  */
 export const POLICE_EXP_CONFIG: ExpConfig = { ...ELIMINATION_EXP_CONFIG };
 
+export const INFECTED_COIN_CONFIG: CoinConfig = { ...ELIMINATION_COIN_CONFIG };
+
+export const INFECTED_EXP_CONFIG: ExpConfig = { ...ELIMINATION_EXP_CONFIG };
+
 /**
  * Get the coin config for a specific gamemode.
  */
-export const getCoinConfigForGameMode = (mode: "RANKED" | "ELIMINATION" | "UNRANKED" | "POLICE"): CoinConfig => {
+export const getCoinConfigForGameMode = (mode: "RANKED" | "ELIMINATION" | "UNRANKED" | "POLICE" | "INFECTED"): CoinConfig => {
   if (mode === "ELIMINATION") return ELIMINATION_COIN_CONFIG;
   if (mode === "POLICE") return POLICE_COIN_CONFIG;
+  if (mode === "INFECTED") return INFECTED_COIN_CONFIG;
   return DEFAULT_COIN_CONFIG;
 };
 
 /**
  * Get the XP config for a specific gamemode.
  */
-export const getExpConfigForGameMode = (mode: "RANKED" | "ELIMINATION" | "UNRANKED" | "POLICE"): ExpConfig => {
+export const getExpConfigForGameMode = (mode: "RANKED" | "ELIMINATION" | "UNRANKED" | "POLICE" | "INFECTED"): ExpConfig => {
   if (mode === "ELIMINATION") return ELIMINATION_EXP_CONFIG;
   if (mode === "POLICE") return POLICE_EXP_CONFIG;
+  if (mode === "INFECTED") return INFECTED_EXP_CONFIG;
   return DEFAULT_EXP_CONFIG;
 };
 
@@ -510,7 +520,7 @@ export const calculateLastPlaceDelta = (
   playerIndex: number,
   ratings: number[],
   cfg: TrophyConfig,
-  gamemode?: "RANKED" | "ELIMINATION" | "UNRANKED" | "POLICE",
+  gamemode?: "RANKED" | "ELIMINATION" | "UNRANKED" | "POLICE" | "INFECTED",
 ): number => {
   if (gamemode === "POLICE") {
     // In POLICE mode, worst case pre-deduct is at survivalSeconds = 0
@@ -580,7 +590,7 @@ export const computeRaceRewardsWithPrededuction = (
   trophyCfg: TrophyConfig,
   coinCfg: CoinConfig,
   expCfg: ExpConfig,
-  gamemode?: "RANKED" | "ELIMINATION" | "UNRANKED" | "POLICE",
+  gamemode?: "RANKED" | "ELIMINATION" | "UNRANKED" | "POLICE" | "INFECTED",
 ): RaceRewardsWithSettlement => {
   const oldTrophies = input.ratings[input.playerIndex] ?? 0;
   const oldRank = getRankForTrophies(oldTrophies);

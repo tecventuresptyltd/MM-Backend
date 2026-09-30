@@ -9,7 +9,7 @@
  * - UNRANKED: Training mode with no trophy impact, reduced rewards
  * - POLICE: Police game mode with separate trophy tracking, mimicking ELIMINATION
  */
-export type GameMode = "RANKED" | "ELIMINATION" | "UNRANKED" | "POLICE";
+export type GameMode = "RANKED" | "ELIMINATION" | "UNRANKED" | "POLICE" | "INFECTED";
 
 /**
  * Default gamemode when none is specified (backward compatibility).
@@ -20,9 +20,9 @@ export const DEFAULT_GAMEMODE: GameMode = "RANKED";
  * Trophy field mappings per gamemode.
  */
 export const GAMEMODE_TROPHY_FIELDS: Record<GameMode, {
-    current: "trophies" | "eliminationTrophies" | "policeTrophies";
-    highest: "highestTrophies" | "highestEliminationTrophies" | "highestPoliceTrophies";
-    leaderboardMetric: "trophies" | "eliminationTrophies" | "policeTrophies" | null;
+    current: "trophies" | "eliminationTrophies" | "policeTrophies" | "infectedTrophies";
+    highest: "highestTrophies" | "highestEliminationTrophies" | "highestPoliceTrophies" | "highestInfectedTrophies";
+    leaderboardMetric: "trophies" | "eliminationTrophies" | "policeTrophies" | "infectedTrophies" | null;
 }> = {
     RANKED: {
         current: "trophies",
@@ -39,6 +39,11 @@ export const GAMEMODE_TROPHY_FIELDS: Record<GameMode, {
         highest: "highestPoliceTrophies",
         leaderboardMetric: "policeTrophies",
     },
+    INFECTED: {
+        current: "infectedTrophies",
+        highest: "highestInfectedTrophies",
+        leaderboardMetric: "infectedTrophies",
+    },
     UNRANKED: {
         current: "trophies",  // Read-only, uses RANKED trophies
         highest: "highestTrophies",  // Not modified
@@ -50,7 +55,7 @@ export const GAMEMODE_TROPHY_FIELDS: Record<GameMode, {
  * Type guard for GameMode.
  */
 export const isValidGameMode = (value: unknown): value is GameMode =>
-    value === "RANKED" || value === "ELIMINATION" || value === "UNRANKED" || value === "POLICE";
+    value === "RANKED" || value === "ELIMINATION" || value === "UNRANKED" || value === "POLICE" || value === "INFECTED";
 
 /**
  * Resolve gamemode from input, defaulting to RANKED for backward compatibility.
@@ -85,9 +90,10 @@ export const hasLeaderboard = (mode: GameMode): boolean => mode !== "UNRANKED";
  * Get the trophy source for bot difficulty calculation.
  * UNRANKED always uses RANKED trophies.
  */
-export const getTrophySourceForBots = (mode: GameMode): "trophies" | "eliminationTrophies" | "policeTrophies" => {
+export const getTrophySourceForBots = (mode: GameMode): "trophies" | "eliminationTrophies" | "policeTrophies" | "infectedTrophies" => {
     if (mode === "ELIMINATION") return "eliminationTrophies";
     if (mode === "POLICE") return "policeTrophies";
+    if (mode === "INFECTED") return "infectedTrophies";
     return "trophies";
 };
 

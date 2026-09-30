@@ -596,7 +596,7 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
 
     // Use the same position multipliers as XP: [1.2, 1.14, 1.09, 1.03, 0.97, 0.91, 0.86, 0.80]
     // Or Elimination: [1.2, 1.14, 1.09, 1.03, 0.84, 0.72, 0.54, 0.36]
-    const shardMultiplierArray = gamemode === "ELIMINATION" || gamemode === "POLICE"
+    const shardMultiplierArray = gamemode === "ELIMINATION" || gamemode === "POLICE" || gamemode === "INFECTED"
       ? [1.2, 1.14, 1.09, 1.03, 0.84, 0.72, 0.54, 0.36]
       : [1.2, 1.14, 1.09, 1.03, 0.97, 0.91, 0.86, 0.80];
 
@@ -1125,6 +1125,9 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
         }
         if (flags?.policeTrophies === true) {
           updates.push({ metric: "policeTrophies", value: Number(profileData.policeTrophies ?? 0) });
+        }
+        if (flags?.infectedTrophies === true) {
+          updates.push({ metric: "infectedTrophies", value: Number(profileData.infectedTrophies ?? 0) });
         }
         if (flags?.careerCoins === true) {
           updates.push({ metric: "careerCoins", value: Number(profileData.careerCoins ?? 0) });

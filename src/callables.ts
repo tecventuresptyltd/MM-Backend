@@ -40,6 +40,7 @@ export { setMinimumVersion, getMinimumVersion } from "./game-systems/adminVersio
 export { searchGameUsers, setGameAdminStatus, getGameAdmins, adminPinPlayerLevel } from "./game-systems/adminGameUsers";
 export { healthcheck } from "./health/healthcheck";
 export * from "./profile";
+export * from "./onboarding";
 export {
   referralGetMyReferralCode,
   referralClaimReferralCode,

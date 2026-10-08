@@ -25,6 +25,7 @@ import { refreshFriendSnapshots } from "../Socials/updateSnapshots.js";
 import { getCratesCatalog } from "../core/config.js";
 import { getCrateSlotsConfig, getUnlockDurationForRarity } from "../core/configV2.js";
 import { CrateSlotEntry, UserCrateSlotsDoc } from "../shared/typesV2.js";
+import { FirstHourEnrolmentInput, enrolFirstHourInTx, firstHourRef, isEligibleForFirstHour } from "../onboarding/firstHour.js";
 
 const db = admin.firestore();
 const SUBSCRIPTION_REWARD_GEMS = 25;
@@ -170,11 +171,13 @@ export const markTutorialComplete = onCall(callableOptions({ minInstances: getMi
   const statsRef = db.doc(`/Players/${uid}/Economy/Stats`);
   const spellsRef = db.doc(`/Players/${uid}/Spells/Levels`);
   const crateSlotsRef = db.doc(`/Players/${uid}/Crates/Slots`);
+  const decksRef = db.doc(`/Players/${uid}/SpellDecks/Decks`);
   const timestamp = admin.firestore.FieldValue.serverTimestamp();
 
-  const [slotsConfig, cratesCatalog] = await Promise.all([
+  const [slotsConfig, cratesCatalog, starterRewards] = await Promise.all([
     getCrateSlotsConfig(),
     getCratesCatalog(),
+    loadStarterRewards(),
   ]);
 
   const crateInfo = Object.entries(cratesCatalog).find(
@@ -193,13 +196,16 @@ export const markTutorialComplete = onCall(callableOptions({ minInstances: getMi
   let trophiesGranted = 0;
   let finalLevel: number | null = null;
   let finalTrophies: number | null = null;
+  let firstHourEnrolled = false;
   await db.runTransaction(async (transaction) => {
-    const [progressSnap, profileSnap, statsSnap, spellsSnap, crateSlotsSnap] = await transaction.getAll(
+    const [progressSnap, profileSnap, statsSnap, spellsSnap, crateSlotsSnap, decksSnap, firstHourSnap] = await transaction.getAll(
       progressRef,
       profileRef,
       statsRef,
       spellsRef,
       crateSlotsRef,
+      decksRef,
+      firstHourRef(uid),
     );
 
     if (!profileSnap.exists) {
@@ -211,6 +217,20 @@ export const markTutorialComplete = onCall(callableOptions({ minInstances: getMi
 
     const progressData = progressSnap.exists ? progressSnap.data() ?? {} : {};
     const rewardAlreadyGranted = progressData.tutorialRewardGranted === true;
+
+    const enrolmentInput: FirstHourEnrolmentInput = {
+      uid,
+      firstHourSnap,
+      profileSnap,
+      decksSnap,
+      crateSlotsSnap,
+      starterCrateSkuId: starterRewards.crateSkuId,
+      starterCrateRarity: (starterRewards.crate.rarity ?? "common").toLowerCase(),
+    };
+    if (grantRewards === false && progressData.tutorialComplete !== true && isEligibleForFirstHour(enrolmentInput)) {
+      enrolFirstHourInTx(transaction, enrolmentInput, statsRef);
+      firstHourEnrolled = true;
+    }
 
     if (grantRewards && !rewardAlreadyGranted) {
       const profileData = profileSnap.data() ?? {};
@@ -351,6 +371,7 @@ export const markTutorialComplete = onCall(callableOptions({ minInstances: getMi
     coinsGranted,
     xpGranted,
     trophiesGranted,
+    firstHourEnrolled,
   };
 });
 export const setAvatar = onCall(callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true), async (request) => {

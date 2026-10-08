@@ -31,6 +31,7 @@ import {
 } from "./economy.js";
 import { PlayerBoostersState } from "../shared/types.js";
 import { LeaderboardMetric } from "../Socials/types.js";
+import { FirstHourRaceOutcome, firstHourRef, planFirstHourRace, readFirstHourState, writeFirstHourRaceOutcome } from "../onboarding/firstHour.js";
 import { GameMode, resolveGameMode, getTrophyFields, shouldSyncClanTrophies, shouldModifyTrophies, hasLeaderboard } from "../shared/gamemode.js";
 import { getTrophyConfigForGameMode } from "./economy.js";
 
@@ -435,13 +436,14 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
     const garageRef = db.doc(`/Players/${uid}/Garage/Cars`);
     const spellDecksRef = db.doc(`/Players/${uid}/SpellDecks/Decks`);
     const spellLevelsRef = db.doc(`/Players/${uid}/Spells/Levels`);
-    const [economyDoc, profileDoc, participantDoc, garageDoc, spellDecksDoc, spellLevelsDoc] = await transaction.getAll(
+    const [economyDoc, profileDoc, participantDoc, garageDoc, spellDecksDoc, spellLevelsDoc, firstHourDoc] = await transaction.getAll(
       economyRef,
       profileRef,
       participantRef,
       garageRef,
       spellDecksRef,
       spellLevelsRef,
+      firstHourRef(uid),
     );
 
     if (!economyDoc.exists || !profileDoc.exists || !participantDoc.exists) {
@@ -580,7 +582,14 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
       gamemode,
     );
 
-    const coinsGained = rewards.coins;
+    const firstHourPlan = planFirstHourRace(readFirstHourState(firstHourDoc), gamemode);
+    const firstHourOutcome: FirstHourRaceOutcome | null = firstHourPlan
+      ? { raceNumber: firstHourPlan.raceNumber, carBonusXp: 0, spellBonusXp: 0, shardTopUp: 0, bonusCoins: 0, starterCrateGranted: false }
+      : null;
+    if (firstHourPlan && firstHourOutcome && firstHourPlan.doubleCoins) {
+      firstHourOutcome.bonusCoins = rewards.coins;
+    }
+    const coinsGained = rewards.coins + (firstHourOutcome?.bonusCoins ?? 0);
     const xpGained = rewards.exp;
     const desiredTrophiesActual = rewards.trophiesActual;
 
@@ -607,8 +616,13 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
 
     // Apply shard booster (2x multiplier if active)
     const shardBoosterMult = hasShardBooster ? 2 : 1;
-    const shardsEarned = Math.round(baseShards * shardBoosterMult);
-    const boosterShards = shardsEarned - baseShards;
+    const raceShards = Math.round(baseShards * shardBoosterMult);
+    if (firstHourPlan && firstHourOutcome && firstHourPlan.shardTarget > 0) {
+      const shardsBefore = Number(economyDoc.data()?.spellShards ?? 0);
+      firstHourOutcome.shardTopUp = Math.max(0, firstHourPlan.shardTarget - (shardsBefore + raceShards));
+    }
+    const shardsEarned = raceShards + (firstHourOutcome?.shardTopUp ?? 0);
+    const boosterShards = raceShards - baseShards;
 
     // Apply a floor so trophy losses cannot push the player below zero (including pre-deducted losses).
     const appliedActualTrophiesDelta = Math.max(desiredTrophiesActual, -trophiesBeforeRace);
@@ -650,6 +664,16 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
       drops = await resolveRaceDrops(transaction, uid, botDisplayNames);
     }
 
+    if (firstHourPlan && firstHourOutcome) {
+      const firstHourState = readFirstHourState(firstHourDoc);
+      if (firstHourPlan.grantStarterCrate && firstHourState?.starterCrateSkuId) {
+        drops.playerDrop = { type: `${firstHourState.starterCrateRarity}crate`, skuId: firstHourState.starterCrateSkuId };
+        firstHourOutcome.starterCrateGranted = isCrateDrop(drops.playerDrop);
+      } else if (firstHourPlan.suppressRandomDrop) {
+        drops.playerDrop = { type: "noreward", skuId: null };
+      }
+    }
+
     // --- Place crate into slot if the drop was a crate ---
     let crateSlotResult: { slotIndex: number | null; fallbackGranted: boolean; fallbackRewards?: { coins?: number; spellShards?: number } } | null = null;
 
@@ -670,6 +694,9 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
       if (currentSlots.length >= maxSlots) {
         // All slots full — the crate is simply dropped, no compensation.
         crateSlotResult = { slotIndex: null, fallbackGranted: false };
+        if (firstHourOutcome) {
+          firstHourOutcome.starterCrateGranted = false;
+        }
         logger.info("[recordRaceResult] Crate slots full, crate not granted", {
           uid,
           rarity: crateRarity,
@@ -795,7 +822,11 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
           finalXpForDb = currentXp + xpGained;
           finalIsCapped = false;
         } else {
-          finalXpForDb = Math.min(currentXp + xpGained, xpCap);
+          const baseXpForDb = Math.min(currentXp + xpGained, xpCap);
+          finalXpForDb = firstHourPlan?.fillCarXp ? xpCap : baseXpForDb;
+          if (firstHourOutcome) {
+            firstHourOutcome.carBonusXp = finalXpForDb - baseXpForDb;
+          }
           finalIsCapped = finalXpForDb >= xpCap;
         }
 
@@ -844,6 +875,7 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
         const spellXpAmount = Math.max(0, Math.round((baseXp + winBonus) * modeMultiplier * timeRatio));
 
         const spellsNestedData: Record<string, { xp: number; isXpCapped: boolean; level: number }> = {};
+        const firstHourSpellId = deckSpells.find((id) => typeof id === "string" && id.length > 0) ?? null;
         for (const spellId of deckSpells) {
           if (!spellId || typeof spellId !== "string") continue;
           uncappedSpellXp += spellXpAmount;
@@ -873,6 +905,15 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
 
           const xpCap = xpConfig.xpCapPerLevel?.[String(currentLevel)] ?? 9999;
           let newXp = currentXp + spellXpAmount;
+          let spellBonusXp = 0;
+          if (firstHourPlan && firstHourOutcome && spellId === firstHourSpellId && currentLevel === 1 && firstHourPlan.spellBonusTargetRatio > 0) {
+            const targetXp = Math.round(xpCap * firstHourPlan.spellBonusTargetRatio);
+            if (newXp < targetXp) {
+              spellBonusXp = targetXp - newXp;
+              newXp = targetXp;
+              firstHourOutcome.spellBonusXp = spellBonusXp;
+            }
+          }
           let isNowCapped = false;
           if (newXp >= xpCap) {
             newXp = xpCap;
@@ -886,7 +927,7 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
 
           spellXpResults.push({
             spellId,
-            xpAwarded: spellXpAmount,
+            xpAwarded: spellXpAmount + spellBonusXp,
             newTotalXp: newXp,
             isXpCapped: isNowCapped,
             level: currentLevel,
@@ -927,10 +968,10 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
     const masteryUncapped =
       typeof uncappedFromRank === "number" && oldMasteryRank >= uncappedFromRank;
 
-    const carXpForMastery = masteryUncapped ? xpGained : (carXpResult?.xpAwarded ?? 0);
+    const carXpForMastery = masteryUncapped ? xpGained : Math.max(0, (carXpResult?.xpAwarded ?? 0) - (firstHourOutcome?.carBonusXp ?? 0));
     const totalSpellXpForMastery = masteryUncapped
       ? uncappedSpellXp
-      : spellXpResults.reduce((sum, s) => sum + s.xpAwarded, 0);
+      : Math.max(0, spellXpResults.reduce((sum, s) => sum + s.xpAwarded, 0) - (firstHourOutcome?.spellBonusXp ?? 0));
     const masteryXpGained = Math.round(
       (carXpForMastery * masteryConfig.carWeight) + (totalSpellXpForMastery * masteryConfig.spellWeight)
     );
@@ -993,11 +1034,15 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
 
     transaction.update(raceRef, { status: "settled", updatedAt: admin.firestore.FieldValue.serverTimestamp() });
 
+    if (firstHourOutcome) {
+      writeFirstHourRaceOutcome(transaction, uid, gamemode, firstHourOutcome);
+    }
+
     const resultPayload = {
       success: true,
       gamemode,
       rewards: {
-        baseCoins: rewards.baseCoins,
+        baseCoins: rewards.baseCoins + (firstHourOutcome?.bonusCoins ?? 0),
         boosterCoins: rewards.boosterCoins,
         spellShards: shardsEarned,
         boosterShards: boosterShards,
@@ -1035,6 +1080,7 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
       } : null,
       spellXp: spellXpResults.length > 0 ? spellXpResults : null,
       crateSlot: crateSlotResult,
+      firstHour: firstHourOutcome,
     };
 
     // Cache the result on the Participant doc so recordRaceResult can return it

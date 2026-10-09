@@ -26,7 +26,7 @@ const readEnvironment = (): Environment => {
   if (raw === "sandbox" || raw === "prod") {
     return raw;
   }
-  console.error("Usage: tsx tools/seedFirestore.ts <sandbox|prod> [--dry-run]");
+  console.error("Usage: tsx tools/seedFirestore.ts <sandbox|prod> [--dry-run] [--only <path,path,...>]");
   process.exit(1);
 };
 
@@ -70,7 +70,18 @@ const run = async (): Promise<void> => {
   const dryRun = process.argv.includes("--dry-run");
   const projectId = PROJECTS[environment];
 
-  const documents = loadGameDataDocuments();
+  let documents = loadGameDataDocuments();
+  const onlyIndex = process.argv.indexOf("--only");
+  if (onlyIndex >= 0) {
+    if (environment !== "sandbox") throw new Error("--only is supported only for sandbox.");
+    const selection = process.argv[onlyIndex + 1];
+    if (!selection || selection.startsWith("--")) throw new Error("--only requires comma-separated exact manifest paths.");
+    const selected = selection.split(",").map(value => value.trim());
+    if (selected.some(value => !value || !documents.some(document => document.path === value))) {
+      throw new Error("--only contains an empty or unknown GameData document path.");
+    }
+    documents = documents.filter(document => selected.includes(document.path));
+  }
 
   const botNames = documents.find((entry) => entry.path === BOT_NAMES_PATH);
   if (botNames) {

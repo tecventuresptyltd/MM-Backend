@@ -145,3 +145,5 @@ export {
 
 // Consolidated callable router (see src/server/). Additive: every function above
 // still deploys exactly as before.
+
+export { getChallengesStatus, claimDailyChallenge, claimChallengeMilestone, swapDailyChallenge, claimAchievement } from "./challenges";

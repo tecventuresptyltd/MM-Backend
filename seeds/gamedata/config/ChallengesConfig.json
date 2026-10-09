@@ -1,0 +1,64 @@
+{
+  "version": "challenges-v1-sandbox",
+  "enabled": true,
+  "dailyCount": 5,
+  "hardCount": 1,
+  "swapCost": 10,
+  "swapsPerDay": 1,
+  "maxRaceSeconds": 900,
+  "driftMetresPerSecond": 100,
+  "requiredMapIds": [
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9"
+  ],
+  "statClamps": {
+    "nitroUses": 150,
+    "wallHits": 500,
+    "rampJumps": 100,
+    "driftMetres": 30000,
+    "spellsCast": 150,
+    "spellHits": 150,
+    "timesHit": 150,
+    "shieldsBlocked": 150,
+    "maxSpeedKph": 650,
+    "startPosition": 16
+  },
+  "milestones": [
+    {
+      "target": 2,
+      "rewards": [
+        {
+          "kind": "coins",
+          "quantity": 500
+        }
+      ]
+    },
+    {
+      "target": 4,
+      "rewards": [
+        {
+          "kind": "gems",
+          "quantity": 10
+        }
+      ]
+    },
+    {
+      "target": 5,
+      "rewards": [
+        {
+          "kind": "crate",
+          "quantity": 1,
+          "skuId": "sku_zz3twgp0wx"
+        }
+      ]
+    }
+  ]
+}

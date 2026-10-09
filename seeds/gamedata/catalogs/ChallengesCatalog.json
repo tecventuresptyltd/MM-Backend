@@ -1,0 +1,244 @@
+{
+  "version": "challenges-v1-sandbox",
+  "entries": [
+    {
+      "id": "win_no_nitro",
+      "title": "Pure Skill",
+      "description": "Win a race without using nitro.",
+      "iconKey": "boost",
+      "stat": "wins",
+      "target": 1,
+      "hard": false,
+      "aggregation": "sum",
+      "enabled": true,
+      "unit": "",
+      "rewards": [
+        {
+          "kind": "coins",
+          "quantity": 500
+        }
+      ],
+      "xp": 50,
+      "filters": {
+        "nitroUses": 0
+      }
+    },
+    {
+      "id": "clean_race",
+      "title": "Clean Racing",
+      "description": "Finish a race without hitting a wall.",
+      "iconKey": "handling",
+      "stat": "races",
+      "target": 1,
+      "hard": false,
+      "aggregation": "sum",
+      "enabled": true,
+      "unit": "",
+      "rewards": [
+        {
+          "kind": "coins",
+          "quantity": 500
+        }
+      ],
+      "xp": 50,
+      "filters": {
+        "wallHits": 0
+      }
+    },
+    {
+      "id": "ramp_three",
+      "title": "Ramp Rider",
+      "description": "Land 3 ramp jumps.",
+      "iconKey": "jump",
+      "stat": "rampJumps",
+      "target": 3,
+      "hard": false,
+      "aggregation": "sum",
+      "enabled": false,
+      "unit": "",
+      "rewards": [
+        {
+          "kind": "coins",
+          "quantity": 500
+        }
+      ],
+      "xp": 50
+    },
+    {
+      "id": "spell_hits",
+      "title": "Spell Striker",
+      "description": "Hit 5 opponents with spells in multiplayer.",
+      "iconKey": "spell",
+      "stat": "spellHits",
+      "target": 5,
+      "hard": false,
+      "aggregation": "sum",
+      "enabled": true,
+      "unit": "",
+      "rewards": [
+        {
+          "kind": "coins",
+          "quantity": 500
+        }
+      ],
+      "xp": 50
+    },
+    {
+      "id": "one_spell_win",
+      "title": "One Trick Wonder",
+      "description": "Win using exactly one spell type in multiplayer.",
+      "iconKey": "spell",
+      "stat": "wins",
+      "target": 1,
+      "hard": true,
+      "aggregation": "sum",
+      "enabled": true,
+      "unit": "",
+      "rewards": [
+        {
+          "kind": "coins",
+          "quantity": 1000
+        }
+      ],
+      "xp": 100,
+      "shards": 20,
+      "filters": {
+        "spellTypesUsed": 1
+      }
+    },
+    {
+      "id": "comeback_three",
+      "title": "Never Give Up",
+      "description": "Go from last place to the top 3.",
+      "iconKey": "trophy",
+      "stat": "comebackTopThree",
+      "target": 1,
+      "hard": false,
+      "aggregation": "sum",
+      "enabled": false,
+      "unit": "",
+      "rewards": [
+        {
+          "kind": "coins",
+          "quantity": 500
+        }
+      ],
+      "xp": 50
+    },
+    {
+      "id": "drift_two_km",
+      "title": "Drift Master",
+      "description": "Drift 2 km in one race.",
+      "iconKey": "handling",
+      "stat": "driftMetres",
+      "target": 2000,
+      "hard": true,
+      "aggregation": "max",
+      "enabled": true,
+      "unit": "m",
+      "rewards": [
+        {
+          "kind": "coins",
+          "quantity": 1000
+        }
+      ],
+      "xp": 100,
+      "shards": 20
+    },
+    {
+      "id": "shield_three",
+      "title": "Shield Expert",
+      "description": "Block 3 spells with Shield in multiplayer.",
+      "iconKey": "shield",
+      "stat": "shieldsBlocked",
+      "target": 3,
+      "hard": false,
+      "aggregation": "sum",
+      "enabled": true,
+      "unit": "",
+      "rewards": [
+        {
+          "kind": "coins",
+          "quantity": 500
+        }
+      ],
+      "xp": 50
+    },
+    {
+      "id": "new_car_win",
+      "title": "Fresh Wheels",
+      "description": "Win with a car you have not raced since challenges launched.",
+      "iconKey": "car",
+      "stat": "newCarWin",
+      "target": 1,
+      "hard": false,
+      "aggregation": "sum",
+      "enabled": true,
+      "unit": "",
+      "rewards": [
+        {
+          "kind": "coins",
+          "quantity": 500
+        }
+      ],
+      "xp": 50
+    },
+    {
+      "id": "race_three",
+      "title": "Track Regular",
+      "description": "Finish 3 races.",
+      "iconKey": "trophy",
+      "stat": "races",
+      "target": 3,
+      "hard": false,
+      "aggregation": "sum",
+      "enabled": true,
+      "unit": "",
+      "rewards": [
+        {
+          "kind": "coins",
+          "quantity": 500
+        }
+      ],
+      "xp": 50
+    },
+    {
+      "id": "win_two",
+      "title": "Double Victory",
+      "description": "Win 2 races.",
+      "iconKey": "trophy",
+      "stat": "wins",
+      "target": 2,
+      "hard": false,
+      "aggregation": "sum",
+      "enabled": true,
+      "unit": "",
+      "rewards": [
+        {
+          "kind": "coins",
+          "quantity": 500
+        }
+      ],
+      "xp": 50
+    },
+    {
+      "id": "speed_trial",
+      "title": "Speed Trial",
+      "description": "Reach 200 km/h in a race.",
+      "iconKey": "speed",
+      "stat": "maxSpeedKph",
+      "target": 200,
+      "hard": false,
+      "aggregation": "max",
+      "enabled": true,
+      "unit": "km/h",
+      "rewards": [
+        {
+          "kind": "coins",
+          "quantity": 500
+        }
+      ],
+      "xp": 50
+    }
+  ]
+}

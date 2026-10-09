@@ -137,6 +137,14 @@ describe("race.prepareRace", () => {
     expect(Number.isInteger(res1.preDeductedTrophies)).toBe(true);
     expect(res1.preDeductedTrophies).toBe(res2.preDeductedTrophies);
     expect(res1.player.carStats.real.topSpeed).toBeGreaterThan(0);
+    const participant = (await admin.firestore().doc(`Races/${res1.raceId}/Participants/${uid}`).get()).data()!;
+    expect(participant.challengeTopSpeedKph).toBeCloseTo(res1.player.carStats.real.topSpeed * (1 + Math.max(0, res1.player.carStats.real.boostPower)));
+    for (const bot of res1.bots) {
+      expect(bot.carStats.real.aiLevel).toBeGreaterThanOrEqual(0);
+      expect(bot.carStats.real.aiLevel).toBeLessThanOrEqual(100);
+      expect(bot.carStats.real.performanceRanges.minSpeed).toBeGreaterThan(0);
+      expect(bot.carStats.real.performanceRanges.maxSpeed).toBeGreaterThanOrEqual(bot.carStats.real.performanceRanges.minSpeed);
+    }
     // Determinism check on bot carIds and trophies
     const sig1 = res1.bots.map((b: any) => `${b.carId}:${b.trophies}`).join(";");
     const sig2 = res2.bots.map((b: any) => `${b.carId}:${b.trophies}`).join(";");

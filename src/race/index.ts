@@ -1,3 +1,5 @@
+import { getChallengesDefinitions } from "../challenges/config.js";
+import { prepareChallengeRace, applyChallengeRace, challengeMapId } from "../challenges/race.js";
 import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
@@ -414,13 +416,20 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
     throw new HttpsError("unauthenticated", "User is not authenticated.");
   }
 
-  const { raceId, finishOrder, botNames, survivalSeconds } = request.data;
+  const { raceId, finishOrder, botNames, survivalSeconds, raceStats } = request.data;
   if (typeof raceId !== "string") {
     throw new HttpsError("invalid-argument", "raceId is required.");
   }
   const botDisplayNames = normaliseBotNames(botNames);
-
-  const result = await db.runTransaction(async (transaction) => {
+  let challengeDefinitions: Awaited<ReturnType<typeof getChallengesDefinitions>> = null;
+  try {
+    challengeDefinitions = await getChallengesDefinitions(false);
+  } catch (error) {
+    logger.warn("challenges.raceConfigUnavailable", { uid, raceId, error });
+  }
+  let challengeWorkAttempted = false;
+  const settleRace = (includeChallenges: boolean) => db.runTransaction(async (transaction) => {
+    challengeWorkAttempted = false;
     const raceRef = db.doc(`/Races/${raceId}`);
     const raceDoc = await transaction.get(raceRef);
 
@@ -643,6 +652,14 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
     const newRankLabel = getRankForTrophies(trophiesAfterSettlement);
     const promoted = rankIndex(newRankLabel) > rankIndex(oldRankLabel);
     const demoted = rankIndex(newRankLabel) < rankIndex(oldRankLabel);
+
+    challengeWorkAttempted = includeChallenges && challengeDefinitions !== null;
+    const challengePlan = challengeWorkAttempted ? await prepareChallengeRace(transaction, challengeDefinitions, {
+      uid, raceId, now: nowMs, createdAtMs: createdAt?.toMillis() ?? nowMs, mode: gamemode,
+      mapId: challengeMapId(raceData.trackId),
+      carId: typeof participantData.carId === "string" ? participantData.carId : "",
+      place, participants: totalPositions, topSpeedKph: Number(participantData.challengeTopSpeedKph ?? 0),
+    }, raceStats, lobbySnapshot, appliedActualTrophiesDelta) : null;
 
     // Resolve loot before any other writes to keep transaction read-before-write ordering valid.
     // Skip loot for UNRANKED/POLICE mode
@@ -1038,7 +1055,9 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
       writeFirstHourRaceOutcome(transaction, uid, gamemode, firstHourOutcome);
     }
 
+    const challengeCompletions = challengePlan ? applyChallengeRace(transaction, challengePlan) : null;
     const resultPayload = {
+      ...(challengePlan ? challengeCompletions : {}),
       success: true,
       gamemode,
       rewards: {
@@ -1091,6 +1110,15 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
 
     return resultPayload;
   });
+
+  let result: Awaited<ReturnType<typeof settleRace>>;
+  try {
+    result = await settleRace(true);
+  } catch (error) {
+    if (!challengeWorkAttempted) throw error;
+    logger.warn("challenges.raceSettlementFallback", { uid, raceId, error });
+    result = await settleRace(false);
+  }
 
   // VERIFICATION: Confirm the trophies were actually persisted
   const verifyProfile = await db.doc(`/Players/${uid}/Profile/Profile`).get();

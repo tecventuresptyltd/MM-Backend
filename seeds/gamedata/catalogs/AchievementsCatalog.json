@@ -1,0 +1,308 @@
+{
+  "version": "achievements-v1-sandbox",
+  "entries": [
+    {
+      "id": "first_victory",
+      "title": "First Victory",
+      "description": "Win your first race.",
+      "iconKey": "trophy",
+      "stat": "wins",
+      "target": 1,
+      "category": "Racing",
+      "tier": 1,
+      "points": 25,
+      "rewards": [
+        {
+          "kind": "gems",
+          "quantity": 10
+        }
+      ],
+      "aggregation": "sum",
+      "enabled": true,
+      "hidden": false
+    },
+    {
+      "id": "road_warrior",
+      "title": "Road Warrior",
+      "description": "Win 100 races.",
+      "iconKey": "trophy",
+      "stat": "wins",
+      "target": 100,
+      "category": "Racing",
+      "tier": 3,
+      "points": 75,
+      "rewards": [
+        {
+          "kind": "gems",
+          "quantity": 30
+        }
+      ],
+      "aggregation": "sum",
+      "enabled": true,
+      "hidden": false
+    },
+    {
+      "id": "speed_demon",
+      "title": "Speed Demon",
+      "description": "Reach 300 km/h.",
+      "iconKey": "speed",
+      "stat": "maxSpeedKph",
+      "target": 300,
+      "category": "Racing",
+      "tier": 2,
+      "points": 50,
+      "rewards": [
+        {
+          "kind": "gems",
+          "quantity": 20
+        }
+      ],
+      "aggregation": "max",
+      "enabled": true,
+      "hidden": false
+    },
+    {
+      "id": "spell_slinger",
+      "title": "Spell Slinger",
+      "description": "Cast 1,000 spells in multiplayer.",
+      "iconKey": "spell",
+      "stat": "spellsCast",
+      "target": 1000,
+      "category": "Spells",
+      "tier": 3,
+      "points": 75,
+      "rewards": [
+        {
+          "kind": "gems",
+          "quantity": 30
+        }
+      ],
+      "aggregation": "sum",
+      "enabled": true,
+      "hidden": false
+    },
+    {
+      "id": "untouchable",
+      "title": "Untouchable",
+      "description": "Win without being hit by a spell in multiplayer.",
+      "iconKey": "trophy",
+      "stat": "wins",
+      "target": 1,
+      "category": "Spells",
+      "tier": 2,
+      "points": 50,
+      "rewards": [
+        {
+          "kind": "gems",
+          "quantity": 20
+        }
+      ],
+      "aggregation": "sum",
+      "enabled": false,
+      "hidden": false,
+      "filters": {
+        "timesHit": 0
+      }
+    },
+    {
+      "id": "sky_high",
+      "title": "Sky High",
+      "description": "Land 500 ramp jumps.",
+      "iconKey": "jump",
+      "stat": "rampJumps",
+      "target": 500,
+      "category": "Stunts",
+      "tier": 3,
+      "points": 75,
+      "rewards": [
+        {
+          "kind": "gems",
+          "quantity": 30
+        }
+      ],
+      "aggregation": "sum",
+      "enabled": false,
+      "hidden": false
+    },
+    {
+      "id": "drift_king",
+      "title": "Drift King",
+      "description": "Drift a total of 100 km.",
+      "iconKey": "handling",
+      "stat": "driftMetres",
+      "target": 100000,
+      "category": "Stunts",
+      "tier": 3,
+      "points": 75,
+      "rewards": [
+        {
+          "kind": "gems",
+          "quantity": 30
+        }
+      ],
+      "aggregation": "sum",
+      "enabled": true,
+      "hidden": false
+    },
+    {
+      "id": "collector",
+      "title": "Collector",
+      "description": "Own 10 cars.",
+      "iconKey": "car",
+      "stat": "carsOwned",
+      "target": 10,
+      "category": "Collection",
+      "tier": 2,
+      "points": 50,
+      "rewards": [
+        {
+          "kind": "gems",
+          "quantity": 20
+        }
+      ],
+      "aggregation": "max",
+      "enabled": true,
+      "hidden": false
+    },
+    {
+      "id": "fully_loaded",
+      "title": "Fully Loaded",
+      "description": "Max out one car.",
+      "iconKey": "car",
+      "stat": "maxedCars",
+      "target": 1,
+      "category": "Collection",
+      "tier": 3,
+      "points": 75,
+      "rewards": [
+        {
+          "kind": "gems",
+          "quantity": 30
+        }
+      ],
+      "aggregation": "max",
+      "enabled": true,
+      "hidden": false
+    },
+    {
+      "id": "globetrotter",
+      "title": "Globetrotter",
+      "description": "Win on every configured map.",
+      "iconKey": "trophy",
+      "stat": "mapsWon",
+      "target": 10,
+      "category": "Racing",
+      "tier": 3,
+      "points": 75,
+      "rewards": [
+        {
+          "kind": "gems",
+          "quantity": 30
+        }
+      ],
+      "aggregation": "max",
+      "enabled": true,
+      "hidden": false
+    },
+    {
+      "id": "comeback_kid",
+      "title": "Comeback Kid",
+      "description": "Win from last place.",
+      "iconKey": "trophy",
+      "stat": "comebackWins",
+      "target": 1,
+      "category": "Racing",
+      "tier": 2,
+      "points": 50,
+      "rewards": [
+        {
+          "kind": "gems",
+          "quantity": 20
+        }
+      ],
+      "aggregation": "sum",
+      "enabled": false,
+      "hidden": false
+    },
+    {
+      "id": "last_standing",
+      "title": "Last One Standing",
+      "description": "Win 50 elimination races.",
+      "iconKey": "trophy",
+      "stat": "eliminationWins",
+      "target": 50,
+      "category": "Racing",
+      "tier": 3,
+      "points": 75,
+      "rewards": [
+        {
+          "kind": "gems",
+          "quantity": 30
+        }
+      ],
+      "aggregation": "sum",
+      "enabled": true,
+      "hidden": false
+    },
+    {
+      "id": "most_wanted",
+      "title": "Most Wanted",
+      "description": "Escape the cops 100 times.",
+      "iconKey": "trophy",
+      "stat": "policeEscapes",
+      "target": 100,
+      "category": "Racing",
+      "tier": 3,
+      "points": 75,
+      "rewards": [
+        {
+          "kind": "gems",
+          "quantity": 30
+        }
+      ],
+      "aggregation": "sum",
+      "enabled": true,
+      "hidden": false
+    },
+    {
+      "id": "clan_hero",
+      "title": "Clan Hero",
+      "description": "Earn 10,000 positive ranked trophy points while in a clan.",
+      "iconKey": "friends",
+      "stat": "clanPoints",
+      "target": 10000,
+      "category": "Social",
+      "tier": 3,
+      "points": 75,
+      "rewards": [
+        {
+          "kind": "gems",
+          "quantity": 30
+        }
+      ],
+      "aggregation": "sum",
+      "enabled": true,
+      "hidden": false
+    },
+    {
+      "id": "social_racer",
+      "title": "Social Racer",
+      "description": "Race 50 times with friends.",
+      "iconKey": "friends",
+      "stat": "friendRaces",
+      "target": 50,
+      "category": "Social",
+      "tier": 2,
+      "points": 50,
+      "rewards": [
+        {
+          "kind": "gems",
+          "quantity": 20
+        }
+      ],
+      "aggregation": "sum",
+      "enabled": true,
+      "hidden": false
+    }
+  ]
+}

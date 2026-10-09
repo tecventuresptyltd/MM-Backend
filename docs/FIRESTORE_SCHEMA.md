@@ -1207,3 +1207,7 @@ A scheduled Cloud Function (`socialPresenceMirrorLastSeen`) runs every ~10 minut
 ## Contracts Alignment (TODO)
 
 *   Review `FUNCTION_CONTRACTS.md` to ensure all field names (`activeSpellDeck`, `spellTokens`, etc.) are perfectly aligned with this schema. Any discrepancies should be flagged and resolved.
+
+## Challenges and achievements (sandbox)
+
+`/Players/{uid}/Challenges/Daily` stores `{dayIndex,challenges:[{objective,progress,claimed}],milestonesClaimed,swapsUsed,retiredIds}`. `/Players/{uid}/Achievements/Progress` stores `{progress,claimed,points,stats,carsRaced,mapsWon}`. Both are singleton server-written documents, initialized for new sandbox accounts and created lazily for existing accounts. Daily objectives are catalog snapshots; lifetime stats do not reset. Receipts use the existing player Receipts collection. Master documents are ChallengesCatalog, AchievementsCatalog and ChallengesConfig under GameData/v1. See [CHALLENGES_ACHIEVEMENTS.md](CHALLENGES_ACHIEVEMENTS.md) for full shapes and sources.

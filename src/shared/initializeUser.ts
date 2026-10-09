@@ -1,3 +1,5 @@
+import { challengesEnvironmentEnabled } from "../challenges/config.js";
+import { emptyAchievements } from "../challenges/state.js";
 import * as admin from "firebase-admin";
 import { HttpsError } from "firebase-functions/v2/https";
 import { loadStarterRewards } from "./starterRewards.js";
@@ -765,6 +767,10 @@ export async function initializeUserIfNeeded(
 
         const displayName = inferredGuest ? "Guest" : "New Racer";
 
+        if (!profileDoc.exists && challengesEnvironmentEnabled()) {
+          tx.set(db.doc(`Players/${uid}/Challenges/Daily`), { dayIndex: -1, challenges: [], milestonesClaimed: [], swapsUsed: 0, retiredIds: [] });
+          tx.set(db.doc(`Players/${uid}/Achievements/Progress`), emptyAchievements());
+        }
         if (!profileDoc.exists) {
           const profilePayload = DEFAULT_PROFILE(displayName, timestamp, initialMasteryProgress);
           profilePayload.referralCode = referralPlan.code;

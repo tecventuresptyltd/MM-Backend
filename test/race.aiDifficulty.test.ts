@@ -31,31 +31,18 @@ describe('AI Difficulty System', () => {
       boostPower: 8
     };
 
-    it('should calculate bot stats with linear scaling from 0-7000 trophies', () => {
-      // Test at 0 trophies (minimum)
-      const stats0 = calculateBotStatsFromTrophies(0, mockStatRanges, mockCarLevelData);
-      expect(stats0.real.topSpeed).toBe(140); // min value
-      expect(stats0.real.acceleration).toBeCloseTo(4.5, 1);
-
-      // Test at 3500 trophies (50%)
-      const stats3500 = calculateBotStatsFromTrophies(3500, mockStatRanges, mockCarLevelData);
-      expect(stats3500.real.topSpeed).toBeCloseTo(240, 1); // 140 + 50% * (340-140) = 240
-      expect(stats3500.real.acceleration).toBeCloseTo(7.0, 1); // 4.5 + 50% * (9.5-4.5) = 7.0
-
-      // Test at 7000 trophies (maximum)
-      const stats7000 = calculateBotStatsFromTrophies(7000, mockStatRanges, mockCarLevelData);
-      expect(stats7000.real.topSpeed).toBe(340); // max value
-      expect(stats7000.real.acceleration).toBeCloseTo(9.5, 1);
+    it('leaves legacy real stats unset across trophy progression', () => {
+      for (const trophies of [0, 3500, 7000]) {
+        expect(calculateBotStatsFromTrophies(trophies, mockStatRanges, mockCarLevelData).real).toEqual({
+          topSpeed: 0, acceleration: 0, handling: 0, boostRegen: 0, boostPower: 0,
+        });
+      }
     });
 
-    it('should clamp trophy values to 0-7000 range', () => {
-      // Test negative trophies (should clamp to 0)
-      const statsNegative = calculateBotStatsFromTrophies(-500, mockStatRanges, mockCarLevelData);
-      expect(statsNegative.real.topSpeed).toBe(140); // min value
-
-      // Test trophies over 7000 (should clamp to 7000)
-      const statsOver = calculateBotStatsFromTrophies(10000, mockStatRanges, mockCarLevelData);
-      expect(statsOver.real.topSpeed).toBe(340); // max value
+    it('preserves legacy stat placeholders outside the trophy range', () => {
+      const expected = calculateBotStatsFromTrophies(0, mockStatRanges, mockCarLevelData);
+      expect(calculateBotStatsFromTrophies(-500, mockStatRanges, mockCarLevelData)).toEqual(expected);
+      expect(calculateBotStatsFromTrophies(10000, mockStatRanges, mockCarLevelData)).toEqual(expected);
     });
 
     it('should return display values from car catalog', () => {

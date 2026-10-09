@@ -2345,3 +2345,7 @@ This section documents all clan and chat-related Cloud Functions, with input, ou
 **Errors:** `UNAUTHENTICATED`, `INVALID_ARGUMENT`, `FAILED_PRECONDITION`
 
 ---
+
+## Challenges and achievements (sandbox only)
+
+`getChallengesStatus({})` returns server time/reset, challenges/milestones/achievements, swap state, achievement points and claimable counts. `claimDailyChallenge({challengeId,opId})`, `claimChallengeMilestone({milestoneIndex,opId})`, `swapDailyChallenge({challengeId,opId})` and `claimAchievement({achievementId,opId})` return `{success,status,rewards,coins:{before,after},gems:{before,after},xp}`; milestone indices are zero-based. Mutations bind each opId to its target and use transactional receipts. Existing recordRaceResult accepts optional raceStats and returns newlyCompletedChallengeIds/newlyCompletedAchievementIds when enabled. See [CHALLENGES_ACHIEVEMENTS.md](CHALLENGES_ACHIEVEMENTS.md) for DTOs, validations and disabled templates. These callables reject production and are registered through the existing gameApi manifest.

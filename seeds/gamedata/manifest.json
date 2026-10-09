@@ -104,6 +104,18 @@
     {
       "path": "/GameData/v1/config/ReferralConfig.v1",
       "file": "config/ReferralConfig.v1.json"
+    },
+    {
+      "path": "/GameData/v1/config/ChallengesConfig",
+      "file": "config/ChallengesConfig.json"
+    },
+    {
+      "path": "/GameData/v1/catalogs/ChallengesCatalog",
+      "file": "catalogs/ChallengesCatalog.json"
+    },
+    {
+      "path": "/GameData/v1/catalogs/AchievementsCatalog",
+      "file": "catalogs/AchievementsCatalog.json"
     }
   ]
 }

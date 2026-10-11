@@ -1,3 +1,6 @@
+import { createHash } from "node:crypto";
+import { getOffersCatalog } from "../core/config.js";
+import { fulfillOfferPurchase } from "./purchaseOffer.js";
 import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
@@ -70,7 +73,7 @@ const resolveTransactionId = async (
   }
 
   try {
-    const result = await verifyReceipt(platform, receipt, productId);
+    const result = await verifyReceipt(platform, receipt, productId, readTransactionId(receipt, transactionId));
     return { transactionId: result.transactionId, verified: true };
   } catch (error) {
     if (error instanceof VerifierNotConfigured) {
@@ -112,75 +115,67 @@ export const verifyIapPurchase = onCall(
       throw new HttpsError("invalid-argument", "productId must be provided.");
     }
 
-    const pack = await findGemPackByProductId(productId.trim());
-    if (!pack) {
-      throw new HttpsError("not-found", "Unknown productId.");
+    const requestedProductId = productId.trim();
+    const requestedTransactionId = readTransactionId(receipt, transactionId);
+    if (!requestedTransactionId || requestedTransactionId.includes("/") || requestedTransactionId.length > 256)
+      throw new HttpsError("invalid-argument", "Invalid store transaction identifier.");
+    const priorLedger = await admin.firestore().collection("IapTransactions").doc(`${normalizedPlatform}.${requestedTransactionId}`).get();
+    if (priorLedger.exists) {
+      const previous = priorLedger.data()!;
+      if (previous.uid !== uid || previous.productId !== requestedProductId)
+        throw new HttpsError("permission-denied", "Receipt belongs to another purchase or player.");
+      if (previous.result) return { ...previous.result, transactionId: requestedTransactionId, productId: requestedProductId, verified: previous.verified === true };
+      if (typeof previous.gemAmount === "number") return { success: true, transactionId: requestedTransactionId,
+        productId: requestedProductId, gemsGranted: previous.gemAmount, verified: previous.verified === true };
     }
-
-    const resolved = await resolveTransactionId(
-      normalizedPlatform,
-      receipt,
-      transactionId,
-      pack.productId,
-      uid,
-    );
-
+    const pack = await findGemPackByProductId(requestedProductId);
+    const offer = pack ? null : Object.values(await getOffersCatalog()).find(entry => entry.productId === requestedProductId);
+    if (!pack && !offer) throw new HttpsError("not-found", "Unknown productId.");
+    const resolved = await resolveTransactionId(normalizedPlatform, receipt, transactionId, requestedProductId, uid);
+    if (!resolved.transactionId || resolved.transactionId.includes("/") || resolved.transactionId.length > 256)
+      throw new HttpsError("invalid-argument", "Invalid store transaction identifier.");
+    if (offer) {
+      const operationId = "iap-offer-" + createHash("sha256").update(normalizedPlatform + ":" + resolved.transactionId).digest("hex");
+      const result = await fulfillOfferPurchase(uid, operationId, offer.offerId, {
+        platform: normalizedPlatform, transactionId: resolved.transactionId,
+        productId: requestedProductId, verified: resolved.verified,
+      });
+      return { ...result, transactionId: resolved.transactionId, productId: requestedProductId, verified: resolved.verified };
+    }
+    if (!pack) throw new HttpsError("not-found", "Unknown productId.");
     const db = admin.firestore();
     const economyRef = db.doc(`Players/${uid}/Economy/Stats`);
-    const receiptRef = db.doc(`Players/${uid}/Receipts/iap.${resolved.transactionId}`);
-    const ledgerRef = db.doc(
-      `IapTransactions/${normalizedPlatform}.${resolved.transactionId}`,
-    );
-
-    await db.runTransaction(async (transaction) => {
-      const [economySnap, receiptSnap, ledgerSnap] = await Promise.all([
-        transaction.get(economyRef),
-        transaction.get(receiptRef),
-        transaction.get(ledgerRef),
-      ]);
-
-      if (receiptSnap.exists) {
-        throw new HttpsError("already-exists", "Receipt already processed.");
-      }
-      if (ledgerSnap.exists) {
-        throw new HttpsError("already-exists", "Receipt already redeemed.");
-      }
-      if (!economySnap.exists) {
-        throw new HttpsError("failed-precondition", "Player economy data missing.");
-      }
-
-      transaction.update(economyRef, {
-        gems: admin.firestore.FieldValue.increment(pack.gemAmount),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
-
-      transaction.set(receiptRef, {
-        type: "iap",
-        transactionId: resolved.transactionId,
-        platform: normalizedPlatform,
-        productId: pack.productId,
-        iapId: pack.iapId,
-        gemAmount: pack.gemAmount,
-        verified: resolved.verified,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
-
-      transaction.set(ledgerRef, {
-        uid,
-        platform: normalizedPlatform,
-        productId: pack.productId,
-        transactionId: resolved.transactionId,
-        gemAmount: pack.gemAmount,
-        verified: resolved.verified,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
-    });
-
-    return {
-      success: true,
-      transactionId: resolved.transactionId,
-      iapId: pack.iapId,
-      gemsGranted: pack.gemAmount,
+    const receiptRef = db.collection(`Players/${uid}/Receipts`).doc(`iap.${resolved.transactionId}`);
+    const ledgerRef = db.collection("IapTransactions").doc(`${normalizedPlatform}.${resolved.transactionId}`);
+    const result = {
+      success: true, transactionId: resolved.transactionId, productId: pack.productId,
+      iapId: pack.iapId, gemsGranted: pack.gemAmount, verified: resolved.verified,
     };
+    return db.runTransaction(async transaction => {
+      const [economySnap, receiptSnap, ledgerSnap] = await transaction.getAll(economyRef, receiptRef, ledgerRef);
+      if (ledgerSnap.exists) {
+        const previous = ledgerSnap.data()!;
+        if (previous.uid !== uid || previous.productId !== pack.productId)
+          throw new HttpsError("permission-denied", "Receipt belongs to another purchase or player.");
+        return previous.result ?? { ...result, gemsGranted: previous.gemAmount ?? pack.gemAmount };
+      }
+      if (receiptSnap.exists) {
+        const previous = receiptSnap.data()!;
+        if (previous.productId !== pack.productId || previous.platform !== normalizedPlatform)
+          throw new HttpsError("permission-denied", "Receipt does not match purchase.");
+        transaction.set(ledgerRef, { uid, platform: normalizedPlatform, productId: pack.productId,
+          transactionId: resolved.transactionId, result, verified: resolved.verified, grantApplied: false,
+          createdAt: admin.firestore.FieldValue.serverTimestamp() });
+        return result;
+      }
+      if (!economySnap.exists) throw new HttpsError("failed-precondition", "Player economy data missing.");
+      transaction.update(economyRef, { gems: admin.firestore.FieldValue.increment(pack.gemAmount), updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+      const entry = { uid, type: "iap", grantApplied: true, transactionId: resolved.transactionId, platform: normalizedPlatform,
+        productId: pack.productId, iapId: pack.iapId, gemAmount: pack.gemAmount, verified: resolved.verified,
+        result, createdAt: admin.firestore.FieldValue.serverTimestamp() };
+      transaction.set(receiptRef, entry);
+      transaction.set(ledgerRef, entry);
+      return result;
+    });
   },
 );

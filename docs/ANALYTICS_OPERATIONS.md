@@ -1,0 +1,45 @@
+# Analytics operations
+
+The Game Insights tab queries map exposures and final choices, race car/map/mode outcomes, ordered user funnels, advertising revenue and rewarded-ad activity. Client balance observations and the authoritative server ledger remain separate.
+
+## Sandbox custom fields
+
+`node tools/setupAnalyticsSandbox.mjs` previews missing fields; `node tools/setupAnalyticsSandbox.mjs --apply` registers them. The tool accepts only the checked sandbox service account and reads the sandbox GA4 property setting. `src/analytics/schema.json` is the field list. High-cardinality event, session, race, transaction and choice IDs are deliberately not registered.
+
+The sandbox Analytics Admin API must be enabled and the sandbox service account needs GA4 Editor access. Registration was attempted during implementation but the API was disabled and the sandbox account could not enable it. No fields were created by that attempt. The dashboard shows missing-field notices until registration succeeds. New custom fields do not reconstruct historical report data.
+
+No production setup or deployment is included in this change.
+
+## Independent sandbox rollout
+
+After validation, use `npm run deploy:sandbox -- --analytics-only` from Bash. The existing safe script still confirms SANDBOX and builds before deployment. Its explicit allowlist updates only analytics reports, six ledger triggers and the standalone `syncAnalyticsLedger` callable. It excludes `gameApi`, so the deployed purchase, race and inventory handlers are not replaced. A full `npm run deploy:sandbox` is a different rollout and publishes the pending purchase changes too.
+
+Client ledger delivery must call the standalone `syncAnalyticsLedger` Firebase callable directly, rather than the `gameApi/syncAnalyticsLedger` route. The relay uses the same authentication and App Check requirements. Other game calls continue through the existing gateway. Backend collection is asynchronous: ledger retries cannot roll back the gameplay write that produced an event, and only analytics documents are written by these triggers.
+
+For the changed Unity client, use `npm run deploy:sandbox -- --analytics-client` after store verification prerequisites are met. This adds the standalone `verifyIapPurchaseV2` endpoint to the same analytics allowlist, still excluding `gameApi`. The new client calls this endpoint directly for verified gem and offer grants, while old clients continue using the already-deployed gateway. This is the paired-client deployment target; `--analytics-only` by itself does not install the new purchase endpoint. Both standalone callables run in `us-central1` and require authentication and App Check.
+
+The receipt-only purchase changes are **not cleared for a full gateway rollout**. Existing clients call `purchaseOffer` without a receipt and consume the store purchase immediately; the new handler rejects that request. The versioned endpoint allows the new client to use verified purchases without replacing that gateway. Do not release the changed Unity build until `verifyIapPurchaseV2` is deployed and real sandbox store verification is tested. The current client registers consumable products: Apple does not require a shared secret for those; the optional `APPLE_SHARED_SECRET` is sent when configured. Apple's [verifyReceipt request documentation](https://developer.apple.com/documentation/appstorereceipts/requestbody) reserves its password field for receipts containing auto-renewable subscriptions. When `GameData/v1/config/IapConfig.verifyReceipts` is true, Apple status, exact transaction/product and cancellation checks remain mandatory. When false, the purchase endpoint skips external store verification in deployed environments as well as emulators; transaction ownership and duplicate-grant checks remain active. Analytics does not control this flag. A read-only sandbox runtime configuration check returned `403 cloudfunctions.functions.get`; Android runtime Play Console access remains unverified. Neither target is evidence of device purchase readiness; do not bypass verification to bridge old clients.
+
+The client force-update screen is not sufficient proof of a safe rollout: it reads `GameConfig/appVersion` on Android and `GameConfig/appVersionIOS` on iOS once at startup and fails open on fetch errors/timeouts. The current admin `setMinimumVersion` callable updates only the Android document. No version configuration is changed by the analytics deployment.
+
+## Authoritative collection and client relay
+
+Firestore triggers append private `AnalyticsLedger` documents and `AnalyticsDaily` aggregates for currency writes, completed/failed operation receipts, car/spell progression, verified purchase grants and settled races. Event IDs deduplicate trigger retries atomically with aggregation. Currency records describe net changes per committed economy-document write; they are not a fabricated attribution of every gross earn/spend inside one transaction. Background grants and progression are captured when the client is offline.
+
+The authenticated `syncAnalyticsLedger` callable accepts `{ackIds: string[]}` and returns `{receipts: [{receiptId, events: [{eventId, name, parameters}]}]}`. A client must durably save all events in a receipt before acknowledging its ID. Only the owning player can drain or acknowledge; re-reading before acknowledgement returns stable event IDs. Responses are limited to 50 receipts. All events use distinct `server_*` names and must not be added again to SDK purchase/ad revenue.
+
+Ledger totals are server-authoritative, use UTC days and currently cover all platforms. GA4 and Meta receive relayed server events only when a client next connects and its telemetry delivery is permitted. There is no configured independent GA4 Measurement Protocol or Meta server adapter; offline players who never return will remain represented in the server ledger rather than guaranteed in external dashboards. No advertising identifiers or account emails are returned in ledger payloads.
+
+Routine client telemetry is queued in memory and persisted by the existing once-per-second delivery update or pause/quit flush. A crash before the next flush can lose that unsaved interval. IAP telemetry runs after store confirmation and cannot gate the reward or confirmation; ledger acknowledgements still require successful durable persistence first.
+
+Store refunds and chargebacks require verified store-notification integration and are not synthesized from local data. The existing purchase-revenue metric can include refunds already received by GA4, but this ledger does not invent store refunds without an authenticated source.
+
+## Verification
+
+The analytics-isolation fix passed backend and admin TypeScript checks, all 27 relevant backend tests across six suites (the six IAP fulfillment tests were rerun after batching transaction reads with `getAll`), and the sandbox deployment script syntax check. The frontend's `Tools/tests/IapRecovery` harness compiles the actual purchase manager and MiniJSON sources and passes seven failure scenarios, including absent/throwing analytics, queue rejection, duplicate callbacks, rejected verification and account changes. Unity Editor 6000.3.17f1 reports the client scripts up to date, with no compilation failures, zero compilation errors and zero console errors. Real Android/iOS store purchases remain a sandbox release check and were not exercised by these checks. The subsequent catalog-flag regression check passed all eight IAP fulfillment tests and backend TypeScript checking, including disabled verification for gems and offers with FUNCTIONS_EMULATOR unset. No code was pushed or deployed by these checks.
+
+Run `npx tsc -p tsconfig.json --noEmit`, the admin dashboard TypeScript check, and emulator suites `analytics.reporting.test.ts`, `analytics.ledger.test.ts`, `iap.fulfillment.test.ts`, and `iap.receiptVerification.test.ts`. Ledger tests verify concurrent redelivery, atomic aggregation, cross-player acknowledgement rejection, stable replay, currency/progression deltas, gameplay persistence during ledger failure and final-vote denominators. Receipt tests include verified consumables without a shared secret and rejection of mismatched or rejected Apple receipts.
+
+Earlier implementation notes reported accepted live sandbox D1/D7/D30 cohort queries, advertising metrics and an ordered purchase funnel. Those are historical checks, not a claim that this review repeated them. This review uses local typechecking/emulator validation; the runtime configuration lookup was denied. No deployment or production change is included.
+
+Server ledger events include a commit correlation key derived from the player and exact Firestore update timestamp. Transaction details join only same-commit completed receipts, purchase grants and settlements; absent companions remain unattributed. Raw commit keys are not registered as GA4 custom dimensions. Legacy IAP ledger backfills marked grantApplied:false do not emit new grant events.

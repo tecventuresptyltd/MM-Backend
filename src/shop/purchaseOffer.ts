@@ -55,7 +55,7 @@ interface GrantSummary {
   alreadyOwned?: boolean;
 }
 
-interface PurchaseOfferResult {
+export interface PurchaseOfferResult {
   success: true;
   opId: string;
   offerId: string;
@@ -129,14 +129,14 @@ const ensureOffer = async (offerId: string): Promise<Offer> => {
   return offer;
 };
 
-const isIapOffer = (offer: Offer): boolean => Boolean(offer.productId) && offer.currency === "USD";
+const isIapOffer = (offer: Offer): boolean => Boolean(offer.productId);
 const isMainSlotOffer = (offer: Offer): boolean => {
   const type = offer.offerType ?? -1;
   return type >= 0 && type <= 8;
 };
 
 const resolveEntitlementSku = async (entitlement: OfferEntitlement): Promise<ItemSku | null> => {
-  if (entitlement.type === "gems") return null;
+  if (entitlement.type === "gems" || entitlement.type === "coins") return null;
   let targetId = typeof entitlement.id === "string" ? entitlement.id.trim() : "";
   if (!targetId) throw new HttpsError("failed-precondition", "Offer entitlement is missing an id.");
   
@@ -231,18 +231,26 @@ const ensureActiveOfferUpdate = (
   return update;
 };
 
-export const purchaseOffer = onCall(callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true), async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) throw new HttpsError("unauthenticated", "User must be authenticated.");
+export interface VerifiedOfferPurchase {
+  platform: "ios" | "android";
+  transactionId: string;
+  productId: string;
+  verified: boolean;
+}
 
-  const { opId, offerId, isIapPurchase } = ensureOfferRequest(request.data as PurchaseOfferRequest);
-
-  const cached = await checkIdempotency(uid, opId);
-  if (cached) return cached as PurchaseOfferResult;
-
-  await createInProgressReceipt(uid, opId, "purchaseOffer");
-
+export async function fulfillOfferPurchase(uid: string, opId: string, offerId: string, verifiedPurchase?: VerifiedOfferPurchase): Promise<PurchaseOfferResult> {
   const offer = await ensureOffer(offerId);
+  if (isIapOffer(offer) && !verifiedPurchase)
+    throw new HttpsError("failed-precondition", "Store offers require verifyIapPurchase with a valid receipt.");
+  if (verifiedPurchase && (!isIapOffer(offer) || offer.productId !== verifiedPurchase.productId))
+    throw new HttpsError("invalid-argument", "Receipt does not match offer.");
+  const isIapPurchase = !!verifiedPurchase;
+  if (!verifiedPurchase) {
+    const cached = await checkIdempotency(uid, opId);
+    if (cached) return cached as PurchaseOfferResult;
+    await createInProgressReceipt(uid, opId, "purchaseOffer");
+  }
+  const ledgerRef = verifiedPurchase ? db.collection("IapTransactions").doc(`${verifiedPurchase.platform}.${verifiedPurchase.transactionId}`) : null;
   const resolvedEntitlements = await resolveEntitlements(offer);
 
   const shouldProgressLadder = isIapPurchase && isIapOffer(offer);
@@ -250,11 +258,21 @@ export const purchaseOffer = onCall(callableOptions({ minInstances: getMinInstan
   const inventoryCtx = resolveInventoryContext(uid);
   const summaryRef = inventoryCtx.summaryRef;
 
-  const result = await runReadThenWriteWithReceipt<PurchaseOfferReadState, PurchaseOfferResult>(
+  const result = await runReadThenWriteWithReceipt<PurchaseOfferReadState | { replay: PurchaseOfferResult }, PurchaseOfferResult>(
     uid,
     opId,
     `purchaseOffer.${offerId}`,
     async (transaction) => {
+      if (ledgerRef) {
+        const ledger = await transaction.get(ledgerRef);
+        if (ledger.exists) {
+          const previous = ledger.data()!;
+          if (previous.uid !== uid || previous.productId !== verifiedPurchase!.productId)
+            throw new HttpsError("permission-denied", "Receipt belongs to another purchase or player.");
+          if (previous.result) return { replay: previous.result as PurchaseOfferResult };
+          throw new HttpsError("failed-precondition", "Purchase ledger requires reconciliation.");
+        }
+      }
       const nowMillis = Date.now();
       const timestamp = admin.firestore.FieldValue.serverTimestamp();
       const economyRef = db.doc(`Players/${uid}/Economy/Stats`);
@@ -268,13 +286,15 @@ export const purchaseOffer = onCall(callableOptions({ minInstances: getMinInstan
       ]);
 
       if (!statsSnap.exists) throw new HttpsError("failed-precondition", "Economy profile missing for player.");
-      if (!activeSnap.exists) throw new HttpsError("failed-precondition", "Active offers not initialized.");
+      if (!activeSnap.exists && !verifiedPurchase) throw new HttpsError("failed-precondition", "Active offers not initialized.");
 
       const activeState = normaliseActiveOffers(activeSnap.data());
       const flowState = normaliseOfferFlowState(flowStateSnap.data());
       const prunedSpecial = pruneExpiredSpecialOffers(activeState.special, nowMillis);
 
-      const activeUpdate = ensureActiveOfferUpdate(
+      const activeUpdate = verifiedPurchase && !resolveActiveOfferSlot(offerId, { ...activeState, special: prunedSpecial }, nowMillis)
+        ? { slot: "special" as const, special: prunedSpecial }
+        : ensureActiveOfferUpdate(
         offerId,
         { ...activeState, special: prunedSpecial },
         flowState,
@@ -355,6 +375,7 @@ export const purchaseOffer = onCall(callableOptions({ minInstances: getMinInstan
       };
     },
     async (transaction, reads) => {
+      if ("replay" in reads) return reads.replay;
       const grants: GrantSummary[] = [];
       const summaryChanges: Record<string, number> = {};
       const { currency: chargeCurrency, amount: chargeAmount } = reads.charge;
@@ -406,6 +427,12 @@ export const purchaseOffer = onCall(callableOptions({ minInstances: getMinInstan
         purchaseResult.nextOfferAt = reads.activeUpdate.rotatingUpdate.nextOfferAt;
         purchaseResult.category = reads.activeUpdate.rotatingUpdate.category;
       }
+      if (ledgerRef && verifiedPurchase) {
+        transaction.set(ledgerRef, {
+          uid, ...verifiedPurchase, offerId, result: purchaseResult, grantApplied: true,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      }
       return purchaseResult;
     },
   );
@@ -420,4 +447,11 @@ export const purchaseOffer = onCall(callableOptions({ minInstances: getMinInstan
   }
 
   return result;
+}
+
+export const purchaseOffer = onCall(callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true), async (request) => {
+  const uid = request.auth?.uid;
+  if (!uid) throw new HttpsError("unauthenticated", "User must be authenticated.");
+  const { opId, offerId } = ensureOfferRequest(request.data as PurchaseOfferRequest);
+  return fulfillOfferPurchase(uid, opId, offerId);
 });

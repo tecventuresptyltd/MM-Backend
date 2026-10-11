@@ -13,9 +13,20 @@ echo ""
 PROJECT_ALIAS="sandbox"
 PROJECT_ID="mystic-motors-sandbox"
 
+# This allowlist deliberately excludes gameApi and every gameplay job. Updating
+# the gateway would also publish pending purchase-contract changes.
+DEPLOY_TARGET="${1:-functions}"
+if [ "$DEPLOY_TARGET" = "--analytics-only" ] || [ "$DEPLOY_TARGET" = "--analytics-client" ]; then
+    DEPLOY_TARGET="functions:analyticsOverview,functions:analyticsGrowth,functions:analyticsPlatforms,functions:analyticsRevenue,functions:analyticsRevenueByProduct,functions:analyticsRevenueByCountry,functions:analyticsRetention,functions:analyticsEvents,functions:analyticsRealtime,functions:analyticsGeography,functions:analyticsDevices,functions:analyticsSessions,functions:analyticsInsights,functions:recordAnalyticsEconomy,functions:recordAnalyticsReceipt,functions:recordAnalyticsGarage,functions:recordAnalyticsSpells,functions:recordAnalyticsIap,functions:recordAnalyticsRace,functions:syncAnalyticsLedger"
+    if [ "$1" = "--analytics-client" ]; then
+        DEPLOY_TARGET="$DEPLOY_TARGET,functions:verifyIapPurchaseV2"
+    fi
+fi
+
 echo "🎯 Target Environment: SANDBOX"
 echo "📋 Target Project: $PROJECT_ID"
 echo "🔖 Using Firebase Alias: $PROJECT_ALIAS"
+echo "📦 Deployment Target: $DEPLOY_TARGET"
 echo ""
 
 # Confirm deployment
@@ -37,13 +48,8 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-DEPLOY_TARGET="functions"
-if [ -n "$1" ]; then
-    DEPLOY_TARGET="$1"
-fi
-
 echo "🚀 Deploying to SANDBOX (Target: $DEPLOY_TARGET)..."
-firebase deploy --only $DEPLOY_TARGET --project $PROJECT_ALIAS
+firebase deploy --only "$DEPLOY_TARGET" --project "$PROJECT_ALIAS"
 
 if [ $? -eq 0 ]; then
     echo ""

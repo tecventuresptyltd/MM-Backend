@@ -147,3 +147,5 @@ export {
 // still deploys exactly as before.
 
 export { getChallengesStatus, claimDailyChallenge, claimChallengeMilestone, swapDailyChallenge, claimAchievement } from "./challenges";
+
+export { syncAnalyticsLedger } from "./analytics/relay.js";

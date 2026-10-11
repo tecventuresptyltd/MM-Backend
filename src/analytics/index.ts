@@ -1,8 +1,10 @@
+import { insightQuery, reportRows, mapPreferenceRows, funnelDefinitions } from "./insights.js";
 import { onRequest, onCall, HttpsError, CallableRequest } from "firebase-functions/v2/https";
 import { defineString } from "firebase-functions/params";
-import { BetaAnalyticsDataClient } from "@google-analytics/data";
+import { BetaAnalyticsDataClient, v1alpha } from "@google-analytics/data";
 import * as admin from "firebase-admin";
 import type { Request, Response } from "express";
+import { reportDays, reportDateRange, platformFilter, propertyToday, cohortRequests, summarizeRetention } from "./reporting.js";
 
 // Define environment parameter
 const ga4PropertyId = defineString("GA4_PROPERTY_ID");
@@ -133,37 +135,43 @@ export const analyticsOverview = onCall(
 
         try {
             const propertyId = ga4PropertyId.value();
+            const dimensionFilter = platformFilter(request.data?.platform);
 
             // Fetch all metrics in parallel
             const [dauResponse, wauResponse, mauResponse, totalUsersResponse, sessionsResponse, eventsResponse] = await Promise.all([
                 // DAU
                 analyticsDataClient.runReport({
                     property: propertyId,
-                    dateRanges: [{ startDate: "yesterday", endDate: "today" }],
+                    dimensionFilter,
+                    dateRanges: [{ startDate: "today", endDate: "today" }],
                     metrics: [{ name: "activeUsers" }],
                 }),
                 // WAU
                 analyticsDataClient.runReport({
                     property: propertyId,
-                    dateRanges: [{ startDate: "7daysAgo", endDate: "today" }],
+                    dimensionFilter,
+                    dateRanges: [{ startDate: "6daysAgo", endDate: "today" }],
                     metrics: [{ name: "activeUsers" }],
                 }),
                 // MAU
                 analyticsDataClient.runReport({
                     property: propertyId,
-                    dateRanges: [{ startDate: "30daysAgo", endDate: "today" }],
+                    dimensionFilter,
+                    dateRanges: [{ startDate: "29daysAgo", endDate: "today" }],
                     metrics: [{ name: "activeUsers" }],
                 }),
                 // Total Users
                 analyticsDataClient.runReport({
                     property: propertyId,
+                    dimensionFilter,
                     dateRanges: [{ startDate: "2020-01-01", endDate: "today" }],
                     metrics: [{ name: "totalUsers" }],
                 }),
                 // Session Metrics
                 analyticsDataClient.runReport({
                     property: propertyId,
-                    dateRanges: [{ startDate: "30daysAgo", endDate: "today" }],
+                    dimensionFilter,
+                    dateRanges: [{ startDate: "29daysAgo", endDate: "today" }],
                     metrics: [
                         { name: "sessions" },
                         { name: "averageSessionDuration" },
@@ -173,6 +181,7 @@ export const analyticsOverview = onCall(
                 // Events Today
                 analyticsDataClient.runReport({
                     property: propertyId,
+                    dimensionFilter,
                     dateRanges: [{ startDate: "today", endDate: "today" }],
                     metrics: [{ name: "eventCount" }],
                 }),
@@ -221,7 +230,7 @@ export const analyticsGrowth = onCall(
 
         try {
             const propertyId = ga4PropertyId.value();
-            const days = (request.data?.days as number) || 30;
+            const days = reportDays(request.data?.days);
             const platform = (request.data?.platform as string) || "";
 
             // Build dimension filter for platform
@@ -234,7 +243,7 @@ export const analyticsGrowth = onCall(
 
             const [response] = await analyticsDataClient.runReport({
                 property: propertyId,
-                dateRanges: [{ startDate: `${days}daysAgo`, endDate: "today" }],
+                dateRanges: [reportDateRange(days)],
                 dimensions: [{ name: "date" }],
                 metrics: [{ name: "newUsers" }, { name: "activeUsers" }],
                 orderBys: [{ dimension: { dimensionName: "date" } }],
@@ -269,7 +278,7 @@ export const analyticsPlatforms = onCall(
 
             const [response] = await analyticsDataClient.runReport({
                 property: propertyId,
-                dateRanges: [{ startDate: "30daysAgo", endDate: "today" }],
+                dateRanges: [reportDateRange(reportDays(request.data?.days))],
                 dimensions: [{ name: "platform" }],
                 metrics: [{ name: "activeUsers" }],
             });
@@ -301,7 +310,7 @@ export const analyticsRevenue = onRequest(
 
         try {
             const propertyId = ga4PropertyId.value();
-            const days = parseInt(req.query.days as string) || 30;
+            const days = reportDays(req.query.days);
             const platform = req.query.platform as string || "";
 
             // Build dimension filter for platform
@@ -317,7 +326,8 @@ export const analyticsRevenue = onRequest(
                 // Total revenue and transactions
                 analyticsDataClient.runReport({
                     property: propertyId,
-                    dateRanges: [{ startDate: `${days}daysAgo`, endDate: "today" }],
+                    currencyCode: "USD",
+                    dateRanges: [reportDateRange(days)],
                     metrics: [
                         { name: "purchaseRevenue" },
                         { name: "transactions" },
@@ -329,7 +339,8 @@ export const analyticsRevenue = onRequest(
                 // Revenue over time
                 analyticsDataClient.runReport({
                     property: propertyId,
-                    dateRanges: [{ startDate: `${days}daysAgo`, endDate: "today" }],
+                    currencyCode: "USD",
+                    dateRanges: [reportDateRange(days)],
                     dimensions: [{ name: "date" }],
                     metrics: [
                         { name: "purchaseRevenue" },
@@ -341,7 +352,8 @@ export const analyticsRevenue = onRequest(
                 // First-time vs returning purchasers
                 analyticsDataClient.runReport({
                     property: propertyId,
-                    dateRanges: [{ startDate: `${days}daysAgo`, endDate: "today" }],
+                    currencyCode: "USD",
+                    dateRanges: [reportDateRange(days)],
                     metrics: [
                         { name: "firstTimePurchasers" },
                     ],
@@ -400,7 +412,7 @@ export const analyticsRevenueByProduct = onRequest(
 
         try {
             const propertyId = ga4PropertyId.value();
-            const days = parseInt(req.query.days as string) || 30;
+            const days = reportDays(req.query.days);
             const platform = req.query.platform as string || "";
 
             // Build dimension filter for platform
@@ -411,17 +423,26 @@ export const analyticsRevenueByProduct = onRequest(
                 },
             } : undefined;
 
+            const [metadata] = await analyticsDataClient.getMetadata({ name: propertyId + "/metadata" });
+            if (!metadata.dimensions?.some(item => item.apiName === "customEvent:product_id")) {
+                res.json({ data: [], notice: "Product revenue requires an event-scoped product_id custom dimension in this GA4 property. Historical item reports cannot represent automatic in-app purchases.", days });
+                return;
+            }
             const [response] = await analyticsDataClient.runReport({
                 property: propertyId,
-                dateRanges: [{ startDate: `${days}daysAgo`, endDate: "today" }],
-                dimensions: [{ name: "itemName" }],
+                currencyCode: "USD",
+                dateRanges: [reportDateRange(days)],
+                dimensions: [{ name: "customEvent:product_id" }],
                 metrics: [
-                    { name: "itemRevenue" },
-                    { name: "itemsPurchased" },
+                    { name: "purchaseRevenue" },
+                    { name: "eventCount" },
                 ],
-                orderBys: [{ metric: { metricName: "itemRevenue" }, desc: true }],
+                orderBys: [{ metric: { metricName: "purchaseRevenue" }, desc: true }],
                 limit: 20,
-                dimensionFilter,
+                dimensionFilter: { andGroup: { expressions: [
+                    { filter: { fieldName: "eventName", stringFilter: { value: "in_app_purchase", matchType: "EXACT" } } },
+                    ...(dimensionFilter ? [dimensionFilter] : []),
+                ] } },
             });
 
             const data = response.rows?.map((row) => ({
@@ -452,7 +473,7 @@ export const analyticsRevenueByCountry = onRequest(
 
         try {
             const propertyId = ga4PropertyId.value();
-            const days = parseInt(req.query.days as string) || 30;
+            const days = reportDays(req.query.days);
             const platform = req.query.platform as string || "";
 
             // Build dimension filter for platform
@@ -465,7 +486,8 @@ export const analyticsRevenueByCountry = onRequest(
 
             const [response] = await analyticsDataClient.runReport({
                 property: propertyId,
-                dateRanges: [{ startDate: `${days}daysAgo`, endDate: "today" }],
+                currencyCode: "USD",
+                dateRanges: [reportDateRange(days)],
                 dimensions: [{ name: "country" }],
                 metrics: [
                     { name: "purchaseRevenue" },
@@ -526,7 +548,7 @@ export const analyticsRevenueByCountry = onRequest(
  * Endpoint: /analyticsRetention?days=30
  */
 export const analyticsRetention = onRequest(
-    { cors: true, region: "us-central1" },
+    { cors: true, region: "us-central1", timeoutSeconds: 120 },
     async (req, res) => {
         // Verify admin authentication
         const authResult = await verifyAdminRequest(req, res);
@@ -535,57 +557,29 @@ export const analyticsRetention = onRequest(
         try {
             const propertyId = ga4PropertyId.value();
 
-            // Day 1, Day 7, Day 30 retention using cohort analysis
-            const [day1Response, day7Response, day30Response, newUsersResponse] = await Promise.all([
-                // Day 1 retention - users who returned the next day
-                analyticsDataClient.runReport({
-                    property: propertyId,
-                    dateRanges: [{ startDate: "8daysAgo", endDate: "7daysAgo" }],
-                    metrics: [{ name: "dauPerMau" }],
-                }),
-                // Day 7 retention approximation
-                analyticsDataClient.runReport({
-                    property: propertyId,
-                    dateRanges: [{ startDate: "14daysAgo", endDate: "7daysAgo" }],
-                    metrics: [{ name: "wauPerMau" }],
-                }),
-                // Day 30 retention approximation
-                analyticsDataClient.runReport({
-                    property: propertyId,
-                    dateRanges: [{ startDate: "60daysAgo", endDate: "30daysAgo" }],
-                    metrics: [{ name: "dauPerMau" }],
-                }),
-                // New vs returning users
-                analyticsDataClient.runReport({
-                    property: propertyId,
-                    dateRanges: [{ startDate: "30daysAgo", endDate: "today" }],
-                    metrics: [
-                        { name: "newUsers" },
-                        { name: "activeUsers" },
-                    ],
-                }),
-            ]);
-
-            // Extract retention rates (these are approximations)
-            const dauPerMau1 = parseFloat(day1Response[0].rows?.[0]?.metricValues?.[0]?.value || "0");
-            const wauPerMau = parseFloat(day7Response[0].rows?.[0]?.metricValues?.[0]?.value || "0");
-            const dauPerMau30 = parseFloat(day30Response[0].rows?.[0]?.metricValues?.[0]?.value || "0");
-
-            const userRow = newUsersResponse[0].rows?.[0];
-            const newUsers = parseInt(userRow?.metricValues?.[0]?.value || "0");
-            const activeUsers = parseInt(userRow?.metricValues?.[1]?.value || "0");
-            const returningUsers = activeUsers - newUsers;
-            const returningRate = activeUsers > 0 ? (returningUsers / activeUsers) * 100 : 0;
-
-            res.json({
-                day1Retention: Math.round(dauPerMau1 * 100 * 10) / 10,
-                day7Retention: Math.round(wauPerMau * 100 * 10) / 10,
-                day30Retention: Math.round(dauPerMau30 * 100 * 10) / 10,
-                newUsers,
-                returningUsers: Math.max(0, returningUsers),
-                returningRate: Math.round(returningRate * 10) / 10,
-                timestamp: new Date().toISOString(),
+            const days = reportDays(req.query.days);
+            const dimensionFilter = platformFilter(req.query.platform);
+            const [users] = await analyticsDataClient.runReport({
+                property: propertyId,
+                dateRanges: [reportDateRange(days)],
+                dimensions: [{ name: "newVsReturning" }],
+                metrics: [{ name: "activeUsers" }],
+                dimensionFilter,
             });
+            const timeZone = users.metadata?.timeZone;
+            if (!timeZone) throw new Error("GA4 did not return the property time zone");
+            const requests = cohortRequests(propertyId, days, propertyToday(timeZone), dimensionFilter);
+            const reports = [];
+            for (let index = 0; index < requests.length; index += 4) {
+                const batch = await Promise.all(requests.slice(index, index + 4).map(query => analyticsDataClient.runReport(query)));
+                reports.push(...batch.map(result => result[0]));
+            }
+            const count = (kind: string) => Number(users.rows?.find(row => row.dimensionValues?.[0]?.value === kind)?.metricValues?.[0]?.value || 0);
+            const newUsers = count("new");
+            const returningUsers = count("returning");
+            res.json({ ...summarizeRetention(reports), newUsers, returningUsers, days,
+                returningRate: newUsers + returningUsers > 0 ? Math.round(returningUsers / (newUsers + returningUsers) * 1000) / 10 : 0,
+                timestamp: new Date().toISOString() });
         } catch (error) {
             console.error("Analytics retention error:", error);
             res.status(500).json({ error: "Failed to fetch retention data" });
@@ -606,19 +600,20 @@ export const analyticsEvents = onRequest(
 
         try {
             const propertyId = ga4PropertyId.value();
-            const days = parseInt(req.query.days as string) || 30;
+            const days = reportDays(req.query.days);
             const limit = parseInt(req.query.limit as string) || 15;
 
             const [response] = await analyticsDataClient.runReport({
                 property: propertyId,
-                dateRanges: [{ startDate: `${days}daysAgo`, endDate: "today" }],
+                dateRanges: [reportDateRange(days)],
                 dimensions: [{ name: "eventName" }],
                 metrics: [
                     { name: "eventCount" },
                     { name: "eventCountPerUser" },
                 ],
                 orderBys: [{ metric: { metricName: "eventCount" }, desc: true }],
-                limit,
+                limit: Math.min(100, Math.max(1, limit)),
+                dimensionFilter: platformFilter(req.query.platform),
             });
 
             const data = response.rows?.map((row) => ({
@@ -746,13 +741,13 @@ export const analyticsGeography = onRequest(
 
         try {
             const propertyId = ga4PropertyId.value();
-            const days = parseInt(req.query.days as string) || 30;
+            const days = reportDays(req.query.days);
 
             const [countryResponse, cityResponse] = await Promise.all([
                 // Users and revenue by country
                 analyticsDataClient.runReport({
                     property: propertyId,
-                    dateRanges: [{ startDate: `${days}daysAgo`, endDate: "today" }],
+                    dateRanges: [reportDateRange(days)],
                     dimensions: [{ name: "country" }],
                     metrics: [
                         { name: "activeUsers" },
@@ -764,7 +759,7 @@ export const analyticsGeography = onRequest(
                 // Top 50 cities
                 analyticsDataClient.runReport({
                     property: propertyId,
-                    dateRanges: [{ startDate: `${days}daysAgo`, endDate: "today" }],
+                    dateRanges: [reportDateRange(days)],
                     dimensions: [{ name: "city" }, { name: "country" }],
                     metrics: [{ name: "activeUsers" }],
                     orderBys: [{ metric: { metricName: "activeUsers" }, desc: true }],
@@ -811,7 +806,7 @@ export const analyticsDevices = onRequest(
 
         try {
             const propertyId = ga4PropertyId.value();
-            const days = parseInt(req.query.days as string) || 30;
+            const days = reportDays(req.query.days);
             const platform = req.query.platform as string || "";
 
             // Build dimension filter for platform
@@ -826,8 +821,8 @@ export const analyticsDevices = onRequest(
                 // Top device models
                 analyticsDataClient.runReport({
                     property: propertyId,
-                    dateRanges: [{ startDate: `${days}daysAgo`, endDate: "today" }],
-                    dimensions: [{ name: "deviceModel" }],
+                    dateRanges: [reportDateRange(days)],
+                    dimensions: [{ name: "mobileDeviceModel" }],
                     metrics: [{ name: "activeUsers" }, { name: "sessions" }],
                     orderBys: [{ metric: { metricName: "activeUsers" }, desc: true }],
                     limit: 20,
@@ -836,7 +831,7 @@ export const analyticsDevices = onRequest(
                 // Operating system versions
                 analyticsDataClient.runReport({
                     property: propertyId,
-                    dateRanges: [{ startDate: `${days}daysAgo`, endDate: "today" }],
+                    dateRanges: [reportDateRange(days)],
                     dimensions: [{ name: "operatingSystemWithVersion" }],
                     metrics: [{ name: "activeUsers" }],
                     orderBys: [{ metric: { metricName: "activeUsers" }, desc: true }],
@@ -846,7 +841,7 @@ export const analyticsDevices = onRequest(
                 // Screen resolutions
                 analyticsDataClient.runReport({
                     property: propertyId,
-                    dateRanges: [{ startDate: `${days}daysAgo`, endDate: "today" }],
+                    dateRanges: [reportDateRange(days)],
                     dimensions: [{ name: "screenResolution" }],
                     metrics: [{ name: "activeUsers" }],
                     orderBys: [{ metric: { metricName: "activeUsers" }, desc: true }],
@@ -856,7 +851,7 @@ export const analyticsDevices = onRequest(
                 // Device category breakdown
                 analyticsDataClient.runReport({
                     property: propertyId,
-                    dateRanges: [{ startDate: `${days}daysAgo`, endDate: "today" }],
+                    dateRanges: [reportDateRange(days)],
                     dimensions: [{ name: "deviceCategory" }],
                     metrics: [{ name: "activeUsers" }, { name: "sessions" }],
                     dimensionFilter,
@@ -913,7 +908,7 @@ export const analyticsSessions = onRequest(
 
         try {
             const propertyId = ga4PropertyId.value();
-            const days = parseInt(req.query.days as string) || 30;
+            const days = reportDays(req.query.days);
             const platform = req.query.platform as string || "";
 
             const dimensionFilter = platform && platform !== "all" ? {
@@ -927,7 +922,7 @@ export const analyticsSessions = onRequest(
                 // Session metrics over time
                 analyticsDataClient.runReport({
                     property: propertyId,
-                    dateRanges: [{ startDate: `${days}daysAgo`, endDate: "today" }],
+                    dateRanges: [reportDateRange(days)],
                     dimensions: [{ name: "date" }],
                     metrics: [
                         { name: "sessions" },
@@ -940,7 +935,7 @@ export const analyticsSessions = onRequest(
                 // Session duration distribution (using engagement time buckets)
                 analyticsDataClient.runReport({
                     property: propertyId,
-                    dateRanges: [{ startDate: `${days}daysAgo`, endDate: "today" }],
+                    dateRanges: [reportDateRange(days)],
                     metrics: [
                         { name: "sessions" },
                         { name: "averageSessionDuration" },
@@ -952,7 +947,7 @@ export const analyticsSessions = onRequest(
                 // Sessions by hour of day
                 analyticsDataClient.runReport({
                     property: propertyId,
-                    dateRanges: [{ startDate: `${days}daysAgo`, endDate: "today" }],
+                    dateRanges: [reportDateRange(days)],
                     dimensions: [{ name: "hour" }],
                     metrics: [{ name: "sessions" }],
                     orderBys: [{ dimension: { dimensionName: "hour" } }],
@@ -993,3 +988,66 @@ export const analyticsSessions = onRequest(
         }
     }
 );
+
+export const analyticsInsights = onRequest({ cors: true, region: "us-central1", timeoutSeconds: 120 }, async (req, res) => {
+    if (!(await verifyAdminRequest(req, res)).success) return;
+    const section = String(req.query.section || "gameplay");
+    const days = reportDays(req.query.days);
+    try {
+        const property = ga4PropertyId.value();
+        if (section === "ledgerDetails") {
+            const start = new Date();
+            start.setUTCDate(start.getUTCDate() - days + 1);
+            start.setUTCHours(0, 0, 0, 0);
+            const snapshot = await admin.firestore().collection("AnalyticsLedger").where("occurredAt", ">=", admin.firestore.Timestamp.fromDate(start)).orderBy("occurredAt", "desc").limit(1000).get();
+            const records = snapshot.docs.map(doc => doc.data());
+            const sources = new Map<string, string>();
+            for (const record of records) for (const entry of record.entries ?? []) {
+                if (entry.kind === "server_operation_result" && entry.status === "completed") sources.set(record.commitKey, String(entry.target || "operation"));
+                if (entry.kind === "server_iap_granted") sources.set(record.commitKey, "iap:" + String(entry.target || "unknown"));
+                if (entry.kind === "server_race_settled") sources.set(record.commitKey, "race_settlement:" + String(entry.target || "unknown"));
+            }
+            const rows = records.flatMap(record => (record.entries ?? []).map((entry: { kind: string; currency?: string; delta?: number; target?: string; status?: string }) => ({
+                occurredAt: record.occurredAt.toDate().toISOString(), commitKey: record.commitKey || "unknown", kind: entry.kind,
+                currency: entry.currency || "", delta: entry.delta ?? 0, target: entry.target || "", status: entry.status || "",
+                source: sources.get(record.commitKey) || "unattributed",
+            })));
+            res.json({ rows, truncated: snapshot.size === 1000, note: "Latest 1,000 server write events, UTC/all platforms. Source is joined only from a completed receipt, purchase grant or settlement with the same player and exact commit timestamp. Missing companions remain unattributed; background admin sources are never guessed." });
+            return;
+        }
+        if (section === "ledger") {
+            const start = new Date(Date.now() - (days - 1) * 86400000).toISOString().slice(0, 10);
+            const snapshot = await admin.firestore().collection("AnalyticsDaily").where("day", ">=", start).orderBy("day", "desc").limit(10000).get();
+            res.json({ rows: snapshot.docs.map(doc => doc.data()), note: "Authoritative server outcomes, UTC dates, all platforms. Kept separate from client balance observations. Collection starts after ledger triggers are deployed. GA4/Meta delivery is relayed by the client on its next login; this ledger is the authoritative source.", truncated: snapshot.size === 10000 });
+            return;
+        }
+        if (section === "funnels") {
+            const client = new v1alpha.AlphaAnalyticsDataClient();
+            const funnels = await Promise.all(Object.entries(funnelDefinitions).map(async ([name, events]) => {
+                try {
+                    const [report] = await client.runFunnelReport({ property, dateRanges: [reportDateRange(days)],
+                        dimensionFilter: platformFilter(req.query.platform),
+                        funnel: { isOpenFunnel: false, steps: events.map(eventName => ({ name: eventName, filterExpression: { funnelEventFilter: { eventName } } })) }, limit: 10000 });
+                    return { name, rows: reportRows(report.funnelTable ?? {}) };
+                } catch { return { name, rows: [], error: "GA4 could not return this funnel. Check property access and Data API availability." }; }
+            }));
+            res.json({ funnels, note: "Closed ordered user funnels over the selected dates. Purchase success is the client-confirmed grant step, not a replacement for revenue reporting." });
+            return;
+        }
+        const query = insightQuery(property, section, days, req.query.platform);
+        const [metadata] = await analyticsDataClient.getMetadata({ name: property + "/metadata" });
+        const available = new Set([...(metadata.dimensions ?? []), ...(metadata.metrics ?? [])].map(item => item.apiName));
+        const missing = [...(query.dimensions ?? []), ...(query.metrics ?? [])].map(item => item.name!).filter(name => !available.has(name));
+        if (missing.length) { res.json({ rows: [], notice: "Register the required GA4 report fields: " + missing.join(", "), missing }); return; }
+        const [report] = await analyticsDataClient.runReport(query);
+        const rows = reportRows(report);
+        res.json({ rows: section === "maps" ? mapPreferenceRows(rows) : rows, truncated: Number(report.rowCount || 0) > rows.length,
+            note: section === "maps" ? "Final non-abstaining votes divided by offered-map exposures. Changed-vote clicks are excluded; assignments are shown separately. These are event rates, not distinct-user preference percentages. Period boundaries may separate exposures and outcomes."
+                : section === "economy" ? "Client balance observations only: net changes between snapshots, not authoritative transaction totals. Use Server Ledger for complete server changes."
+                : section === "ads" ? "GA4 advertising revenue in USD from linked ad integrations. Diagnostic paid callbacks are not added to this revenue."
+                : "Event and user counts; race starts show usage, not preference among offered choices." });
+    } catch (error) {
+        console.error("Analytics insight report failed", { section, code: (error as { code?: unknown }).code });
+        res.status(500).json({ error: "This analytics report could not be loaded." });
+    }
+});

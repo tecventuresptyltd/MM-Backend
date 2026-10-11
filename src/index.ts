@@ -52,3 +52,11 @@ export { getAdminVersionStatus, getVersionHistory } from "./admin/adminVersion";
 export { setMaintenanceMode } from "./game-systems/adminMaintenance";
 export { setMinimumVersion } from "./game-systems/adminVersion";
 export { searchGameUsers, setGameAdminStatus, getGameAdmins } from "./game-systems/adminGameUsers";
+
+export { analyticsInsights } from "./analytics";
+export { recordAnalyticsEconomy, recordAnalyticsReceipt, recordAnalyticsGarage, recordAnalyticsSpells, recordAnalyticsIap, recordAnalyticsRace } from "./analytics/ledger.js";
+// Keep analytics delivery deployable without replacing the gameplay gateway.
+export { syncAnalyticsLedger } from "./analytics/relay.js";
+// A versioned standalone endpoint lets receipt-aware clients coexist with the
+// currently deployed gameplay gateway during the purchase-contract migration.
+export { verifyIapPurchase as verifyIapPurchaseV2 } from "./shop/iap.js";

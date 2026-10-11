@@ -1,0 +1,35 @@
+{
+  "dimensions": [
+    "map_id",
+    "car_id",
+    "mode",
+    "result",
+    "reason",
+    "step_id",
+    "source",
+    "sink",
+    "direction",
+    "success",
+    "product_id",
+    "sku",
+    "paywall_id",
+    "placement",
+    "ad_format",
+    "function",
+    "currency",
+    "status",
+    "target",
+    "scene_name",
+    "outcome"
+  ],
+  "metrics": [
+    "amount",
+    "race_time_ms",
+    "duration_ms",
+    "cost_coins",
+    "coins_earned",
+    "xp_earned",
+    "coins_added",
+    "shards_added"
+  ]
+}

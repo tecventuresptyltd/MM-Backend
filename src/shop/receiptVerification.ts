@@ -139,14 +139,14 @@ interface AppleResponse {
 const callApple = async (
   url: string,
   receiptData: string,
-  secret: string,
+  secret?: string,
 ): Promise<AppleResponse> => {
   const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       "receipt-data": receiptData,
-      password: secret,
+      ...(secret ? { password: secret } : {}),
     }),
   });
   if (!response.ok) {
@@ -158,11 +158,11 @@ const callApple = async (
 const verifyApple = async (
   payload: string,
   expectedProductId: string,
+  expectedTransactionId: string,
 ): Promise<VerifiedPurchase> => {
   const secret = process.env.APPLE_SHARED_SECRET;
-  if (!secret) {
-    throw new VerifierNotConfigured("APPLE_SHARED_SECRET is not configured.");
-  }
+  // Apple requires password only for receipts containing auto-renewable
+  // subscriptions. Consumable purchases still go through full store validation.
 
   let result = await callApple(APPLE_PRODUCTION_URL, payload, secret);
   if (result.status === APPLE_SANDBOX_STATUS) {
@@ -182,7 +182,7 @@ const verifyApple = async (
     ...(result.latest_receipt_info ?? []),
     ...(result.receipt?.in_app ?? []),
   ]
-    .filter((entry) => entry.product_id === expectedProductId)
+    .filter((entry) => entry.product_id === expectedProductId && entry.transaction_id === expectedTransactionId && !entry.cancellation_date && !entry.cancellation_date_ms)
     .sort((a, b) => purchaseDate(b) - purchaseDate(a))[0];
 
   if (!match) {
@@ -206,9 +206,12 @@ export const verifyReceipt = async (
   platform: IapPlatform,
   receipt: unknown,
   expectedProductId: string,
+  expectedTransactionId?: string,
 ): Promise<VerifiedPurchase> => {
-  const { payload } = parseUnityReceipt(receipt);
+  const { payload, transactionId, store } = parseUnityReceipt(receipt);
+  if ((platform === "android" && store !== "GooglePlay") || (platform === "ios" && store !== "AppleAppStore" && store !== "MacAppStore"))
+    throw new ReceiptRejected("Receipt store does not match platform.");
   return platform === "android"
     ? verifyAndroid(payload, expectedProductId)
-    : verifyApple(payload, expectedProductId);
+    : verifyApple(payload, expectedProductId, expectedTransactionId || transactionId);
 };

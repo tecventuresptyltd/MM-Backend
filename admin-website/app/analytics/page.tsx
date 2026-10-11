@@ -10,6 +10,7 @@ import { getFunctions, httpsCallable, connectFunctionsEmulator } from "firebase/
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { format } from "date-fns";
 import dynamic from "next/dynamic";
+import AnalyticsInsights from "./AnalyticsInsights";
 
 // Dynamically import the map component to avoid SSR issues with Leaflet
 const InteractiveWorldMap = dynamic(() => import("@/components/InteractiveWorldMap"), {
@@ -44,9 +45,10 @@ interface RevenueMetrics {
 }
 
 interface RetentionMetrics {
-    day1Retention: number;
-    day7Retention: number;
-    day30Retention: number;
+    days: number;
+    day1Retention: number | null;
+    day7Retention: number | null;
+    day30Retention: number | null;
     newUsers: number;
     returningUsers: number;
     returningRate: number;
@@ -90,7 +92,7 @@ interface CountryRevenueData {
 
 type DateRange = "1" | "7" | "14" | "30" | "60" | "90" | "180" | "365";
 type PlatformFilter = "all" | "Android" | "iOS";
-type TabId = "overview" | "revenue" | "retention" | "events" | "live" | "devices";
+type TabId = "insights" | "overview" | "revenue" | "retention" | "events" | "live" | "devices";
 
 interface RealtimeData {
     activeUsers: number;
@@ -133,8 +135,11 @@ export default function AnalyticsPage() {
     const [eventsData, setEventsData] = useState<EventData[]>([]);
     const [growthData, setGrowthData] = useState<GrowthData[]>([]);
     const [platformData, setPlatformData] = useState<PlatformData[]>([]);
+    const [reportErrors, setReportErrors] = useState<string[]>([]);
+    const [productNotice, setProductNotice] = useState<string | null>(null);
     const [productData, setProductData] = useState<ProductData[]>([]);
     const [countryRevenueData, setCountryRevenueData] = useState<CountryRevenueData[]>([]);
+    const [realtimeError, setRealtimeError] = useState<string | null>(null);
     const [realtimeData, setRealtimeData] = useState<RealtimeData | null>(null);
     const [lastRealtimeUpdate, setLastRealtimeUpdate] = useState<string>("");
     const [devicesData, setDevicesData] = useState<DevicesData | null>(null);
@@ -143,6 +148,9 @@ export default function AnalyticsPage() {
         try {
             setLoading(true);
             setError(null);
+            setReportErrors([]);
+            const partialErrors: string[] = [];
+            const safeFetch = (url: string, options: RequestInit) => fetch(url, options).catch(() => new Response(null, { status: 503 }));
 
             // Ensure user is fully authenticated
             if (!user || !app) {
@@ -176,9 +184,9 @@ export default function AnalyticsPage() {
             const functions = getFunctions(app, "us-central1");
 
             // Define callable functions
-            const analyticsOverviewFn = httpsCallable<void, OverviewMetrics>(functions, "analyticsOverview");
+            const analyticsOverviewFn = httpsCallable<{ platform: string }, OverviewMetrics>(functions, "analyticsOverview");
             const analyticsGrowthFn = httpsCallable<{ days: number; platform: string }, { data: GrowthData[] }>(functions, "analyticsGrowth");
-            const analyticsPlatformsFn = httpsCallable<void, { data: PlatformData[] }>(functions, "analyticsPlatforms");
+            const analyticsPlatformsFn = httpsCallable<{ days: number }, { data: PlatformData[] }>(functions, "analyticsPlatforms");
 
             // Call callable functions (onCall) and HTTP endpoints (onRequest) in parallel
             const [
@@ -193,49 +201,58 @@ export default function AnalyticsPage() {
                 countryRevenueRes
             ] = await Promise.all([
                 // Callable functions (secure without public invoker)
-                analyticsOverviewFn().catch((err) => {
+                analyticsOverviewFn({ platform }).catch((err) => {
                     console.error("analyticsOverview error:", err);
-                    throw err;
+                    partialErrors.push("analyticsOverview report unavailable");
+                    return null;
                 }),
                 analyticsGrowthFn({ days, platform }).catch((err) => {
                     console.error("analyticsGrowth error:", err);
-                    throw err;
+                    partialErrors.push("analyticsGrowth report unavailable");
+                    return null;
                 }),
-                analyticsPlatformsFn().catch((err) => {
+                analyticsPlatformsFn({ days }).catch((err) => {
                     console.error("analyticsPlatforms error:", err);
-                    throw err;
+                    partialErrors.push("analyticsPlatforms report unavailable");
+                    return null;
                 }),
                 // HTTP endpoints (onRequest functions)
-                fetch(`${baseUrl}/analyticsRevenue?days=${days}${platform ? `&platform=${platform}` : ""}`, { headers }),
-                fetch(`${baseUrl}/analyticsRetention`, { headers }),
-                fetch(`${baseUrl}/analyticsEvents?days=${days}&limit=15${platform ? `&platform=${platform}` : ""}`, { headers }),
-                fetch(`${baseUrl}/analyticsRevenueByProduct?days=${days}${platform ? `&platform=${platform}` : ""}`, { headers }),
-                fetch(`${baseUrl}/analyticsDevices?days=${days}${platform ? `&platform=${platform}` : ""}`, { headers }),
-                fetch(`${baseUrl}/analyticsRevenueByCountry?days=${days}${platform ? `&platform=${platform}` : ""}`, { headers }),
+                safeFetch(`${baseUrl}/analyticsRevenue?days=${days}${platform ? `&platform=${platform}` : ""}`, { headers }),
+                safeFetch(`${baseUrl}/analyticsRetention?days=${days}${platform ? `&platform=${platform}` : ""}`, { headers }),
+                safeFetch(`${baseUrl}/analyticsEvents?days=${days}&limit=15${platform ? `&platform=${platform}` : ""}`, { headers }),
+                safeFetch(`${baseUrl}/analyticsRevenueByProduct?days=${days}${platform ? `&platform=${platform}` : ""}`, { headers }),
+                safeFetch(`${baseUrl}/analyticsDevices?days=${days}${platform ? `&platform=${platform}` : ""}`, { headers }),
+                safeFetch(`${baseUrl}/analyticsRevenueByCountry?days=${days}${platform ? `&platform=${platform}` : ""}`, { headers }),
             ]);
 
             // Parse HTTP responses
+            const readReport = async (response: Response, name: string) => {
+                if (!response.ok) { partialErrors.push(name + " report failed (HTTP " + response.status + "). Please retry."); return null; }
+                try { return await response.json(); } catch { partialErrors.push(name + " returned invalid data"); return null; }
+            };
             const [revenue, retention, events, products, devices, countryRevenue] = await Promise.all([
-                revenueRes.ok ? revenueRes.json() : null,
-                retentionRes.ok ? retentionRes.json() : null,
-                eventsRes.ok ? eventsRes.json() : null,
-                productsRes.ok ? productsRes.json() : null,
-                devicesRes.ok ? devicesRes.json() : null,
-                countryRevenueRes.ok ? countryRevenueRes.json() : null,
+                readReport(revenueRes, "revenue"),
+                readReport(retentionRes, "retention"),
+                readReport(eventsRes, "events"),
+                readReport(productsRes, "products"),
+                readReport(devicesRes, "devices"),
+                readReport(countryRevenueRes, "countryRevenue"),
             ]);
 
             // Set state from callable function results
-            setMetrics(overviewResult.data);
-            setGrowthData(growthResult.data.data || []);
-            setPlatformData(platformsResult.data.data || []);
+            setMetrics(overviewResult?.data ?? null);
+            setGrowthData(growthResult?.data.data || []);
+            setPlatformData(platformsResult?.data.data || []);
 
             // Set state from HTTP responses
             setRevenueMetrics(revenue);
             setRetentionMetrics(retention);
             setEventsData(events?.data || []);
             setProductData(products?.data || []);
+            setProductNotice(products?.notice || null);
             setDevicesData(devices);
             setCountryRevenueData(countryRevenue?.topByArpu || []);
+            setReportErrors(partialErrors);
             setLoading(false);
         } catch (err: any) {
             console.error("Error fetching analytics:", err);
@@ -243,7 +260,7 @@ export default function AnalyticsPage() {
             if (err?.code === "functions/permission-denied" || err?.code === "functions/unauthenticated") {
                 setError("Access denied: Admin privileges required");
             } else {
-                setError("Failed to load analytics data");
+                setError(err instanceof Error ? err.message : "Failed to load analytics data");
             }
             setLoading(false);
         }
@@ -262,6 +279,7 @@ export default function AnalyticsPage() {
         { id: "revenue", label: "Revenue", icon: "💰" },
         { id: "retention", label: "Retention", icon: "🔄" },
         { id: "events", label: "Events", icon: "🎮" },
+        { id: "insights", label: "Game Insights", icon: "📈" },
         { id: "devices", label: "Devices", icon: "📱" },
     ];
 
@@ -278,13 +296,16 @@ export default function AnalyticsPage() {
                     'Authorization': `Bearer ${token}`,
                 },
             });
+            if (!res.ok) throw new Error("Live analytics failed (HTTP " + res.status + ").");
             if (res.ok) {
+                setRealtimeError(null);
                 const data = await res.json();
                 setRealtimeData(data);
                 setLastRealtimeUpdate(new Date().toLocaleTimeString());
             }
         } catch (err) {
             console.error("Error fetching realtime data:", err);
+            setRealtimeError(err instanceof Error ? err.message : "Live analytics failed. Please retry.");
         }
     }, [environmentConfig.functionsUrl, user]);
 
@@ -374,6 +395,8 @@ export default function AnalyticsPage() {
                         </div>
                     </div>
 
+                    {activeTab === "live" && realtimeError && <p role="alert" className="text-red-400 mb-4">{realtimeError}</p>}
+                    {reportErrors.length > 0 && <div role="alert" className="text-yellow-300 mb-4">{reportErrors.map(message => <p key={message}>{message}</p>)}</div>}
                     {/* Content */}
                     {loading ? (
                         <div className="flex items-center justify-center min-h-[400px]">
@@ -389,6 +412,7 @@ export default function AnalyticsPage() {
                         </div>
                     ) : (
                         <>
+                            {activeTab === "insights" && <AnalyticsInsights days={dateRange} platform={platformFilter} />}
                             {/* Live Tab */}
                             {activeTab === "live" && (
                                 <LiveTab
@@ -399,7 +423,7 @@ export default function AnalyticsPage() {
                             )}
 
                             {/* Overview Tab */}
-                            {activeTab === "overview" && (
+                            {activeTab === "overview" && metrics && (
                                 <OverviewTab
                                     metrics={metrics!}
                                     growthData={growthData}
@@ -412,7 +436,7 @@ export default function AnalyticsPage() {
                             {activeTab === "revenue" && (
                                 <RevenueTab
                                     revenueMetrics={revenueMetrics}
-                                    productData={productData}
+                                    productData={productData} productNotice={productNotice}
                                     countryRevenueData={countryRevenueData}
                                     COLORS={COLORS}
                                 />
@@ -1065,7 +1089,7 @@ function OverviewTab({ metrics, growthData, platformData, COLORS }: { metrics: O
     );
 }
 
-function RevenueTab({ revenueMetrics, productData, countryRevenueData, COLORS }: { revenueMetrics: RevenueMetrics | null; productData: ProductData[]; countryRevenueData: CountryRevenueData[]; COLORS: string[] }) {
+function RevenueTab({ revenueMetrics, productData, productNotice, countryRevenueData, COLORS }: { revenueMetrics: RevenueMetrics | null; productData: ProductData[]; productNotice: string | null; countryRevenueData: CountryRevenueData[]; COLORS: string[] }) {
     if (!revenueMetrics) {
         return (
             <div className="bg-yellow-900/30 border border-yellow-700/50 rounded-xl p-8">
@@ -1080,7 +1104,7 @@ function RevenueTab({ revenueMetrics, productData, countryRevenueData, COLORS }:
             {/* Revenue KPIs */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <KPICard
-                    title="Total Revenue"
+                    title="Purchase Revenue (USD)"
                     value={`$${revenueMetrics.totalRevenue.toLocaleString()}`}
                     icon="💰"
                     color="green"
@@ -1143,7 +1167,8 @@ function RevenueTab({ revenueMetrics, productData, countryRevenueData, COLORS }:
                     </ResponsiveContainer>
                 </ChartCard>
 
-                <ChartCard title="Revenue by Product">
+                <ChartCard title="Automatic In-App Purchase Revenue by Product (USD)">
+                    {productNotice && <p role="status" className="text-yellow-400 mb-4">{productNotice}</p>}
                     {productData.length > 0 ? (
                         <ResponsiveContainer width="100%" height={300}>
                             <BarChart data={productData.slice(0, 8)} layout="vertical">
@@ -1255,8 +1280,8 @@ function RetentionTab({ retentionMetrics }: { retentionMetrics: RetentionMetrics
     if (!retentionMetrics) {
         return (
             <div className="bg-yellow-900/30 border border-yellow-700/50 rounded-xl p-8">
-                <h3 className="font-semibold text-yellow-300 mb-2">📊 Loading Retention Data</h3>
-                <p className="text-yellow-400">Retention metrics are being calculated...</p>
+                <h3 className="font-semibold text-yellow-300 mb-2">📊 Retention Report Unavailable</h3>
+                <p className="text-yellow-400">Refresh to retry this report. Other reports remain available.</p>
             </div>
         );
     }
@@ -1287,9 +1312,9 @@ function RetentionTab({ retentionMetrics }: { retentionMetrics: RetentionMetrics
 
             {/* User Breakdown */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <KPICard title="New Users (30d)" value={retentionMetrics.newUsers} icon="🆕" color="blue" />
+                <KPICard title={`New Active Users (${retentionMetrics.days}d)`} value={retentionMetrics.newUsers} icon="🆕" color="blue" />
                 <KPICard title="Returning Users" value={retentionMetrics.returningUsers} icon="🔄" color="green" />
-                <KPICard title="Return Rate" value={`${retentionMetrics.returningRate}%`} icon="📈" color="purple" />
+                <KPICard title="Returning User Share" value={`${retentionMetrics.returningRate}%`} icon="📈" color="purple" />
             </div>
 
             {/* Retention Info */}
@@ -1297,9 +1322,9 @@ function RetentionTab({ retentionMetrics }: { retentionMetrics: RetentionMetrics
                 <h3 className="font-semibold text-blue-300 mb-2">💡 Understanding Retention</h3>
                 <ul className="text-sm text-blue-400 space-y-1">
                     <li>• <strong>Day 1 Retention:</strong> % of users who return the day after installation</li>
-                    <li>• <strong>Day 7 Retention:</strong> % of users active within the first week</li>
-                    <li>• <strong>Day 30 Retention:</strong> % of users still active after a month</li>
-                    <li>• Industry average D1 retention for mobile games is 25-40%</li>
+                    <li>• <strong>Day 7 Retention:</strong> % of acquired users active exactly 7 days later</li>
+                    <li>• <strong>Day 30 Retention:</strong> % of acquired users active exactly 30 days later</li>
+                    <li>• Only acquisition cohorts in the selected period with a fully completed return day are included. N/A means no mature cohort data. Returning user share uses new/returning active-user groups; a user can belong to both.</li>
                 </ul>
             </div>
         </>
@@ -1502,8 +1527,9 @@ function KPICard({ title, value, icon, color, subtitle }: { title: string; value
     );
 }
 
-function RetentionCard({ title, value, description, color }: { title: string; value: number; description: string; color: "green" | "blue" | "purple" }) {
+function RetentionCard({ title, value, description, color }: { title: string; value: number | null; description: string; color: "green" | "blue" | "purple" }) {
     const getColor = () => {
+        if (value === null) return "text-gray-400";
         if (value >= 40) return "text-green-400";
         if (value >= 20) return "text-yellow-400";
         return "text-red-400";
@@ -1518,7 +1544,7 @@ function RetentionCard({ title, value, description, color }: { title: string; va
     return (
         <div className={`bg-gradient-to-br ${colorClasses[color]} backdrop-blur-sm rounded-xl p-6 shadow-xl border text-center`}>
             <h3 className="text-sm font-medium text-gray-400 mb-2">{title}</h3>
-            <p className={`text-5xl font-bold ${getColor()} mb-2`}>{value}%</p>
+            <p className={`text-5xl font-bold ${getColor()} mb-2`}>{value === null ? "N/A" : `${value}%`}</p>
             <p className="text-xs text-gray-500">{description}</p>
         </div>
     );

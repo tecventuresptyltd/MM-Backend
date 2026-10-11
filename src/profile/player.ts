@@ -19,7 +19,7 @@ import {
   txUpdateInventorySummary,
 } from "../inventory/index.js";
 import { grantInventoryRewards } from "../shared/inventoryAwards.js";
-import { getLevelInfo } from "../shared/xp.js";
+import { getMasteryConfig, getMasteryRank, getMasteryProgress } from "../core/configV2.js";
 import { applyClanTrophyDelta, updateClanMemberSnapshot } from "../clan/helpers.js";
 import { refreshFriendSnapshots } from "../Socials/updateSnapshots.js";
 import { getCratesCatalog } from "../core/config.js";
@@ -179,6 +179,7 @@ export const markTutorialComplete = onCall(callableOptions({ minInstances: getMi
     getCratesCatalog(),
     loadStarterRewards(),
   ]);
+  const masteryConfig = await getMasteryConfig();
 
   const crateInfo = Object.entries(cratesCatalog).find(
     ([_, crate]) => crate.crateSkuId === TUTORIAL_RARE_CRATE_SKU,
@@ -286,12 +287,11 @@ export const markTutorialComplete = onCall(callableOptions({ minInstances: getMi
       xpGranted = TUTORIAL_REWARD_XP;
       trophiesGranted = TUTORIAL_REWARD_TROPHIES;
 
-      const xpBefore = Number(profileData.exp ?? 0);
-      const xpAfter = xpBefore + xpGranted;
-      const beforeInfo = getLevelInfo(xpBefore);
-      const afterInfo = getLevelInfo(xpAfter);
-      const afterRequiredForNextLevel = afterInfo.expInLevel + afterInfo.expToNext;
-      const levelsGained = afterInfo.level - beforeInfo.level;
+      const masteryXpAfter = Number(profileData.masteryXp ?? 0) + xpGranted;
+      const masteryRank = typeof profileData.pinnedMasteryRank === "number"
+        ? profileData.pinnedMasteryRank
+        : getMasteryRank(masteryXpAfter, masteryConfig);
+      const masteryProgress = getMasteryProgress(masteryXpAfter, masteryConfig);
 
       const trophiesBefore = Number(profileData.trophies ?? 0);
       const trophiesAfter = trophiesBefore + trophiesGranted;
@@ -299,11 +299,12 @@ export const markTutorialComplete = onCall(callableOptions({ minInstances: getMi
       const nextHighestTrophies = Math.max(highestTrophies, trophiesAfter);
 
       const profileUpdate: Record<string, unknown> = {
-        exp: xpAfter,
-        level: afterInfo.level,
-        expProgress: afterInfo.expInLevel,
-        expToNextLevel: afterRequiredForNextLevel,
-        expProgressDisplay: `${afterInfo.expInLevel} / ${afterRequiredForNextLevel}`,
+        masteryXp: masteryXpAfter,
+        masteryRank,
+        level: masteryRank,
+        expProgress: typeof profileData.pinnedMasteryRank === "number" ? 0 : masteryProgress.expProgress,
+        expToNextLevel: typeof profileData.pinnedMasteryRank === "number" ? 0 : masteryProgress.expToNextLevel,
+        expProgressDisplay: typeof profileData.pinnedMasteryRank === "number" ? "Max Rank" : masteryProgress.expProgressDisplay,
         trophies: trophiesAfter,
         highestTrophies: nextHighestTrophies,
         updatedAt: timestamp,
@@ -336,7 +337,7 @@ export const markTutorialComplete = onCall(callableOptions({ minInstances: getMi
         );
       }
 
-      finalLevel = afterInfo.level;
+      finalLevel = masteryRank;
       finalTrophies = trophiesAfter;
     }
 

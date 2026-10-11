@@ -6,8 +6,9 @@ import {
   ensureCatalogsSeeded,
 } from "./helpers/cleanup";
 import { wrapCallable } from "./helpers/callable";
-import { setUsername, setAgeYears, claimStarterOffer } from "../src/profile";
+import { setUsername, setAgeYears, claimStarterOffer, markTutorialComplete } from "../src/profile";
 import { loadStarterRewards } from "../src/shared/starterRewards";
+import { getMasteryConfig, getMasteryRank, getMasteryProgress } from "../src/core/configV2";
 
 describe("Profile Functions", () => {
   let uid: string;
@@ -159,6 +160,33 @@ describe("Profile Functions", () => {
       const quantityAfter =
         crateAfterRetry.data()?.quantity ?? crateAfterRetry.data()?.qty;
       expect(Number(quantityAfter ?? 0)).toBe(baseCrateQty + 1);
+    });
+  });
+
+  describe("markTutorialComplete", () => {
+    it("adds tutorial XP to mastery without replacing legacy XP fields", async () => {
+      const profileRef = admin.firestore().doc(`Players/${uid}/Profile/Profile`);
+      const economyRef = admin.firestore().doc(`Players/${uid}/Economy/Stats`);
+      const spellsRef = admin.firestore().doc(`Players/${uid}/Spells/Levels`);
+      await profileRef.set({ masteryXp: 500, masteryRank: 0, level: 0, exp: 80 }, { merge: true });
+      await spellsRef.set({ spells: { spell_2382r2jk: { level: 4, xp: 321, isXpCapped: true } } }, { merge: true });
+      const coinsBefore = Number((await economyRef.get()).data()?.coins ?? 0);
+      const config = await getMasteryConfig();
+      const wrapped = wrapCallable(markTutorialComplete);
+      await wrapped({ data: { grantRewards: true }, ...authFor(uid) });
+      await wrapped({ data: { grantRewards: true }, ...authFor(uid) });
+      const profile = (await profileRef.get()).data();
+      const expectedProgress = getMasteryProgress(600, config);
+      const economy = (await economyRef.get()).data();
+      const spells = (await spellsRef.get()).data();
+      expect(profile?.masteryXp).toBe(600);
+      expect(profile?.masteryRank).toBe(getMasteryRank(600, config));
+      expect(profile?.level).toBe(profile?.masteryRank);
+      expect(profile?.expProgress).toBe(expectedProgress.expProgress);
+      expect(profile?.expToNextLevel).toBe(expectedProgress.expToNextLevel);
+      expect(profile?.exp).toBe(80);
+      expect(Number(economy?.coins)).toBe(coinsBefore + 1000);
+      expect(spells?.spells?.spell_2382r2jk).toEqual({ level: 4, xp: 321, isXpCapped: true });
     });
   });
 });

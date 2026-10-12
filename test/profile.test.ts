@@ -6,8 +6,9 @@ import {
   ensureCatalogsSeeded,
 } from "./helpers/cleanup";
 import { wrapCallable } from "./helpers/callable";
-import { setUsername, setAgeYears, claimStarterOffer } from "../src/profile";
+import { setUsername, setAgeYears, claimStarterOffer, markTutorialComplete } from "../src/profile";
 import { loadStarterRewards } from "../src/shared/starterRewards";
+import { getMasteryConfig, getMasteryRank, getMasteryProgress, getXpCapForCar, getSpellEvolutionV2Catalog } from "../src/core/configV2";
 
 describe("Profile Functions", () => {
   let uid: string;
@@ -159,6 +160,93 @@ describe("Profile Functions", () => {
       const quantityAfter =
         crateAfterRetry.data()?.quantity ?? crateAfterRetry.data()?.qty;
       expect(Number(quantityAfter ?? 0)).toBe(baseCrateQty + 1);
+    });
+  });
+
+  describe("markTutorialComplete", () => {
+    it("grants car and unique equipped spell XP once under concurrent completion", async () => {
+      const db = admin.firestore();
+      const carId = "car_h4ayzwf31g";
+      const spellIds = ["spell_2382r2jk", "spell_test_second", "spell_test_third"];
+      await db.doc(`Players/${uid}/Loadouts/Active`).set({ carId, activeSpellDeck: 1 });
+      await db.doc(`Players/${uid}/Garage/Cars`).set({ cars: { [carId]: { starLevel: 2, carLevel: 2, xp: 0 } } });
+      await db.doc(`Players/${uid}/SpellDecks/Decks`).set({ decks: { "1": { spells: [...spellIds, spellIds[0], ""] } } });
+      await db.doc(`Players/${uid}/Spells/Levels`).set({ spells: Object.fromEntries(
+        [...spellIds, "spell_unequipped"].map(id => [id, { level: 2, xp: 0, isXpCapped: false }]),
+      ) });
+      const wrapped = wrapCallable(markTutorialComplete);
+      await Promise.all([
+        wrapped({ data: { grantRewards: true }, ...authFor(uid) }),
+        wrapped({ data: { grantRewards: true }, ...authFor(uid) }),
+      ]);
+      const car = (await db.doc(`Players/${uid}/Garage/Cars`).get()).data()?.cars[carId];
+      const spells = (await db.doc(`Players/${uid}/Spells/Levels`).get()).data()?.spells;
+      expect(car.xp).toBe(125);
+      expect(car.carLevel).toBe(2);
+      for (const id of spellIds) expect(spells[id]).toEqual({ level: 2, xp: 25, isXpCapped: false });
+      expect(spells.spell_unequipped.xp).toBe(0);
+    });
+
+    it("respects XP caps and preserves max-level spell progress", async () => {
+      const db = admin.firestore();
+      const carId = "car_h4ayzwf31g";
+      const cap = await getXpCapForCar(carId, 2);
+      const catalog = await getSpellEvolutionV2Catalog();
+      const spellCap = catalog.spellXpConfig.xpCapPerLevel["2"];
+      await db.doc(`Players/${uid}/Loadouts/Active`).set({ carId, activeSpellDeck: 1 });
+      await db.doc(`Players/${uid}/Garage/Cars`).set({ cars: { [carId]: { starLevel: 2, xp: cap - 10 } } });
+      await db.doc(`Players/${uid}/SpellDecks/Decks`).set({ decks: { "1": { spells: ["spell_2382r2jk", "spell_max"] } } });
+      await db.doc(`Players/${uid}/Spells/Levels`).set({ spells: {
+        spell_2382r2jk: { level: 2, xp: spellCap - 5, isXpCapped: false },
+        spell_max: { level: catalog.maxSpellLevel, xp: 777, isXpCapped: true },
+      } });
+      const result = await wrapCallable(markTutorialComplete)({ data: { grantRewards: true }, ...authFor(uid) });
+      expect(result.carXpGranted).toBe(10);
+      expect(result.spellXpGranted.spell_2382r2jk).toBe(5);
+      const car = (await db.doc(`Players/${uid}/Garage/Cars`).get()).data()?.cars[carId];
+      const spells = (await db.doc(`Players/${uid}/Spells/Levels`).get()).data()?.spells;
+      expect(car.xp).toBe(cap);
+      expect(car.isXpCapped).toBe(true);
+      expect(spells.spell_2382r2jk).toEqual({ level: 2, xp: spellCap, isXpCapped: true });
+      expect(spells.spell_max.xp).toBe(777);
+    });
+
+    it("does not grant car or spell XP when rewards are disabled or already claimed", async () => {
+      const db = admin.firestore();
+      const garageRef = db.doc(`Players/${uid}/Garage/Cars`);
+      const spellsRef = db.doc(`Players/${uid}/Spells/Levels`);
+      const garageBefore = (await garageRef.get()).data();
+      const spellsBefore = (await spellsRef.get()).data();
+      const wrapped = wrapCallable(markTutorialComplete);
+      await wrapped({ data: { grantRewards: false }, ...authFor(uid) });
+      await wrapped({ data: { grantRewards: true }, ...authFor(uid) });
+      expect((await garageRef.get()).data()).toEqual(garageBefore);
+      expect((await spellsRef.get()).data()).toEqual(spellsBefore);
+    });
+
+    it("adds tutorial XP to mastery without replacing legacy XP fields", async () => {
+      const profileRef = admin.firestore().doc(`Players/${uid}/Profile/Profile`);
+      const economyRef = admin.firestore().doc(`Players/${uid}/Economy/Stats`);
+      const spellsRef = admin.firestore().doc(`Players/${uid}/Spells/Levels`);
+      await profileRef.set({ masteryXp: 500, masteryRank: 0, level: 0, exp: 80 }, { merge: true });
+      await spellsRef.set({ spells: { spell_2382r2jk: { level: 4, xp: 321, isXpCapped: true } } }, { merge: true });
+      const coinsBefore = Number((await economyRef.get()).data()?.coins ?? 0);
+      const config = await getMasteryConfig();
+      const wrapped = wrapCallable(markTutorialComplete);
+      await wrapped({ data: { grantRewards: true }, ...authFor(uid) });
+      await wrapped({ data: { grantRewards: true }, ...authFor(uid) });
+      const profile = (await profileRef.get()).data();
+      const expectedProgress = getMasteryProgress(600, config);
+      const economy = (await economyRef.get()).data();
+      const spells = (await spellsRef.get()).data();
+      expect(profile?.masteryXp).toBe(600);
+      expect(profile?.masteryRank).toBe(getMasteryRank(600, config));
+      expect(profile?.level).toBe(profile?.masteryRank);
+      expect(profile?.expProgress).toBe(expectedProgress.expProgress);
+      expect(profile?.expToNextLevel).toBe(expectedProgress.expToNextLevel);
+      expect(profile?.exp).toBe(80);
+      expect(Number(economy?.coins)).toBe(coinsBefore + 1000);
+      expect(spells?.spells?.spell_2382r2jk).toEqual({ level: 4, xp: 321, isXpCapped: true });
     });
   });
 });

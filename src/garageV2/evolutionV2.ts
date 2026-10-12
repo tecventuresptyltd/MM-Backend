@@ -55,14 +55,14 @@ const db = admin.firestore();
 export const startCarEvolutionV2 = onCall(
     callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
     async (request) => {
-        const { carId, opId } = request.data as StartCarEvolutionRequest;
+        const { carId, opId, tutorial } = request.data as StartCarEvolutionRequest & { tutorial?: boolean };
         const uid = request.auth?.uid;
 
         if (!uid) {
             throw new HttpsError("unauthenticated", "User must be authenticated.");
         }
 
-        if (!carId || !opId) {
+        if (!carId || !opId || (tutorial !== undefined && typeof tutorial !== "boolean")) {
             throw new HttpsError("invalid-argument", "Missing required parameters: carId, opId");
         }
 
@@ -87,13 +87,15 @@ export const startCarEvolutionV2 = onCall(
                 const garageRef = db.doc(`/Players/${uid}/Garage/Cars`);
                 const pitCrewRef = db.doc(`/Players/${uid}/Queues/PitCrew`);
                 const profileRef = db.doc(`/Players/${uid}/Profile/Profile`);
+                const progressRef = db.doc(`/Players/${uid}/Progress/Initial`);
 
                 // Read all documents
-                const [economyDoc, garageDoc, pitCrewDoc, profileDoc] = await Promise.all([
+                const [economyDoc, garageDoc, pitCrewDoc, profileDoc, progressDoc] = await Promise.all([
                     transaction.get(economyRef),
                     transaction.get(garageRef),
                     transaction.get(pitCrewRef),
                     transaction.get(profileRef),
+                    tutorial === true ? transaction.get(progressRef) : Promise.resolve(null),
                 ]);
 
                 // Validate economy exists
@@ -115,14 +117,23 @@ export const startCarEvolutionV2 = onCall(
                     throw new HttpsError("not-found", `Player does not own car: ${carId}`);
                 }
 
-                // Check car is XP capped
-                if (carData.isXpCapped !== true) {
+                const currentStarLevel = Number(carData.starLevel ?? 1);
+                const tutorialProgress = progressDoc?.data() ?? {};
+                if (tutorial === true) {
+                    if (carId !== "car_h4ayzwf31g" || !progressDoc?.exists || tutorialProgress.tutorialComplete !== false) {
+                        throw new HttpsError("failed-precondition", "Tutorial evolution is only available for the starter car during an incomplete tutorial.");
+                    }
+                    if (tutorialProgress.tutorialCarEvolutionStarted === true) {
+                        throw new HttpsError("already-exists", "The tutorial car evolution was already started.");
+                    }
+                    if (currentStarLevel !== 1) {
+                        throw new HttpsError("failed-precondition", "Tutorial evolution requires the starter car at level 1.");
+                    }
+                } else if (carData.isXpCapped !== true) {
                     throw new HttpsError("failed-precondition", "Car has not reached the XP cap for its current level.");
                 }
 
                 // Check evolution costs from CarsCatalog (per-car, per-star-level)
-                const currentStarLevel = carData.starLevel ?? 1; // 1-10, matching CarsCatalog keys
-
                 const evolutionCost = await getEvolutionCostForCar(carId, currentStarLevel);
                 if (!evolutionCost) {
                     throw new HttpsError(
@@ -189,6 +200,7 @@ export const startCarEvolutionV2 = onCall(
                     completesAt: completesAtTimestamp,
                     targetCarLevel: targetStarLevel, // targetStarLevel == targetCarLevel (1:1)
                     coinsPaid: requiredCoins,
+                    ...(tutorial === true ? { tutorial: true } : {}),
                 };
 
                 if (pitCrewDoc.exists) {
@@ -202,6 +214,14 @@ export const startCarEvolutionV2 = onCall(
                         maxSlots: playerPitCrewSlots,
                         updatedAt: timestamp,
                     });
+                }
+                if (tutorial === true) {
+                    transaction.set(progressRef, {
+                        tutorialCarEvolutionStarted: true,
+                        tutorialCarEvolutionOpId: opId,
+                        tutorialCarEvolutionTargetLevel: targetStarLevel,
+                        updatedAt: timestamp,
+                    }, { merge: true });
                 }
 
                 return {
@@ -383,14 +403,14 @@ export const claimCarEvolutionV2 = onCall(
 export const skipCarEvolutionV2 = onCall(
     callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
     async (request) => {
-        const { carId, opId } = request.data as SkipCarEvolutionRequest;
+        const { carId, opId, tutorial } = request.data as SkipCarEvolutionRequest & { tutorial?: boolean };
         const uid = request.auth?.uid;
 
         if (!uid) {
             throw new HttpsError("unauthenticated", "User must be authenticated.");
         }
 
-        if (!carId || !opId) {
+        if (!carId || !opId || (tutorial !== undefined && typeof tutorial !== "boolean")) {
             throw new HttpsError("invalid-argument", "Missing required parameters: carId, opId");
         }
 
@@ -417,12 +437,14 @@ export const skipCarEvolutionV2 = onCall(
                 const economyRef = db.doc(`/Players/${uid}/Economy/Stats`);
                 const pitCrewRef = db.doc(`/Players/${uid}/Queues/PitCrew`);
                 const garageRef = db.doc(`/Players/${uid}/Garage/Cars`);
+                const progressRef = db.doc(`/Players/${uid}/Progress/Initial`);
 
                 // Read documents
-                const [economyDoc, pitCrewDoc, garageDoc] = await Promise.all([
+                const [economyDoc, pitCrewDoc, garageDoc, progressDoc] = await Promise.all([
                     transaction.get(economyRef),
                     transaction.get(pitCrewRef),
                     transaction.get(garageRef),
+                    tutorial === true ? transaction.get(progressRef) : Promise.resolve(null),
                 ]);
 
                 // Validate economy
@@ -442,15 +464,33 @@ export const skipCarEvolutionV2 = onCall(
                 }
 
                 // Validate pit crew
-                if (!pitCrewDoc.exists) {
+                if (!pitCrewDoc.exists && tutorial !== true) {
                     throw new HttpsError("not-found", "No cars in Pit Crew queue.");
                 }
 
-                const pitCrewData = pitCrewDoc.data() as UserPitCrewDoc;
+                const pitCrewData = (pitCrewDoc.data() ?? { slots: [] }) as UserPitCrewDoc;
                 const currentSlots = pitCrewData.slots ?? [];
 
                 // Find the car
                 const slotIndex = currentSlots.findIndex((slot) => slot.carId === carId);
+                if (slotIndex === -1 && tutorial === true) {
+                    const progress = progressDoc?.data() ?? {};
+                    if (!progressDoc?.exists || progress.tutorialComplete !== false || progress.tutorialCarEvolutionStarted !== true || progress.tutorialCarEvolutionSkipped === true || carId !== "car_h4ayzwf31g") {
+                        throw new HttpsError("failed-precondition", "Free tutorial skip is only available for the active tutorial car evolution.");
+                    }
+                    const targetLevel = Number(progress.tutorialCarEvolutionTargetLevel ?? 2);
+                    const currentLevel = Number(carData.starLevel ?? carData.carLevel ?? 1);
+                    if (currentLevel < targetLevel) {
+                        throw new HttpsError("not-found", "Tutorial car evolution is not active.");
+                    }
+                    transaction.set(progressRef, {
+                        tutorialCarEvolutionSkipped: true,
+                        tutorialCarEvolutionSkippedAt: timestamp,
+                        tutorialCarEvolutionSkipOpId: opId,
+                        updatedAt: timestamp,
+                    }, { merge: true });
+                    return { success: true, opId, carId, gemsSpent: 0, newCarLevel: currentLevel };
+                }
                 if (slotIndex === -1) {
                     throw new HttpsError("not-found", "Car is not in the Pit Crew queue.");
                 }
@@ -458,13 +498,21 @@ export const skipCarEvolutionV2 = onCall(
                 const slot = currentSlots[slotIndex];
                 const completesAt = slot.completesAt as admin.firestore.Timestamp;
 
+                if (tutorial === true) {
+                    const progress = progressDoc?.data() ?? {};
+                    const tutorialSlot = slot as PitCrewSlotEntry & { tutorial?: boolean };
+                    if (tutorialSlot.tutorial !== true || !progressDoc?.exists || progress.tutorialComplete !== false || progress.tutorialCarEvolutionStarted !== true) {
+                        throw new HttpsError("failed-precondition", "Free tutorial skip is only available for the active tutorial car evolution.");
+                    }
+                }
+
                 // Check if already complete
-                if (completesAt.toMillis() <= now) {
+                if (completesAt.toMillis() <= now && tutorial !== true) {
                     throw new HttpsError("failed-precondition", "Evolution is already complete. Use claim instead.");
                 }
 
                 const remainingSeconds = Math.ceil((completesAt.toMillis() - now) / 1000);
-                const skipCost = calculateSkipCost(
+                const skipCost = tutorial === true ? 0 : calculateSkipCost(
                     remainingSeconds,
                     evolutionCatalog.skipCost.gemsPerHour,
                     evolutionCatalog.skipCost.minGems,
@@ -483,10 +531,12 @@ export const skipCarEvolutionV2 = onCall(
                 // --- WRITES ---
 
                 // Deduct gems
-                transaction.update(economyRef, {
-                    gems: admin.firestore.FieldValue.increment(-skipCost),
-                    updatedAt: timestamp,
-                });
+                if (skipCost > 0) {
+                    transaction.update(economyRef, {
+                        gems: admin.firestore.FieldValue.increment(-skipCost),
+                        updatedAt: timestamp,
+                    });
+                }
 
                 // Remove from queue
                 const updatedSlots = currentSlots.filter((_, idx) => idx !== slotIndex);
@@ -504,6 +554,14 @@ export const skipCarEvolutionV2 = onCall(
                     [`cars.${carId}.isXpCapped`]: false,
                     [`cars.${carId}.updatedAt`]: timestamp,
                 });
+                if (tutorial === true) {
+                    transaction.set(progressRef, {
+                        tutorialCarEvolutionSkipped: true,
+                        tutorialCarEvolutionSkippedAt: timestamp,
+                        tutorialCarEvolutionSkipOpId: opId,
+                        updatedAt: timestamp,
+                    }, { merge: true });
+                }
 
                 return {
                     success: true,

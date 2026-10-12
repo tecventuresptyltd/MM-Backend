@@ -19,7 +19,7 @@ import {
   txUpdateInventorySummary,
 } from "../inventory/index.js";
 import { grantInventoryRewards } from "../shared/inventoryAwards.js";
-import { getLevelInfo } from "../shared/xp.js";
+import { getMasteryConfig, getMasteryRank, getMasteryProgress, getXpCapForCar, getSpellEvolutionV2Catalog } from "../core/configV2.js";
 import { applyClanTrophyDelta, updateClanMemberSnapshot } from "../clan/helpers.js";
 import { refreshFriendSnapshots } from "../Socials/updateSnapshots.js";
 import { getCratesCatalog } from "../core/config.js";
@@ -32,6 +32,8 @@ const SUBSCRIPTION_REWARD_GEMS = 25;
 const TUTORIAL_RARE_CRATE_SKU = "sku_72wnqwtfmx";
 const TUTORIAL_REWARD_COINS = 1000;
 const TUTORIAL_REWARD_XP = 100;
+const TUTORIAL_REWARD_CAR_XP = 125;
+const TUTORIAL_REWARD_SPELL_XP = 25;
 const TUTORIAL_REWARD_TROPHIES = 10;
 const TUTORIAL_SPELL_ID = "spell_2382r2jk"; // Ice Lock
 const TUTORIAL_SPELL_TARGET_LEVEL = 2;
@@ -172,12 +174,18 @@ export const markTutorialComplete = onCall(callableOptions({ minInstances: getMi
   const spellsRef = db.doc(`/Players/${uid}/Spells/Levels`);
   const crateSlotsRef = db.doc(`/Players/${uid}/Crates/Slots`);
   const decksRef = db.doc(`/Players/${uid}/SpellDecks/Decks`);
+  const garageRef = db.doc(`/Players/${uid}/Garage/Cars`);
+  const loadoutRef = db.doc(`/Players/${uid}/Loadouts/Active`);
   const timestamp = admin.firestore.FieldValue.serverTimestamp();
 
   const [slotsConfig, cratesCatalog, starterRewards] = await Promise.all([
     getCrateSlotsConfig(),
     getCratesCatalog(),
     loadStarterRewards(),
+  ]);
+  const [masteryConfig, spellCatalog] = await Promise.all([
+    getMasteryConfig(),
+    getSpellEvolutionV2Catalog(),
   ]);
 
   const crateInfo = Object.entries(cratesCatalog).find(
@@ -197,8 +205,12 @@ export const markTutorialComplete = onCall(callableOptions({ minInstances: getMi
   let finalLevel: number | null = null;
   let finalTrophies: number | null = null;
   let firstHourEnrolled = false;
+  let carXpGranted = 0;
+  let spellXpGranted: Record<string, number> = {};
   await db.runTransaction(async (transaction) => {
-    const [progressSnap, profileSnap, statsSnap, spellsSnap, crateSlotsSnap, decksSnap, firstHourSnap] = await transaction.getAll(
+    carXpGranted = 0;
+    spellXpGranted = {};
+    const [progressSnap, profileSnap, statsSnap, spellsSnap, crateSlotsSnap, decksSnap, firstHourSnap, garageSnap, loadoutSnap] = await transaction.getAll(
       progressRef,
       profileRef,
       statsRef,
@@ -206,6 +218,8 @@ export const markTutorialComplete = onCall(callableOptions({ minInstances: getMi
       crateSlotsRef,
       decksRef,
       firstHourRef(uid),
+      garageRef,
+      loadoutRef,
     );
 
     if (!profileSnap.exists) {
@@ -235,6 +249,41 @@ export const markTutorialComplete = onCall(callableOptions({ minInstances: getMi
     if (grantRewards && !rewardAlreadyGranted) {
       const profileData = profileSnap.data() ?? {};
       const spellsData = spellsSnap.exists ? spellsSnap.data() ?? {} : {};
+      const loadout = loadoutSnap.data() ?? {};
+      const carId = String(loadout.carId ?? "car_h4ayzwf31g");
+      const car = garageSnap.data()?.cars?.[carId];
+      if (car) {
+        const carLevel = Number(car.starLevel ?? car.carLevel ?? 1);
+        const currentXp = Math.max(0, Number(car.xp ?? 0));
+        const cap = await getXpCapForCar(carId, carLevel);
+        if (cap > 0 && car.isXpCapped !== true) {
+          carXpGranted = Math.max(0, Math.min(TUTORIAL_REWARD_CAR_XP, cap - currentXp));
+          transaction.update(garageRef, {
+            [`cars.${carId}.xp`]: currentXp + carXpGranted,
+            [`cars.${carId}.isXpCapped`]: currentXp + carXpGranted >= cap,
+            [`cars.${carId}.updatedAt`]: timestamp,
+          });
+        }
+      }
+      const deckIndex = String(loadout.activeSpellDeck ?? 1);
+      const deckSpells: string[] = decksSnap.data()?.decks?.[deckIndex]?.spells ?? [];
+      const spellUpdates: Record<string, unknown> = {};
+      for (const spellId of new Set(deckSpells)) {
+        if (!spellId) continue;
+        const spell = spellsData.spells?.[spellId];
+        const level = Number(spell?.level ?? spellsData.levels?.[spellId] ?? 0);
+        if (level < 1 || level >= spellCatalog.maxSpellLevel || spell?.isXpCapped === true) continue;
+        const currentXp = Math.max(0, Number(spell?.xp ?? 0));
+        const cap = Number(spellCatalog.spellXpConfig.xpCapPerLevel?.[String(level)] ?? 9999);
+        const granted = Math.max(0, Math.min(TUTORIAL_REWARD_SPELL_XP, cap - currentXp));
+        spellXpGranted[spellId] = granted;
+        spellUpdates[`spells.${spellId}.level`] = level;
+        spellUpdates[`spells.${spellId}.xp`] = currentXp + granted;
+        spellUpdates[`spells.${spellId}.isXpCapped`] = currentXp + granted >= cap;
+      }
+      if (Object.keys(spellUpdates).length > 0) {
+        transaction.update(spellsRef, { ...spellUpdates, updatedAt: timestamp });
+      }
 
       const slotsData = (
         crateSlotsSnap.exists ? crateSlotsSnap.data() : { slots: [], maxSlots: slotsConfig.maxSlots }
@@ -286,12 +335,11 @@ export const markTutorialComplete = onCall(callableOptions({ minInstances: getMi
       xpGranted = TUTORIAL_REWARD_XP;
       trophiesGranted = TUTORIAL_REWARD_TROPHIES;
 
-      const xpBefore = Number(profileData.exp ?? 0);
-      const xpAfter = xpBefore + xpGranted;
-      const beforeInfo = getLevelInfo(xpBefore);
-      const afterInfo = getLevelInfo(xpAfter);
-      const afterRequiredForNextLevel = afterInfo.expInLevel + afterInfo.expToNext;
-      const levelsGained = afterInfo.level - beforeInfo.level;
+      const masteryXpAfter = Number(profileData.masteryXp ?? 0) + xpGranted;
+      const masteryRank = typeof profileData.pinnedMasteryRank === "number"
+        ? profileData.pinnedMasteryRank
+        : getMasteryRank(masteryXpAfter, masteryConfig);
+      const masteryProgress = getMasteryProgress(masteryXpAfter, masteryConfig);
 
       const trophiesBefore = Number(profileData.trophies ?? 0);
       const trophiesAfter = trophiesBefore + trophiesGranted;
@@ -299,11 +347,12 @@ export const markTutorialComplete = onCall(callableOptions({ minInstances: getMi
       const nextHighestTrophies = Math.max(highestTrophies, trophiesAfter);
 
       const profileUpdate: Record<string, unknown> = {
-        exp: xpAfter,
-        level: afterInfo.level,
-        expProgress: afterInfo.expInLevel,
-        expToNextLevel: afterRequiredForNextLevel,
-        expProgressDisplay: `${afterInfo.expInLevel} / ${afterRequiredForNextLevel}`,
+        masteryXp: masteryXpAfter,
+        masteryRank,
+        level: masteryRank,
+        expProgress: typeof profileData.pinnedMasteryRank === "number" ? 0 : masteryProgress.expProgress,
+        expToNextLevel: typeof profileData.pinnedMasteryRank === "number" ? 0 : masteryProgress.expToNextLevel,
+        expProgressDisplay: typeof profileData.pinnedMasteryRank === "number" ? "Max Rank" : masteryProgress.expProgressDisplay,
         trophies: trophiesAfter,
         highestTrophies: nextHighestTrophies,
         updatedAt: timestamp,
@@ -336,7 +385,7 @@ export const markTutorialComplete = onCall(callableOptions({ minInstances: getMi
         );
       }
 
-      finalLevel = afterInfo.level;
+      finalLevel = masteryRank;
       finalTrophies = trophiesAfter;
     }
 
@@ -372,6 +421,8 @@ export const markTutorialComplete = onCall(callableOptions({ minInstances: getMi
     xpGranted,
     trophiesGranted,
     firstHourEnrolled,
+    carXpGranted,
+    spellXpGranted,
   };
 });
 export const setAvatar = onCall(callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true), async (request) => {

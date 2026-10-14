@@ -27,6 +27,7 @@ export { onPlayerProfileUpdate } from "./clan/onPlayerProfileUpdate.js";
 export { clanLeaderboardJob } from "./clan/leaderboardJob.js";
 export { clanMemberSyncJob } from "./clan/memberSyncJob.js";
 export { leaderboards } from "./Socials";
+export { presenceReaper } from "./Socials/presenceReaper.js";
 export { upgradeCompletionJob, completeUpgradeTask } from "./upgrades";
 
 // Plain HTTP endpoints. The admin dashboard calls these directly.

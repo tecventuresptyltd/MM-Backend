@@ -1,4 +1,3 @@
-import { challengesEnvironmentEnabled } from "../challenges/config.js";
 import * as admin from "firebase-admin";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { REGION } from "../shared/region.js";
@@ -800,7 +799,7 @@ export const prepareRace = onCall(callableOptions({ minInstances: getMinInstance
         playerIndex: 0,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         carId,
-        ...(challengesEnvironmentEnabled() ? { challengeTopSpeedKph: playerStats.real.topSpeed * (1 + Math.max(0, playerStats.real.boostPower)) } : {}),
+        challengeTopSpeedKph: playerStats.real.topSpeed * (1 + Math.max(0, playerStats.real.boostPower)),
         deckIndex,
       });
     });

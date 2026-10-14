@@ -33,7 +33,7 @@ import {
 } from "./economy.js";
 import { PlayerBoostersState } from "../shared/types.js";
 import { LeaderboardMetric } from "../Socials/types.js";
-import { FirstHourRaceOutcome, firstHourRef, planFirstHourRace, readFirstHourState, writeFirstHourRaceOutcome } from "../onboarding/firstHour.js";
+import { FIRST_HOUR_BONUS_SPELL_ID, FirstHourRaceOutcome, firstHourRef, planFirstHourRace, readFirstHourState, writeFirstHourRaceOutcome } from "../onboarding/firstHour.js";
 import { GameMode, resolveGameMode, getTrophyFields, shouldSyncClanTrophies, shouldModifyTrophies, hasLeaderboard } from "../shared/gamemode.js";
 import { getTrophyConfigForGameMode } from "./economy.js";
 
@@ -892,7 +892,9 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
         const spellXpAmount = Math.max(0, Math.round((baseXp + winBonus) * modeMultiplier * timeRatio));
 
         const spellsNestedData: Record<string, { xp: number; isXpCapped: boolean; level: number }> = {};
-        const firstHourSpellId = deckSpells.find((id) => typeof id === "string" && id.length > 0) ?? null;
+        const firstHourSpellId = deckSpells.includes(FIRST_HOUR_BONUS_SPELL_ID)
+          ? FIRST_HOUR_BONUS_SPELL_ID
+          : deckSpells.find((id) => typeof id === "string" && id.length > 0) ?? null;
         for (const spellId of deckSpells) {
           if (!spellId || typeof spellId !== "string") continue;
           uncappedSpellXp += spellXpAmount;

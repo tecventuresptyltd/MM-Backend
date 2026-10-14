@@ -2,7 +2,6 @@ import * as admin from "firebase-admin";
 import { createHash } from "node:crypto";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { callableOptions } from "../shared/callableOptions.js";
-import { assertNotInMaintenance } from "../shared/maintenanceCheck.js";
 import { getCarEvolutionV2Catalog, getMasteryConfig, getMasteryRank, getMasteryProgress } from "../core/configV2.js";
 import { applyRewardBundle, prepareRewardBundle } from "../shared/rewardBundle.js";
 import { sanitizeForFirestore } from "../core/idempotency.js";
@@ -19,7 +18,6 @@ async function context(request: any) {
   const uid = request.auth?.uid;
   if (!uid) throw new HttpsError("unauthenticated", "Sign in to view challenges.");
   const defs = (await getChallengesDefinitions())!;
-  await assertNotInMaintenance(uid);
   const evolution = await getCarEvolutionV2Catalog();
   return { uid, defs, now: nowFor(request.data), maxCarLevel: evolution.maxStarLevel };
 }

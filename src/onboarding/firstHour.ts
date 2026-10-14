@@ -10,6 +10,7 @@ export const FIRST_HOUR_STARTING_GEMS = 30;
 export const FIRST_HOUR_CRATE_RACE = 2;
 export const FIRST_HOUR_SPELL_BONUS_RACES = 5;
 export const FIRST_HOUR_SHARD_TARGET = 30;
+export const FIRST_HOUR_BONUS_SPELL_ID = "spell_2382r2jk";
 
 const DOUBLE_COIN_MODES = new Set(["ELIMINATION", "POLICE", "INFECTED"]);
 
@@ -25,6 +26,7 @@ export const FIRST_HOUR_STEPS = [
   "clans_intro",
   "rank_rewards",
   "daily_tomorrow",
+  "challenges_rewards",
 ] as const;
 
 export interface FirstHourState {

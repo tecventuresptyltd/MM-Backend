@@ -17,10 +17,6 @@ export interface ChallengesConfig {
 }
 export interface Definitions { config: ChallengesConfig; challenges: Objective[]; achievements: Objective[]; resetOffsetMinutes: number }
 let cached: { at: number; value: Definitions | null } | null = null;
-export function challengesEnvironmentEnabled(): boolean {
-  const project = process.env.GCLOUD_PROJECT ?? admin.app().options.projectId;
-  return project === "mystic-motors-sandbox" || (project === "demo-test" && !!process.env.FIRESTORE_EMULATOR_HOST);
-}
 export function resetChallengesCache(): void { cached = null; }
 const finite = (value: unknown, min = 0): value is number => typeof value === "number" && Number.isFinite(value) && value >= min;
 const validId = (value: unknown): value is string => typeof value === "string" && /^[a-zA-Z0-9_-]{1,80}$/.test(value);
@@ -57,10 +53,6 @@ export function parseDefinitions(config: any, challenges: any, achievements: any
   return { config, challenges: daily, achievements: parse(achievements, true), resetOffsetMinutes: offset };
 }
 export async function getChallengesDefinitions(required = true): Promise<Definitions | null> {
-  if (!challengesEnvironmentEnabled()) {
-    if (required) throw new HttpsError("unavailable", "Challenges are available only in sandbox.");
-    return null;
-  }
   if (cached && !process.env.FIRESTORE_EMULATOR_HOST && Date.now() - cached.at < 60_000) {
     if (required && !cached.value) throw new HttpsError("unavailable", "Challenges are not enabled.");
     return cached.value;

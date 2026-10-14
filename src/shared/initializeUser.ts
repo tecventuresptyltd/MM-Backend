@@ -1,4 +1,3 @@
-import { challengesEnvironmentEnabled } from "../challenges/config.js";
 import { emptyAchievements } from "../challenges/state.js";
 import * as admin from "firebase-admin";
 import { HttpsError } from "firebase-functions/v2/https";
@@ -767,7 +766,7 @@ export async function initializeUserIfNeeded(
 
         const displayName = inferredGuest ? "Guest" : "New Racer";
 
-        if (!profileDoc.exists && challengesEnvironmentEnabled()) {
+        if (!profileDoc.exists) {
           tx.set(db.doc(`Players/${uid}/Challenges/Daily`), { dayIndex: -1, challenges: [], milestonesClaimed: [], swapsUsed: 0, retiredIds: [] });
           tx.set(db.doc(`Players/${uid}/Achievements/Progress`), emptyAchievements());
         }

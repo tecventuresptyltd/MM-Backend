@@ -36,6 +36,7 @@ import { LeaderboardMetric } from "../Socials/types.js";
 import { FIRST_HOUR_BONUS_SPELL_ID, FirstHourRaceOutcome, firstHourRef, planFirstHourRace, readFirstHourState, writeFirstHourRaceOutcome } from "../onboarding/firstHour.js";
 import { GameMode, resolveGameMode, getTrophyFields, shouldSyncClanTrophies, shouldModifyTrophies, hasLeaderboard } from "../shared/gamemode.js";
 import { getTrophyConfigForGameMode } from "./economy.js";
+import { AD_REWARD_VERIFICATIONS_COLLECTION, adRewardVerificationId, isAdmobSsvEnforced } from "../ads/admobSsv.js";
 
 const db = admin.firestore();
 
@@ -1272,14 +1273,22 @@ export const claimDoubleReward = onCall(callableOptions({ memory: "256MiB", cpu:
     const economyRef = db.doc(`/Players/${uid}/Economy/Stats`);
     const profileRef = db.doc(`/Players/${uid}/Profile/Profile`);
     const adWatchLogRef = db.doc(`/Players/${uid}/Ads/WatchLog`);
+    const verificationId = adRewardVerificationId(uid, raceId);
+    const adVerificationRef = db.doc(`/${AD_REWARD_VERIFICATIONS_COLLECTION}/${verificationId ?? "invalid"}`);
 
-    const [raceDoc, participantDoc, economyDoc, profileDoc, adWatchLogDoc] = await transaction.getAll(
+    const [raceDoc, participantDoc, economyDoc, profileDoc, adWatchLogDoc, adVerificationDoc] = await transaction.getAll(
       raceRef,
       participantRef,
       economyRef,
       profileRef,
-      adWatchLogRef
+      adWatchLogRef,
+      adVerificationRef
     );
+
+    const adVerified = verificationId !== null && adVerificationDoc.exists;
+    if (!adVerified && isAdmobSsvEnforced()) {
+      throw new HttpsError("failed-precondition", "Ad reward not verified yet. Please try again.");
+    }
 
     if (!raceDoc.exists) {
       throw new HttpsError("not-found", "Race not found.");
@@ -1359,6 +1368,7 @@ export const claimDoubleReward = onCall(callableOptions({ memory: "256MiB", cpu:
     transaction.update(participantRef, {
       doubleRewardClaimed: true,
       doubleRewardClaimedAt: admin.firestore.FieldValue.serverTimestamp(),
+      doubleRewardAdVerified: adVerified,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 

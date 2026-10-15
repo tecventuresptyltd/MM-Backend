@@ -32,6 +32,7 @@ export { upgradeCompletionJob, completeUpgradeTask } from "./upgrades";
 
 // Plain HTTP endpoints. The admin dashboard calls these directly.
 export { healthcheck } from "./health/healthcheck";
+export { admobSsv } from "./ads/admobSsv.js";
 export {
   analyticsRevenue,
   analyticsRevenueByProduct,

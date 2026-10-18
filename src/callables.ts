@@ -129,6 +129,7 @@ export {
 // V2 Speedups: Use speedup items to reduce queue timers
 export {
   useSpeedupV2,
+  speedupWithAdV2,
 } from "./speedups";
 
 // V2 Upgrade Completion: Auto-complete timer-based upgrades

@@ -8,3 +8,6 @@
 export {
     useSpeedupV2,
 } from "./useSpeedupV2.js";
+export {
+    speedupWithAdV2,
+} from "./speedupWithAdV2.js";

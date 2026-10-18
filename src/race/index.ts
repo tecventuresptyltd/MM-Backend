@@ -1238,16 +1238,16 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
 });
 
 // --- Ad Watch Limits ---
-const AD_WATCH_MAX_PER_24H = 10;
-const AD_WATCH_MAX_PER_SESSION = 4;
+export const AD_WATCH_MAX_PER_24H = 10;
+export const AD_WATCH_MAX_PER_SESSION = 4;
 
-interface AdWatchEntry {
+export interface AdWatchEntry {
   timestamp: admin.firestore.Timestamp;
   type: string;
   raceId: string;
 }
 
-interface AdWatchLogData {
+export interface AdWatchLogData {
   watches: AdWatchEntry[];
   sessionId: string | null;
   sessionCount: number;

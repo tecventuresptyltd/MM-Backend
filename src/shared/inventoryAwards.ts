@@ -1,6 +1,7 @@
 import * as admin from "firebase-admin";
 import { db } from "./firestore.js";
 import { resolveInventoryContext } from "./inventory.js";
+import { resolveSkuOrThrow } from "../core/config.js";
 import {
   createTxInventorySummaryState,
   createTxSkuDocState,
@@ -48,6 +49,62 @@ const normaliseGrant = (grant: InventoryGrant): InventoryGrant | null => {
   return { skuId, quantity };
 };
 
+const isCosmeticState = async (state: TxSkuDocState, skuId: string): Promise<boolean> => {
+  if (state.type) {
+    return state.type === "cosmetic";
+  }
+  const sku = await resolveSkuOrThrow(skuId);
+  return sku?.type === "cosmetic";
+};
+
+const dropOwnedCosmetics = async (
+  grants: InventoryGrant[],
+  skuStates: TxSkuDocState[],
+): Promise<{ grants: InventoryGrant[]; skuStates: TxSkuDocState[] }> => {
+  const keptGrants: InventoryGrant[] = [];
+  const keptStates: TxSkuDocState[] = [];
+  const grantedCosmetics = new Set<string>();
+
+  for (let i = 0; i < grants.length; i += 1) {
+    const grant = grants[i];
+    const state = skuStates[i];
+    if (await isCosmeticState(state, grant.skuId)) {
+      if (Number(state.quantity ?? 0) > 0 || grantedCosmetics.has(grant.skuId)) {
+        continue;
+      }
+      grantedCosmetics.add(grant.skuId);
+      keptGrants.push({ skuId: grant.skuId, quantity: 1 });
+    } else {
+      keptGrants.push(grant);
+    }
+    keptStates.push(state);
+  }
+
+  return { grants: keptGrants, skuStates: keptStates };
+};
+
+export const readOwnedSkuIds = async (
+  uid: string,
+  skuIds: string[],
+  transaction?: FirebaseFirestore.Transaction,
+): Promise<Set<string>> => {
+  const owned = new Set<string>();
+  const uniqueIds = [...new Set(skuIds.filter((id) => typeof id === "string" && id.trim()))];
+  if (uniqueIds.length === 0) {
+    return owned;
+  }
+  const inventoryCtx = resolveInventoryContext(uid);
+  const refs = uniqueIds.map((id) => inventoryCtx.inventoryCollection.doc(id));
+  const snaps = transaction ? await transaction.getAll(...refs) : await db.getAll(...refs);
+  snaps.forEach((snap, idx) => {
+    const data = snap.data() ?? {};
+    if (Number(data.quantity ?? data.qty ?? 0) > 0) {
+      owned.add(uniqueIds[idx]);
+    }
+  });
+  return owned;
+};
+
 /**
  * READ PHASE. Loads the inventory summary and every target SKU doc up front.
  * Safe to call alongside other reads; performs no writes.
@@ -82,7 +139,9 @@ export const prepareInventoryGrants = async (
     createTxSkuDocState(db, uid, normalised[idx].skuId, snap)
   );
 
-  return { grants: normalised, summaryState, skuStates };
+  const filtered = await dropOwnedCosmetics(normalised, skuStates);
+
+  return { grants: filtered.grants, summaryState, skuStates: filtered.skuStates };
 };
 
 /**

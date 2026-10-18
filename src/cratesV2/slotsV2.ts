@@ -36,7 +36,7 @@ import {
     CrateRewardItem,
     CrateRewardsConfig,
 } from "../shared/typesV2.js";
-import { grantInventoryRewards } from "../shared/inventoryAwards.js";
+import { grantInventoryRewards, readOwnedSkuIds } from "../shared/inventoryAwards.js";
 
 const db = admin.firestore();
 
@@ -458,8 +458,16 @@ export const claimCrateRewardV2 = onCall(
                 });
 
                 // --- 3. Roll random cosmetics of this rarity ---
-                const matchingCosmetics = cosmeticSkus.filter(
+                const rarityCosmetics = cosmeticSkus.filter(
                     (sku) => (sku.rarity?.toLowerCase() ?? "") === crateRarity
+                );
+                const ownedCosmetics = await readOwnedSkuIds(
+                    uid,
+                    rarityCosmetics.map((sku) => sku.skuId),
+                    transaction,
+                );
+                const matchingCosmetics = rarityCosmetics.filter(
+                    (sku) => !ownedCosmetics.has(sku.skuId)
                 );
 
                 const cosmeticsToAward = Math.min(

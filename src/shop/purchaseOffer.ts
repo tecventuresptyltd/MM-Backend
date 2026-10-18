@@ -76,6 +76,7 @@ interface ResolvedSkuEntitlement {
 
 type GrantPlan =
   | { kind: "currency"; summary: GrantSummary; }
+  | { kind: "owned"; summary: GrantSummary; }
   | { kind: "sku"; sku: ItemSku; quantity: number; entitlementType: OfferEntitlement["type"]; context: TxSkuMutationContext; };
 
 type ActiveOfferSlot =
@@ -346,6 +347,7 @@ export async function fulfillOfferPurchase(uid: string, opId: string, offerId: s
       for (const [skuId] of inventoryRefs) snapshotBySku.set(skuId, inventorySnapshots[snapshotIndex++] ?? null);
 
       const grantPlans: GrantPlan[] = [];
+      const plannedCosmetics = new Set<string>();
       for (const entry of resolvedEntitlements) {
         if (!entry.sku) {
           if (entry.entitlement.type === "gems") { gemsAfter += entry.quantity; grantPlans.push({ kind: "currency", summary: { type: "gems", quantity: entry.quantity } }); }
@@ -360,8 +362,18 @@ export async function fulfillOfferPurchase(uid: string, opId: string, offerId: s
         const currentQty = Number.isFinite(parsedQty) && parsedQty > 0 ? Math.floor(parsedQty) : 0;
         if (sku.stackable === false && currentQty > 0) throw new HttpsError("failed-precondition", `SKU ${sku.skuId} already owned.`);
 
+        const isCosmetic = resolveItemType(sku) === "cosmetic";
+        if (isCosmetic && (currentQty > 0 || plannedCosmetics.has(sku.skuId))) {
+          grantPlans.push({
+            kind: "owned",
+            summary: { type: entry.entitlement.type, skuId: sku.skuId, itemId: sku.itemId, quantity: 0, total: Math.max(currentQty, 1), alreadyOwned: true },
+          });
+          continue;
+        }
+        if (isCosmetic) plannedCosmetics.add(sku.skuId);
+
         grantPlans.push({
-          kind: "sku", sku, quantity: entry.quantity, entitlementType: entry.entitlement.type,
+          kind: "sku", sku, quantity: isCosmetic ? 1 : entry.quantity, entitlementType: entry.entitlement.type,
           context: { quantity: currentQty, exists: snapshot?.exists ?? false, createdAt: data.createdAt, timestamp },
         });
       }
@@ -381,7 +393,7 @@ export async function fulfillOfferPurchase(uid: string, opId: string, offerId: s
       const { currency: chargeCurrency, amount: chargeAmount } = reads.charge;
 
       for (const plan of reads.grantPlans) {
-        if (plan.kind === "currency") { grants.push(plan.summary); continue; }
+        if (plan.kind !== "sku") { grants.push(plan.summary); continue; }
         const result = await incSkuQtyTx(transaction, db, uid, plan.sku.skuId, plan.quantity, plan.context);
         summaryChanges[plan.sku.skuId] = (summaryChanges[plan.sku.skuId] ?? 0) + plan.quantity;
         const grant: GrantSummary = { type: plan.entitlementType, skuId: plan.sku.skuId, itemId: plan.sku.itemId, quantity: plan.quantity, total: result.after };

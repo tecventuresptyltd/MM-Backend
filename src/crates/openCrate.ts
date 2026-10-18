@@ -37,7 +37,7 @@ import {
   AwardedItem,
   CrateRewardItem,
 } from "../shared/typesV2.js";
-import { grantInventoryRewards } from "../shared/inventoryAwards.js";
+import { grantInventoryRewards, readOwnedSkuIds } from "../shared/inventoryAwards.js";
 import {
   decSkuQtyOrThrowTx,
 } from "../inventory/index.js";
@@ -201,9 +201,10 @@ export const openCrate = onCall(
     }
 
     // ── Roll rewards for ALL crates ──
-    const matchingCosmetics = cosmeticSkus.filter(
+    const rarityCosmetics = cosmeticSkus.filter(
       (sku) => (sku.rarity?.toLowerCase() ?? "") === crateRarity,
     );
+    const ownedCosmetics = await readOwnedSkuIds(uid, rarityCosmetics.map((sku) => sku.skuId));
 
     const awardedItems: AwardedItem[] = [];
     const inventoryGrants: Array<{ skuId: string; quantity: number }> = [];
@@ -241,6 +242,7 @@ export const openCrate = onCall(
       });
 
       // 3. Pick random cosmetics of this rarity (fresh shuffle per crate)
+      const matchingCosmetics = rarityCosmetics.filter((sku) => !ownedCosmetics.has(sku.skuId));
       const cosmeticsToAward = Math.min(
         crateRewardsConfig.cosmeticCount ?? 3,
         matchingCosmetics.length,
@@ -257,6 +259,7 @@ export const openCrate = onCall(
           itemId: cosmetic.itemId,
         });
         inventoryGrants.push({ skuId: cosmetic.skuId, quantity: 1 });
+        ownedCosmetics.add(cosmetic.skuId);
       }
 
       // 4. Multi-slot utility item rolls

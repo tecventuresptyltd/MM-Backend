@@ -297,6 +297,19 @@ export const startCrateUnlockV2 = onCall(
                     );
                 }
 
+                let firstUnlockFree = slotsData.firstCrateHandled === false;
+                if (slotsData.firstCrateHandled === undefined) {
+                    const history = await Promise.all(
+                        ["startCrateUnlockV2", "skipCrateUnlockV2", "claimCrateRewardV2"].map((reason) =>
+                            transaction.get(db.collection(`Players/${uid}/Receipts`)
+                                .where("reason", "==", reason)
+                                .where("status", "==", "completed")
+                                .limit(1)),
+                        ),
+                    );
+                    firstUnlockFree = history.every((result) => result.empty)
+                        && !slots.some((entry) => entry?.isUnlocking || entry?.startedAt);
+                }
                 // Use the unlock duration stored on the slot at receive time.
                 // Fall back to config if the stored value is missing (legacy slots).
                 const unlockDuration = (slot.unlockDurationSeconds && slot.unlockDurationSeconds > 0)
@@ -310,12 +323,14 @@ export const startCrateUnlockV2 = onCall(
                 updatedSlots[slotIndex] = {
                     ...slot,
                     isUnlocking: true,
+                    firstUnlockFree,
                     startedAt: admin.firestore.Timestamp.fromMillis(now),
                     completesAt: completesAtTimestamp,
                 };
 
                 transaction.update(slotsRef, {
                     slots: updatedSlots,
+                    firstCrateHandled: true,
                     updatedAt: timestamp,
                 });
 
@@ -324,6 +339,7 @@ export const startCrateUnlockV2 = onCall(
                     opId,
                     slotIndex,
                     completesAt: completesAtMs,
+                    firstUnlockFree,
                 };
             },
         );
@@ -567,6 +583,7 @@ export const claimCrateRewardV2 = onCall(
 
                 transaction.update(slotsRef, {
                     slots: updatedSlots,
+                    firstCrateHandled: true,
                     updatedAt: timestamp,
                 });
 
@@ -666,6 +683,7 @@ function assertSlotMatchesCrateId(
 // =============================================================================
 
 interface SkipCrateUnlockRequest {
+    freeOnly?: boolean;
     slotIndex: number;
     opId: string;
     crateId?: string;
@@ -684,7 +702,7 @@ interface SkipCrateUnlockResponse {
 export const skipCrateUnlockV2 = onCall(
     callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true),
     async (request) => {
-        const { slotIndex, opId, crateId } = request.data as SkipCrateUnlockRequest;
+        const { slotIndex, opId, crateId, freeOnly } = request.data as SkipCrateUnlockRequest;
         const uid = request.auth?.uid;
 
         if (!uid) {
@@ -760,7 +778,14 @@ export const skipCrateUnlockV2 = onCall(
 
                 // Calculate skip cost
                 const remainingSeconds = Math.ceil((completesAt.toMillis() - now) / 1000);
-                const skipCost = calculateSkipCost(
+                const firstUnlockFree = slot.firstUnlockFree === true;
+                if (freeOnly !== undefined && typeof freeOnly !== "boolean") {
+                    throw new HttpsError("invalid-argument", "freeOnly must be a boolean.");
+                }
+                if (freeOnly === true && !firstUnlockFree) {
+                    throw new HttpsError("failed-precondition", "The first crate free skip is no longer available. Refresh and try again.");
+                }
+                const skipCost = firstUnlockFree ? 0 : calculateSkipCost(
                     remainingSeconds,
                     slotsConfig.skipCost.gemsPerHour,
                     slotsConfig.skipCost.minGems,
@@ -789,10 +814,12 @@ export const skipCrateUnlockV2 = onCall(
                 updatedSlots[slotIndex] = {
                     ...slot,
                     completesAt: admin.firestore.Timestamp.fromMillis(now),
+                    firstUnlockFree: false,
                 };
 
                 transaction.update(slotsRef, {
                     slots: updatedSlots,
+                    firstCrateHandled: true,
                     updatedAt: timestamp,
                 });
 
@@ -823,6 +850,7 @@ interface CrateSlotsStatusResponse {
         isComplete: boolean;
         remainingSeconds: number;
         skipCostGems: number;
+        firstUnlockFree: boolean;
         /** Total unlock duration in seconds for this crate's rarity */
         unlockDurationSeconds: number;
     }>;
@@ -864,6 +892,7 @@ export const getCrateSlotsStatusV2 = onCall(
                 isComplete: false,
                 remainingSeconds: 0,
                 skipCostGems: 0,
+                firstUnlockFree: false,
                 unlockDurationSeconds: 0,
             }));
 
@@ -898,6 +927,7 @@ export const getCrateSlotsStatusV2 = onCall(
                     isComplete: false,
                     remainingSeconds: 0,
                     skipCostGems: 0,
+                    firstUnlockFree: false,
                     unlockDurationSeconds: 0,
                 };
             }
@@ -913,7 +943,7 @@ export const getCrateSlotsStatusV2 = onCall(
             const remainingSeconds =
                 completesAtMs && !isComplete ? Math.ceil((completesAtMs - now) / 1000) : 0;
             const skipCostGems =
-                slot.isUnlocking && !isComplete
+                slot.isUnlocking && !isComplete && slot.firstUnlockFree !== true
                     ? calculateSkipCost(
                         remainingSeconds,
                         slotsConfig.skipCost.gemsPerHour,
@@ -935,6 +965,7 @@ export const getCrateSlotsStatusV2 = onCall(
                 isComplete,
                 remainingSeconds,
                 skipCostGems,
+                firstUnlockFree: slot.firstUnlockFree === true && !isComplete,
                 unlockDurationSeconds: slot.unlockDurationSeconds ?? 0,
             };
         });

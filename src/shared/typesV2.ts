@@ -292,6 +292,7 @@ export interface CrateSlotsConfig {
 }
 
 export interface CrateSlotEntry {
+    firstUnlockFree?: boolean;
     crateSkuId: string;
     crateId: string;
     rarity: string;
@@ -304,6 +305,7 @@ export interface CrateSlotEntry {
 }
 
 export interface UserCrateSlotsDoc {
+    firstCrateHandled?: boolean;
     slots: (CrateSlotEntry | null)[];
     maxSlots: number;
     updatedAt: FirebaseFirestore.Timestamp | FirebaseFirestore.FieldValue;
@@ -536,6 +538,7 @@ export interface StartCrateUnlockRequest {
 }
 
 export interface StartCrateUnlockResponse {
+    firstUnlockFree: boolean;
     success: boolean;
     opId: string;
     slotIndex: number;

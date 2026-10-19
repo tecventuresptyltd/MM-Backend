@@ -1041,7 +1041,7 @@ export async function initializeUserIfNeeded(
             if (crateSlotsDoc.exists) {
               tx.update(crateSlotsRef, { slots: newSlots, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
             } else {
-              tx.set(crateSlotsRef, { slots: newSlots, maxSlots, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+              tx.set(crateSlotsRef, { slots: newSlots, maxSlots, firstCrateHandled: false, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
             }
           }
           // If all slots are full, skip — the player will get the crate from a race drop fallback

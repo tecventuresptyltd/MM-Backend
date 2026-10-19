@@ -77,10 +77,14 @@ const CRATE_DROP_RARITY_MAP: Record<string, string> = {
 
 const isCrateDrop = (drop: RaceDrop): boolean => drop.type in CRATE_DROP_RARITY_MAP;
 
-const rollRaceDrop = (): RaceDrop => {
-  const roll = Math.random() * TOTAL_REWARD_WEIGHT;
+const RACE_CRATE_TABLE = RACE_REWARD_TABLE.filter((entry) => entry.type in CRATE_DROP_RARITY_MAP);
+const TOTAL_CRATE_WEIGHT = RACE_CRATE_TABLE.reduce((sum, entry) => sum + entry.weight, 0);
+
+const rollRaceDrop = (crateOnly = false): RaceDrop => {
+  const table = crateOnly ? RACE_CRATE_TABLE : RACE_REWARD_TABLE;
+  const roll = Math.random() * (crateOnly ? TOTAL_CRATE_WEIGHT : TOTAL_REWARD_WEIGHT);
   let cursor = 0;
-  for (const entry of RACE_REWARD_TABLE) {
+  for (const entry of table) {
     cursor += entry.weight;
     if (roll <= cursor) {
       return { type: entry.type, skuId: entry.skuId ?? null };
@@ -695,7 +699,10 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
     // --- Place crate into slot if the drop was a crate ---
     let crateSlotResult: { slotIndex: number | null; fallbackGranted: boolean; fallbackRewards?: { coins?: number; spellShards?: number } } | null = null;
 
-    if (isCrateDrop(drops.playerDrop) && drops.playerDrop.skuId) {
+    const advancesCrateProgress = gamemode !== "UNRANKED" && !firstHourPlan?.suppressRandomDrop;
+    let raceCrateProgress: number | null = null;
+
+    if (advancesCrateProgress || (isCrateDrop(drops.playerDrop) && drops.playerDrop.skuId)) {
       const slotsConfig = await getCrateSlotsConfig();
       const crateSlotsRef = db.doc(`/Players/${uid}/Crates/Slots`);
       const crateSlotsDoc = await transaction.get(crateSlotsRef);
@@ -707,65 +714,81 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
 
       const currentSlots = (slotsData.slots ?? []).filter((s) => s !== null);
       const maxSlots = slotsData.maxSlots ?? slotsConfig.maxSlots;
-      const crateRarity = CRATE_DROP_RARITY_MAP[drops.playerDrop.type] ?? "common";
-
-      if (currentSlots.length >= maxSlots) {
-        // All slots full — the crate is simply dropped, no compensation.
-        crateSlotResult = { slotIndex: null, fallbackGranted: false };
-        if (firstHourOutcome) {
-          firstHourOutcome.starterCrateGranted = false;
-        }
-        logger.info("[recordRaceResult] Crate slots full, crate not granted", {
-          uid,
-          rarity: crateRarity,
-          skuId: drops.playerDrop.skuId,
-        });
-        // The crate was discarded — report it exactly like a normal empty roll.
+      if (advancesCrateProgress) {
         drops.playerDrop = { type: "noreward", skuId: null };
-      } else {
-        // Place crate into first empty slot
-        const unlockDurationSeconds = await getUnlockDurationForRarity(crateRarity);
-        const newSlotEntry: CrateSlotEntry = {
-          crateSkuId: drops.playerDrop.skuId,
-          crateId: drops.playerDrop.type,
-          rarity: crateRarity,
-          receivedAt: nowTimestamp,
-          isUnlocking: false,
-          startedAt: null,
-          completesAt: null,
-          unlockDurationSeconds,
-        };
-
-        const newSlots: (CrateSlotEntry | null)[] = [];
-        let slotAssigned = false;
-        let assignedSlotIndex = -1;
-
-        for (let i = 0; i < maxSlots; i++) {
-          const existingSlot = slotsData.slots?.[i] ?? null;
-          if (existingSlot) {
-            newSlots.push(existingSlot as CrateSlotEntry);
-          } else if (!slotAssigned) {
-            newSlots.push(newSlotEntry);
-            slotAssigned = true;
-            assignedSlotIndex = i;
-          } else {
-            newSlots.push(null);
+        if (currentSlots.length < maxSlots) {
+          const configuredInterval = Number(slotsConfig.raceDropEveryRaces);
+          const interval = Number.isSafeInteger(configuredInterval) && configuredInterval > 0 ? configuredInterval : 4;
+          const storedProgress = Number(profileData.raceCrateProgress);
+          const progress = Number.isSafeInteger(storedProgress) && storedProgress >= 0 ? storedProgress % interval : 0;
+          raceCrateProgress = (progress + 1) % interval;
+          if (raceCrateProgress === 0) {
+            drops.playerDrop = rollRaceDrop(true);
           }
         }
+      }
 
-        if (!slotAssigned) {
-          newSlots.push(newSlotEntry);
-          assignedSlotIndex = currentSlots.length;
-        }
+      if (isCrateDrop(drops.playerDrop) && drops.playerDrop.skuId) {
+        const crateRarity = CRATE_DROP_RARITY_MAP[drops.playerDrop.type] ?? "common";
 
-        if (crateSlotsDoc.exists) {
-          transaction.update(crateSlotsRef, { slots: newSlots, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+        if (currentSlots.length >= maxSlots) {
+          // All slots full — the crate is simply dropped, no compensation.
+          crateSlotResult = { slotIndex: null, fallbackGranted: false };
+          if (firstHourOutcome) {
+            firstHourOutcome.starterCrateGranted = false;
+          }
+          logger.info("[recordRaceResult] Crate slots full, crate not granted", {
+            uid,
+            rarity: crateRarity,
+            skuId: drops.playerDrop.skuId,
+          });
+          // The crate was discarded — report it exactly like a normal empty roll.
+          drops.playerDrop = { type: "noreward", skuId: null };
         } else {
-          transaction.set(crateSlotsRef, { slots: newSlots, maxSlots, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
-        }
+          // Place crate into first empty slot
+          const unlockDurationSeconds = await getUnlockDurationForRarity(crateRarity);
+          const newSlotEntry: CrateSlotEntry = {
+            crateSkuId: drops.playerDrop.skuId,
+            crateId: drops.playerDrop.type,
+            rarity: crateRarity,
+            receivedAt: nowTimestamp,
+            isUnlocking: false,
+            startedAt: null,
+            completesAt: null,
+            unlockDurationSeconds,
+          };
 
-        crateSlotResult = { slotIndex: assignedSlotIndex, fallbackGranted: false };
-        logger.info("[recordRaceResult] Crate placed in slot", { uid, slotIndex: assignedSlotIndex, rarity: crateRarity, skuId: drops.playerDrop.skuId });
+          const newSlots: (CrateSlotEntry | null)[] = [];
+          let slotAssigned = false;
+          let assignedSlotIndex = -1;
+
+          for (let i = 0; i < maxSlots; i++) {
+            const existingSlot = slotsData.slots?.[i] ?? null;
+            if (existingSlot) {
+              newSlots.push(existingSlot as CrateSlotEntry);
+            } else if (!slotAssigned) {
+              newSlots.push(newSlotEntry);
+              slotAssigned = true;
+              assignedSlotIndex = i;
+            } else {
+              newSlots.push(null);
+            }
+          }
+
+          if (!slotAssigned) {
+            newSlots.push(newSlotEntry);
+            assignedSlotIndex = currentSlots.length;
+          }
+
+          if (crateSlotsDoc.exists) {
+            transaction.update(crateSlotsRef, { slots: newSlots, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+          } else {
+            transaction.set(crateSlotsRef, { slots: newSlots, maxSlots, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+          }
+
+          crateSlotResult = { slotIndex: assignedSlotIndex, fallbackGranted: false };
+          logger.info("[recordRaceResult] Crate placed in slot", { uid, slotIndex: assignedSlotIndex, rarity: crateRarity, skuId: drops.playerDrop.skuId });
+        }
       }
     }
 
@@ -788,6 +811,9 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
       careerCoins: admin.firestore.FieldValue.increment(coinsGained),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
+    if (raceCrateProgress !== null) {
+      profileUpdate.raceCrateProgress = raceCrateProgress;
+    }
     if (shouldModifyTrophies(gamemode)) {
       profileUpdate[trophyFields.current] = trophiesAfterSettlement;
       profileUpdate[trophyFields.highest] = newHighestTrophies;

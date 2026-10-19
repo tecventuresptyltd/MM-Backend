@@ -1211,3 +1211,9 @@ A scheduled Cloud Function (`socialPresenceMirrorLastSeen`) runs every ~10 minut
 ## Challenges and achievements (sandbox)
 
 `/Players/{uid}/Challenges/Daily` stores `{dayIndex,challenges:[{objective,progress,claimed}],milestonesClaimed,swapsUsed,retiredIds}`. `/Players/{uid}/Achievements/Progress` stores `{progress,claimed,points,stats,carsRaced,mapsWon}`. Both are singleton server-written documents, initialized for new sandbox accounts and created lazily for existing accounts. Daily objectives are catalog snapshots; lifetime stats do not reset. Receipts use the existing player Receipts collection. Master documents are ChallengesCatalog, AchievementsCatalog and ChallengesConfig under GameData/v1. See [CHALLENGES_ACHIEVEMENTS.md](CHALLENGES_ACHIEVEMENTS.md) for full shapes and sources.
+
+### Race crate cadence
+
+`Players/{uid}/Profile/Profile.raceCrateProgress` is an optional integer, initially treated as zero. Race settlement advances it only for an eligible race with a free crate slot. Unranked races and the first two onboarding races leave it unchanged. Full slots pause progress. The counter and granted crate commit with the cached race result, so retries do not advance it twice.
+
+`GameData/v1/config/CrateSlotsConfig.raceDropEveryRaces` controls the interval and is seeded as `4`; missing or invalid values use `4` for compatibility. Every fourth eligible race with space grants one crate, giving two or three crates in any ten such races. Rarity uses the existing relative crate weights. The onboarding starter crate remains a separate second-race award.

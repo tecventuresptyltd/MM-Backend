@@ -274,6 +274,7 @@ export interface CrateSlotFullFallback {
 }
 
 export interface CrateSlotsConfig {
+    raceDropEveryRaces?: number;
     version: string;
     updatedAt: number;
     notes?: string;

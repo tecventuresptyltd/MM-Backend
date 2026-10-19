@@ -1,8 +1,7 @@
 import * as admin from "firebase-admin";
+import { createHash } from "crypto";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { callableOptions, getMinInstances } from "../shared/callableOptions.js";
-import { checkIdempotency } from "../core/idempotency.js";
-import { runTransactionWithReceipt } from "../core/transactions.js";
 import { UpgradeType } from "../shared/typesV2.js";
 import { updateUpgradeCompletionTime } from "../upgrades/upgradeScheduler.js";
 import { AD_REWARD_VERIFICATIONS_COLLECTION, adRewardVerificationId, isAdmobSsvEnforced } from "../ads/admobSsv.js";
@@ -23,6 +22,7 @@ interface SpeedupWithAdRequest {
     opId: string;
     sessionId?: string;
     crateId?: string;
+    expectedStartedAt?: number;
 }
 
 interface SpeedupWithAdResponse {
@@ -54,23 +54,40 @@ export const speedupWithAdV2 = onCall(
             throw new HttpsError("unauthenticated", "User must be authenticated.");
         }
 
-        const { queueType, targetId, opId, sessionId, crateId } = request.data as SpeedupWithAdRequest;
+        const { queueType, targetId, opId, sessionId, crateId, expectedStartedAt } = request.data as SpeedupWithAdRequest;
         validateRequest(queueType, targetId, opId);
-
-        const existingResult = await checkIdempotency(uid, opId);
-        if (existingResult) {
-            return existingResult;
+        if (expectedStartedAt !== undefined && (!Number.isFinite(expectedStartedAt) || expectedStartedAt <= 0)) {
+            throw new HttpsError("invalid-argument", "expectedStartedAt must be a positive timestamp.");
         }
 
-        await assertAdVerified(uid, opId);
-
         const clientSessionId = typeof sessionId === "string" ? sessionId : "";
+        const receiptRef = db.doc(`/Players/${uid}/Receipts/${opId}`);
+        const inputsHash = createHash("sha256")
+            .update(JSON.stringify({ queueType, targetId, crateId: crateId ?? null, expectedStartedAt: expectedStartedAt ?? null }))
+            .digest("hex");
 
-        const result = await runTransactionWithReceipt<SpeedupWithAdResponse>(
-            uid,
-            opId,
-            "speedupWithAdV2",
+        const outcome = await db.runTransaction(
             async (transaction) => {
+                const receipt = (await transaction.get(receiptRef)).data();
+                if (receipt) {
+                    if (receipt.reason !== "speedupWithAdV2"
+                        || (receipt.kind && receipt.kind !== "speedupWithAdV2")
+                        || (receipt.inputsHash && receipt.inputsHash !== inputsHash)) {
+                        throw new HttpsError("failed-precondition", "This operation ID belongs to a different request.");
+                    }
+                    if (receipt.status === "completed") {
+                        const cached = receipt.result as SpeedupWithAdResponse | undefined;
+                        if (!cached?.success || cached.queueType !== queueType || cached.targetId !== targetId) {
+                            throw new HttpsError("failed-precondition", "This operation ID belongs to a different request.");
+                        }
+                        return { result: cached, applied: false };
+                    }
+                    if (receipt.status === "in_progress" || receipt.status === "reserved") {
+                        throw new HttpsError("aborted", "This operation is already in progress. Please try again.");
+                    }
+                }
+
+                await assertAdVerified(transaction, uid, opId);
                 const now = Date.now();
                 const adWatchLogRef = db.doc(`/Players/${uid}/Ads/WatchLog`);
                 const adWatchLogDoc = await transaction.get(adWatchLogRef);
@@ -91,6 +108,10 @@ export const speedupWithAdV2 = onCall(
                 }
 
                 const slot = target.slots[target.slotIndex];
+                if (expectedStartedAt !== undefined
+                    && (slot.startedAt as admin.firestore.Timestamp | null)?.toMillis() !== expectedStartedAt) {
+                    throw new HttpsError("failed-precondition", "This timer has changed. Refresh and try again.", { reason: "ad-target-changed" });
+                }
                 const currentCompletesAtMs = (slot.completesAt as admin.firestore.Timestamp | null)?.toMillis() ?? 0;
                 if (currentCompletesAtMs <= now) {
                     throw new HttpsError("failed-precondition", "This timer has already completed. Claim it instead.");
@@ -124,7 +145,7 @@ export const speedupWithAdV2 = onCall(
                     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
                 });
 
-                return {
+                const result: SpeedupWithAdResponse = {
                     success: true,
                     opId,
                     queueType,
@@ -138,10 +159,21 @@ export const speedupWithAdV2 = onCall(
                         sessionRemaining: Math.max(0, AD_WATCH_MAX_PER_SESSION - newSessionCount),
                     },
                 };
+                transaction.set(receiptRef, {
+                    opId,
+                    status: "completed",
+                    reason: "speedupWithAdV2",
+                    kind: "speedupWithAdV2",
+                    inputsHash,
+                    result,
+                    completedAt: admin.firestore.FieldValue.serverTimestamp(),
+                });
+                return { result, applied: true };
             },
         );
 
-        if (result.success && queueType !== "crateSlot") {
+        const { result } = outcome;
+        if (outcome.applied && result.success && queueType !== "crateSlot") {
             const upgradeType: UpgradeType = queueType === "pitCrew" ? "carEvolution" : "spellResearch";
             try {
                 await updateUpgradeCompletionTime(uid, upgradeType, targetId, result.newCompletesAt);
@@ -168,14 +200,14 @@ function validateRequest(queueType: unknown, targetId: unknown, opId: unknown): 
     }
 }
 
-async function assertAdVerified(uid: string, opId: string): Promise<void> {
+async function assertAdVerified(transaction: admin.firestore.Transaction, uid: string, opId: string): Promise<void> {
     if (!isAdmobSsvEnforced()) {
         return;
     }
 
     const verificationId = adRewardVerificationId(uid, opId);
     const verified = verificationId !== null
-        && (await db.doc(`/${AD_REWARD_VERIFICATIONS_COLLECTION}/${verificationId}`).get()).exists;
+        && (await transaction.get(db.doc(`/${AD_REWARD_VERIFICATIONS_COLLECTION}/${verificationId}`))).exists;
     if (!verified) {
         throw new HttpsError("failed-precondition", "Ad reward not verified yet. Please try again.");
     }

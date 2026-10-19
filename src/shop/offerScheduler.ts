@@ -1,5 +1,6 @@
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import * as logger from "firebase-functions/logger";
+import { getRotationConfig, getCuratedOffers } from "./curatedRotation.js";
 import { REGION } from "../shared/region.js";
 import { db } from "../shared/firestore.js";
 import { MainOffer } from "../shared/types.js";
@@ -179,6 +180,16 @@ export const processOfferTransitions = async () => {
     const stats = { processed: 0, errors: 0 };
     const now = Date.now();
     try {
+        const rotationConfig = await getRotationConfig();
+        if (rotationConfig) {
+            const queued = await db.collection(TRANSITION_QUEUE_PATH).where("transitionAt", "<=", now).limit(BATCH_SIZE).get();
+            for (const doc of queued.docs) {
+                await getCuratedOffers(doc.get("uid"), rotationConfig);
+                await doc.ref.delete();
+                stats.processed++;
+            }
+            return stats;
+        }
         const slotIndex = await loadOfferSlotIndex();
         const dueTransitions = await db.collection(TRANSITION_QUEUE_PATH)
             .where("transitionAt", "<=", now).limit(BATCH_SIZE).get();

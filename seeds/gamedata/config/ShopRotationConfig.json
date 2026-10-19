@@ -1,0 +1,41 @@
+{
+  "enabled": false,
+  "version": "curated-sandbox-auto-v3",
+  "defaultRangeId": "small",
+  "periodMs": 86400000,
+  "selectionMode": "automatic",
+  "specialTiePeriodMs": 900000,
+  "ranges": [
+    { "id": "small", "label": "Small", "sets": [
+      { "id": "A1", "offerIds": ["offer_fuel_emergency", "offer_nitro_boost_plus", "offer_pit_stop_special"] },
+      { "id": "A2", "offerIds": ["offer_ignition_starter", "offer_pit_stop_special", "offer_mechanics_choice"] },
+      { "id": "A3", "offerIds": ["offer_nitro_surge", "offer_nitro_boost_plus", "offer_pit_stop_special"] },
+      { "id": "A4", "offerIds": ["offer_adrenaline_shot", "offer_pit_stop_special", "offer_mechanics_choice"] },
+      { "id": "A5", "offerIds": ["offer_sprint_starter", "offer_nitro_boost_plus", "offer_pit_stop_special"] },
+      { "id": "A6", "offerIds": ["offer_midnight_oil", "offer_pit_stop_special", "offer_mechanics_choice"] }
+    ] },
+    { "id": "standard", "label": "Standard", "sets": [
+      { "id": "B1", "offerIds": ["offer_mechanics_choice", "offer_drift_king", "offer_fast_lane_pack"] },
+      { "id": "B2", "offerIds": ["offer_drift_king", "offer_fast_lane_pack", "offer_weekend_warrior"] }
+    ] },
+    { "id": "legendary", "label": "Legendary", "sets": [
+      { "id": "C1", "offerIds": ["offer_tuners_vault", "offer_pro_crew_kit", "offer_street_legend"] },
+      { "id": "C2", "offerIds": ["offer_street_legend", "offer_pro_circuit_pack", "offer_elite_engineer"] },
+      { "id": "C3", "offerIds": ["offer_weekend_warrior", "offer_resource_rush", "offer_pro_crew_kit"] }
+    ] },
+    { "id": "large", "label": "Collections", "sets": [
+      { "id": "D1", "offerIds": ["offer_the_collector", "offer_garage_overhaul", "offer_grand_prix_hoard"] },
+      { "id": "D2", "offerIds": ["offer_garage_overhaul", "offer_grand_prix_hoard", "offer_the_sovereign"] },
+      { "id": "D3", "offerIds": ["offer_garage_overhaul", "offer_grand_prix_hoard", "offer_championship_kit"] }
+    ] }
+  ],
+  "specialSets": [
+    { "id": "S1", "offerIds": ["offer_pit_stop_special", "offer_drift_king_upsell", "offer_mechanics_choice"], "featuredOfferId": "offer_drift_king_upsell", "trigger": "purchase", "durationMs": 900000 },
+    { "id": "S2", "offerIds": ["offer_fuel_emergency", "offer_lvl10_milestone", "offer_pit_stop_special"], "featuredOfferId": "offer_lvl10_milestone", "trigger": "mastery", "rank": 5, "repeatEveryRanks": 10, "durationMs": 86400000 },
+    { "id": "S3", "offerIds": ["offer_drift_king", "offer_lvl20_milestone", "offer_weekend_warrior"], "featuredOfferId": "offer_lvl20_milestone", "trigger": "mastery", "rank": 10, "repeatEveryRanks": 10, "durationMs": 86400000 },
+    { "id": "S4", "offerIds": ["offer_the_collector", "offer_lvl50_milestone", "offer_grand_prix_hoard"], "featuredOfferId": "offer_lvl50_milestone", "trigger": "mastery", "rank": 20, "repeatEveryRanks": 10, "durationMs": 172800000 },
+    { "id": "S5", "offerIds": ["offer_pit_stop_special", "offer_adrenaline_pro", "offer_mechanics_choice"], "featuredOfferId": "offer_adrenaline_pro", "trigger": "win_streak", "durationMs": 3600000 },
+    { "id": "S6", "offerIds": ["offer_street_legend", "offer_mythic_mystery", "offer_the_collector"], "featuredOfferId": "offer_mythic_mystery", "trigger": "mythical_crate", "durationMs": 28800000 },
+    { "id": "S7", "offerIds": ["offer_pit_stop_special", "offer_double_clutch", "offer_drift_king"], "featuredOfferId": "offer_double_clutch", "trigger": "weekend", "durationMs": 86400000 }
+  ]
+}

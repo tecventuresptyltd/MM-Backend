@@ -337,6 +337,7 @@ export const writeActiveOffersV2 = (
     {
       rotating: state.rotating ?? admin.firestore.FieldValue.delete(),
       special: state.special,
+      rotation: admin.firestore.FieldValue.delete(),
       // Clear legacy fields
       slot1: admin.firestore.FieldValue.delete(),
       slot2: admin.firestore.FieldValue.delete(),

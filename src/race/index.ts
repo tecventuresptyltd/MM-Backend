@@ -10,6 +10,7 @@ import { refreshFriendSnapshots } from "../Socials/updateSnapshots.js";
 import { grantInventoryRewards } from "../shared/inventoryAwards.js";
 import { maybeTriggerFlashSales } from "../triggers/flashSales.js";
 import { maybeGenerateStarterOffer } from "../shop/offers.js";
+import { getRotationConfig } from "../shop/curatedRotation.js";
 import { STARTER_RACE_THRESHOLD } from "../shop/offerState.js";
 import { buildBotLoadout } from "../game-systems/botLoadoutHelper.js";
 import { applyClanTrophyDelta, playerClanStateRef, clanMembersCollection, clanRef, updateClanMemberSnapshot } from "../clan/helpers.js";
@@ -426,6 +427,7 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
     throw new HttpsError("invalid-argument", "raceId is required.");
   }
   const botDisplayNames = normaliseBotNames(botNames);
+  const shopRotationEnabled = !!(await getRotationConfig());
   let challengeDefinitions: Awaited<ReturnType<typeof getChallengesDefinitions>> = null;
   try {
     challengeDefinitions = await getChallengesDefinitions(false);
@@ -819,6 +821,12 @@ export const recordRaceResult = onCall(callableOptions({ minInstances: getMinIns
       profileUpdate[trophyFields.highest] = newHighestTrophies;
     }
     profileUpdate.totalRaces = admin.firestore.FieldValue.increment(1);
+    if (shopRotationEnabled) {
+      const priorShopWinStreak = Number(profileData.shopWinStreak ?? 0);
+      profileUpdate.shopWinStreak = place === 1
+        ? (Number.isSafeInteger(priorShopWinStreak) && priorShopWinStreak >= 0 ? priorShopWinStreak : 0) + 1
+        : 0;
+    }
     if (place === 1) {
       profileUpdate.totalWins = admin.firestore.FieldValue.increment(1);
     }

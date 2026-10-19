@@ -15,10 +15,16 @@ import {
 } from "./offerState.js";
 import { loadOfferSlotIndex } from "./offerCatalog.js";
 import { scheduleOfferTransition, createSlotOffer } from "./offerScheduler.js";
+import { getRotationConfig, getCuratedOffers } from "./curatedRotation.js";
 
 export const maybeGenerateStarterOffer = async (uid: string): Promise<boolean> => {
   const now = Date.now();
   try {
+    const rotationConfig = await getRotationConfig();
+    if (rotationConfig) {
+      await getCuratedOffers(uid, rotationConfig);
+      return true;
+    }
     const slotIndex = await loadOfferSlotIndex();
     const result = await db.runTransaction(async (transaction) => {
       const activeRef = activeOffersRef(uid);
@@ -65,6 +71,9 @@ export const getDailyOffers = onCall(callableOptions({ minInstances: getMinInsta
   const uid = request.auth?.uid;
   if (!uid) throw new HttpsError("unauthenticated", "User must be authenticated.");
 
+  const rotationConfig = await getRotationConfig();
+  if (rotationConfig) return getCuratedOffers(uid, rotationConfig, request.data ?? {});
+
   const now = Date.now();
   const slotIndex = await loadOfferSlotIndex();
 
@@ -80,6 +89,10 @@ export const getDailyOffers = onCall(callableOptions({ minInstances: getMinInsta
     const activeOffers = normaliseActiveOffers(activeSnap.data());
     const flowState = normaliseOfferFlowState(stateSnap.data());
     let mutated = false;
+    if (activeSnap.get("rotation")) {
+      activeOffers.rotating = [];
+      mutated = true;
+    }
 
     const prunedSpecial = pruneExpiredSpecialOffers(activeOffers.special, now);
     if (prunedSpecial.length !== activeOffers.special.length) {

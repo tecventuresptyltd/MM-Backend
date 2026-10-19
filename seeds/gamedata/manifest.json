@@ -90,6 +90,10 @@
       "file": "config/IapConfig.json"
     },
     {
+      "path": "/GameData/v1/config/ShopRotationConfig",
+      "file": "config/ShopRotationConfig.json"
+    },
+    {
       "path": "/GameData/v1/config/MasteryConfig",
       "file": "config/MasteryConfig.json"
     },

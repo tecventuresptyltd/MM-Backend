@@ -57,5 +57,6 @@ export { searchGameUsers, setGameAdminStatus, getGameAdmins } from "./game-syste
 
 export { analyticsInsights } from "./analytics";
 export { recordAnalyticsEconomy, recordAnalyticsReceipt, recordAnalyticsGarage, recordAnalyticsSpells, recordAnalyticsIap, recordAnalyticsRace } from "./analytics/ledger.js";
+export { onShopRotationProfile, onShopRotationCrateSlots, onShopRotationInventory, onShopRotationPurchase } from "./shop/rotationEvents.js";
 // Keep analytics delivery deployable without replacing the gameplay gateway.
 export { syncAnalyticsLedger } from "./analytics/relay.js";

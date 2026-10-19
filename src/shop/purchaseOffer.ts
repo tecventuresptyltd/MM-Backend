@@ -39,6 +39,7 @@ import {
   resolveNextTierOnPurchase,
 } from "./offerState.js";
 import { scheduleOfferTransition, cancelScheduledTransition } from "./offerScheduler.js";
+import { getRotationConfig, rotationStateRef, prepareRotationState, applyRotationPurchase, applyRotationEvent, writeRotation, RotationState, RotationConfig, CuratedOffers } from "./curatedRotation.js";
 
 interface PurchaseOfferRequest {
   opId: unknown;
@@ -111,6 +112,7 @@ interface PurchaseOfferReadState {
   flowState: OfferFlowState;
   isIapPurchase: boolean;
   offerId: string;
+  rotation?: { state: RotationState; config: RotationConfig };
 }
 
 const ensureOfferRequest = (request: PurchaseOfferRequest): {
@@ -237,6 +239,7 @@ export interface VerifiedOfferPurchase {
   transactionId: string;
   productId: string;
   verified: boolean;
+  shopPresentation?: unknown;
 }
 
 export async function fulfillOfferPurchase(uid: string, opId: string, offerId: string, verifiedPurchase?: VerifiedOfferPurchase): Promise<PurchaseOfferResult> {
@@ -253,6 +256,7 @@ export async function fulfillOfferPurchase(uid: string, opId: string, offerId: s
   }
   const ledgerRef = verifiedPurchase ? db.collection("IapTransactions").doc(`${verifiedPurchase.platform}.${verifiedPurchase.transactionId}`) : null;
   const resolvedEntitlements = await resolveEntitlements(offer);
+  const rotationConfig = await getRotationConfig();
 
   const shouldProgressLadder = isIapPurchase && isIapOffer(offer);
 
@@ -290,6 +294,12 @@ export async function fulfillOfferPurchase(uid: string, opId: string, offerId: s
       if (!activeSnap.exists && !verifiedPurchase) throw new HttpsError("failed-precondition", "Active offers not initialized.");
 
       const activeState = normaliseActiveOffers(activeSnap.data());
+      const rotationSnapshot = rotationConfig ? await transaction.get(rotationStateRef(uid)) : null;
+      const rotationState = rotationConfig ? prepareRotationState(rotationSnapshot?.data() as RotationState | undefined, rotationConfig, nowMillis) : null;
+      if (rotationState && rotationConfig && verifiedPurchase?.verified) {
+        applyRotationPurchase(rotationState, rotationConfig, offerId, activeSnap.data() as CuratedOffers | undefined, nowMillis, verifiedPurchase.shopPresentation);
+        applyRotationEvent(rotationState, rotationConfig, { type: "purchase", occurredAt: nowMillis }, nowMillis);
+      }
       const flowState = normaliseOfferFlowState(flowStateSnap.data());
       const prunedSpecial = pruneExpiredSpecialOffers(activeState.special, nowMillis);
 
@@ -384,6 +394,7 @@ export async function fulfillOfferPurchase(uid: string, opId: string, offerId: s
         timestamp, economyRef, charge: { currency: chargeCurrency, amount: chargeAmount },
         balances: { gemsBefore, gemsAfter, coinsBefore, coinsAfter }, grantPlans, summaryState,
         activeRef, stateRef, activeUpdate, activeUpdatedAt: nowMillis, activeData: activeSnap.data() || {}, flowState, isIapPurchase: shouldProgressLadder, offerId,
+        rotation: rotationState && rotationConfig ? { state: rotationState, config: rotationConfig } : undefined,
       };
     },
     async (transaction, reads) => {
@@ -407,7 +418,9 @@ export async function fulfillOfferPurchase(uid: string, opId: string, offerId: s
 
       const activeData = reads.activeData;
 
-      if (reads.activeUpdate.rotatingUpdate && Array.isArray(activeData.rotating)) {
+      if (reads.rotation) {
+        writeRotation(transaction, uid, reads.rotation.state, reads.rotation.config, reads.activeUpdatedAt);
+      } else if (reads.activeUpdate.rotatingUpdate && Array.isArray(activeData.rotating)) {
         activeData.rotating = activeData.rotating.filter(
           (_: any, i: number) => i !== reads.activeUpdate.rotatingUpdate!.index
         );
@@ -416,7 +429,7 @@ export async function fulfillOfferPurchase(uid: string, opId: string, offerId: s
       }
       activeData.updatedAt = reads.activeUpdatedAt;
 
-      transaction.set(reads.activeRef, activeData, { merge: true });
+      if (!reads.rotation) transaction.set(reads.activeRef, activeData, { merge: true });
 
       if (reads.isIapPurchase) {
         const flowUpdates: Partial<OfferFlowState> = {
@@ -435,13 +448,14 @@ export async function fulfillOfferPurchase(uid: string, opId: string, offerId: s
         amount: chargeAmount, grants, balances: { gems: reads.balances.gemsAfter, coins: reads.balances.coinsAfter },
       };
 
-      if (reads.activeUpdate.rotatingUpdate) {
+      if (!reads.rotation && reads.activeUpdate.rotatingUpdate) {
         purchaseResult.nextOfferAt = reads.activeUpdate.rotatingUpdate.nextOfferAt;
         purchaseResult.category = reads.activeUpdate.rotatingUpdate.category;
       }
       if (ledgerRef && verifiedPurchase) {
         transaction.set(ledgerRef, {
-          uid, ...verifiedPurchase, offerId, result: purchaseResult, grantApplied: true,
+          uid, platform: verifiedPurchase.platform, transactionId: verifiedPurchase.transactionId,
+          productId: verifiedPurchase.productId, verified: verifiedPurchase.verified, offerId, result: purchaseResult, grantApplied: true,
           createdAt: admin.firestore.FieldValue.serverTimestamp(),
         });
       }

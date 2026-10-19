@@ -16,6 +16,11 @@ PROJECT_ID="mystic-motors-sandbox"
 # This allowlist deliberately excludes gameApi and every gameplay job. Updating
 # the gateway would also publish pending purchase-contract changes.
 DEPLOY_TARGET="${1:-functions}"
+DEPLOY_FLAGS=()
+if [ "$DEPLOY_TARGET" = "--shop-rotation" ]; then
+    DEPLOY_TARGET="functions:mm-sandbox:gameApi,functions:mm-sandbox:offerTransitionJob,functions:mm-sandbox:offerSafetyNetJob,functions:mm-sandbox:onShopRotationProfile,functions:mm-sandbox:onShopRotationCrateSlots,functions:mm-sandbox:onShopRotationInventory,functions:mm-sandbox:onShopRotationPurchase"
+    DEPLOY_FLAGS=(--force)
+fi
 if [ "$DEPLOY_TARGET" = "--analytics-only" ] || [ "$DEPLOY_TARGET" = "--analytics-client" ]; then
     DEPLOY_TARGET="functions:analyticsOverview,functions:analyticsGrowth,functions:analyticsPlatforms,functions:analyticsRevenue,functions:analyticsRevenueByProduct,functions:analyticsRevenueByCountry,functions:analyticsRetention,functions:analyticsEvents,functions:analyticsRealtime,functions:analyticsGeography,functions:analyticsDevices,functions:analyticsSessions,functions:analyticsInsights,functions:recordAnalyticsEconomy,functions:recordAnalyticsReceipt,functions:recordAnalyticsGarage,functions:recordAnalyticsSpells,functions:recordAnalyticsIap,functions:recordAnalyticsRace,functions:syncAnalyticsLedger"
 fi
@@ -46,7 +51,7 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "🚀 Deploying to SANDBOX (Target: $DEPLOY_TARGET)..."
-firebase deploy --only "$DEPLOY_TARGET" --project "$PROJECT_ALIAS"
+firebase deploy --only "$DEPLOY_TARGET" --project "$PROJECT_ALIAS" "${DEPLOY_FLAGS[@]}"
 
 if [ $? -eq 0 ]; then
     echo ""

@@ -22,6 +22,7 @@ import { runReadThenWrite } from "../core/tx.js";
 import { ReferralConfig } from "../referral/types.js";
 
 import { refreshPlayerLeaderboardSnapshots } from "../Socials/liveLeaderboard.js";
+import { getRotationConfig, getCuratedOffers } from "../shop/curatedRotation.js";
 
 const db = admin.firestore();
 
@@ -1245,6 +1246,8 @@ export async function initializeUserIfNeeded(
         applyReferralCodePlan(tx, referralPlan);
       },
     );
+    const rotationConfig = await getRotationConfig();
+    if (rotationConfig) await getCuratedOffers(uid, rotationConfig);
   } catch (err) {
     console.error("initializeUserIfNeeded failed", {
       uid,

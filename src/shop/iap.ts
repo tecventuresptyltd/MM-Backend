@@ -19,6 +19,7 @@ type VerifyIapRequest = {
   productId: unknown;
   receipt: unknown;
   transactionId: unknown;
+  shopPresentation?: unknown;
 };
 
 const normalizePlatform = (value: unknown): "ios" | "android" => {
@@ -107,7 +108,7 @@ export const verifyIapPurchase = onCall(
       throw new HttpsError("unauthenticated", "Authentication required.");
     }
 
-    const { platform, productId, receipt, transactionId } =
+    const { platform, productId, receipt, transactionId, shopPresentation } =
       (request.data ?? {}) as VerifyIapRequest;
     const normalizedPlatform = normalizePlatform(platform);
 
@@ -129,7 +130,8 @@ export const verifyIapPurchase = onCall(
         productId: requestedProductId, gemsGranted: previous.gemAmount, verified: previous.verified === true };
     }
     const pack = await findGemPackByProductId(requestedProductId);
-    const offer = pack ? null : Object.values(await getOffersCatalog()).find(entry => entry.productId === requestedProductId);
+    const matchedOffer = pack ? undefined : Object.entries(await getOffersCatalog()).find(([, entry]) => entry.productId === requestedProductId);
+    const offer = matchedOffer ? { ...matchedOffer[1], offerId: matchedOffer[0] } : null;
     if (!pack && !offer) throw new HttpsError("not-found", "Unknown productId.");
     const resolved = await resolveTransactionId(normalizedPlatform, receipt, transactionId, requestedProductId, uid);
     if (!resolved.transactionId || resolved.transactionId.includes("/") || resolved.transactionId.length > 256)
@@ -138,7 +140,7 @@ export const verifyIapPurchase = onCall(
       const operationId = "iap-offer-" + createHash("sha256").update(normalizedPlatform + ":" + resolved.transactionId).digest("hex");
       const result = await fulfillOfferPurchase(uid, operationId, offer.offerId, {
         platform: normalizedPlatform, transactionId: resolved.transactionId,
-        productId: requestedProductId, verified: resolved.verified,
+        productId: requestedProductId, verified: resolved.verified, shopPresentation,
       });
       return { ...result, transactionId: resolved.transactionId, productId: requestedProductId, verified: resolved.verified };
     }

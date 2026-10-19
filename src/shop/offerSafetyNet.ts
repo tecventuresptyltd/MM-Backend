@@ -14,6 +14,7 @@ import {
 } from "./offerState.js";
 import { loadOfferSlotIndex, OfferSlotIndex } from "./offerCatalog.js";
 import { createSlotOffer, scheduleOfferTransition } from "./offerScheduler.js";
+import { getRotationConfig, getCuratedOffers } from "./curatedRotation.js";
 
 const needsOfferRestoration = (activeOffers: any, now: number): boolean => {
     if (!activeOffers.rotating || !Array.isArray(activeOffers.rotating) || activeOffers.rotating.length === 0) {
@@ -48,6 +49,11 @@ const restorePlayerOffers = async (
     now: number,
 ): Promise<boolean> => {
     try {
+        const rotationConfig = await getRotationConfig();
+        if (rotationConfig) {
+            await getCuratedOffers(uid, rotationConfig);
+            return true;
+        }
         const result = await db.runTransaction(async (transaction) => {
             const activeRef = db.doc(`Players/${uid}/Offers/Active`);
             const stateRef = db.doc(`Players/${uid}/Offers/State`);

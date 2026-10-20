@@ -1,5 +1,13 @@
 # Challenges and achievements (sandbox)
 
+Achievement points are retired: objectives omit points, claims grant no points, and status returns achievementPoints:0. Historical stored totals remain untouched and completed receipts replay their original result without granting again. Rewards remain exactly 20 gems per daily challenge or achievement.
+
+
+Current challenge policy: daily challenges and achievements each grant exactly 20 gems, with no coins, mastery XP or spell shards. Existing daily snapshots are normalized lazily before status, progression and claims; completed receipts retain their original result and never grant again. ChallengesConfig supplies modeUnlockRanks (Elimination 5, Police 10, Infected 15), socialUnlockRank (5) and unrankedUnlockRaces (1), with matching defaults for older deployed configuration. Mode locks follow active FirstHour enrollment; nonenrolled accounts retain existing mode access. Social eligibility uses server profile.level, falling back to computed mastery rank. Mode eligibility uses pinnedMasteryRank when finite, otherwise masteryXp-derived rank, with stored masteryRank fallback only when XP is absent. Unclaimed locked achievements are hidden and cannot progress or claim; claimed history remains. First-use car-win objectives require an owned car absent from feature car history; already earned car-win claims are preserved. Daily reconciliation keeps valid progress and claimed entries, replaces ineligible unclaimed assignments deterministically, fills unavailable hard slots with eligible alternatives, and permits fewer objectives when the eligible pool is exhausted. Settlement in a locked mode cannot advance any challenge or achievement. Newly issued claim responses retain xp:0 for compatibility; objectives contain no XP reward field.
+
+
+Daily chest milestones and challenge swapping have been removed. Only daily challenge and achievement claims grant rewards. Retired callable routes reject `failed-precondition` before configuration loading, receipt replay or writes. The loader overrides legacy deployed milestone/swap settings with an empty milestone list and zero swap limits/cost. Status retains compatibility fields `milestones:[]`, `swapsUsed:0`, `swapCost:0`, `swapsPerDay:0`; badge counts exclude milestones. Existing persisted legacy fields are retained. Earlier publication and verification records below describe historical behavior.
+
 The implementation is gated to `mystic-motors-sandbox`, or `demo-test` with the Firestore emulator configured. All five callables reject production before loading feature data. Race progress and bootstrap additions are skipped outside these environments. No production configuration, rules or networking changes are needed.
 
 ## Configuration and scope
@@ -12,7 +20,7 @@ Three documents are loaded and validated through `src/challenges/config.ts`, cac
 
 Missing or disabled ChallengesConfig skips race progress and returns `unavailable` from feature endpoints. Malformed enabled configuration fails validation on feature endpoints; normal race settlement logs the failure and continues without challenge processing. Review seed values before publication: five daily objectives (four normal, one hard), milestone thresholds 2/4/5, one swap for 10 gems, normal rewards 500 coins +50 mastery XP, hard rewards 1,000 coins +100 mastery XP +20 spell shards. Milestones pay 500 coins, 10 gems, and one common crate respectively. Achievement rewards and points depend on each entry's tier. These are local catalog values, not hardcoded reward rules.
 
-Objectives support stat, target, sum/max aggregation and exact-match map/mode/position/car/stat filters. An entry with `enabled:false` is excluded. Catalog objectives are copied into each daily assignment so its targets and rewards survive mid-day catalog edits. Swaps retain difficulty, cannot select current/previously swapped IDs, and restart progress at zero.
+Objectives support stat, target, sum/max aggregation and exact-match map/mode/position/car/stat filters. An entry with `enabled:false` is excluded. Catalog objectives are copied into each daily assignment so its targets and rewards survive mid-day catalog edits. Swapping is disabled regardless of stored state or deployed configuration.
 
 The reset uses `gameDayIndex` and `dayIndexStartMs` with DailyRewardsConfig.resetOffsetMinutes. Daily login rewards currently use a rolling 24-hour claim timer; their claim time is deliberately unchanged. Unclaimed challenge rewards expire at the absolute daily rollover. Client clocks cannot advance progress or claim windows. The `__testNowMs` hook is accepted only in the demo-test emulator.
 
@@ -39,11 +47,11 @@ Mutations load required configuration before writing anything, then check `Playe
 }
 ```
 
-Challenge/milestone states are `in_progress`, `claimable`, `claimed`; achievement states are `in_progress`, `claimable`, `completed`, `hidden`. Achievement tiers are the strings Bronze/Silver/Gold. Categories are Racing/Spells/Stunts/Collection/Social. Hidden entries mask title and description until completed. Tier chains use `chainId` and expose the next unclaimed tier. Reward lines are `{kind,quantity,skuId?}`; kinds are coins/gems/crate/item/spellShards. The daily badge count includes ready milestone claims.
+Challenge/milestone states are `in_progress`, `claimable`, `claimed`; achievement states are `in_progress`, `claimable`, `completed`, `hidden`. Achievement tiers are the strings Bronze/Silver/Gold. Categories are Racing/Spells/Stunts/Collection/Social. Hidden entries mask title and description until completed. Tier chains use `chainId` and expose the next unclaimed tier. Reward lines are `{kind,quantity,skuId?}`; kinds are coins/gems/crate/item/spellShards. The daily badge count includes only daily challenge claims.
 
 - `claimDailyChallenge({challengeId,opId})`
-- `claimChallengeMilestone({milestoneIndex,opId})`, zero-based index
-- `swapDailyChallenge({challengeId,opId})`
+- `claimChallengeMilestone({milestoneIndex,opId})`: retired; always rejects `failed-precondition`
+- `swapDailyChallenge({challengeId,opId})`: retired; always rejects `failed-precondition`
 - `claimAchievement({achievementId,opId})`
 
 Each returns `{success,status,rewards,coins:{before,after},gems:{before,after},xp}`. `status` is a complete post-action snapshot. Errors include unauthenticated, invalid-argument, not-found, failed-precondition, resource-exhausted, aborted and unavailable. Callable exports are added to `src/callables.ts`, consumed by the existing gameApi gateway; `src/index.ts` intentionally deploys only the gateway rather than individual callable endpoints.

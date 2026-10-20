@@ -10,11 +10,10 @@
       "target": 1,
       "category": "Racing",
       "tier": 1,
-      "points": 25,
       "rewards": [
         {
           "kind": "gems",
-          "quantity": 10
+          "quantity": 20
         }
       ],
       "aggregation": "sum",
@@ -30,11 +29,10 @@
       "target": 100,
       "category": "Racing",
       "tier": 3,
-      "points": 75,
       "rewards": [
         {
           "kind": "gems",
-          "quantity": 30
+          "quantity": 20
         }
       ],
       "aggregation": "sum",
@@ -50,7 +48,6 @@
       "target": 300,
       "category": "Racing",
       "tier": 2,
-      "points": 50,
       "rewards": [
         {
           "kind": "gems",
@@ -70,11 +67,10 @@
       "target": 1000,
       "category": "Spells",
       "tier": 3,
-      "points": 75,
       "rewards": [
         {
           "kind": "gems",
-          "quantity": 30
+          "quantity": 20
         }
       ],
       "aggregation": "sum",
@@ -90,7 +86,6 @@
       "target": 1,
       "category": "Spells",
       "tier": 2,
-      "points": 50,
       "rewards": [
         {
           "kind": "gems",
@@ -113,11 +108,10 @@
       "target": 500,
       "category": "Stunts",
       "tier": 3,
-      "points": 75,
       "rewards": [
         {
           "kind": "gems",
-          "quantity": 30
+          "quantity": 20
         }
       ],
       "aggregation": "sum",
@@ -133,11 +127,10 @@
       "target": 100000,
       "category": "Stunts",
       "tier": 3,
-      "points": 75,
       "rewards": [
         {
           "kind": "gems",
-          "quantity": 30
+          "quantity": 20
         }
       ],
       "aggregation": "sum",
@@ -153,7 +146,6 @@
       "target": 10,
       "category": "Collection",
       "tier": 2,
-      "points": 50,
       "rewards": [
         {
           "kind": "gems",
@@ -173,11 +165,10 @@
       "target": 1,
       "category": "Collection",
       "tier": 3,
-      "points": 75,
       "rewards": [
         {
           "kind": "gems",
-          "quantity": 30
+          "quantity": 20
         }
       ],
       "aggregation": "max",
@@ -193,11 +184,10 @@
       "target": 10,
       "category": "Racing",
       "tier": 3,
-      "points": 75,
       "rewards": [
         {
           "kind": "gems",
-          "quantity": 30
+          "quantity": 20
         }
       ],
       "aggregation": "max",
@@ -213,7 +203,6 @@
       "target": 1,
       "category": "Racing",
       "tier": 2,
-      "points": 50,
       "rewards": [
         {
           "kind": "gems",
@@ -233,11 +222,10 @@
       "target": 50,
       "category": "Racing",
       "tier": 3,
-      "points": 75,
       "rewards": [
         {
           "kind": "gems",
-          "quantity": 30
+          "quantity": 20
         }
       ],
       "aggregation": "sum",
@@ -253,11 +241,10 @@
       "target": 100,
       "category": "Racing",
       "tier": 3,
-      "points": 75,
       "rewards": [
         {
           "kind": "gems",
-          "quantity": 30
+          "quantity": 20
         }
       ],
       "aggregation": "sum",
@@ -273,11 +260,10 @@
       "target": 10000,
       "category": "Social",
       "tier": 3,
-      "points": 75,
       "rewards": [
         {
           "kind": "gems",
-          "quantity": 30
+          "quantity": 20
         }
       ],
       "aggregation": "sum",
@@ -293,7 +279,6 @@
       "target": 50,
       "category": "Social",
       "tier": 2,
-      "points": 50,
       "rewards": [
         {
           "kind": "gems",

@@ -14,11 +14,10 @@
       "unit": "",
       "rewards": [
         {
-          "kind": "coins",
-          "quantity": 500
+          "kind": "gems",
+          "quantity": 20
         }
       ],
-      "xp": 50,
       "filters": {
         "nitroUses": 0
       }
@@ -36,11 +35,10 @@
       "unit": "",
       "rewards": [
         {
-          "kind": "coins",
-          "quantity": 500
+          "kind": "gems",
+          "quantity": 20
         }
       ],
-      "xp": 50,
       "filters": {
         "wallHits": 0
       }
@@ -58,11 +56,10 @@
       "unit": "",
       "rewards": [
         {
-          "kind": "coins",
-          "quantity": 500
+          "kind": "gems",
+          "quantity": 20
         }
-      ],
-      "xp": 50
+      ]
     },
     {
       "id": "spell_hits",
@@ -77,11 +74,10 @@
       "unit": "",
       "rewards": [
         {
-          "kind": "coins",
-          "quantity": 500
+          "kind": "gems",
+          "quantity": 20
         }
-      ],
-      "xp": 50
+      ]
     },
     {
       "id": "one_spell_win",
@@ -96,12 +92,10 @@
       "unit": "",
       "rewards": [
         {
-          "kind": "coins",
-          "quantity": 1000
+          "kind": "gems",
+          "quantity": 20
         }
       ],
-      "xp": 100,
-      "shards": 20,
       "filters": {
         "spellTypesUsed": 1
       }
@@ -119,11 +113,10 @@
       "unit": "",
       "rewards": [
         {
-          "kind": "coins",
-          "quantity": 500
+          "kind": "gems",
+          "quantity": 20
         }
-      ],
-      "xp": 50
+      ]
     },
     {
       "id": "drift_two_km",
@@ -138,12 +131,10 @@
       "unit": "m",
       "rewards": [
         {
-          "kind": "coins",
-          "quantity": 1000
+          "kind": "gems",
+          "quantity": 20
         }
-      ],
-      "xp": 100,
-      "shards": 20
+      ]
     },
     {
       "id": "shield_three",
@@ -158,11 +149,10 @@
       "unit": "",
       "rewards": [
         {
-          "kind": "coins",
-          "quantity": 500
+          "kind": "gems",
+          "quantity": 20
         }
-      ],
-      "xp": 50
+      ]
     },
     {
       "id": "new_car_win",
@@ -177,11 +167,10 @@
       "unit": "",
       "rewards": [
         {
-          "kind": "coins",
-          "quantity": 500
+          "kind": "gems",
+          "quantity": 20
         }
-      ],
-      "xp": 50
+      ]
     },
     {
       "id": "race_three",
@@ -196,11 +185,10 @@
       "unit": "",
       "rewards": [
         {
-          "kind": "coins",
-          "quantity": 500
+          "kind": "gems",
+          "quantity": 20
         }
-      ],
-      "xp": 50
+      ]
     },
     {
       "id": "win_two",
@@ -215,11 +203,10 @@
       "unit": "",
       "rewards": [
         {
-          "kind": "coins",
-          "quantity": 500
+          "kind": "gems",
+          "quantity": 20
         }
-      ],
-      "xp": 50
+      ]
     },
     {
       "id": "speed_trial",
@@ -234,11 +221,10 @@
       "unit": "km/h",
       "rewards": [
         {
-          "kind": "coins",
-          "quantity": 500
+          "kind": "gems",
+          "quantity": 20
         }
-      ],
-      "xp": 50
+      ]
     }
   ]
 }

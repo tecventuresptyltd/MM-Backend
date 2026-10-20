@@ -3,8 +3,8 @@
   "enabled": true,
   "dailyCount": 5,
   "hardCount": 1,
-  "swapCost": 10,
-  "swapsPerDay": 1,
+  "swapCost": 0,
+  "swapsPerDay": 0,
   "maxRaceSeconds": 900,
   "driftMetresPerSecond": 100,
   "requiredMapIds": [
@@ -31,34 +31,12 @@
     "maxSpeedKph": 650,
     "startPosition": 16
   },
-  "milestones": [
-    {
-      "target": 2,
-      "rewards": [
-        {
-          "kind": "coins",
-          "quantity": 500
-        }
-      ]
-    },
-    {
-      "target": 4,
-      "rewards": [
-        {
-          "kind": "gems",
-          "quantity": 10
-        }
-      ]
-    },
-    {
-      "target": 5,
-      "rewards": [
-        {
-          "kind": "crate",
-          "quantity": 1,
-          "skuId": "sku_zz3twgp0wx"
-        }
-      ]
-    }
-  ]
+  "milestones": [],
+  "modeUnlockRanks": {
+    "ELIMINATION": 5,
+    "POLICE": 10,
+    "INFECTED": 15
+  },
+  "socialUnlockRank": 5,
+  "unrankedUnlockRaces": 1
 }

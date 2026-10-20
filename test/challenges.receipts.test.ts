@@ -5,7 +5,6 @@ import { admin } from "./setup";
 import { ensureCatalogsSeeded } from "./helpers/cleanup";
 import { wrapCallable } from "./helpers/callable";
 import { getChallengesStatus, claimDailyChallenge } from "../src/challenges";
-import { swapDailyChallenge } from "../src/challenges";
 import { resetChallengesCache } from "../src/challenges/config";
 import { dailyRef } from "../src/challenges/state";
 import { __resetV2ConfigCacheForTests } from "../src/core/configV2";
@@ -18,7 +17,6 @@ const uid = "challenge-receipt-retry-test";
 const NOW = Date.UTC(2026, 9, 9, 12);
 const status = wrapCallable(getChallengesStatus);
 const claim = wrapCallable(claimDailyChallenge);
-const swap = wrapCallable(swapDailyChallenge);
 const request = (data: Record<string, unknown> = {}) => ({ data: { __testNowMs: NOW, ...data }, auth: { uid, token: {} } });
 let applyRewardBundleSpy: jest.SpyInstance | undefined;
 let deletedMasteryFixture: Record<string, unknown> | null = null;
@@ -74,8 +72,8 @@ describe("challenge action receipts", () => {
     expect((await db.doc(`Players/${uid}/Receipts/${opId}`).get()).data()?.status).toBe("completed");
     expect(await claim(request({ challengeId, opId }))).toEqual(result);
 
-    const coinReward = result.rewards.find((reward: any) => reward.kind === "coins")?.quantity ?? 0;
-    expect((await db.doc(`Players/${uid}/Economy/Stats`).get()).data()?.coins).toBe(coinReward);
+    expect((await db.doc(`Players/${uid}/Economy/Stats`).get()).data()?.coins).toBe(0);
+    expect((await db.doc(`Players/${uid}/Economy/Stats`).get()).data()?.gems).toBe(120);
   });
 
   it("serializes simultaneous calls with the same opId and grants once", async () => {
@@ -86,8 +84,8 @@ describe("challenge action receipts", () => {
 
     expect(first).toEqual(second);
     expect((await db.doc(`Players/${uid}/Receipts/${opId}`).get()).data()?.status).toBe("completed");
-    const coinReward = first.rewards.find((reward: any) => reward.kind === "coins")?.quantity ?? 0;
-    expect((await db.doc(`Players/${uid}/Economy/Stats`).get()).data()?.coins).toBe(coinReward);
+    expect((await db.doc(`Players/${uid}/Economy/Stats`).get()).data()?.coins).toBe(0);
+    expect((await db.doc(`Players/${uid}/Economy/Stats`).get()).data()?.gems).toBe(120);
   });
 
   it("continues to reject an in-progress receipt created by an older function instance", async () => {
@@ -98,28 +96,6 @@ describe("challenge action receipts", () => {
 
     await expect(claim(request({ challengeId, opId }))).rejects.toMatchObject({ code: "aborted" });
     expect((await db.doc(`Players/${uid}/Economy/Stats`).get()).data()?.coins).toBe(0);
-  });
-
-  it("retries a swap after mastery config recovers and charges its gem cost once", async () => {
-    const first = (await status(request())).challenges[0];
-    const opId = "swap-same-op-after-config-error";
-    const masteryRef = db.doc("GameData/v1/config/MasteryConfig");
-    deletedMasteryFixture = (await masteryRef.get()).data()!;
-
-    await masteryRef.delete();
-    __resetV2ConfigCacheForTests();
-    await expect(swap(request({ challengeId: first.id, opId }))).rejects.toThrow(/MasteryConfig not found/);
-    expect((await db.doc(`Players/${uid}/Receipts/${opId}`).get()).exists).toBe(false);
-    expect((await db.doc(`Players/${uid}/Economy/Stats`).get()).data()?.gems).toBe(100);
-
-    await masteryRef.set(deletedMasteryFixture);
-    deletedMasteryFixture = null;
-    __resetV2ConfigCacheForTests();
-    const result = await swap(request({ challengeId: first.id, opId }));
-    expect(result.gems.after).toBe(90);
-    expect(result.status.swapsUsed).toBe(1);
-    expect(await swap(request({ challengeId: first.id, opId }))).toEqual(result);
-    expect((await db.doc(`Players/${uid}/Economy/Stats`).get()).data()?.gems).toBe(90);
   });
 
   it("rolls back queued reward writes after a failure and can retry the same opId", async () => {
@@ -145,7 +121,7 @@ describe("challenge action receipts", () => {
     const result = await claim(request({ challengeId, opId }));
     expect(result.status.challenges.find((challenge: any) => challenge.id === challengeId).state).toBe("claimed");
     expect((await db.doc(`Players/${uid}/Receipts/${opId}`).get()).data()?.status).toBe("completed");
-    const coinReward = result.rewards.find((reward: any) => reward.kind === "coins")?.quantity ?? 0;
-    expect((await db.doc(`Players/${uid}/Economy/Stats`).get()).data()?.coins).toBe(coinReward);
+    expect((await db.doc(`Players/${uid}/Economy/Stats`).get()).data()?.coins).toBe(0);
+    expect((await db.doc(`Players/${uid}/Economy/Stats`).get()).data()?.gems).toBe(120);
   });
 });

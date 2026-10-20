@@ -1,6 +1,6 @@
 import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
-import { Definitions, Objective, stableOrder } from "./config.js";
+import { Definitions, Objective, normalizeObjective, stableOrder } from "./config.js";
 import { gameDayIndex, dayIndexStartMs } from "../dailyRewards/lib/dayIndex.js";
 
 export interface DailyState { dayIndex: number; challenges: Array<{ objective: Objective; progress: number; claimed: boolean }>; milestonesClaimed: number[]; swapsUsed: number; retiredIds: string[] }
@@ -10,10 +10,21 @@ export const dailyRef = (uid: string) => admin.firestore().doc(`Players/${uid}/C
 export const achievementsRef = (uid: string) => admin.firestore().doc(`Players/${uid}/Achievements/Progress`);
 export function resolveDaily(uid: string, now: number, defs: Definitions, raw?: DailyState): DailyState {
   const dayIndex = gameDayIndex(now, defs.resetOffsetMinutes);
-  if (raw && raw.dayIndex >= dayIndex && Array.isArray(raw.challenges)) return raw;
   const pool = stableOrder(defs.challenges, `${uid}:${dayIndex}`);
-  const entries = [...pool.filter(o => !o.hard).slice(0, defs.config.dailyCount - defs.config.hardCount), ...pool.filter(o => o.hard).slice(0, defs.config.hardCount)];
-  return { dayIndex, challenges: entries.map(objective => ({ objective, progress: 0, claimed: false })), milestonesClaimed: [], swapsUsed: 0, retiredIds: [] };
+  const current = raw && raw.dayIndex >= dayIndex && Array.isArray(raw.challenges) ? raw : undefined;
+  const valid = new Set(pool.map(o => o.id));
+  const kept = current?.challenges.filter(c => c.claimed || (c.objective.stat === "newCarWin" && c.progress >= c.objective.target) || (valid.has(c.objective.id) && (!defs.isObjectiveEligible || defs.isObjectiveEligible(c.objective)))).map(c => ({ ...c, objective: normalizeObjective(c.objective) })) ?? [];
+  const excluded = new Set([...kept.map(c => c.objective.id), ...(current?.retiredIds ?? [])]);
+  const available = pool.filter(o => !excluded.has(o.id));
+  const wantedHard = Math.max(0, defs.config.hardCount - kept.filter(c => c.objective.hard).length);
+  const replacements = available.filter(o => o.hard).slice(0, wantedHard);
+  replacements.push(...available.filter(o => !o.hard).slice(0, Math.max(0, defs.config.dailyCount - kept.length - replacements.length)));
+  replacements.push(...available.filter(o => !replacements.some(r => r.id === o.id)).slice(0, Math.max(0, defs.config.dailyCount - kept.length - replacements.length)));
+  const additions = replacements.slice(0, Math.max(0, defs.config.dailyCount - kept.length));
+  if (!current) additions.sort((a, b) => Number(!!a.hard) - Number(!!b.hard));
+  const challenges = [...kept, ...additions.map(objective => ({ objective, progress: 0, claimed: false }))];
+  return { ...(current ?? { milestonesClaimed: [], swapsUsed: 0, retiredIds: [] }), dayIndex: current?.dayIndex ?? dayIndex, challenges };
+
 }
 export function achievementState(raw?: Partial<AchievementState>): AchievementState { return { ...emptyAchievements(), ...raw }; }
 export function rewardView(o: { rewards: unknown[]; shards?: number }) {
@@ -30,9 +41,9 @@ export function statusView(now: number, defs: Definitions, daily: DailyState, ac
     return { ...o, tier: ["Bronze", "Silver", "Gold"][(o.tier ?? 1) - 1], title: hidden ? "???" : o.title, description: hidden ? "Keep racing to reveal" : o.description, rewards: rewardView(o), progress, state: achievements.claimed[o.id] ? "completed" : progress >= o.target ? "claimable" : hidden ? "hidden" : "in_progress" };
   });
   return { serverNowMs: now, resetAtMs: dayIndexStartMs(daily.dayIndex + 1, defs.resetOffsetMinutes), dayIndex: daily.dayIndex, challenges, milestones, achievements: entries, completedCount,
-    dailyCount: daily.challenges.length, swapsUsed: daily.swapsUsed, swapCost: defs.config.swapCost, swapsPerDay: defs.config.swapsPerDay,
+    dailyCount: daily.challenges.length, swapsUsed: 0, swapCost: 0, swapsPerDay: 0,
     dailyClaimableCount: challenges.filter(c => c.state === "claimable").length + milestones.filter(m => m.state === "claimable").length,
-    achievementClaimableCount: entries.filter(a => a.state === "claimable").length, achievementPoints: achievements.points };
+    achievementClaimableCount: entries.filter(a => a.state === "claimable").length, achievementPoints: 0 };
 }
 export interface RaceContext {
   uid: string; raceId: string; now: number; createdAtMs: number; mode: string; mapId: string; carId: string;
@@ -70,6 +81,7 @@ function objectiveValue(o: Objective, event: Record<string, number | string>): n
   return typeof value === "number" ? value : null;
 }
 export function advanceProgress(defs: Definitions, daily: DailyState, state: AchievementState, context: RaceContext, stats: Record<string, number>) {
+  if (defs.lockedModes?.includes(context.mode)) return { newlyCompletedChallengeIds: [], newlyCompletedAchievementIds: [] };
   const won = context.place === 1;
   const newCar = !!context.carId && !state.carsRaced.includes(context.carId);
   const event: Record<string, number | string> = { ...stats, races: 1, wins: won ? 1 : 0, mode: context.mode, map: context.mapId, car: context.carId, position: context.place,

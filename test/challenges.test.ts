@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import { wipeAuth, wipeFirestore, ensureCatalogsSeeded } from "./helpers/cleanup";
 import { wrapCallable } from "./helpers/callable";
 import { getChallengesStatus, claimDailyChallenge, claimChallengeMilestone, swapDailyChallenge, claimAchievement } from "../src/challenges";
-import { getChallengesDefinitions, resetChallengesCache } from "../src/challenges/config";
+import { eligibleDefinitions, getChallengesDefinitions, resetChallengesCache } from "../src/challenges/config";
 import { achievementsRef, dailyRef, clampRaceStats, advanceProgress, achievementState, resolveDaily } from "../src/challenges/state";
 import { __resetV2ConfigCacheForTests } from "../src/core/configV2";
 import { challengeMapId } from "../src/challenges/race";
@@ -49,6 +49,134 @@ beforeEach(async () => {
 });
 
 describe("sandbox challenges", () => {
+  it("hides historical points and strips legacy objective points without erasing history", async () => {
+    await status(request());
+    await achievementsRef(uid).update({ points: 125 });
+    const daily = (await dailyRef(uid).get()).data()!;
+    daily.challenges[0].objective.points = 75;
+    await dailyRef(uid).set(daily);
+    const view = await status(request());
+    expect(view.achievementPoints).toBe(0);
+    expect(view.challenges.every((o: any) => o.points === undefined)).toBe(true);
+    expect(view.achievements.every((o: any) => o.points === undefined)).toBe(true);
+    expect((await achievementsRef(uid).get()).data()?.points).toBe(125);
+    await db.doc(`Players/${uid}/Garage/Cars`).set({ cars: Object.fromEntries(Array.from({ length: 10 }, (_, i) => [`car_${i}`, { owned: true, carLevel: 1 }])) });
+    const claimed = await achievement(request({ achievementId: "collector", opId: "no-new-points" }));
+    expect(claimed.status.achievementPoints).toBe(0);
+    expect(claimed.rewards).toEqual([{ kind: "gems", quantity: 20 }]);
+    expect((await achievementsRef(uid).get()).data()?.points).toBe(125);
+    expect(await achievement(request({ achievementId: "collector", opId: "no-new-points" }))).toEqual(claimed);
+    expect((await db.doc(`Players/${uid}/Economy/Stats`).get()).data()?.gems).toBe(120);
+  });
+
+  it("normalizes legacy daily rewards to 20 gems and never writes XP or shards", async () => {
+    await status(request());
+    const daily = (await dailyRef(uid).get()).data()!;
+    daily.challenges[0].objective.rewards = [{ kind: "coins", quantity: 9999 }];
+    daily.challenges[0].objective.xp = 999;
+    daily.challenges[0].objective.shards = 999;
+    daily.challenges[0].progress = daily.challenges[0].objective.target;
+    await dailyRef(uid).set(daily);
+    const profileBefore = (await db.doc(`Players/${uid}/Profile/Profile`).get()).data();
+    const view = await status(request());
+    expect(view.challenges[0].rewards).toEqual([{ kind: "gems", quantity: 20 }]);
+    expect(view.challenges[0].xp).toBeUndefined();
+    const result = await claim(request({ challengeId: view.challenges[0].id, opId: "legacy-reward-normalization" }));
+    expect(result.rewards).toEqual([{ kind: "gems", quantity: 20 }]);
+    expect(result.xp).toBe(0);
+    expect((await db.doc(`Players/${uid}/Economy/Stats`).get()).data()).toMatchObject({ gems: 120, coins: 1000, spellShards: 0 });
+    expect((await db.doc(`Players/${uid}/Profile/Profile`).get()).data()).toEqual(profileBefore);
+  });
+  it("matches enrolled mode boundaries and legacy access without hidden locked progress", async () => {
+    const defs = (await getChallengesDefinitions())!;
+    for (const [mode, threshold, stat] of [["ELIMINATION", 5, "eliminationWins"], ["POLICE", 10, "policeEscapes"], ["INFECTED", 15, "infectedWins"]] as const) {
+      const below = eligibleDefinitions(defs, threshold - 1, { active: true, racesCompleted: 1 });
+      const at = eligibleDefinitions(defs, threshold, { active: true, racesCompleted: 1 });
+      expect(below.lockedModes).toContain(mode);
+      expect(at.lockedModes).not.toContain(mode);
+      expect(below.achievements.some(o => o.stat === stat)).toBe(false);
+      const state = achievementState();
+      const daily = resolveDaily(uid, NOW, below);
+      advanceProgress(below, daily, state, { ...raceContext, mode }, { spellsCast: 150 });
+      expect(state.progress).toEqual({});
+      expect(state.stats).toEqual({});
+    }
+    expect(eligibleDefinitions(defs, 0, null).lockedModes).toEqual([]);
+    expect(eligibleDefinitions(defs, 150, null, {}, 4).achievements.some(o => ["friendRaces", "clanPoints"].includes(o.stat))).toBe(false);
+    expect(eligibleDefinitions(defs, 0, null, {}, 5).achievements.some(o => ["friendRaces", "clanPoints"].includes(o.stat))).toBe(true);
+    expect(eligibleDefinitions(defs, 0, { active: true, racesCompleted: 0 }).lockedModes).toContain("UNRANKED");
+    expect(eligibleDefinitions(defs, 0, { active: true, racesCompleted: 1 }).lockedModes).not.toContain("UNRANKED");
+  });
+  it("uses server mastery XP and first-hour state to reject locked achievement claims", async () => {
+    await db.doc(`Players/${uid}/Progress/FirstHour`).set({ active: true, racesCompleted: 1 });
+    await db.doc(`Players/${uid}/Profile/Profile`).update({ masteryXp: 0, masteryRank: 150 });
+    const defs = (await getChallengesDefinitions())!;
+    const objective = defs.achievements.find(o => o.stat === "policeEscapes")!;
+    await achievementsRef(uid).set({ ...achievementState(), progress: { [objective.id]: objective.target } });
+    expect((await status(request())).achievements.some((o: any) => o.id === objective.id)).toBe(false);
+    await expect(achievement(request({ achievementId: objective.id, opId: "locked-achievement" }))).rejects.toMatchObject({ code: "not-found" });
+  });
+  it("replaces only ineligible same-day objectives and tolerates exhausted pools", async () => {
+    const defs = (await getChallengesDefinitions())!;
+    const locked = { ...defs.challenges[0], id: "locked-police", stat: "policeEscapes" };
+    const eligible = eligibleDefinitions({ ...defs, challenges: [locked, ...defs.challenges] }, 0, { active: true, racesCompleted: 1 });
+    const daily = resolveDaily(uid, NOW, defs);
+    daily.challenges[0] = { objective: locked, progress: 0, claimed: false };
+    daily.challenges[1].progress = 1;
+    const saved = daily.challenges[1];
+    const migrated = resolveDaily(uid, NOW, eligible, daily);
+    expect(migrated.challenges.some(c => c.objective.id === locked.id)).toBe(false);
+    expect(migrated.challenges.find(c => c.objective.id === saved.objective.id)?.progress).toBe(1);
+    daily.challenges[0].claimed = true;
+    expect(resolveDaily(uid, NOW, eligible, daily).challenges.some(c => c.objective.id === locked.id && c.claimed)).toBe(true);
+    expect(resolveDaily(uid, NOW, { ...eligible, challenges: [] }).challenges).toEqual([]);
+    const future = { ...daily, dayIndex: daily.dayIndex + 1 };
+    expect(resolveDaily(uid, NOW, eligible, future).dayIndex).toBe(future.dayIndex);
+    const withoutCars = eligibleDefinitions(defs, 0, null, {}, 0, false);
+    expect(withoutCars.challenges.some(o => o.stat === "newCarWin")).toBe(false);
+    const normalOnly = { ...eligible, challenges: eligible.challenges.filter(o => !o.hard) };
+    expect(resolveDaily(uid, NOW, normalOnly).challenges.length).toBe(Math.min(5, normalOnly.challenges.length));
+  });
+  it("keeps historical completed receipts unchanged without granting again", async () => {
+    const view = await status(request());
+    const challengeId = view.challenges[0].id;
+    const result = { success: true, rewards: [{ kind: "coins", quantity: 500 }], xp: 50 };
+    const inputsHash = createHash("sha256").update(JSON.stringify({ action: "claimDailyChallenge", target: challengeId })).digest("hex");
+    await db.doc(`Players/${uid}/Receipts/historical-reward`).set({ status: "completed", kind: "claimDailyChallenge", inputsHash, result });
+    expect(await claim(request({ challengeId, opId: "historical-reward" }))).toEqual(result);
+    expect((await db.doc(`Players/${uid}/Economy/Stats`).get()).data()).toMatchObject({ gems: 100, coins: 1000, spellShards: 0 });
+  });
+
+  it("rejects retired actions without changing state or granting rewards", async () => {
+    await status(request());
+    await complete(5);
+    await dailyRef(uid).update({ swapsUsed: 1 });
+    const before = (await dailyRef(uid).get()).data();
+    const economyRef = db.doc(`Players/${uid}/Economy/Stats`);
+    const economyBefore = (await economyRef.get()).data();
+    await expect(swap(request({ challengeId: before!.challenges[0].objective.id, opId: "retired-swap" }))).rejects.toMatchObject({ code: "failed-precondition" });
+    await expect(milestone(request({ milestoneIndex: 0, opId: "retired-chest" }))).rejects.toMatchObject({ code: "failed-precondition" });
+    expect((await dailyRef(uid).get()).data()).toEqual(before);
+    expect((await economyRef.get()).data()).toEqual(economyBefore);
+    expect((await db.doc(`Players/${uid}/Receipts/retired-swap`).get()).exists).toBe(false);
+    expect((await db.doc(`Players/${uid}/Receipts/retired-chest`).get()).exists).toBe(false);
+    await db.doc(`Players/${uid}/Receipts/legacy-retired`).set({ status: "completed", result: { success: true } });
+    await expect(swap(request({ challengeId: before!.challenges[0].objective.id, opId: "legacy-retired" }))).rejects.toMatchObject({ code: "failed-precondition" });
+    await expect(milestone(request({ milestoneIndex: 0, opId: "legacy-retired" }))).rejects.toMatchObject({ code: "failed-precondition" });
+    expect(await status(request())).toMatchObject({ milestones: [], swapsUsed: 0, swapCost: 0, swapsPerDay: 0, dailyClaimableCount: 5 });
+  });
+  it("ignores retired rewards in older deployed configuration", async () => {
+    await db.doc("GameData/v1/config/ChallengesConfig").update({ swapCost: 10, swapsPerDay: 5, milestones: [{ target: 1, rewards: [{ kind: "gems", quantity: 999 }] }] });
+    resetChallengesCache();
+    await status(request());
+    await complete(5);
+    expect(await status(request())).toMatchObject({ milestones: [], swapCost: 0, swapsPerDay: 0, dailyClaimableCount: 5 });
+  });
+  it("loads daily challenges without retired configuration fields", async () => {
+    await db.doc("GameData/v1/config/ChallengesConfig").update({ swapCost: admin.firestore.FieldValue.delete(), swapsPerDay: admin.firestore.FieldValue.delete(), milestones: admin.firestore.FieldValue.delete() });
+    resetChallengesCache();
+    expect(await status(request())).toMatchObject({ dailyCount: 5, milestones: [], swapCost: 0, swapsPerDay: 0 });
+  });
   it("bootstraps challenge documents without resetting existing progress", async () => {
     const freshUid = "challenge-bootstrap-player";
     await admin.auth().createUser({ uid: freshUid });
@@ -79,9 +207,12 @@ describe("sandbox challenges", () => {
     const awarded = await claim(request(data));
     const replay = await claim(request(data));
     expect(replay).toEqual(awarded);
-    expect((await db.doc(`Players/${uid}/Economy/Stats`).get()).data()?.coins).toBe(1000 + first.challenges[0].rewards[0].quantity);
+    expect((await db.doc(`Players/${uid}/Economy/Stats`).get()).data()?.coins).toBe(1000);
     await expect(claim(request({ ...data, opId: "claim-two" }))).rejects.toMatchObject({ code: "failed-precondition" });
-    expect((await db.doc(`Players/${uid}/Profile/Profile`).get()).data()?.masteryXp).toBeGreaterThanOrEqual(first.challenges[0].xp);
+    expect((await db.doc(`Players/${uid}/Profile/Profile`).get()).data()?.masteryXp).toBe(0);
+    expect((await db.doc(`Players/${uid}/Economy/Stats`).get()).data()?.gems).toBe(120);
+    expect(awarded.xp).toBe(0);
+    expect(awarded.rewards).toEqual([{ kind: "gems", quantity: 20 }]);
   });
   it("binds an opId to its original action and target", async () => {
     const first = await status(request());
@@ -89,62 +220,27 @@ describe("sandbox challenges", () => {
     await claim(request({ challengeId: first.challenges[0].id, opId: "bound" }));
     await expect(claim(request({ challengeId: first.challenges[1].id, opId: "bound" }))).rejects.toMatchObject({ code: "invalid-argument" });
   });
-  it("counts completed challenges before claims and grants milestones only once", async () => {
-    await status(request());
-    await expect(milestone(request({ milestoneIndex: 0, opId: "too-early" }))).rejects.toMatchObject({ code: "failed-precondition" });
-    await complete(2);
-    const ready = await status(request());
-    expect(ready.dailyClaimableCount).toBe(3);
-    expect((await milestone(request({ milestoneIndex: 0, opId: "milestone" }))).status.milestones[0].state).toBe("claimed");
-    await expect(milestone(request({ milestoneIndex: 0, opId: "milestone-again" }))).rejects.toMatchObject({ code: "failed-precondition" });
-  });
-  it("charges a swap once, preserves difficulty, and enforces daily limits", async () => {
-    const first = await status(request());
-    const data = { challengeId: first.challenges[0].id, opId: "swap-once" };
-    const result = await swap(request(data));
-    expect(result.gems.after).toBe(90);
-    expect(result.status.swapsUsed).toBe(1);
-    expect(result.status.challenges.filter((c: any) => c.hard)).toHaveLength(1);
-    expect(result.status.challenges.some((c: any) => c.id === data.challengeId)).toBe(false);
-    expect(await swap(request(data))).toEqual(result);
-    await expect(swap(request({ challengeId: result.status.challenges[0].id, opId: "swap-twice" }))).rejects.toMatchObject({ code: "failed-precondition" });
-  });
-  it("does not swap when gems are insufficient or a challenge is complete", async () => {
-    const first = await status(request());
-    await db.doc(`Players/${uid}/Economy/Stats`).update({ gems: 0 });
-    await expect(swap(request({ challengeId: first.challenges[0].id, opId: "no-gems" }))).rejects.toMatchObject({ code: "resource-exhausted" });
-    expect((await status(request())).swapsUsed).toBe(0);
-    await complete(1);
-    await expect(swap(request({ challengeId: first.challenges[0].id, opId: "complete" }))).rejects.toMatchObject({ code: "failed-precondition" });
-  });
   it("serializes two devices claiming the same reward", async () => {
     const first = await status(request());
     await complete(1);
     const results = await Promise.allSettled(["device-one", "device-two"].map(opId => claim(request({ challengeId: first.challenges[0].id, opId }))));
     expect(results.filter(r => r.status === "fulfilled")).toHaveLength(1);
-    expect((await db.doc(`Players/${uid}/Economy/Stats`).get()).data()?.coins).toBe(1000 + first.challenges[0].rewards[0].quantity);
+    expect((await db.doc(`Players/${uid}/Economy/Stats`).get()).data()?.coins).toBe(1000);
   });
-  it("refreshes account-state achievements and awards points once", async () => {
+  it("refreshes account-state achievements and grants gems without points", async () => {
     const cars = Object.fromEntries(Array.from({ length: 10 }, (_, index) => [`car_${index}`, { carLevel: index === 0 ? 10 : 1 }]));
     await db.doc(`Players/${uid}/Garage/Cars`).set({ cars });
     const ready = await status(request());
     expect(ready.achievements.find((a: any) => a.id === "collector").state).toBe("claimable");
     expect(ready.achievements.find((a: any) => a.id === "fully_loaded").state).toBe("claimable");
     const granted = await achievement(request({ achievementId: "collector", opId: "collector-claim" }));
-    expect(granted.status.achievementPoints).toBe(50);
+    expect(granted.status.achievementPoints).toBe(0);
+    expect((await achievementsRef(uid).get()).data()?.points).toBe(0);
+    expect(granted.rewards).toEqual([{ kind: "gems", quantity: 20 }]);
+    expect(granted.xp).toBe(0);
+    expect((await db.doc(`Players/${uid}/Economy/Stats`).get()).data()).toMatchObject({ coins: 1000, gems: 120, spellShards: 0 });
     expect(granted.status.achievements.find((a: any) => a.id === "collector").tier).toBe("Silver");
     await expect(achievement(request({ achievementId: "collector", opId: "collector-again" }))).rejects.toMatchObject({ code: "failed-precondition" });
-  });
-  it("grants the final milestone crate through inventory reward helpers", async () => {
-    await status(request());
-    await complete(5);
-    const inventory = db.doc(`Players/${uid}/Inventory/sku_zz3twgp0wx`);
-    const before = (await inventory.get()).data()?.quantity ?? 0;
-    const result = await milestone(request({ milestoneIndex: 2, opId: "crate-milestone" }));
-    expect(result.rewards[0].kind).toBe("crate");
-    expect((await inventory.get()).data()?.quantity).toBe(before + 1);
-    expect(await milestone(request({ milestoneIndex: 2, opId: "crate-milestone" }))).toEqual(result);
-    expect((await inventory.get()).data()?.quantity).toBe(before + 1);
   });
   it("caps stats by configured maxima, elapsed time and car speed, drops invalid input", async () => {
     const defs = (await getChallengesDefinitions())!;
@@ -202,14 +298,6 @@ describe("sandbox challenges", () => {
     expect(stats.wallHits).toBeUndefined();
     expect(stats.spellTypesUsed).toBeUndefined();
   });
-  it("reserves one shared opId atomically for simultaneous swaps", async () => {
-    const first = await status(request());
-    const action = request({ challengeId: first.challenges[0].id, opId: "simultaneous-op" });
-    const outcomes = await Promise.allSettled([swap(action), swap(action)]);
-    expect(outcomes.some(o => o.status === "fulfilled")).toBe(true);
-    expect((await status(request())).swapsUsed).toBe(1);
-    expect((await db.doc(`Players/${uid}/Economy/Stats`).get()).data()?.gems).toBe(90);
-  });
   it("commits valid client stats with settlement and ignores altered retries", async () => {
     const raceId = "challenge-reported-stats";
     await db.doc(`Races/${raceId}`).set({ status: "pending", createdAt: admin.firestore.Timestamp.fromMillis(Date.now() - 60_000), trackId: 3, lobbySnapshot: [{ rating: 0, participantId: uid }, { rating: 0, participantId: null }] });
@@ -221,13 +309,6 @@ describe("sandbox challenges", () => {
     expect(state.stats.maxSpeedKph).toBe(200);
     expect(state.stats.driftMetres).toBe(1000);
     expect(state.mapsWon).toEqual(["3"]);
-  });
-  it("never steals an old in-progress reservation", async () => {
-    const first = await status(request());
-    const target = first.challenges[0].id;
-    await db.doc(`Players/${uid}/Receipts/still-running`).set({ status: "in_progress", kind: "swapDailyChallenge", inputsHash: createHash("sha256").update(JSON.stringify({ action: "swapDailyChallenge", target })).digest("hex"), createdAtMs: NOW - 600_000 });
-    await expect(swap(request({ challengeId: target, opId: "still-running" }))).rejects.toMatchObject({ code: "aborted" });
-    expect((await status(request())).swapsUsed).toBe(0);
   });
   it("never permits challenges in the production project", async () => {
     process.env.GCLOUD_PROJECT = "mystic-motors-prod";

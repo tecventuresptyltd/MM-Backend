@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import * as admin from "firebase-admin";
 import { HttpsError } from "firebase-functions/v2/https";
-import { RewardLine, normaliseRewardLines } from "../shared/rewardLines.js";
+import { RewardLine } from "../shared/rewardLines.js";
 import { getDailyRewardsConfig } from "../core/configV2.js";
 
 export interface Objective {
@@ -13,17 +13,21 @@ export interface Objective {
 export interface ChallengesConfig {
   version: string; enabled: boolean; dailyCount: number; hardCount: number; swapCost: number; swapsPerDay: number;
   maxRaceSeconds: number; driftMetresPerSecond: number; statClamps: Record<string, number>; requiredMapIds: string[];
+  modeUnlockRanks?: Record<string, number>; socialUnlockRank?: number; unrankedUnlockRaces?: number;
   milestones: Array<{ target: number; rewards: RewardLine[]; shards?: number }>;
 }
-export interface Definitions { config: ChallengesConfig; challenges: Objective[]; achievements: Objective[]; resetOffsetMinutes: number }
+export interface Definitions { isObjectiveEligible?: (objective: Objective) => boolean; lockedModes?: string[]; config: ChallengesConfig; challenges: Objective[]; achievements: Objective[]; resetOffsetMinutes: number }
 let cached: { at: number; value: Definitions | null } | null = null;
 export function resetChallengesCache(): void { cached = null; }
 const finite = (value: unknown, min = 0): value is number => typeof value === "number" && Number.isFinite(value) && value >= min;
+export function normalizeObjective(o: Objective): Objective {
+  const { xp, shards, points, ...objective } = o;
+  return { ...objective, rewards: [{ kind: "gems", quantity: 20 }] };
+}
 const validId = (value: unknown): value is string => typeof value === "string" && /^[a-zA-Z0-9_-]{1,80}$/.test(value);
 export function parseDefinitions(config: any, challenges: any, achievements: any, offset: number): Definitions {
   if (!config || typeof config.enabled !== "boolean" || !finite(config.dailyCount, 1) || !Number.isInteger(config.dailyCount) ||
       !finite(config.hardCount) || !Number.isInteger(config.hardCount) || config.hardCount > config.dailyCount ||
-      !finite(config.swapCost) || !finite(config.swapsPerDay) || !Number.isInteger(config.swapsPerDay) ||
       !finite(config.maxRaceSeconds, 1) || !finite(config.driftMetresPerSecond, 1) || !config.statClamps ||
       !Object.values(config.statClamps).every(v => finite(v)) || !Array.isArray(config.requiredMapIds)) {
     throw new HttpsError("failed-precondition", "Invalid challenges configuration.");
@@ -33,23 +37,21 @@ export function parseDefinitions(config: any, challenges: any, achievements: any
     const ids = new Set<string>();
     return raw.entries.filter((o: any) => o.enabled !== false).map((o: Objective) => {
       if (!validId(o.id) || ids.has(o.id) || !finite(o.target, 1) || typeof o.stat !== "string" ||
-          typeof o.title !== "string" || typeof o.description !== "string" || !finite(o.xp ?? 0) ||
-          !finite(o.shards ?? 0) || !finite(o.points ?? 0) || (achievement && ![1, 2, 3].includes(o.tier ?? 0))) {
+          typeof o.title !== "string" || typeof o.description !== "string" || (achievement && ![1, 2, 3].includes(o.tier ?? 0))) {
         throw new HttpsError("failed-precondition", "Invalid challenge objective.");
       }
       ids.add(o.id);
-      return { ...o, rewards: normaliseRewardLines(o.rewards, o.id) };
+      return normalizeObjective(o);
     });
   };
   const daily = parse(challenges, false);
   if (daily.filter(o => !!o.hard).length < config.hardCount || daily.filter(o => !o.hard).length < config.dailyCount - config.hardCount) {
     throw new HttpsError("failed-precondition", "Challenge pool is too small.");
   }
-  if (!Array.isArray(config.milestones)) throw new HttpsError("failed-precondition", "Missing challenge milestones.");
-  config.milestones = config.milestones.map((m: any) => {
-    if (!finite(m.target, 1) || m.target > config.dailyCount || !finite(m.shards ?? 0)) throw new HttpsError("failed-precondition", "Invalid milestone.");
-    return { ...m, rewards: normaliseRewardLines(m.rewards, "milestone") };
-  });
+  const modeUnlockRanks = Object.fromEntries(Object.entries({ ELIMINATION: 5, POLICE: 10, INFECTED: 15 }).map(([mode, fallback]) => [mode, finite(config.modeUnlockRanks?.[mode]) ? config.modeUnlockRanks[mode] : fallback]));
+  config = { ...config, milestones: [], swapCost: 0, swapsPerDay: 0,
+    modeUnlockRanks,
+    socialUnlockRank: finite(config.socialUnlockRank) ? config.socialUnlockRank : 5, unrankedUnlockRaces: finite(config.unrankedUnlockRaces) ? config.unrankedUnlockRaces : 1 };
   return { config, challenges: daily, achievements: parse(achievements, true), resetOffsetMinutes: offset };
 }
 export async function getChallengesDefinitions(required = true): Promise<Definitions | null> {
@@ -73,3 +75,13 @@ export const stableOrder = (entries: Objective[], seed: string): Objective[] => 
   const hash = (id: string) => createHash("sha256").update(`${seed}:${id}`).digest("hex");
   return hash(a.id).localeCompare(hash(b.id));
 });
+
+export function eligibleDefinitions(defs: Definitions, rank: number, firstHour: any, claimed: Record<string, boolean> = {}, socialLevel = rank, hasUnracedCar = true): Definitions {
+  const lockedModes = firstHour?.active === true ? Object.entries(defs.config.modeUnlockRanks ?? { ELIMINATION: 5, POLICE: 10, INFECTED: 15 }).filter(([, required]) => rank < required).map(([mode]) => mode) : [];
+  if (firstHour?.active === true && Number(firstHour.racesCompleted ?? 0) < (defs.config.unrankedUnlockRaces ?? 1)) lockedModes.push("UNRANKED");
+  const eligible = (o: Objective) => {
+    const mode = o.filters?.mode ?? ({ policeEscapes: "POLICE", eliminationWins: "ELIMINATION", infectedWins: "INFECTED" } as Record<string, string>)[o.stat];
+    return !(o.stat === "newCarWin" && !hasUnracedCar) && !(typeof mode === "string" && lockedModes.includes(mode)) && !(["friendRaces", "clanPoints"].includes(o.stat) && socialLevel < (defs.config.socialUnlockRank ?? 5));
+  };
+  return { ...defs, lockedModes, isObjectiveEligible: eligible, challenges: defs.challenges.filter(eligible), achievements: defs.achievements.filter(o => eligible(o) || claimed[o.id]) };
+}

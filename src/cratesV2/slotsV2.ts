@@ -36,6 +36,7 @@ import {
     CrateRewardItem,
     CrateRewardsConfig,
 } from "../shared/typesV2.js";
+import { firstHourRef } from "../onboarding/firstHour.js";
 import { grantInventoryRewards, readOwnedSkuIds } from "../shared/inventoryAwards.js";
 
 const db = admin.firestore();
@@ -446,6 +447,10 @@ export const claimCrateRewardV2 = onCall(
                 const profileRef = db.doc(`/Players/${uid}/Profile/Profile`);
                 const profileDoc = await transaction.get(profileRef);
                 const playerTrophies = (profileDoc.data()?.trophies as number) ?? 0;
+                const onboardingRef = firstHourRef(uid);
+                const onboardingDoc = await transaction.get(onboardingRef);
+                const guaranteeFirstDecal = onboardingDoc.data()?.active === true &&
+                    onboardingDoc.data()?.firstCrateDecalGranted !== true;
 
                 // --- 1. GUARANTEED BASE: Coins (rank-scaled) ---
                 const coinAmount = calculateCrateCoins(
@@ -477,9 +482,12 @@ export const claimCrateRewardV2 = onCall(
                 const rarityCosmetics = cosmeticSkus.filter(
                     (sku) => (sku.rarity?.toLowerCase() ?? "") === crateRarity
                 );
+                const commonDecals = guaranteeFirstDecal
+                    ? cosmeticSkus.filter((sku) => sku.rarity?.toLowerCase() === "common" && sku.subType === "decal")
+                    : [];
                 const ownedCosmetics = await readOwnedSkuIds(
                     uid,
-                    rarityCosmetics.map((sku) => sku.skuId),
+                    [...rarityCosmetics, ...commonDecals].map((sku) => sku.skuId),
                     transaction,
                 );
                 const matchingCosmetics = rarityCosmetics.filter(
@@ -491,7 +499,18 @@ export const claimCrateRewardV2 = onCall(
                     matchingCosmetics.length,
                 );
                 const shuffledCosmetics = shuffleArray([...matchingCosmetics]);
-                const selectedCosmetics = shuffledCosmetics.slice(0, cosmeticsToAward);
+                let selectedCosmetics = shuffledCosmetics.slice(0, cosmeticsToAward);
+                if (guaranteeFirstDecal) {
+                    const availableDecals = commonDecals.filter((sku) => !ownedCosmetics.has(sku.skuId));
+                    const enamelDecals = availableDecals.filter((sku) => sku.itemDisplayName?.toLowerCase() === "enamel");
+                    const decalPool = enamelDecals.length > 0 ? enamelDecals : availableDecals;
+                    if (decalPool.length === 0) {
+                        throw new HttpsError("failed-precondition", "No unowned common decal is available for the first crate.");
+                    }
+                    const decal = decalPool[Math.floor(Math.random() * decalPool.length)];
+                    selectedCosmetics = [decal, ...shuffledCosmetics.filter((sku) => sku.skuId !== decal.skuId)
+                        .slice(0, Math.max(0, cosmeticsToAward - 1))];
+                }
 
                 for (const cosmetic of selectedCosmetics) {
                     awardedItems.push({
@@ -576,6 +595,10 @@ export const claimCrateRewardV2 = onCall(
                 // ======================================================
                 // WRITES (all reads are done, safe to write now)
                 // ======================================================
+
+                if (guaranteeFirstDecal) {
+                    transaction.update(onboardingRef, { firstCrateDecalGranted: true, updatedAt: timestamp });
+                }
 
                 // Clear the slot
                 const updatedSlots = [...slots];

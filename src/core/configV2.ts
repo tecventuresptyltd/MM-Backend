@@ -136,7 +136,7 @@ function getHighestDefinedLevel(levels: Record<string, unknown> | undefined, sta
 
 /**
  * Get the evolution cost for a specific car to reach its NEXT star level.
- * Reads priceCoins and upgradeTimerSeconds from the CURRENT level in CarsCatalog.
+ * Reads priceCoins and upgradeTimerSeconds from the TARGET level in CarsCatalog.
  * Returns null if the car is at max star level or config is missing.
  */
 export async function getEvolutionCostForCar(
@@ -159,8 +159,8 @@ export async function getEvolutionCostForCar(
 
     return {
         targetStarLevel,
-        coins: currentLevelData.priceCoins,
-        durationSeconds: currentLevelData.upgradeTimerSeconds,
+        coins: targetLevelData.priceCoins,
+        durationSeconds: targetLevelData.upgradeTimerSeconds,
     };
 }
 

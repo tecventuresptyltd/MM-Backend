@@ -2,6 +2,7 @@ import * as admin from "firebase-admin";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { assertSupportedAppVersion } from "../shared/appVersion";
 import { callableOptions, getMinInstances } from "../shared/callableOptions.js";
+import { cancelPendingAccountDeletion } from "../account/deletion.js";
 
 const PRESENCE_ROOT = "presence/online";
 const SESSION_TTL_MS = 5 * 60 * 1000; // 5 minutes
@@ -72,10 +73,13 @@ export const checkSession = onCall(
       }
     }
 
+    const deletionCancelled = await cancelPendingAccountDeletion(uid);
+
     return {
       status: "ok",
       alreadyLoggedIn,
       lastSeen: latestLastSeen,
       anchors: seenAnchors,
+      deletionCancelled,
     };
   });

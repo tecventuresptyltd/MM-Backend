@@ -32,6 +32,7 @@ export { requestDedicatedServer, serverHeartbeat, serverRecordRaceResult, server
 export { getCarStats } from "./race/carStats";
 export { joinOpenWorldLobby, leaveOpenWorldLobby, freeRoamServerRegister, freeRoamServerHeartbeat, openWorldLobbyReaper } from "./race/openWorldLobby";
 export { submitFeedback } from "./feedback";
+export { requestAccountDeletion } from "./account/deletion.js";
 export * from "./clan";
 export { getMaintenanceStatus, claimMaintenanceReward } from "./game-systems/maintenance";
 export { acknowledgeMaintenanceRewards } from "./game-systems/acknowledgeMaintenance";

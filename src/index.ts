@@ -29,6 +29,7 @@ export { clanMemberSyncJob } from "./clan/memberSyncJob.js";
 export { leaderboards } from "./Socials";
 export { presenceReaper } from "./Socials/presenceReaper.js";
 export { upgradeCompletionJob, completeUpgradeTask } from "./upgrades";
+export { accountDeletionJob } from "./account/deletion.js";
 
 // Plain HTTP endpoints. The admin dashboard calls these directly.
 export { healthcheck } from "./health/healthcheck";

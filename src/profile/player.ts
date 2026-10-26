@@ -132,32 +132,6 @@ export const setAgeYears = onCall(callableOptions({ cpu: 1, concurrency: 80 }), 
   return { status: "ok", birthYear, isOver13 };
 });
 
-export const getPlayerAge = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
-  const { uid } = request.data;
-  // Read birthYear from the root Player document
-  const playerRef = db.doc(`/Players/${uid}`);
-  const doc = await playerRef.get();
-
-  if (!doc.exists) {
-    throw new HttpsError("not-found", "Player not found.");
-  }
-
-  const playerData = doc.data();
-  const birthYear = playerData?.birthYear;
-
-  if (typeof birthYear !== "number") {
-    throw new HttpsError(
-      "failed-precondition",
-      "Player age has not been set."
-    );
-  }
-
-  const currentYear = new Date().getFullYear();
-  const age = currentYear - birthYear;
-  const isOver13 = age >= 13;
-
-  return { age, isOver13 };
-});
 export const markTutorialComplete = onCall(callableOptions({ minInstances: getMinInstances(false), memory: "512MiB", cpu: 1, concurrency: 80 }, true), async (request) => {
   if (!request.auth) {
     throw new HttpsError(

@@ -979,7 +979,10 @@ export const leaveClan = onCall(callableOptions({ cpu: 1, concurrency: 80 }), as
   const uid = assertAuthenticated(request);
   const payload = (request.data ?? {}) as LeaveClanRequest;
   const opId = requireOpId(payload.opId);
+  return leaveClanForUid(uid, opId);
+});
 
+export const leaveClanForUid = async (uid: string, opId: string): Promise<ClanMutationResponse> => {
   const cached = await checkIdempotency(uid, opId);
   if (cached) {
     return cached as ClanMutationResponse;
@@ -1074,7 +1077,7 @@ export const leaveClan = onCall(callableOptions({ cpu: 1, concurrency: 80 }), as
   );
 
   return { clanId: result.clanId };
-});
+};
 
 interface AcceptJoinRequestRequest {
   opId: string;

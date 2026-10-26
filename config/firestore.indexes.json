@@ -567,6 +567,20 @@
           "order": "ASCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "Players",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "isOver13",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "birthYear",
+          "order": "ASCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": [

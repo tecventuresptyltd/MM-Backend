@@ -2,6 +2,7 @@ import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { callableOptions, getMinInstances } from "../shared/callableOptions.js";
+import { assertSocialAgeAllowed } from "../shared/ageGate.js";
 
 const db = admin.firestore();
 
@@ -414,6 +415,7 @@ export const sendLobbyChatMessage = onCall(callableOptions({ cpu: 1, concurrency
   }
 
   const uid = auth.uid;
+  await assertSocialAgeAllowed(uid);
   const rtdb = admin.database();
   const lobbyRef = rtdb.ref(`lobbies/${lobbyId}`);
 

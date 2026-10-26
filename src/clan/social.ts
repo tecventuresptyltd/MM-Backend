@@ -2,6 +2,7 @@ import * as admin from "firebase-admin";
 import type { CallableRequest } from "firebase-functions/v2/https";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { callableOptions } from "../shared/callableOptions.js";
+import { assertSocialAgeAllowed } from "../shared/ageGate.js";
 import { checkIdempotency, createInProgressReceipt } from "../core/idempotency.js";
 import { runTransactionWithReceipt } from "../core/transactions.js";
 import {
@@ -553,6 +554,7 @@ interface AcceptClanInviteRequest {
 
 export const acceptClanInvite = onCall(callableOptions({ cpu: 1, concurrency: 80 }, true), async (request) => {
   const uid = assertAuthenticated(request);
+  await assertSocialAgeAllowed(uid);
   const payload = (request.data ?? {}) as AcceptClanInviteRequest;
   const opId = requireOpId(payload.opId);
   const clanId = requireClanId(payload.clanId);
@@ -1163,6 +1165,7 @@ interface ChatResponse {
 
 export const sendGlobalChatMessage = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   const uid = assertAuthenticated(request);
+  await assertSocialAgeAllowed(uid);
   const payload = (request.data ?? {}) as SendGlobalChatMessageRequest;
   const opId = requireOpId(payload.opId);
   // Single-room mode overrides any stale roomId a client still holds.
@@ -1250,6 +1253,7 @@ interface SendClanChatMessageRequest {
 
 export const sendClanChatMessage = onCall(callableOptions({ cpu: 1, concurrency: 80 }), async (request) => {
   const uid = assertAuthenticated(request);
+  await assertSocialAgeAllowed(uid);
   const payload = (request.data ?? {}) as SendClanChatMessageRequest;
   const opId = requireOpId(payload.opId);
   const payloadClanId = typeof payload.clanId === "string" ? payload.clanId.trim() : "";

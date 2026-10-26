@@ -3,6 +3,7 @@ import * as logger from "firebase-functions/logger";
 import type { CallableRequest } from "firebase-functions/v2/https";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { callableOptions } from "../shared/callableOptions.js";
+import { assertSocialAgeAllowed } from "../shared/ageGate.js";
 import { checkIdempotency, createInProgressReceipt } from "../core/idempotency.js";
 import { runTransactionWithReceipt } from "../core/transactions.js";
 import { maskProfanity } from "../shared/profanity.js";
@@ -255,6 +256,7 @@ interface JoinClanRequest {
 
 export const joinClan = onCall(callableOptions({ cpu: 1, concurrency: 80 }, true), async (request) => {
   const uid = assertAuthenticated(request);
+  await assertSocialAgeAllowed(uid);
   const payload = (request.data ?? {}) as JoinClanRequest;
   const opId = requireOpId(payload.opId);
   const clanId = requireClanId(payload.clanId);
@@ -860,6 +862,7 @@ interface RequestToJoinClanRequest {
 
 export const requestToJoinClan = onCall(callableOptions({ cpu: 1, concurrency: 80 }, true), async (request) => {
   const uid = assertAuthenticated(request);
+  await assertSocialAgeAllowed(uid);
   const payload = (request.data ?? {}) as RequestToJoinClanRequest;
   const opId = requireOpId(payload.opId);
   const clanId = requireClanId(payload.clanId);

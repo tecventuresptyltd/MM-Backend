@@ -3,6 +3,7 @@ import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { checkUsername } from "./validators";
 import { REGION } from "../shared/region";
 import { callableOptions, getMinInstances } from "../shared/callableOptions.js";
+import { isOldEnoughForSocial } from "../shared/ageGate.js";
 import {
   checkIdempotency,
   createInProgressReceipt,
@@ -120,13 +121,16 @@ export const setAgeYears = onCall(callableOptions({ cpu: 1, concurrency: 80 }), 
     throw new HttpsError("invalid-argument", "Invalid age provided.");
   }
 
-  const currentYear = new Date().getFullYear();
-  const birthYear = currentYear - ageYears;
-  const isOver13 = ageYears >= 13;
+  const playerRef = db.doc(`/Players/${uid}`);
+  const existingBirthYear = Number((await playerRef.get()).get("birthYear") ?? 0);
+  if (existingBirthYear > 0) {
+    return { status: "ok", birthYear: existingBirthYear, isOver13: isOldEnoughForSocial(existingBirthYear) };
+  }
 
+  const birthYear = new Date().getUTCFullYear() - ageYears;
+  const isOver13 = isOldEnoughForSocial(birthYear);
 
   // Store birthYear and isOver13 on the root Player document
-  const playerRef = db.doc(`/Players/${uid}`);
   await playerRef.set({ birthYear, isOver13 }, { merge: true });
 
   return { status: "ok", birthYear, isOver13 };

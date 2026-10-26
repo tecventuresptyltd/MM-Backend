@@ -3,6 +3,7 @@ import * as logger from "firebase-functions/logger";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import type { CallableRequest } from "firebase-functions/v2/https";
 import { callableOptions } from "../shared/callableOptions.js";
+import { assertSocialAgeAllowed } from "../shared/ageGate.js";
 import { checkIdempotency, createInProgressReceipt } from "../core/idempotency.js";
 import { runTransactionWithReceipt } from "../core/transactions.js";
 import {
@@ -107,6 +108,7 @@ interface CreateClanRequest {
 
 export const createClan = onCall(callableOptions({ cpu: 1, concurrency: 80 }, true), async (request) => {
   const uid = assertAuthenticated(request);
+  await assertSocialAgeAllowed(uid);
   const payload = (request.data ?? {}) as CreateClanRequest;
   const opId = requireOpId(payload.opId);
 

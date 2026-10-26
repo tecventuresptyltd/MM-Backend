@@ -1,6 +1,7 @@
 import * as admin from "firebase-admin";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { callableOptions } from "../shared/callableOptions.js";
+import { assertSocialAgeAllowed } from "../shared/ageGate.js";
 import { checkIdempotency } from "../core/idempotency.js";
 import { runTransactionWithReceipt } from "../core/transactions.js";
 import { maskProfanity } from "../shared/profanity.js";
@@ -240,6 +241,7 @@ export const sendFriendRequest = onCall(
     if (!uid) {
       throw new HttpsError("unauthenticated", "Authentication required.");
     }
+    await assertSocialAgeAllowed(uid);
 
     const opId = sanitizeOpId(request.data?.opId);
     const targetUid = sanitizeUid(request.data?.targetUid);
@@ -288,6 +290,7 @@ export const sendFriendRequestByUid = onCall(
     if (fromUid === toUid) {
       throw new HttpsError("invalid-argument", "fromUid and toUid must be different players.");
     }
+    await assertSocialAgeAllowed(fromUid);
     const message = sanitizeMessage(request.data?.message);
 
     const { requestId, targetSummary } = await db.runTransaction(async (tx) =>
@@ -314,6 +317,7 @@ export const acceptFriendRequest = onCall(
     if (!uid) {
       throw new HttpsError("unauthenticated", "Authentication required.");
     }
+    await assertSocialAgeAllowed(uid);
     const opId = sanitizeOpId(request.data?.opId);
     const requestId = sanitizeUid(request.data?.requestId);
 
